@@ -4,23 +4,16 @@ This module provides functionalities for custom memory allocation, including mul
 
 ## Project Tree:
 
-```
+```python
 /my-alloc
-│
 ├── /inc
 │   └── libmemalloc.h
-│
 ├── /src
 │   └── libmemalloc.c
-│
-├── /test
-│   └── unit_test.c
-│
 ├── /bin
 │   ├── libmemalloc.o
 │   ├── libmemalloc.a
 │   └── libmemalloc.so
-│
 ├── .gitattributes
 ├── .gitignore
 ├── LICENSE
