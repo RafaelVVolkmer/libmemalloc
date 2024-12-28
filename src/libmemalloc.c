@@ -769,3 +769,4 @@ end_of_function:
 }
 
 /*** end of file ***/
+/** @}*/
