@@ -4,9 +4,10 @@
     @{
     
     @package    MEM_alloc
-    @brief      This module provides functionalities for custom memory allocation,
-                including multiple allocation strategies (First-Fit, Next-Fit, Best-Fit),
-                architecture-specific memory alignment, and debugging support.
+    @brief      This module provides functionalities for custom memory 
+                allocation, including multiple allocation strategies 
+                (First-Fit, Next-Fit, Best-Fit), architecture-specific 
+                memory alignment, and debugging support.
     
     @file       libmemalloc.c
     
@@ -15,21 +16,21 @@
     @date       14.10.2024
     
     @details    
-                The Memory Allocator module manages dynamic memory allocation within a predefined
-                heap space. It supports various allocation strategies to optimize memory usage
-                and reduce fragmentation. The module ensures proper memory alignment based on
-                the target architecture, enhancing performance and compatibility. Additionally,
-                it includes debugging features that track allocation sources, facilitating easier
-                debugging and memory management.
+                The Memory Allocator module manages dynamic memory allocation 
+                within a predefined heap space. It supports various allocation 
+                strategies to optimize memory usage and reduce fragmentation.
+                The module ensures proper memory alignment based on the target 
+                architecture, enhancing performance and compatibility. 
+                Additionally, it includes debugging features that track
+                allocation sources, facilitating easier debugging and
+                memory management.
     
     @note       
-                - Ensure that the allocator is initialized before performing any allocation or deallocation.
-                - The module is designed for single-threaded environments. For multi-threaded applications,
-                  synchronization mechanisms should be implemented to ensure thread safety.
-    
-    @see        - MEM_allocatorInit
-                - MEM_allocatorMalloc 
-                - MEM_allocatorFree
+                - Ensure that the allocator is initialized before performing 
+                  any allocation or deallocation.
+                - The module is designed for single-threaded environments. 
+                  For multi-threaded applications, synchronization mechanisms 
+                  should be implemented to ensure thread safety.
 ============================================================================ **/
 
 /* Header Include Protection */
