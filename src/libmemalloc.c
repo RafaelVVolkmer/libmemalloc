@@ -163,6 +163,10 @@ int MEM_validPointerCheck(mem_allocator_t *allocator, void *ptr)
 
     block_header_t *block   = NULL;
 
+    uintptr_t user_ptr      = 0u;
+    uintptr_t heap_start    = 0u;
+    uintptr_t heap_end      = 0u;
+
     /* Check deference/argument boundaries */
     if (allocator == NULL) 
     {
@@ -560,7 +564,7 @@ void *MEM_allocatorMalloc(mem_allocator_t *allocator, size_t size, const char *f
     /* Definition of Function Variables */
     int ret                 = 0u;
 
-    size_t aligned_size     = 0u
+    size_t aligned_size     = 0u;
 
     void *user_ptr          = NULL;
     block_header_t *block   = NULL;
