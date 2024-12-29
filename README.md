@@ -27,10 +27,18 @@
 ###
 
 <p align="center">
-  <img src="readme/libmemalloc_logo.svg" alt="FROST Logo" width="25%"/>
+  <img src="readme/libmemalloc_logo.svg" alt="FROST Logo" width="30%"/>
 </p>
 
 ##
+
+<div align="center">
+  Rafael V. Volkmer - @RafaelVVolkmer - rafael.v.volkmer@gmail.com
+</div>
+
+##
+
+### - Project Description
 
 This module provides functionalities for custom memory allocation, including multiple allocation strategies (First-Fit, Next-Fit, Best-Fit), architecture-specific memory alignment, and debugging support.
 
