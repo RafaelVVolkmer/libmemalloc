@@ -85,6 +85,15 @@ This library is responsible for implementing a customized dynamic memory allocat
 ├── README.md
 └── makefile
 ```
+##
 
 # References
-[The Garbage Collection Handbook: The art of automatic memory management](https://gchandbook.org)
+
+
+| Title                                                                   | Author / Year                  |
+| ------------------------------------------------------------------------ | ---------------------------- |
+| **Understanding and Using C Pointers: Core Techniques for Memory Management** | by: Richard M. Reese, 2013  |
+| **The Garbage Collection Handbook: The art of automatic memory management**    | by: Anthony Hosking, 2011   |
+| **C++ pointers and dynamic memory management**                           | by: Michael C. Daconta, 1993 |
+| **Efficient memory programming**                                        | by: David Loshin, 1999       |
+| **Memory Management**                                                   | by: Bill Blunden, 2002       |
