@@ -44,7 +44,7 @@ This library is responsible for implementing a customized dynamic memory allocat
 
 ##
 
-## Tech Stack - Environment Settings
+# - Tech Stack - Environment Settings
 
 ### - Programming Languages
 ![C](https://img.shields.io/badge/c-%2300599C.svg?style=for-the-badge&logo=c&logoColor=white)
@@ -67,7 +67,7 @@ This library is responsible for implementing a customized dynamic memory allocat
 
 ##
 
-## - Repository tree
+# - Repository tree
 
 ```python
 /my-alloc
@@ -87,7 +87,7 @@ This library is responsible for implementing a customized dynamic memory allocat
 ```
 ##
 
-# References
+# - References
 
 
 | Title                                                                   | Author / Year                  |
