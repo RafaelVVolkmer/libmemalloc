@@ -48,7 +48,7 @@ This library is responsible for implementing a customized dynamic memory allocat
 ### - Operating System
 ![Ubuntu](https://img.shields.io/badge/Ubuntu-E95420?style=for-the-badge&logo=ubuntu&logoColor=white)
 
-### Integrated Development Environment
+### - Integrated Development Environment
 ![Neovim](https://img.shields.io/badge/NeoVim-%2357A143.svg?&style=for-the-badge&logo=neovim&logoColor=white)
 
 ### - Documentation Support
