@@ -13,12 +13,16 @@
 [license-shield]: https://img.shields.io/github/license/RafaelVVolkmer/libmemalloc.svg?style=flat-square
 [license-url]: https://github.com/RafaelVVolkmer/libmemalloc/blob/main/LICENSE.txt
 
-[![Contributors][contributors-shield]][contributors-url]
-[![Forks][forks-shield]][forks-url]
-[![Stargazers][stars-shield]][stars-url]
-[![Issues][issues-shield]][issues-url]
-[![ULicense][license-shield]][license-url]
-[![LinkedIn][linkedin-shield]][linkedin-url]
+<div align="center">
+  
+  [![Contributors][contributors-shield]][contributors-url]
+  [![Forks][forks-shield]][forks-url]
+  [![Stargazers][stars-shield]][stars-url]
+  [![Issues][issues-shield]][issues-url]
+  [![ULicense][license-shield]][license-url]
+  [![LinkedIn][linkedin-shield]][linkedin-url]
+  
+</div>
 
 ##
 
