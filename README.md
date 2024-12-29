@@ -1,8 +1,16 @@
-# LIBMEMALLOC
+
+
+<p align="center">
+  <img src="readme/libmemalloc_logo.svg" alt="FROST Logo" width="25%"/>
+</p>
+
+##
 
 This module provides functionalities for custom memory allocation, including multiple allocation strategies (First-Fit, Next-Fit, Best-Fit), architecture-specific memory alignment, and debugging support.
 
-## Project Tree:
+##
+
+## - Repository tree
 
 ```python
 /my-alloc
