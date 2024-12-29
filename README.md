@@ -1,14 +1,26 @@
 <a id="readme-top"></a>
 
+[stars-shield]: https://img.shields.io/github/stars/RafaelVVolkmer/libmemalloc.svg?style=flat-square
+[stars-url]: https://github.com/RafaelVVolkmer/libmemalloc/stargazers
+[contributors-shield]: https://img.shields.io/github/contributors/RafaelVVolkmer/libmemalloc.svg?style=flat-square
+[contributors-url]: https://github.com/RafaelVVolkmer/libmemalloc/graphs/contributors
+[forks-shield]: https://img.shields.io/github/forks/RafaelVVolkmer/libmemalloc.svg?style=flat-square
+[forks-url]: https://github.com/RafaelVVolkmer/libmemalloc/network/members
+[issues-shield]: https://img.shields.io/github/issues/RafaelVVolkmer/libmemalloc.svg?style=flat-square
+[issues-url]: https://github.com/RafaelVVolkmer/libmemalloc/issues
 [linkedin-shield]: https://img.shields.io/badge/-LinkedIn-black.svg?style=flat-square&logo=linkedin&colorB=555
 [linkedin-url]: https://www.linkedin.com/in/rafaelvvolkmer
 [license-shield]: https://img.shields.io/github/license/RafaelVVolkmer/libmemalloc.svg?style=flat-square
 [license-url]: https://github.com/RafaelVVolkmer/libmemalloc/blob/main/LICENSE.txt
 
-
+[![Contributors][contributors-shield]][contributors-url]
+[![Forks][forks-shield]][forks-url]
+[![Stargazers][stars-shield]][stars-url]
+[![Issues][issues-shield]][issues-url]
 [![ULicense][license-shield]][license-url]
 [![LinkedIn][linkedin-shield]][linkedin-url]
 
+##
 
 <p align="center">
   <img src="readme/libmemalloc_logo.svg" alt="FROST Logo" width="25%"/>
