@@ -1,3 +1,13 @@
+<a id="readme-top"></a>
+
+[linkedin-shield]: https://img.shields.io/badge/-LinkedIn-black.svg?style=flat-square&logo=linkedin&colorB=555
+[linkedin-url]: https://www.linkedin.com/in/rafaelvvolkmer
+[license-shield]: https://img.shields.io/github/license/RafaelVVolkmer/libmemalloc.svg?style=flat-square
+[license-url]: https://github.com/RafaelVVolkmer/libmemalloc/blob/main/LICENSE.txt
+
+
+[![ULicense][license-shield]][license-url]
+[![LinkedIn][linkedin-shield]][linkedin-url]
 
 
 <p align="center">
