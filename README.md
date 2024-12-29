@@ -40,7 +40,7 @@
 
 ### - Project Description
 
-This module provides functionalities for custom memory allocation, including multiple allocation strategies (First-Fit, Next-Fit, Best-Fit), architecture-specific memory alignment, and debugging support.
+This library is responsible for implementing a customized dynamic memory allocation system, with a choice between different algorithms and usage strategies — First-Fit, Next-Fit, Best-Fit. It implements a memory alignment system by processor architecture, direct access to the heap memory space through the linking process and, above all, a memory detection system, where every allocation is mapped with its name, size, address in the heap, line, file and function where they were allocated and free flag, being able to access this information and print it on the terminal at any time, during program execution time.
 
 ##
 
