@@ -33,7 +33,7 @@
 ##
 
 <div align="center">
-  Rafael V. Volkmer - @RafaelVVolkmer - rafael.v.volkmer@gmail.com
+  by: Rafael V. Volkmer - @RafaelVVolkmer - rafael.v.volkmer@gmail.com
 </div>
 
 ##
