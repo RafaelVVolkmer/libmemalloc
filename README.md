@@ -1,18 +1,5 @@
 <a id="readme-top"></a>
 
-[stars-shield]: https://img.shields.io/github/stars/RafaelVVolkmer/libmemalloc.svg?style=flat-square
-[stars-url]: https://github.com/RafaelVVolkmer/libmemalloc/stargazers
-[contributors-shield]: https://img.shields.io/github/contributors/RafaelVVolkmer/libmemalloc.svg?style=flat-square
-[contributors-url]: https://github.com/RafaelVVolkmer/libmemalloc/graphs/contributors
-[forks-shield]: https://img.shields.io/github/forks/RafaelVVolkmer/libmemalloc.svg?style=flat-square
-[forks-url]: https://github.com/RafaelVVolkmer/libmemalloc/network/members
-[issues-shield]: https://img.shields.io/github/issues/RafaelVVolkmer/libmemalloc.svg?style=flat-square
-[issues-url]: https://github.com/RafaelVVolkmer/libmemalloc/issues
-[linkedin-shield]: https://img.shields.io/badge/-LinkedIn-black.svg?style=flat-square&logo=linkedin&colorB=555
-[linkedin-url]: https://www.linkedin.com/in/rafaelvvolkmer
-[license-shield]: https://img.shields.io/github/license/RafaelVVolkmer/libmemalloc.svg?style=flat-square
-[license-url]: https://github.com/RafaelVVolkmer/libmemalloc/blob/main/LICENSE.txt
-
 <div align="center">
   
   [![Contributors][contributors-shield]][contributors-url]
@@ -97,3 +84,17 @@ This library is responsible for implementing a customized dynamic memory allocat
 | **C++ pointers and dynamic memory management**                           | by: Michael C. Daconta, 1993 |
 | **Efficient memory programming**                                        | by: David Loshin, 1999       |
 | **Memory Management**                                                   | by: Bill Blunden, 2002       |
+
+
+[stars-shield]: https://img.shields.io/github/stars/RafaelVVolkmer/libmemalloc.svg?style=flat-square
+[stars-url]: https://github.com/RafaelVVolkmer/libmemalloc/stargazers
+[contributors-shield]: https://img.shields.io/github/contributors/RafaelVVolkmer/libmemalloc.svg?style=flat-square
+[contributors-url]: https://github.com/RafaelVVolkmer/libmemalloc/graphs/contributors
+[forks-shield]: https://img.shields.io/github/forks/RafaelVVolkmer/libmemalloc.svg?style=flat-square
+[forks-url]: https://github.com/RafaelVVolkmer/libmemalloc/network/members
+[issues-shield]: https://img.shields.io/github/issues/RafaelVVolkmer/libmemalloc.svg?style=flat-square
+[issues-url]: https://github.com/RafaelVVolkmer/libmemalloc/issues
+[linkedin-shield]: https://img.shields.io/badge/-LinkedIn-black.svg?style=flat-square&logo=linkedin&colorB=555
+[linkedin-url]: https://www.linkedin.com/in/rafaelvvolkmer
+[license-shield]: https://img.shields.io/github/license/RafaelVVolkmer/libmemalloc.svg?style=flat-square
+[license-url]: https://github.com/RafaelVVolkmer/libmemalloc/blob/main/LICENSE.txt
