@@ -31,6 +31,8 @@ This library is responsible for implementing a customized dynamic memory allocat
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
+---
+
 # - Repository tree
 
 ```python
@@ -71,6 +73,8 @@ The makefile facilitates an automated and consistent build process, which is cru
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
+---
+
 # - Tech Stack and Environment Settings
 
 | **Category**               | **Technologies and Tools**                                                                                                                                                                                                                                  |
@@ -85,9 +89,13 @@ The makefile facilitates an automated and consistent build process, which is cru
 
 <p align="right">(<a href="#readme-top">Back to Top</a>)</p>
 
+---
+
 # - Build and Use
 
 <p align="right">(<a href="#readme-top">Back to Top</a>)</p>
+
+---
 
 # - References
 
