@@ -12,8 +12,8 @@
  *              with function, file, and line details. These tools 
  *              improve debugging and tracing within the library.
  *
- *  @version    v1.0.00.00
- *  @date       24.05.2025
+ *  @version    v2.0.00.00
+ *  @date       27.03.2025
  *  @author     Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
  * ================================================================ */
 
