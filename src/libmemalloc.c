@@ -12,8 +12,8 @@
  *              - Block validation with magic numbers/canaries
  *              - Multiple allocation strategies (First/Best/Next Fit)
  * 
- *  @version    v1.0.00.00
- *  @date       24.05.2025
+ *  @version    v2.0.00.00
+ *  @date       27.03.2025
  *  @author     Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
  * ================================================================ */
 
