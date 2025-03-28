@@ -52,7 +52,7 @@ libmemalloc now features native implementations of memcpy and memset, as well as
 │   └── libmemalloc.so
 ├── /readme
 │    └── libmemalloc.svg
-├── dockerfile
+├── Dockerfile
 ├── CMakeLists.txt
 ├── .gitattributes
 ├── .gitignore
