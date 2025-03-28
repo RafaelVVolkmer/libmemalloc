@@ -29,6 +29,10 @@
 
 This library is responsible for implementing a customized dynamic memory allocation system, with a choice between different algorithms and usage strategies — First-Fit, Next-Fit, Best-Fit. It implements a memory alignment system by processor architecture, direct access to the heap memory space through the linking process and, above all, a memory detection system, where every allocation is mapped with its name, size, address in the heap, line, file and function where they were allocated and free flag, being able to access this information and print it on the terminal at any time, during program execution time.
 
+**`v2.0.00.00`**
+
+libmemalloc now features native implementations of memcpy and memset, as well as support for dynamically expanding the heap via brk and sbrk algorithms. A built-in garbage collector is also provided, which you can invoke at your discretion. For improved performance, you might consider running the garbage collector periodically in a dedicated thread; however, this option was not included by default to avoid imposing invasive changes on your application.
+
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ---
