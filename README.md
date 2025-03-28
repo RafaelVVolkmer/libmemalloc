@@ -14,7 +14,7 @@
 ##
 
 <p align="center">
-  <img src="https://github.com/RafaelVVolkmer/libmemalloc/blob/main/libmemalloc_logo.svg" alt="libmemalloc logo" width="55%"/>
+  <img src="libmemalloc.svg" alt="libmemalloc logo" width="55%"/>
 </p>
 
 ##
