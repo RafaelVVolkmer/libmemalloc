@@ -156,14 +156,6 @@ docker rm extract
 
 Note: Adjust the path /usr/local/libmemalloc to match the directory specified in your Dockerfile.
 
-### 4. Additional Recommendations
-
-- Multi-stage Build: The Dockerfile leverages multi-stage builds to keep the final image minimal by removing build tools.
-- Caching: Organize your Dockerfile so that dependencies are installed first, improving layer caching.
-- Non-root User: For security, consider configuring the final image to run as a non-root user.
-- Extra Compiler Flags: You may also pass additional optimization flags (e.g., -O3, -march=native) via CMake if needed.
-- Testing: It is recommended to add a stage that runs tests so that the final artifacts are only produced if tests pass.
-
 <p align="right">(<a href="#readme-top">Back to Top</a>)</p>
 
 ---
