@@ -71,7 +71,7 @@ The readme directory contains visual assets that support the project's documenta
 Files like .gitignore, .gitattributes, LICENSE, and README.md provide essential information for version control, project licensing, and user guidance, ensuring that the project is well-documented and properly managed.
 
 - **Build Automation:**
-The makefile facilitates an automated and consistent build process, which is crucial for collaboration, continuous integration, and efficient development workflows.
+The CMake facilitates an automated and consistent build process, which is crucial for collaboration, continuous integration, and efficient development workflows.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
