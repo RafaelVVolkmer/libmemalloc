@@ -76,9 +76,9 @@ add_custom_target(copy_object ALL
 add_library(libmemalloc_static STATIC
     $<TARGET_OBJECTS:libmemalloc_objects>
 )
-set_target_properties(libmemalloc_static PROPERTIES OUTPUT_NAME "libmemalloc")
+set_target_properties(libmemalloc_static PROPERTIES OUTPUT_NAME "memalloc")
 
 add_library(libmemalloc_shared SHARED
     $<TARGET_OBJECTS:libmemalloc_objects>
 )
-set_target_properties(libmemalloc_shared PROPERTIES OUTPUT_NAME "libmemalloc")
+set_target_properties(libmemalloc_shared PROPERTIES OUTPUT_NAME "memalloc")
