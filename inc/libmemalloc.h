@@ -12,8 +12,8 @@
  *              - Block validation with magic numbers/canaries
  *              - Multiple allocation strategies (First/Best/Next Fit)
  *
- *  @version    v2.0.00.00
- *  @date       27.03.2025
+ *  @version    v1.0.00.00
+ *  @date       24.05.2025
  *  @author     Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
  * ================================================================ */
 
@@ -84,6 +84,24 @@
 
     #define ARCH_ALIGNMENT ((uint8_t)4U)    /**< Fallback */
 
+#endif
+
+/** ==============================================================
+ *  @def        LIBMEMALLOC_API
+ *  @brief      Defines the default visibility attribute 
+ *              for exported symbols.
+ *
+ *  @details    When using GCC or compatible compilers, this macro 
+ *              expands to __attribute__((visibility("default"))) 
+ *              to ensure that symbols are exported (visible) 
+ *              in the resulting shared library (.so). 
+ *              For compilers that do not support this attribute, 
+ *              it expands to nothing.
+ * ============================================================== */
+#ifdef __GNUC__
+    #define LIBMEMALLOC_API __attribute__((visibility("default")))
+#else
+    #define LIBMEMALLOC_API
 #endif
 
 /** =============================================================
@@ -378,127 +396,147 @@ int MEM_allocatorPrintAll(mem_allocator_t *const allocator);
  *  @retval     -EINVAL:    Invalid parameters or GC disabled
  * =============================================================== */
 int MEM_runGC(mem_allocator_t *const allocator);
+
 /** ================================================================
- *              P U B L I C   M A C R O S   A P I                  
+ *         P U B L I C  F U N C T I O N  C A L L S  A P I           
  * ================================================================ */
 
-/** ==============================================================
- *  @def        MALLOC_FIRST_FIT
- *  @brief      Allocates memory using FIRST_FIT strategy
- *
- *  @param      allocator   Memory allocator context
- *  @param      size        Requested allocation size
- *  @param      var         Variable name (automatically captured)
- *
- *  @return     Pointer to allocated memory or NULL
- *
- *  @note       Strategy: Finds first suitable block in free lists
- *              Auto-captures file/line information
+/** ==============================================================  
+ *  @fn         MEM_allocMallocFirstFit  
+ *  @brief      Allocates memory using the FIRST_FIT strategy.  
+ *  
+ *  @param[in]  allocator   Memory allocator context.  
+ *  @param[in]  size        Requested allocation size.  
+ *  @param[in]  var         Variable name (for debugging).  
+ *  
+ *  @return     Pointer to allocated memory or NULL on failure.  
+ *  
+ *  @note       Automatically passes file and line information.  
  * =============================================================== */
-#define MALLOC_FIRST_FIT(allocator, size, var) \
-    MEM_allocatorMalloc(allocator, size, __FILE__, __LINE__, #var, FIRST_FIT)
+LIBMEMALLOC_API void* MEM_allocMallocFirstFit(mem_allocator_t *allocator, 
+                                                size_t size, const char *var)
+{
+    return MEM_allocatorMalloc(allocator, size, __FILE__, __LINE__, var, FIRST_FIT);
+}
 
-/** ==============================================================
- *  @def        MALLOC_BEST_FIT
- *  @brief      Allocates memory using BEST_FIT strategy
- *
- *  @param      allocator   Memory allocator context
- *  @param      size        Requested allocation size
- *  @param      var         Variable name (automatically captured)
- *
- *  @return     Pointer to allocated memory or NULL
- *
- *  @note       Strategy: Finds smallest suitable block in free lists
- *              Auto-captures file/line information
+/** ==============================================================  
+ *  @fn         MEM_allocMallocBestFit  
+ *  @brief      Allocates memory using the BEST_FIT strategy.  
+ *  
+ *  @param[in]  allocator   Memory allocator context.  
+ *  @param[in]  size        Requested allocation size.  
+ *  @param[in]  var         Variable name (for debugging).  
+ *  
+ *  @return     Pointer to allocated memory or NULL on failure.  
+ *  
+ *  @note       Automatically passes file and line information.  
  * =============================================================== */
-#define MALLOC_BEST_FIT(allocator, size, var) \
-    MEM_allocatorMalloc(allocator, size, __FILE__, __LINE__, #var, BEST_FIT)
+LIBMEMALLOC_API void* MEM_allocMallocBestFit(mem_allocator_t *allocator, 
+                                                size_t size, const char *var)
+{
+    return MEM_allocatorMalloc(allocator, size, __FILE__, __LINE__, var, BEST_FIT);
+}
 
-/** ==============================================================
- *  @def        MALLOC_NEXT_FIT
- *  @brief      Allocates memory using NEXT_FIT strategy
- *
- *  @param      allocator   Memory allocator context
- *  @param      size        Requested allocation size
- *  @param      var         Variable name (automatically captured)
- *
- *  @return     Pointer to allocated memory or NULL
- *
- *  @note       Strategy: Continues search from last allocation point
- *              Auto-captures file/line information
+/** ==============================================================  
+ *  @fn         MEM_allocMallocNextFit  
+ *  @brief      Allocates memory using the NEXT_FIT strategy.  
+ *  
+ *  @param[in]  allocator   Memory allocator context.  
+ *  @param[in]  size        Requested allocation size.  
+ *  @param[in]  var         Variable name (for debugging).  
+ *  
+ *  @return     Pointer to allocated memory or NULL on failure.  
+ *  
+ *  @note       Automatically passes file and line information.  
  * =============================================================== */
-#define MALLOC_NEXT_FIT(allocator, size, var) \
-    MEM_allocatorMalloc(allocator, size, __FILE__, __LINE__, #var, NEXT_FIT)
+LIBMEMALLOC_API void* MEM_allocMallocNextFit(mem_allocator_t *allocator, 
+                                                size_t size, const char *var)
+{
+    return MEM_allocatorMalloc(allocator, size, __FILE__, __LINE__, var, NEXT_FIT);
+}
 
-/** ==============================================================
- *  @def        MALLOC
- *  @brief      General purpose allocation with strategy selection
- *
- *  @param      allocator   Memory allocator context
- *  @param      size        Requested allocation size
- *  @param      var         Variable name (automatically captured)
- *  @param      strategy    Allocation strategy to use
- *
- *  @return     Pointer to allocated memory or NULL
- *
- *  @note       Allows explicit strategy selection
- *              Auto-captures file/line information
+/** ==============================================================  
+ *  @fn         MEM_allocMalloc  
+ *  @brief      Allocates memory using a specified strategy.  
+ *  
+ *  @param[in]  allocator   Memory allocator context.  
+ *  @param[in]  size        Requested allocation size.  
+ *  @param[in]  var         Variable name (for debugging).  
+ *  @param[in]  strategy    Allocation strategy to use.  
+ *  
+ *  @return     Pointer to allocated memory or NULL on failure.  
+ *  
+ *  @note       Automatically passes file and line information.  
  * =============================================================== */
-#define MALLOC(allocator, size, var, strategy) \
-    MEM_allocatorMalloc(allocator, size, __FILE__, __LINE__, #var, strategy)
+LIBMEMALLOC_API void* MEM_allocMalloc(mem_allocator_t *allocator, 
+                                            size_t size, const char *var, 
+                                            allocation_strategy_t strategy)
+{
+    return MEM_allocatorMalloc(allocator, size, __FILE__, __LINE__, var, strategy);
+}
 
-/** ==============================================================
- *  @def        CALLOC
- *  @brief      Allocates and zero-initializes memory
- *
- *  @param      allocator   Memory allocator context
- *  @param      num         Number of elements
- *  @param      size        Element size
- *  @param      var         Variable name (automatically captured)
- *  @param      strategy    Allocation strategy to use
- *
- *  @return     Pointer to allocated memory or NULL
- *
- *  @note       Combines allocation and zero-initialization
- *              Auto-captures file/line information
+/** ==============================================================  
+ *  @fn         MEM_allocCalloc  
+ *  @brief      Allocates and zero-initializes memory using a specified strategy.  
+ *  
+ *  @param[in]  allocator   Memory allocator context.  
+ *  @param[in]  num         Number of elements.  
+ *  @param[in]  size        Size of each element.  
+ *  @param[in]  var         Variable name (for debugging).  
+ *  @param[in]  strategy    Allocation strategy to use.  
+ *  
+ *  @return     Pointer to allocated and zero-initialized memory or NULL on failure.  
+ *  
+ *  @note       Automatically passes file and line information.  
  * =============================================================== */
-#define CALLOC(allocator, num, size, var, strategy) \
-    MEM_allocatorCalloc(allocator, num, size, __FILE__, __LINE__, #var, strategy)
+LIBMEMALLOC_API void* MEM_allocCalloc(mem_allocator_t *allocator, 
+                                        size_t num, size_t size, 
+                                        const char *var, 
+                                        allocation_strategy_t strategy)
+{
+    return MEM_allocatorCalloc(allocator, num, size, __FILE__, __LINE__, var, strategy);
+}
 
-/** ==============================================================
- *  @def        REALLOC
- *  @brief      Reallocates memory with safety checks
- *
- *  @param      allocator   Memory allocator context
- *  @param      ptr         Pointer to reallocate
- *  @param      new_size    New allocation size
- *  @param      var         Variable name (automatically captured)
- *  @param      strategy    Allocation strategy to use
- *
- *  @return     Pointer to reallocated memory or NULL
- *
- *  @note       Preserves existing data during reallocation
- *              Auto-captures file/line information
+/** ==============================================================  
+ *  @fn         MEM_allocRealloc  
+ *  @brief      Reallocates memory with safety checks using a specified strategy.  
+ *  
+ *  @param[in]  allocator   Memory allocator context.  
+ *  @param[in]  ptr         Pointer to memory to reallocate.  
+ *  @param[in]  new_size    New requested allocation size.  
+ *  @param[in]  var         Variable name (for debugging).  
+ *  @param[in]  strategy    Allocation strategy to use.  
+ *  
+ *  @return     Pointer to reallocated memory or NULL on failure.  
+ *  
+ *  @note       Automatically passes file and line information.  
  * =============================================================== */
-#define REALLOC(allocator, ptr, new_size, var, strategy) \
-    MEM_allocatorRealloc(allocator, ptr, new_size, __FILE__, __LINE__, #var, strategy)
+LIBMEMALLOC_API void* MEM_allocRealloc(mem_allocator_t *allocator, 
+                                            void *ptr, size_t new_size, 
+                                            const char *var, 
+                                            allocation_strategy_t strategy)
+{
+    return MEM_allocatorRealloc(allocator, ptr, new_size, __FILE__, __LINE__, var, strategy);
+}
 
-/** ==============================================================
- *  @def        FREE
- *  @brief      Releases allocated memory back to the heap
- *
- *  @param      allocator   Memory allocator context
- *  @param      ptr         Pointer to memory to free
- *  @param      var         Variable name (automatically captured)
- *
- *  @return     Integer status code
- *
- *  @note       Performs automatic garbage collection if enabled
- *              Auto-captures file/line information
+/** ==============================================================  
+ *  @fn         MEM_allocFree  
+ *  @brief      Releases allocated memory back to the heap.  
+ *  
+ *  @param[in]  allocator   Memory allocator context.  
+ *  @param[in]  ptr         Pointer to memory to free.  
+ *  @param[in]  var         Variable name (for debugging).  
+ *  
+ *  @return     Integer status code (SUCCESS if successful).  
+ *  
+ *  @note       Automatically passes file and line information.  
  * =============================================================== */
-#define FREE(allocator, ptr, var) \
-    MEM_allocatorFree(allocator, ptr, __FILE__, __LINE__, #var)
-
+LIBMEMALLOC_API int MEM_allocFree(mem_allocator_t *allocator, void *ptr, 
+                                    const char *var)
+{
+    return MEM_allocatorFree(allocator, ptr, __FILE__, __LINE__, var);
+}
+    
 /*< C++ Compatibility >*/
 #ifdef __cplusplus
     }
