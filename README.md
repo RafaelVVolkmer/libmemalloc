@@ -101,62 +101,7 @@ The CMake facilitates an automated and consistent build process, which is crucia
 
 # - Build and Use
 
-### 1. Cloning the Repository
-
-Open your terminal and run:
-
-```bash
-git clone https://github.com/RafaelVVolkmer/libmemalloc.git
-cd libmemalloc
-```
-
-### 2. Building with CMake
-
-The project uses CMake to configure the build.
-
-**`For Debug Build:`**
-
-```bash
-mkdir build-debug
-cd build-debug
-cmake -DCMAKE_BUILD_TYPE=Debug ..
-make
-```
-
-**`For Release Build:`**
-
-```bash
-mkdir build-release
-cd build-release
-cmake -DCMAKE_BUILD_TYPE=Release ..
-make
-```
-
-After building, the generated static libraries (.a), object files (.o), and shared libraries (.so) will be located in your respective build directory.
-
-### 3. Building with Docker
-
-A Dockerfile is provided that uses Alpine Linux as the base image in a multi-stage build. It installs build tools (cmake, make, gcc, etc.), builds the project, and then creates a final minimal image containing only the build artifacts.
-
-**`Build the Docker Image:`**
-  
-In the repository root, run:
-
-```bash
-docker build -t libmemalloc-build .
-```
-
-**`Extract the Build Artifacts:`**
-  
-Assuming the Dockerfile copies the final artifacts into a directory (for example, /usr/local/libmemalloc), you can extract them with:
-
-```bash
-docker create --name extract libmemalloc-build
-docker cp extract:/usr/local/libmemalloc ./bin
-docker rm extract
-```
-
-Note: Adjust the path /usr/local/libmemalloc to match the directory specified in your Dockerfile.
+WIP
 
 <p align="right">(<a href="#readme-top">Back to Top</a>)</p>
 
