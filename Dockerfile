@@ -2,7 +2,7 @@
 ARG TARGETPLATFORM
 
 LABEL maintainer="Rafael Volkmer <rafael.v.volkmer@gmail.com>"
-LABEL version="v3.0.00.00"
+LABEL version="1.0"
 LABEL description="Builder to libmemalloc"
 
 # ------------------------------------------------------------

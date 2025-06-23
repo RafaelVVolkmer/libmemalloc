@@ -21,6 +21,19 @@
  *                      P R I V A T E  I N C L U D E S                          
  * ========================================================================== */
 
+/** ============================================================================
+ *  @def        _GNU_SOURCE
+ *  @brief      Enable GNU extensions on POSIX systems
+ *
+ *  @details    Defining _GNU_SOURCE before including any headers
+ *              activates GNU-specific library features and extensions
+ *              in glibc and other GNU-compatible C libraries. This
+ *              enables additional APIs beyond the standard C/POSIX
+ *              specifications, such as nonstandard functions, constants,
+ *              and structures.
+ * ========================================================================== */
+#define _GNU_SOURCE
+
 /*< Dependencies >*/
 #include <errno.h>
 #include <inttypes.h>
@@ -32,6 +45,8 @@
 #include <sys/mman.h>
 #include <unistd.h>
 #include <valgrind/memcheck.h>
+#include <sys/resource.h>
+#include <stdbool.h>
 
 /*< Implemented >*/
 #include "libmemalloc.h"
@@ -100,6 +115,17 @@
  *              handling and to reduce heap fragmentation.
  * ========================================================================== */
 #define MMAP_THRESHOLD  (size_t)(128U * 1024U)
+
+/** ============================================================================
+ *  @def        DEFAULT_GC_INTERVAL_MS
+ *  @brief      Default interval in milliseconds between GC cycles.
+ *
+ *  @details    Defines the time (in milliseconds) the garbage collector
+ *              thread sleeps between each mark-and-sweep cycle. Adjusting
+ *              this value impacts how frequently memory is reclaimed versus
+ *              the CPU overhead of running the GC.
+ * ========================================================================== */
+#define GC_INTERVAL_MS  (uint16_t)(1000U)
 
 /** ============================================================================
  *  @def        MIN_BLOCK_SIZE
@@ -704,13 +730,13 @@ static int MEM_validateBlock(mem_allocator_t *const allocator,
         goto function_output;
     }
 
-    if (((uint8_t *)block < allocator->heap) || 
+    if (((uint8_t *)block < allocator->heap_start) || 
         ((uint8_t *)block >= allocator->heap_end))
     {
         ret = -EFAULT;
         LOG_ERROR("Block %p outside heap boundaries [%p - %p]. "
                   "Error code: %d.\n",
-                  (void *)block, (void *)allocator->heap,
+                  (void *)block, (void *)allocator->heap_start,
                   (void *)allocator->heap_end, ret);
         goto function_output;
     }
@@ -748,7 +774,7 @@ static int MEM_validateBlock(mem_allocator_t *const allocator,
         ret = -EFBIG;
         LOG_ERROR("Structural overflow at %p (size: %zu). Heap range [%p - %p]."
                   "Error code: %d.\n",
-                  (void *)block, block->size, (void *)allocator->heap,
+                  (void *)block, block->size, (void *)allocator->heap_start,
                   (void *)allocator->heap_end, ret);
         goto function_output;
     }
@@ -941,15 +967,20 @@ int MEM_allocatorInit(mem_allocator_t *const allocator)
 {
     int ret = EXIT_SUCCESS;
 
+    static bool mempool_created = false;
+    pthread_attr_t attr;
+
     mem_arena_t *arena = NULL;
 
     void *base = NULL;
     void *old = NULL;
+    void *stack_addr = NULL;
 
     uintptr_t addr = 0;
 
     size_t pad = 0u;
     size_t bins_bytes = 0u;
+    size_t stack_size = 0u;
 
     base = MEM_sbrk(0);
     if (base == (void*)(-ENOMEM))
@@ -974,7 +1005,7 @@ int MEM_allocatorInit(mem_allocator_t *const allocator)
         }
     }
 
-    allocator->heap = (uint8_t*)base;
+    allocator->heap_start = (uint8_t*)base;
     allocator->heap_end = (uint8_t*)base;
     allocator->last_allocated = NULL;
 
@@ -1007,8 +1038,31 @@ int MEM_allocatorInit(mem_allocator_t *const allocator)
 
     allocator->mmap_list = NULL;
 
+    pthread_getattr_np(pthread_self(), &attr);
+    pthread_attr_getstack(&attr, &stack_addr, &stack_size);
+    pthread_attr_destroy(&attr);
+
+    atomic_init(&allocator->gc_running, false);
+
+    allocator->gc_interval_ms = GC_INTERVAL_MS;
+    allocator->gc_thread_started = 0u;
+
+    pthread_mutex_init(&allocator->gc_lock, NULL);
+    pthread_cond_init(&allocator->gc_cond, NULL);
+
+    allocator->stack_top = (uintptr_t*)((uintptr_t)stack_addr + stack_size);
+    allocator->stack_bottom = (uintptr_t*)__builtin_frame_address(0);
+
+#ifdef RUNNING_ON_VALGRIND
+    if(mempool_created == true)
+        VALGRIND_DESTROY_MEMPOOL(allocator);
+
+    VALGRIND_CREATE_MEMPOOL(allocator, 0, false);
+    mempool_created = true;
+#endif
+
     LOG_INFO("Allocator initialized: heap=%p..%p, bins=%u",
-             allocator->heap, allocator->heap_end, (unsigned)arena->num_bins);
+             allocator->heap_start, allocator->heap_end, (unsigned)arena->num_bins);
 
 function_output:
     return ret;
@@ -1031,6 +1085,8 @@ static void *MEM_growUserHeap(mem_allocator_t *alloc, const intptr_t inc)
 {
     void *old = NULL;
 
+    block_header_t *header = NULL;
+
     if (alloc == NULL)
     {
         old =  PTR_ERR(-EINVAL);
@@ -1045,6 +1101,11 @@ static void *MEM_growUserHeap(mem_allocator_t *alloc, const intptr_t inc)
     MEM_memset(old, 0, (size_t)inc);
 
     alloc->heap_end = (uint8_t *)old + inc;
+
+    header = (block_header_t *)old;
+    header->size = (size_t)inc;
+    header->free = 0u;
+    header->marked = 1u;
 
 function_output:
     return old;
@@ -1074,6 +1135,8 @@ static int *MEM_mapAlloc(mem_allocator_t *allocator, size_t total_size)
     void *ptr = NULL;
 
     mmap_t *map_block = NULL;
+
+    block_header_t *header = NULL;
 
     size_t pagesz = 0u;
     size_t map_size = 0u;
@@ -1111,6 +1174,19 @@ static int *MEM_mapAlloc(mem_allocator_t *allocator, size_t total_size)
     map_block->next = allocator->mmap_list;
     allocator->mmap_list = map_block;
 
+    header = (block_header_t *)ptr;
+    header->magic = MAGIC_NUMBER;
+    header->size = map_size;
+    header->free = 0u;
+    header->marked = 1u;
+    header->prev = NULL;
+    header->next = NULL;
+    header->file = NULL;
+    header->line = 0u;
+    header->var_name = NULL;
+
+    *(uint32_t *)((uint8_t *)ptr + map_size - sizeof(uint32_t)) = CANARY_VALUE; 
+
     LOG_INFO("mmap allocated %zu at %p", map_size, ptr);
 
 function_output:
@@ -1141,8 +1217,8 @@ static int MEM_mapFree(mem_allocator_t *allocator, void *addr)
 {
     int ret = EXIT_SUCCESS;
 
-    mmap_t **pp = NULL;
-    mmap_t *tofree = NULL;
+    mmap_t **map_ref = NULL;
+    mmap_t *to_free = NULL;
 
     size_t map_size = 0u;
 
@@ -1153,13 +1229,13 @@ static int MEM_mapFree(mem_allocator_t *allocator, void *addr)
         goto function_output;
     }
 
-    pp = &allocator->mmap_list;
+    map_ref = &allocator->mmap_list;
 
-    while (*pp)
+    while (*map_ref)
     {
-        if ((*pp)->addr == addr)
+        if ((*map_ref)->addr == addr)
         {
-            map_size = (*pp)->size;
+            map_size = (*map_ref)->size;
 
             if (munmap(addr, map_size) != 0)
             {
@@ -1168,12 +1244,12 @@ static int MEM_mapFree(mem_allocator_t *allocator, void *addr)
                 goto function_output;
             }
 
-            tofree = *pp;
-            *pp = tofree->next;
+            to_free = *map_ref;
+            *map_ref = to_free->next;
 
             ret = MEM_allocFree(
                 allocator,
-                tofree,
+                to_free,
                 "mmap_meta"
             );
 
@@ -1184,7 +1260,8 @@ static int MEM_mapFree(mem_allocator_t *allocator, void *addr)
             ret = EXIT_SUCCESS;
             goto function_output;
         }
-        pp = &(*pp)->next;
+
+        map_ref = &(*map_ref)->next;
     }
 
     ret = -EINVAL;
@@ -1313,7 +1390,7 @@ static int MEM_findNextFit(mem_allocator_t *const allocator,const size_t size,
         }
 
         current = (current->next) ? current->next :
-                                    (block_header_t *)allocator->heap;
+                                    (block_header_t *)allocator->heap_start;
     } while (current != start);
 
     ret = -ENOMEM;
@@ -1484,8 +1561,10 @@ static int MEM_splitBlock(mem_allocator_t *const allocator,
     new_block->var_name = NULL;
     new_block->prev = block;
     new_block->next = block->next;
+
     if (block->next)
         block->next->prev = new_block;
+
     block->next = new_block;
 
     new_block->canary = CANARY_VALUE;
@@ -1732,10 +1811,10 @@ static void *MEM_allocatorMalloc(mem_allocator_t *const allocator,
 function_output:
 
 #ifdef RUNNING_ON_VALGRIND
-    VALGRIND_MALLOCLIKE_BLOCK(
+    VALGRIND_MEMPOOL_ALLOC(
+        allocator,
         user_ptr,
-        block ? (block->size - sizeof(block_header_t) - sizeof(uint32_t)) : 0,
-        0, 0
+        block ? (block->size - sizeof(block_header_t) - sizeof(uint32_t)) : 0
     );
 #endif
 
@@ -1909,19 +1988,33 @@ static int MEM_allocatorFree(mem_allocator_t *const allocator,
     int ret = EXIT_SUCCESS;
 
     block_header_t *block = NULL;
+    mmap_t *map = NULL;
 
     void *old = NULL;
 
     uint8_t *block_end = NULL;
 
     intptr_t delta = 0;
-
+    
     if (UNLIKELY(allocator == NULL || ptr == NULL))
     {
         ret = -EINVAL;
         LOG_ERROR("Invalid parameters | Allocator: %p | Ptr: %p. "
                   "Error code: %d.\n", (void *)allocator, ptr, ret);
         goto function_output;
+    }
+
+    if (allocator && ptr)
+    {
+        block = (block_header_t *)((uint8_t*)ptr - sizeof(block_header_t));
+        for (map = allocator->mmap_list; map; map = map->next)
+        {
+            if ((void*)block == map->addr)
+            {
+                ret = MEM_mapFree(allocator, map->addr);
+                goto function_output;
+            }
+        }
     }
 
     block = (block_header_t *)((uint8_t *)ptr - sizeof(block_header_t));
@@ -1941,7 +2034,7 @@ static int MEM_allocatorFree(mem_allocator_t *const allocator,
     }
 
 #ifdef RUNNING_ON_VALGRIND
-    VALGRIND_FREELIKE_BLOCK(ptr, 0);
+    VALGRIND_MEMPOOL_FREE(allocator, ptr);
 #endif
 
     block->free = 1u;
@@ -1979,7 +2072,7 @@ static int MEM_allocatorFree(mem_allocator_t *const allocator,
         if ((intptr_t)old >= 0)
         {
             allocator->heap_end = (uint8_t*)allocator->heap_end + delta;
-            allocator->last_allocated = (block_header_t*)allocator->heap;
+            allocator->last_allocated = (block_header_t*)allocator->heap_start;
             LOG_INFO("Heap shrunk by %zu bytes; new heap_end=%p",
                          shrink_size, allocator->heap_end);
             goto function_output;
@@ -1987,6 +2080,7 @@ static int MEM_allocatorFree(mem_allocator_t *const allocator,
     }
 
     MEM_insertFreeBlock(allocator, block);
+
     LOG_INFO("Memory freed | Addr: %p | Source: %s:%d", ptr, file, line);
 
 function_output:
@@ -2007,31 +2101,29 @@ function_output:
 int MEM_allocatorPrintAll(mem_allocator_t *const allocator)
 {
     int ret = EXIT_SUCCESS;
-
     block_header_t *current = NULL;
 
     if (UNLIKELY(allocator == NULL))
     {
         ret = -EINVAL;
-        LOG_ERROR("Invalid allocator parameter. "
-                  "Error code: %d.\n", ret);
+        LOG_ERROR("Invalid allocator parameter. Error code: %d.", ret);
         goto function_output;
     }
 
-    printf("\nHeap Status Report:\n");
-    printf("Address\t\tSize\tFree\tOrigin\n");
-    printf("------------------------------------------------\n");
+    LOG_INFO("Heap Status Report:");
+    LOG_INFO("Address\t\tSize\tFree\tOrigin");
+    LOG_INFO("------------------------------------------------");
 
-    current = (block_header_t *)allocator->heap;
+    current = (block_header_t *)allocator->heap_start;
     while ((uint8_t *)current < allocator->heap_end)
     {
-        printf("%p\t%zu\t%s\t%s:%llud\n",
-               (void *)((uint8_t *)current + sizeof(block_header_t)),
-               current->size - sizeof(block_header_t) - sizeof(uint32_t),
-               current->free ? "Yes" : "No",
-               current->file ? current->file : "N/A",
-               current->line);
-        
+        LOG_INFO("%p\t%zu\t%s\t%s:%llu",
+                 (void *)((uint8_t *)current + sizeof(block_header_t)),
+                 current->size - sizeof(block_header_t) - sizeof(uint32_t),
+                 current->free ? "Yes" : "No",
+                 current->file ? current->file : "N/A",
+                 (unsigned long long)current->line);
+
         current = (block_header_t *)((uint8_t *)current + current->size);
     }
 
@@ -2057,7 +2149,7 @@ function_output:
  *
  *  @note       Automatically passes file and line information.
  * ========================================================================== */
-void* MEM_allocMallocFirstFit(mem_allocator_t *allocator,
+void *MEM_allocMallocFirstFit(mem_allocator_t *allocator,
                                 size_t size, const char *var)
 {
     return MEM_allocatorMalloc(allocator, size, __FILE__,

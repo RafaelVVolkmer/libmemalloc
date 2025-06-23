@@ -32,6 +32,8 @@
 /*< Dependencies >*/
 #include <stdint.h>
 #include <string.h>
+#include <pthread.h>
+#include <stdatomic.h>
 
 /** ============================================================================
  *              P U B L I C  D E F I N E S  &  M A C R O S                      
@@ -82,12 +84,15 @@
  * ========================================================================== */
 #if defined(_WIN32)
   #ifdef BUILDING_LIBMEMALLOC
-    #define __LIBMEMALLOC_API __declspec(dllexport)
+    #define __LIBMEMALLOC_API \
+        __declspec(dllexport)
   #else
-    #define __LIBMEMALLOC_API __declspec(dllimport)
+    #define __LIBMEMALLOC_API \
+        __declspec(dllimport)
   #endif
 #elif defined(__GNUC__)
-  #define __LIBMEMALLOC_API __attribute__((visibility("default")))
+  #define __LIBMEMALLOC_API \
+    __attribute__((visibility("default")))
 #else
   #define __LIBMEMALLOC_API
 #endif
@@ -163,11 +168,32 @@
  * ========================================================================== */
 #ifndef __PACKED
     #if defined(__GNUC__)
-        #define __PACKED __attribute__((packed, aligned(ARCH_ALIGNMENT)))
+        #define __PACKED \
+            __attribute__((packed, aligned(ARCH_ALIGNMENT)))
     #else
         #define __PACKED
     #endif
 #endif
+
+/** ============================================================================
+ *  @def        __PACKED
+ *  @brief      Defines packed structure attribute with alignment.
+ *
+ *  @details    When using GCC or Clang, expands to 
+ *              __attribute__((packed, aligned(ARCH_ALIGNMENT))) to ensure
+ *              minimal padding in structures while enforcing the architecture-
+ *              specific alignment. On compilers that do not support this
+ *              attribute, expands to nothing.
+ * ========================================================================== */
+#ifndef __PACKED
+    #if defined(__GNUC__)
+        #define __PACKED \
+            __attribute__((packed, aligned(ARCH_ALIGNMENT)))
+    #else
+        #define __PACKED
+    #endif
+#endif
+
 
 /** ============================================================================
  *  @def        PTR_ERR
@@ -277,7 +303,6 @@ typedef struct __PACKED MmapBlock
     struct MmapBlock *next;/**< Next region in allocator's mmap list. */
 } mmap_t;
 
-
 /** ============================================================================
  *  @struct     MemoryAllocator
  *  @typedef    mem_allocator_t
@@ -287,11 +312,13 @@ typedef struct __PACKED MmapBlock
  *              lists for memory blocks, garbage collection, and
  *              allocation strategies.
  * ========================================================================== */
-typedef struct __PACKED MemoryAllocator
+typedef struct MemoryAllocator
 {
-    uint8_t         *heap;              /**< Start address of the heap */
+    uint8_t         *heap_start;        /**< Start address of the heap */
     uint8_t         *heap_end;          /**< Current end of the heap */
-    size_t          heap_size;          /**< Total size of the heap */
+
+    uintptr_t       *stack_top;          /**< Pointer to the current top of the stack */
+    uintptr_t       *stack_bottom;       /**< Pointer to the bottom of the stack */
 
     block_header_t  *last_allocated;    /**< Last allocated block (for NEXT_FIT strategy) */
 
@@ -301,7 +328,15 @@ typedef struct __PACKED MemoryAllocator
     block_header_t  **free_lists;       /**< Array of pointers to segregated free lists */
     size_t          num_size_classes;   /**< Number of size classes */
 
-    mmap_t          *mmap_list;         /**< Tracking mmap allocations */
+    atomic_bool     gc_running;        /* whether GC is active */
+
+    uint32_t        gc_interval_ms;    /* GC cycle interval in ms */
+    uint16_t        gc_thread_started; /* flag: thread created */
+
+    pthread_mutex_t gc_lock;           /* lock for condition */
+    pthread_cond_t  gc_cond;           /* cond var to start/pause GC */
+    pthread_t       gc_thread;         /* GC thread handle */
+    mmap_t          *mmap_list;        /**< Tracking mmap allocations */
 } mem_allocator_t;
 
 /** ============================================================================
@@ -495,6 +530,31 @@ __LIBMEMALLOC_API void* MEM_allocRealloc(
  * ========================================================================== */
 __LIBMEMALLOC_API int MEM_allocFree(mem_allocator_t *allocator, void *ptr,
                                     const char *var);
+
+/** ============================================================================
+ *          G A R B A G E  C O L L E C T O R  F U N C T I O N S                 
+ * ========================================================================== */
+
+/** ============================================================================
+ *  @fn         MEM_enableGc
+ *  @brief      Initialize or signal the garbage collector thread to run
+ *
+ *  @param[in]  allocator   Pointer to the memory allocator context
+ *
+ *  @return     EXIT_SUCCESS (0) on success, or negative error code on failure
+ * ========================================================================== */
+__LIBMEMALLOC_API int MEM_enableGc(mem_allocator_t *allocator);
+
+/** ============================================================================
+ *  @fn         MEM_disableGc
+ *  @brief      Stop the garbage collector thread and perform a final collection
+ *              cycle
+ *
+ *  @param[in]  allocator   Pointer to the memory allocator context
+ *
+ *  @return     EXIT_SUCCESS (0) on success, or negative error code on failure
+ * ========================================================================== */
+__LIBMEMALLOC_API int MEM_disableGc(mem_allocator_t *allocator);
 
 /*< C++ Compatibility >*/
 #ifdef __cplusplus

@@ -93,7 +93,9 @@ elseif(CMAKE_BUILD_TYPE STREQUAL "Release")
         # --- NDEBUG & Optimization ---
         -DNDEBUG
         -Ofast
-        -Os
+
+        # With Os flag, GC tests passing through mmap trail fail to compile
+        #-Os
 
         # --- Link Time Optimization ---
         -flto

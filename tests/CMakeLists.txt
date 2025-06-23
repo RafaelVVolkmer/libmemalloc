@@ -3,7 +3,6 @@
 # -------------------------------------------------------------------------
 file(GLOB TEST_SRCS "${CMAKE_SOURCE_DIR}/tests/*.c")
 
-find_program(VALGRIND_EXECUTABLE valgrind)
 
 # -------------------------------------------------------------------------
 # 2. For each create an executable in bin/tests, link it and register CTest
@@ -21,7 +20,7 @@ foreach(test_src IN LISTS TEST_SRCS)
     target_link_libraries(${test_name}
         PRIVATE libmemalloc_static
     )
-    
+
     set(valgrind_log "${CMAKE_BINARY_DIR}/bin/tests/${test_name}.valgrind.log")
 
     if(VALGRIND_EXECUTABLE)
