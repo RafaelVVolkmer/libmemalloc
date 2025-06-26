@@ -23,20 +23,14 @@ RUN rm -rf /var/cache/apk/*
 RUN addgroup -S appgroup && adduser -S appuser -G appgroup
 
 WORKDIR /app
-
-COPY --chown=appuser:appgroup build.sh CMakeLists.txt ./
-COPY --chown=appuser:appgroup src/ src/
-COPY --chown=appuser:appgroup inc/ inc/
-COPY --chown=appuser:appgroup tests/ tests/
-
-USER appuser
-
-RUN chown -R appuser:appgroup /app
+COPY build.sh CMakeLists.txt ./
+COPY src/ src/
+COPY inc/ inc/
+COPY tests/ tests/
 
 RUN chmod +x build.sh
 
 ARG BUILD_MODE=Release
-
 RUN ./build.sh $BUILD_MODE
 
 # ------------------------------------------------------------
