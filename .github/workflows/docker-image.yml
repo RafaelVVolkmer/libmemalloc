@@ -9,6 +9,11 @@ on:
 jobs:
   build-docker:
     runs-on: ubuntu-latest
+
+    # Enable Docker BuildKit
+    env:
+      DOCKER_BUILDKIT: 1
+
     strategy:
       matrix:
         include:
