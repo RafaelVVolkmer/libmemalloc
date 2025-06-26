@@ -228,33 +228,37 @@ function_output:
  *  @def        LOG_ERROR(fmt, ...)
  *  @brief      Logs an error message (red).
  * ========================================================================== */
-#define LOG_ERROR(fmt, ...)   LOG_output(LOG_LEVEL_ERROR, COLOR_RED,        \
-                                        PREFIX_ERROR, __FILE__, __func__,   \
-                                        __LINE__, fmt, ##__VA_ARGS__)       \
+#define LOG_ERROR(fmt, ...)                         \
+    LOG_output(LOG_LEVEL_ERROR, COLOR_RED,          \
+                PREFIX_ERROR, __FILE__, __func__,   \
+                __LINE__, fmt, ##__VA_ARGS__)       \
 
 /** ============================================================================
  *  @def        LOG_WARNING(fmt, ...)
  *  @brief      Logs a warning message (yellow).
  * ========================================================================== */
-#define LOG_WARNING(fmt, ...) LOG_output(LOG_LEVEL_WARNING,COLOR_YELLOW,    \
-                                        PREFIX_WARNING, __FILE__, __func__, \
-                                        __LINE__, fmt, ##__VA_ARGS__)       \
+#define LOG_WARNING(fmt, ...)                       \
+    LOG_output(LOG_LEVEL_WARNING,COLOR_YELLOW,      \
+                PREFIX_WARNING, __FILE__, __func__, \
+                __LINE__, fmt, ##__VA_ARGS__)       \
 
 /** ============================================================================
  *  @def        LOG_INFO(fmt, ...)
  *  @brief      Logs an info message (blue).
  * ========================================================================== */
-#define LOG_INFO(fmt, ...)    LOG_output(LOG_LEVEL_INFO, COLOR_BLUE,        \
-                                        PREFIX_INFO, __FILE__, __func__,    \
-                                        __LINE__, fmt, ##__VA_ARGS__)       \
+#define LOG_INFO(fmt, ...)                          \
+    LOG_output(LOG_LEVEL_INFO, COLOR_BLUE,          \
+                PREFIX_INFO, __FILE__, __func__,    \
+                __LINE__, fmt, ##__VA_ARGS__)       \
 
 /** ============================================================================
  *  @def        LOG_DEBUG(fmt, ...)
  *  @brief      Logs a debug message (green).
  * ========================================================================== */
-#define LOG_DEBUG(fmt, ...)   LOG_output(LOG_LEVEL_DEBUG, COLOR_GREEN,      \
-                                        PREFIX_DEBUG, __FILE__, __func__,   \
-                                        __LINE__, fmt, ##__VA_ARGS__)       \
+#define LOG_DEBUG(fmt, ...)                         \
+    LOG_output(LOG_LEVEL_DEBUG, COLOR_GREEN,        \
+                PREFIX_DEBUG, __FILE__, __func__,   \
+                __LINE__, fmt, ##__VA_ARGS__)       \
 
 /* < C++ Compatibility End > */
 #ifdef __cplusplus

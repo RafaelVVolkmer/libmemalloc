@@ -15,7 +15,44 @@ if(NOT CMAKE_BUILD_TYPE)
 endif()
 
 # ----------------------------------------------------------------------------
-# 2. Output Directories for Binaries
+# 2. Checking dependencies
+# ----------------------------------------------------------------------------
+set(MIN_GCC_VERSION   "13.1.0")
+set(MIN_CLANG_VERSION "11.0")
+set(MIN_MSVC_VERSION  "19.20")
+
+if (CMAKE_C_COMPILER_ID STREQUAL "GNU")
+  if (CMAKE_C_COMPILER_VERSION VERSION_LESS ${MIN_GCC_VERSION})
+    message(FATAL_ERROR
+      "[ERROR]: GCC ${MIN_GCC_VERSION} or newer is required.\n"
+      "Detected version: ${CMAKE_C_COMPILER_VERSION}."
+    )
+  endif()
+
+elseif (CMAKE_C_COMPILER_ID STREQUAL "Clang")
+  if (CMAKE_C_COMPILER_VERSION VERSION_LESS ${MIN_CLANG_VERSION})
+    message(FATAL_ERROR
+      "[ERROR]: Clang ${MIN_CLANG_VERSION} or newer is required.\n"
+      "Detected version: ${CMAKE_C_COMPILER_VERSION}."
+    )
+  endif()
+
+elseif (CMAKE_C_COMPILER_ID STREQUAL "MSVC")
+  if (CMAKE_C_COMPILER_VERSION VERSION_LESS ${MIN_MSVC_VERSION})
+    message(FATAL_ERROR
+      "[ERROR]: MSVC ${MIN_MSVC_VERSION} or newer is required.\n"
+      "Detected version: ${CMAKE_C_COMPILER_VERSION}."
+    )
+  endif()
+
+else()
+  message(WARNING "[WARNING]: Unrecognized compiler (${CMAKE_C_COMPILER_ID})")
+endif()
+
+find_program(VALGRIND_EXECUTABLE NAMES valgrind)
+
+# ----------------------------------------------------------------------------
+# 3. Output Directories for Binaries
 #    - Archive (static libraries)
 #    - Library (shared libraries)
 #    - Runtime (executables)
@@ -29,7 +66,7 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${OUTPUT_BIN_DIR}")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${OUTPUT_BIN_DIR}")
 
 # ----------------------------------------------------------------------------
-# 3. Build-Type Specific Compiler Flags
+# 4. Build-Type Specific Compiler Flags
 # ----------------------------------------------------------------------------
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
     add_compile_options(
@@ -75,27 +112,26 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
         -aux-info filename
     )
 
-    set(SANITIZE_FLAGS
-        -fsanitize=address
-        -fsanitize=undefined
-        -fsanitize=leak
-    )
+    if (!VALGRIND_EXECUTABLE)
+        set(SANITIZE_FLAGS
+            -fsanitize=address
+            -fsanitize=undefined
+            -fsanitize=leak
+        )
 
-    # disabling sanitize as we are using valgrind in testing
-    # add_compile_options(${SANITIZE_FLAGS})
-    # add_link_options(${SANITIZE_FLAGS})
+        add_compile_options(${SANITIZE_FLAGS})
+        add_link_options(${SANITIZE_FLAGS})
+    endif()
 
     set(CMAKE_EXE_LINKER_FLAGS    "${CMAKE_EXE_LINKER_FLAGS} -Wl,--gc-sections -flto")
     set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,--gc-sections -flto")
-
+  
 elseif(CMAKE_BUILD_TYPE STREQUAL "Release")
     add_compile_options(
         # --- NDEBUG & Optimization ---
         -DNDEBUG
         -Ofast
-
-        # With Os flag, GC tests passing through mmap trail fail to compile
-        #-Os
+        -Os
 
         # --- Link Time Optimization ---
         -flto
@@ -141,7 +177,7 @@ elseif(CMAKE_BUILD_TYPE STREQUAL "Release")
 endif()
 
 # ----------------------------------------------------------------------------
-# 4. Global Warning and Strictness Options
+# 5. Global Warning and Strictness Options
 #    (Applied to all build types)
 # ----------------------------------------------------------------------------
 add_compile_options(
@@ -271,7 +307,7 @@ add_compile_options(
 
 
 # ----------------------------------------------------------------------------
-# 5. Include Subdirectories and Enable Testing
+# 6. Include Subdirectories and Enable Testing
 # ----------------------------------------------------------------------------
 add_subdirectory(src)
 
@@ -279,7 +315,22 @@ enable_testing()
 add_subdirectory(tests)
 
 # ----------------------------------------------------------------------------
-# 6. Informational Output
+# 7. Informational Output
 # ----------------------------------------------------------------------------
-message(STATUS "Build type:            ${CMAKE_BUILD_TYPE}")
-message(STATUS "Binary in:            ${OUTPUT_BIN_DIR}")
+get_filename_component(COMPILER_NAME ${CMAKE_C_COMPILER} NAME)
+
+message(STATUS " ")
+message(STATUS "=====================================================================")
+message(STATUS "Compiler        ${CMAKE_C_COMPILER_ID} ${COMPILER_NAME} V${CMAKE_C_COMPILER_VERSION}")
+message(STATUS "Build type:     ${CMAKE_BUILD_TYPE}")
+message(STATUS "Binary in:      ${OUTPUT_BIN_DIR}")
+message(STATUS "=====================================================================")
+if (VALGRIND_EXECUTABLE)
+    message(STATUS "Valgrind:       ${VALGRIND_EXECUTABLE}")
+else()
+    message(STATUS "Valgrind not found. Fallback without memcheck")
+endif()
+message(STATUS "=====================================================================")
+message(STATUS " ")
+
+

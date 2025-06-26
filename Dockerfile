@@ -2,7 +2,7 @@
 ARG TARGETPLATFORM
 
 LABEL maintainer="Rafael Volkmer <rafael.v.volkmer@gmail.com>"
-LABEL version="1.0"
+LABEL version="v4.0.00"
 LABEL description="Builder to libmemalloc"
 
 # ------------------------------------------------------------
@@ -10,11 +10,16 @@ LABEL description="Builder to libmemalloc"
 # ------------------------------------------------------------
 FROM --platform=${TARGETPLATFORM} alpine:3.18 AS builder
 
-RUN apk update && apk add --no-cache \
-        bash \
-        build-base \
-        cmake \
-        valgrind
+RUN apk update && \
+    apk add --no-cache \
+      bash \
+      cmake \
+      valgrind \
+      make \
+      musl-dev \
+      gcc=13.3.0-r0 \
+      g++=13.3.0-r0 && \
+    rm -rf /var/cache/apk/*
 
 RUN rm -rf /var/cache/apk/*
 

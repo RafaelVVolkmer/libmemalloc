@@ -21,8 +21,8 @@
  *              context is initialized at the start and all memory is
  *              freed before program termination.
  *
- *  @version    v1.0.00.00
- *  @date       17.06.2025
+ *  @version    v4.0.00
+ *  @date       26.06.2025
  *  @author     Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
  * ========================================================================== */
 

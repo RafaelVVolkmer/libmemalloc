@@ -23,8 +23,8 @@
  *              deallocations use MEM_allocFree. Runtime assertions are
  *              checked via the CHECK() macro.
  *
- *  @version    v1.0.00.00
- *  @date       17.06.2025
+ *  @version    v4.0.00
+ *  @date       26.06.2025
  *  @author     Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
  * ========================================================================== */
 

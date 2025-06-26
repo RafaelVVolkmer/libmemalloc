@@ -21,8 +21,8 @@
  *              All tests use CHECK() macro for runtime assertions,
  *              and return EXIT_SUCCESS or EXIT_ERRROR.
  *
- *  @version    v1.0.00.00
- *  @date       17.06.2025
+ *  @version    v4.0.00
+ *  @date       26.06.2025
  *  @author     Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
  * ========================================================================== */
  
@@ -275,7 +275,7 @@ static int TEST_testCalloc(void)
 
     CHECK(ret == EXIT_SUCCESS);
 
-    arr = MEM_allocCalloc(&allocator, ARR_LEN, sizeof(int), "arr", FIRST_FIT);
+    arr = MEM_allocCalloc(&allocator, (ARR_LEN * sizeof(int)), "arr", FIRST_FIT);
     CHECK(arr != NULL);
 
     for (iterator = 0u; iterator < ARR_LEN; iterator++)

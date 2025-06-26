@@ -9,11 +9,10 @@
  *  @details    Implements memory allocator with advanced features:
  *              - Architecture-specific stack allocation (alloca)
  *              - Garbage collection (mark & sweep)
- *              - Block validation with magic numbers/canaries
  *              - Multiple allocation strategies (First/Best/Next Fit)
  *
- *  @version    v3.0.00.00
- *  @date       16.06.2025
+ *  @version    v4.0.00
+ *  @date       26.06.2025
  *  @author     Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
  * ========================================================================== */
 
@@ -30,10 +29,10 @@
  * ========================================================================== */
 
 /*< Dependencies >*/
-#include <stdint.h>
-#include <string.h>
 #include <pthread.h>
 #include <stdatomic.h>
+#include <stdint.h>
+#include <string.h>
 
 /** ============================================================================
  *              P U B L I C  D E F I N E S  &  M A C R O S                      
@@ -137,26 +136,6 @@
 #endif
 
 /** ============================================================================
- *  @def        LIBMEMALLOC_CALLOC
- *  @brief      Annotates calloc-like functions that allocate
- *              and zero-initialize memory.
- *
- *  @details    When supported by the compiler (GCC/Clang),
- *              expands to __attribute__((malloc, alloc_size(2,3),
- *              warn_unused_result)) which tells the compiler
- *              the function behaves like calloc, that the 2st
- *              and 3nd parameters specify count and element size,
- *              and that the return value should not be ignored.
- *              Otherwise, expands to nothing.
- * ========================================================================== */
-#if defined(__GNUC__)
-  #define __LIBMEMALLOC_CALLOC \
-    __attribute__((malloc, alloc_size(2,3), warn_unused_result))
-#else
-  #define __LIBMEMALLOC_CALLOC
-#endif
-
-/** ============================================================================
  *  @def        __PACKED
  *  @brief      Defines packed structure attribute with alignment.
  *
@@ -217,6 +196,17 @@
  *              nearest multiple of the current architecture's alignment.
  * ========================================================================== */
 #define ALIGN(x)        (((x) + (ARCH_ALIGNMENT - 1U)) & ~(ARCH_ALIGNMENT - 1U))
+
+/** ============================================================================
+ *  @def        DEFAULT_GC_INTERVAL_MS
+ *  @brief      Default interval in milliseconds between GC cycles.
+ *
+ *  @details    Defines the time (in milliseconds) the garbage collector
+ *              thread sleeps between each mark-and-sweep cycle. Adjusting
+ *              this value impacts how frequently memory is reclaimed versus
+ *              the CPU overhead of running the GC.
+ * ========================================================================== */
+#define GC_INTERVAL_MS  (uint16_t)(100U)
 
 /** ============================================================================
  *              P U B L I C  S T R U C T U R E S  &  T Y P E S                  
@@ -298,10 +288,38 @@ typedef struct __PACKED MemArena
  * ========================================================================== */
 typedef struct __PACKED MmapBlock
 {
-    void           *addr;  /**< Base address returned by mmap(). */
-    size_t          size;   /**< Total mapped region size (rounded to pages). */
-    struct MmapBlock *next;/**< Next region in allocator's mmap list. */
+    void                *addr;  /**< Base address returned by mmap(). */
+    size_t              size;   /**< Total mapped region size (rounded to pages). */
+    struct MmapBlock    *next;  /**< Next region in allocator's mmap list. */
 } mmap_t;
+
+/** ============================================================================
+ *  @struct     GcThread
+ *  @typedef    gc_thread_t
+ *  @brief      Orchestrates the background mark-and-sweep garbage collector.
+ *
+ *  @details    The structure encapsulates all state and
+ *              synchronization needed to run the garbage collector in its own 
+ *              thread. Once started, the GC thread will periodically wake up,
+ *              scan the heap and any mapped regions for unreachable objects,
+ *              reclaim them, and then sleep again. The structure holds the
+ *              timing parameters, the thread handle, and the primitives used
+ *              to signal the collector to start or stop its work.
+ * ========================================================================== */
+typedef struct __PACKED GcThread
+{
+    pthread_t       gc_thread;         /**< Handle to the GC pthread */
+    pthread_t       main_thread;
+
+    atomic_bool     gc_running;        /**< Whether the GC thread is active and should run */
+    atomic_bool     gc_exit;           /**< Signal for the GC thread to exit */
+
+    uint32_t        gc_interval_ms;    /**< Interval between GC cycles, in milliseconds */
+    uint16_t        gc_thread_started; /**< Flag indicating the GC thread has been created */
+
+    pthread_cond_t  gc_cond;           /**< Condition variable to signal GC thread */
+    pthread_mutex_t gc_lock;           /**< Mutex for synchronizing GC start/stop */
+} gc_thread_t;
 
 /** ============================================================================
  *  @struct     MemoryAllocator
@@ -312,31 +330,25 @@ typedef struct __PACKED MmapBlock
  *              lists for memory blocks, garbage collection, and
  *              allocation strategies.
  * ========================================================================== */
-typedef struct MemoryAllocator
+typedef struct __PACKED MemoryAllocator
 {
-    uint8_t         *heap_start;        /**< Start address of the heap */
+    uint8_t         *heap_start;        /**< Base of the user heap region */
     uint8_t         *heap_end;          /**< Current end of the heap */
+    size_t          metadata_size;      /**< Bytes reserved for bins and arenas */
 
-    uintptr_t       *stack_top;          /**< Pointer to the current top of the stack */
-    uintptr_t       *stack_bottom;       /**< Pointer to the bottom of the stack */
+    uintptr_t       *stack_top;         /**< Upper bound of application stack */
+    uintptr_t       *stack_bottom;      /**< Lower bound of application stack */
 
-    block_header_t  *last_allocated;    /**< Last allocated block (for NEXT_FIT strategy) */
+    block_header_t  *last_allocated;    /**< Last block returned (NEXT_FIT) */
 
-    size_t          num_arenas;         /**< quantas arenas existem */
-    mem_arena_t     *arenas;            /**< Ponteiro para array de arenas */
+    size_t          num_size_classes;   /**< Total size classes available */
+    size_t          num_arenas;         /**< Number of arena partitions */
+    mem_arena_t     *arenas;            /**< Array of arena metadata */
 
-    block_header_t  **free_lists;       /**< Array of pointers to segregated free lists */
-    size_t          num_size_classes;   /**< Number of size classes */
+    mmap_t          *mmap_list;         /**< Linked list of mmap’d regions */
+    block_header_t  **free_lists;       /**< Segregated free lists by size class */
 
-    atomic_bool     gc_running;        /* whether GC is active */
-
-    uint32_t        gc_interval_ms;    /* GC cycle interval in ms */
-    uint16_t        gc_thread_started; /* flag: thread created */
-
-    pthread_mutex_t gc_lock;           /* lock for condition */
-    pthread_cond_t  gc_cond;           /* cond var to start/pause GC */
-    pthread_t       gc_thread;         /* GC thread handle */
-    mmap_t          *mmap_list;        /**< Tracking mmap allocations */
+    gc_thread_t     gc_thread;          /**< Garbage collector controller */
 } mem_allocator_t;
 
 /** ============================================================================
@@ -394,19 +406,6 @@ __LIBMEMALLOC_API void *MEM_memcpy(void *const dest, const void *src,
 __LIBMEMALLOC_API int MEM_allocatorInit(mem_allocator_t *const allocator);
 
 /** ============================================================================
- *  @fn         MEM_allocatorPrintAll
- *  @brief      Prints detailed heap status information
- *
- *  @param[in]  allocator   Memory allocator context
- *
- *  @return     Integer status code
- *
- *  @retval     SUCCESS:    Heap information printed
- *  @retval     -EINVAL:    Invalid allocator parameter
- * ========================================================================== */
-__LIBMEMALLOC_API int MEM_allocatorPrintAll(mem_allocator_t *const allocator);
-
-/** ============================================================================
  *              P U B L I C  F U N C T I O N  C A L L S  A P I                  
  * ========================================================================== */
 
@@ -422,9 +421,10 @@ __LIBMEMALLOC_API int MEM_allocatorPrintAll(mem_allocator_t *const allocator);
  *
  *  @note       Automatically passes file and line information.
  * ========================================================================== */
-__LIBMEMALLOC_API void* MEM_allocMallocFirstFit(
-    mem_allocator_t *allocator,
-    size_t size, const char *var) __LIBMEMALLOC_MALLOC;
+__LIBMEMALLOC_API void *MEM_allocMallocFirstFit(
+    mem_allocator_t *const allocator,
+    const size_t size,
+    const char *const var) __LIBMEMALLOC_MALLOC;
 
 /** ============================================================================
  *  @fn         MEM_allocMallocBestFit
@@ -438,9 +438,10 @@ __LIBMEMALLOC_API void* MEM_allocMallocFirstFit(
  *
  *  @note       Automatically passes file and line information.
  * ========================================================================== */
-__LIBMEMALLOC_API void* MEM_allocMallocBestFit(
-    mem_allocator_t *allocator,
-    size_t size, const char *var) __LIBMEMALLOC_MALLOC;
+__LIBMEMALLOC_API void *MEM_allocMallocBestFit(
+    mem_allocator_t *const allocator,
+    const size_t size,
+    const char *const var) __LIBMEMALLOC_MALLOC;
 
 /** ============================================================================
  *  @fn         MEM_allocMallocNextFit
@@ -454,9 +455,10 @@ __LIBMEMALLOC_API void* MEM_allocMallocBestFit(
  *
  *  @note       Automatically passes file and line information.
  * ========================================================================== */
-__LIBMEMALLOC_API void* MEM_allocMallocNextFit(
-    mem_allocator_t *allocator,
-    size_t size, const char *var) __LIBMEMALLOC_MALLOC;
+__LIBMEMALLOC_API void *MEM_allocMallocNextFit(
+    mem_allocator_t *const allocator,
+   const size_t size,
+   const char *const var) __LIBMEMALLOC_MALLOC;
 
 /** ============================================================================
  *  @fn         MEM_allocMalloc
@@ -471,17 +473,17 @@ __LIBMEMALLOC_API void* MEM_allocMallocNextFit(
  *
  *  @note       Automatically passes file and line information.
  * ========================================================================== */
-__LIBMEMALLOC_API void* MEM_allocMalloc(
-    mem_allocator_t *allocator,
-    size_t size, const char *var,
-    allocation_strategy_t strategy) __LIBMEMALLOC_MALLOC;
+__LIBMEMALLOC_API void *MEM_allocMalloc(
+    mem_allocator_t *const allocator,
+    const size_t size,
+    const char *const var,
+    const allocation_strategy_t strategy) __LIBMEMALLOC_MALLOC;
 
 /** ============================================================================
  *  @fn         MEM_allocCalloc
  *  @brief      Allocates and zero-initializes memory using a specified strategy.
  *
  *  @param[in]  allocator   Memory allocator context.
- *  @param[in]  num         Number of elements.
  *  @param[in]  size        Size of each element.
  *  @param[in]  var         Variable name (for debugging).
  *  @param[in]  strategy    Allocation strategy to use.
@@ -491,10 +493,10 @@ __LIBMEMALLOC_API void* MEM_allocMalloc(
  *  @note       Automatically passes file and line information.
  * ========================================================================== */
 __LIBMEMALLOC_API void* MEM_allocCalloc(
-    mem_allocator_t *allocator,
-    size_t num, size_t size,
-    const char *var,
-    allocation_strategy_t strategy) __LIBMEMALLOC_CALLOC;
+    mem_allocator_t *const allocator,
+    const size_t size,
+    const char *const var,
+    const allocation_strategy_t strategy) __LIBMEMALLOC_MALLOC;
 
 /** ============================================================================
  *  @fn         MEM_allocRealloc
@@ -511,10 +513,11 @@ __LIBMEMALLOC_API void* MEM_allocCalloc(
  *  @note       Automatically passes file and line information.
  * ========================================================================== */
 __LIBMEMALLOC_API void* MEM_allocRealloc(
-    mem_allocator_t *allocator,
-    void *ptr, size_t new_size,
-    const char *var,
-    allocation_strategy_t strategy) __LIBMEMALLOC_REALLOC;
+    mem_allocator_t *const allocator,
+    void *const ptr,
+    const size_t new_size,
+    const char *const var,
+    const allocation_strategy_t strategy) __LIBMEMALLOC_REALLOC;
 
 /** ============================================================================
  *  @fn         MEM_allocFree
@@ -528,8 +531,9 @@ __LIBMEMALLOC_API void* MEM_allocRealloc(
  *
  *  @note       Automatically passes file and line information.
  * ========================================================================== */
-__LIBMEMALLOC_API int MEM_allocFree(mem_allocator_t *allocator, void *ptr,
-                                    const char *var);
+__LIBMEMALLOC_API int MEM_allocFree(mem_allocator_t *const allocator,
+                                    void *const ptr,
+                                    const char *const var);
 
 /** ============================================================================
  *          G A R B A G E  C O L L E C T O R  F U N C T I O N S                 
@@ -543,7 +547,7 @@ __LIBMEMALLOC_API int MEM_allocFree(mem_allocator_t *allocator, void *ptr,
  *
  *  @return     EXIT_SUCCESS (0) on success, or negative error code on failure
  * ========================================================================== */
-__LIBMEMALLOC_API int MEM_enableGc(mem_allocator_t *allocator);
+__LIBMEMALLOC_API int MEM_enableGc(mem_allocator_t *const allocator);
 
 /** ============================================================================
  *  @fn         MEM_disableGc
@@ -554,7 +558,7 @@ __LIBMEMALLOC_API int MEM_enableGc(mem_allocator_t *allocator);
  *
  *  @return     EXIT_SUCCESS (0) on success, or negative error code on failure
  * ========================================================================== */
-__LIBMEMALLOC_API int MEM_disableGc(mem_allocator_t *allocator);
+__LIBMEMALLOC_API int MEM_disableGc(mem_allocator_t *const allocator);
 
 /*< C++ Compatibility >*/
 #ifdef __cplusplus

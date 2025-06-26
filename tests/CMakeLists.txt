@@ -3,9 +3,8 @@
 # -------------------------------------------------------------------------
 file(GLOB TEST_SRCS "${CMAKE_SOURCE_DIR}/tests/*.c")
 
-
 # -------------------------------------------------------------------------
-# 2. For each create an executable in bin/tests, link it and register CTest
+# 3. For each create an executable in bin/tests, link it and register CTest
 # -------------------------------------------------------------------------
 foreach(test_src IN LISTS TEST_SRCS)
     get_filename_component(test_name ${test_src} NAME_WE)
@@ -20,10 +19,16 @@ foreach(test_src IN LISTS TEST_SRCS)
     target_link_libraries(${test_name}
         PRIVATE libmemalloc_static
     )
+        
+    target_compile_definitions(${test_name}
+        PRIVATE LOG_LEVEL=LOG_LEVEL_DEBUG
+    )
 
     set(valgrind_log "${CMAKE_BINARY_DIR}/bin/tests/${test_name}.valgrind.log")
 
-    if(VALGRIND_EXECUTABLE)
+    # Valgrind currently breaks garbage collector builds due to threads
+    # accessing the stack of one thread. I'm working on fixing this.
+    if (VALGRIND_EXECUTABLE AND NOT("${test_name}" STREQUAL "test_garbage_collector"))
         add_test(NAME ${test_name}
             COMMAND ${VALGRIND_EXECUTABLE}
                     --leak-check=full

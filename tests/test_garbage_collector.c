@@ -21,8 +21,8 @@
  *              All tests use CHECK() macro for runtime assertions,
  *              and return EXIT_SUCCESS or EXIT_ERRROR.
  *
- *  @version    v1.0.00.00
- *  @date       23.06.2025
+ *  @version    v4.0.00
+ *  @date       26.06.2025
  *  @author     Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
  * ========================================================================== */
 
@@ -84,22 +84,22 @@
 #define NR_OBJS          (uint8_t)(16U)
 
 /** ============================================================================
- *  @def        GC_INTERVAL_MS
- *  @brief      Interval between garbage-collector cycles.
+ *  @def        ADDR_STR_LEN
+ *  @brief      Length for stringified pointer representations.
  *
- *  @details    Defined as a uint8_t value of 100 milliseconds.
- *              This controls how often the GC thread wakes to perform mark-and-sweep.
+ *  @details    Defined as a uint32_t value of 32, to accommodate
+ *              the hexadecimal string of a pointer (including “0x”).
  * ========================================================================== */
-#define GC_INTERVAL_MS   (uint8_t)(100U)
+#define ADDR_STR_LEN    (uint32_t)(32U)
 
 /** ============================================================================
- *  @def        GC_INTERVAL_US
- *  @brief      Garbage-collector interval in microseconds.
+ *  @def        HALF_OBJS
+ *  @brief      Half of the total number of test objects.
  *
- *  @details    Converts the GC interval from milliseconds to microseconds
- *              for use with usleep().
+ *  @details    Defined as NR_OBJS divided by 2, to be used when
+ *              only every other allocation is recycled (e.g., in GC tests).
  * ========================================================================== */
-#define GC_INTERVAL_US   (uint32_t)(GC_INTERVAL_MS * 1000U)
+#define HALF_OBJS       (uint8_t)(NR_OBJS / 2U)
 
 /** ============================================================================
  *  @def        GC_MARGIN_US
@@ -117,11 +117,7 @@
  *  @details    Sum of GC interval (in microseconds) and an extra margin,
  *              used in usleep() to wait for one full GC cycle.
  * ========================================================================== */
-#define GC_SLEEP_US      (GC_INTERVAL_US + GC_MARGIN_US)
-
-/** ============================================================================
- *               P R I V A T E  D E F I N E S  &  M A C R O S                   
- * ========================================================================== */
+#define GC_SLEEP_US      (GC_INTERVAL_MS + GC_MARGIN_US)
 
 /** ============================================================================
  *  @def        EXIT_ERRROR
@@ -207,6 +203,7 @@ int main(void)
     CHECK(ret == EXIT_SUCCESS);
 
     LOG_INFO("Garbage Collector test passed.\n");
+
     return ret;
 }
 
@@ -232,20 +229,18 @@ static int TEST_gcMmapAndSbrkPaths(void)
 
     mem_allocator_t allocator;
 
+    void *ptr = NULL;
+
     void *volatile small_objs[NR_OBJS];
     void *volatile large_objs[NR_OBJS];
 
-    void *reused_small[(NR_OBJS / 2u)];
-    void *reused_large[(NR_OBJS / 2u)];
+    char old_large_str[HALF_OBJS][ADDR_STR_LEN];
+    char reused_large_str[HALF_OBJS][ADDR_STR_LEN];
 
     size_t iterator = 0u;
-    size_t iterator_aux = 0u;
-    
-    ret = MEM_allocatorInit(&allocator);
-    CHECK(ret == EXIT_SUCCESS);
+    size_t iterator_ptr = 0u;
 
-    allocator.gc_interval_ms = GC_INTERVAL_MS;
-    ret = MEM_enableGc(&allocator);
+    ret = MEM_allocatorInit(&allocator);
     CHECK(ret == EXIT_SUCCESS);
 
     for (iterator = 0u; iterator < NR_OBJS; iterator++)
@@ -255,10 +250,7 @@ static int TEST_gcMmapAndSbrkPaths(void)
                                                         "small_obj");
         CHECK(small_objs[iterator] != NULL);
         MEM_memset(small_objs[iterator], FIRST_FILL, SMALL_ALLOC_SIZE);
-    }
 
-    for (iterator = 0u; iterator < NR_OBJS; iterator++)
-    {
         large_objs[iterator] = MEM_allocMallocFirstFit(&allocator,
                                                         LARGE_ALLOC_SIZE,
                                                         "large_obj");
@@ -266,48 +258,56 @@ static int TEST_gcMmapAndSbrkPaths(void)
         MEM_memset(large_objs[iterator], SECOND_FILL, LARGE_ALLOC_SIZE);
     }
 
-    for (iterator = 0u; iterator < NR_OBJS; iterator += 2u)
+    for (iterator = 0u, iterator_ptr = 0u;
+        iterator < NR_OBJS;
+        iterator += 2u, iterator_ptr++)
     {
         small_objs[iterator] = NULL;
+
+        snprintf(old_large_str[iterator_ptr],
+            sizeof(old_large_str[iterator_ptr]), "%p", large_objs[iterator]);
         large_objs[iterator] = NULL;
     }
 
+    ret = MEM_enableGc(&allocator);
+    CHECK(ret == EXIT_SUCCESS);
+
     usleep(GC_SLEEP_US);
-
-    for (iterator_aux = 0u, iterator = 0u; 
-        iterator_aux < NR_OBJS; 
-        iterator_aux += 2u, iterator++)
-    {
-        reused_small[iterator] = MEM_allocMallocFirstFit(&allocator,
-                                                            SMALL_ALLOC_SIZE,
-                                                            "reused_small");
-        CHECK(reused_small[iterator] != NULL);
-        MEM_memset(reused_small[iterator], THIRD_FILL, SMALL_ALLOC_SIZE);
-
-        reused_large[iterator] = MEM_allocMallocFirstFit(&allocator,
-                                                            LARGE_ALLOC_SIZE,
-                                                            "reused_large");
-        CHECK(reused_large[iterator] != NULL);
-        MEM_memset(reused_large[iterator], FOURTH_FILL, LARGE_ALLOC_SIZE);
-    }
 
     ret = MEM_disableGc(&allocator);
     CHECK(ret == EXIT_SUCCESS);
 
-    for (iterator = 1u; iterator < NR_OBJS; iterator += 2u)
+    for (iterator = 0u; iterator < HALF_OBJS; iterator++)
     {
-        ret = MEM_allocFree(&allocator, small_objs[iterator], "small_obj");
-        CHECK(ret == EXIT_SUCCESS);
-        ret = MEM_allocFree(&allocator, large_objs[iterator], "large_obj");
-        CHECK(ret == EXIT_SUCCESS);
+        ptr = MEM_allocMallocBestFit(&allocator,
+                                      SMALL_ALLOC_SIZE,
+                                      "reused_small");
+        CHECK(ptr != NULL);
+
+        ptr = MEM_allocMallocBestFit(&allocator,
+                                      LARGE_ALLOC_SIZE,
+                                      "reused_large");
+        CHECK(ptr != NULL);
+        snprintf(reused_large_str[iterator],
+                    sizeof(reused_large_str[iterator]), "%p", ptr);
+        CHECK(strcmp(reused_large_str[iterator],
+                old_large_str[iterator]) == EXIT_SUCCESS);
+
+        MEM_memset(ptr, FOURTH_FILL, LARGE_ALLOC_SIZE);
     }
 
-    for (iterator = 0; iterator < (NR_OBJS / 2u); iterator++)
+    for (iterator = 0u; iterator < NR_OBJS; ++iterator)
     {
-        ret = MEM_allocFree(&allocator, reused_small[iterator], "reused_small");
-        CHECK(ret == EXIT_SUCCESS);
-        ret = MEM_allocFree(&allocator, reused_large[iterator], "reused_large");
-        CHECK(ret == EXIT_SUCCESS);
+        if (small_objs[iterator])
+        {
+            MEM_allocFree(&allocator, (void*)small_objs[iterator], "small_obj");
+            small_objs[iterator] = NULL;
+        }
+        if (large_objs[iterator])
+        {
+            MEM_allocFree(&allocator, (void*)large_objs[iterator], "large_obj");
+            large_objs[iterator] = NULL;
+        }
     }
 
     return ret;
