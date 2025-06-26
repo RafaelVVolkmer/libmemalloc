@@ -32,7 +32,7 @@ COPY tests/ tests/
 RUN chmod +x build.sh
 
 ARG BUILD_MODE=Release
-RUN ./build.sh $BUILD_MODE
+RUN sh -lc "ulimit -d unlimited && ./build.sh $BUILD_MODE"
 
 # ------------------------------------------------------------
 # Stage 2: Runtime
