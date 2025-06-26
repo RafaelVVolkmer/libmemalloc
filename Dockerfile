@@ -12,6 +12,7 @@ RUN apk update && \
       bash \
       cmake \
       valgrind \
+      valgrind-dev \
       make \
       musl-dev \
       gcc \
