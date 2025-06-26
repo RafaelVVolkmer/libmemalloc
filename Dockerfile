@@ -46,7 +46,7 @@ LABEL maintainer="Rafael Volkmer <rafael.v.volkmer@gmail.com>" \
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
-      libstdc++ \
+      libstdc++6 \
       ca-certificates && \
     rm -rf /var/lib/apt/lists/*
 
