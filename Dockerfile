@@ -7,17 +7,15 @@ LABEL description="Builder to libmemalloc"
 # ------------------------------------------------------------
 # Stage 1: Builder
 # ------------------------------------------------------------
-RUN apk update && \
-    apk add --no-cache \
-      bash \
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+      build-essential \
+      gcc-13 g++-13 \
       cmake \
-      valgrind \
-      valgrind-dev \
-      make \
-      musl-dev \
-      gcc \
-      g++ && \
-    rm -rf /var/cache/apk/*
+      valgrind && \
+    update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-13 100 && \
+    update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-13 100 && \
+    rm -rf /var/lib/apt/lists/*
 
 RUN rm -rf /var/cache/apk/*
 
