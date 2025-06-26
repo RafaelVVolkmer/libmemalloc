@@ -1,3 +1,5 @@
+FROM alpine:3.18 AS builder
+
 LABEL maintainer="Rafael Volkmer <rafael.v.volkmer@gmail.com>"
 LABEL version="v4.0.00"
 LABEL description="Builder to libmemalloc"
@@ -5,8 +7,6 @@ LABEL description="Builder to libmemalloc"
 # ------------------------------------------------------------
 # Stage 1: Builder
 # ------------------------------------------------------------
-FROM alpine:3.18 AS builder
-
 RUN apk update && \
     apk add --no-cache \
       bash \
