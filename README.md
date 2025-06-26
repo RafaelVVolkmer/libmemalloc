@@ -27,7 +27,7 @@
 
 # - Project Description
 
-**`v3.0.00.00`**
+**`v4.0.00`**
 
 This library is responsible for implementing a customized dynamic memory allocation system, with a choice between different algorithms and usage strategies — First-Fit, Next-Fit, Best-Fit. It implements a memory alignment system by processor architecture, direct access to the heap memory space through the linking process and, above all, a memory detection system, where every allocation is mapped with its name, size, address in the heap, line, file and function where they were allocated and free flag, being able to access this information and print it on the terminal at any time, during program execution time.
 
@@ -61,25 +61,95 @@ This library is responsible for implementing a customized dynamic memory allocat
 ├── LICENSE
 └── README.md
 ```
+The libmemalloc repository is organized to keep everything modular, discoverable and easy to extend:
 
-The libmemalloc repository is structured to separate different aspects of the project clearly:
+* **Public API vs. Implementation**
 
-- **Source Code Organization:**
-The src and inc directories segregate implementation files from interface declarations, promoting modularity and ease of maintenance.
+  All user-facing headers live in `inc/` (e.g. `libmemalloc.h`, `logs.h`), while the actual allocator logic and build rules for that module reside under `src/`. This clear separation makes it trivial to browse the API without wading through implementation details.
 
-- **Build Outputs:**
-The bin directory holds the compiled binaries, keeping them separate from the source code and preventing clutter in the main project directories.
+* **Build Artifacts**
 
-- **Documentation and Assets:**
-The readme directory contains visual assets that support the project's documentation, enhancing the clarity and professionalism of the project presentation.
+  Compiled outputs (both static `.a` and shared `.so` libraries) are deposited in `bin/`, preventing accidental commits of large binaries and keeping the source tree clean.
 
-- **Configuration and Metadata:**
-Files like .gitignore, .gitattributes, LICENSE, and README.md provide essential information for version control, project licensing, and user guidance, ensuring that the project is well-documented and properly managed.
+* **Test Suite**
+  
+  The `test/` directory contains unit- and integration-tests (`tests.c`) that exercise every allocation strategy and GC sweep.  These tests are wired into CTest and invoked automatically by `build.sh` for both Debug and Release modes.
 
-- **Build Automation:**
-The CMake facilitates an automated and consistent build process, which is crucial for collaboration, continuous integration, and efficient development workflows.
+* **Documentation Assets**
+  
+  Visual assets—project logo, diagrams, screenshots—are housed in `readme/`.  This keeps non-code files out of the root and lets you reference them consistently in your Markdown documentation.
+
+* **Top-Level Build Orchestration**
+
+  * **`CMakeLists.txt`** at the project root defines cross-platform build targets, dependency checks, and install rules.
+  * **`build.sh`** wraps CMake and CTest in a simple Bash interface (Release vs. Debug).  A `chmod +x` step ensures it runs everywhere.
+
+* **Containerized Builds**
+
+  * **`Dockerfile`** uses a multi-stage build: an Alpine-based builder with GCC 13.3, CMake and Valgrind, then a minimal runtime image.
+  * **`.dockerignore`** excludes temporary files, build folders and VCS metadata to speed up Docker builds and reduce image size.
+
+* **Version Control Configuration**
+
+  * **`.gitignore`** filters out binaries, build directories, editor backups and OS-specific cruft.
+  * **`.gitattributes`** enforces consistent line endings, export settings and diff behaviors across platforms.
+
+* **License & Contribution Guidance**
+
+  * **`LICENSE`** contains the full text of your chosen open-source license.
+  * **`README.md`** doubles as a quickstart guide, covering build instructions, usage examples, directory layout and contribution pointers (e.g. code style conventions, how to run tests).
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+---
+
+# - Build and Use
+
+### Clone the repository
+
+```bash
+# Clone the project and enter the folder
+git clone https://github.com/RafaelVVolkmer/libmemalloc.git libmemalloc
+cd libmemalloc
+```
+
+### Local build
+
+```bash
+# Make the build script executable
+chmod +x build.sh
+
+# Build in Release mode (default)
+./build.sh release
+
+# Or build in Debug mode
+./build.sh debug
+```
+
+### Build with Docker
+
+```bash
+# Build the Docker image (defaults to Release)
+docker build --platform linux/amd64 -t libmemalloc:latest .
+
+# To build a Debug image:
+docker build \
+  --platform linux/amd64 \
+  --build-arg BUILD_MODE=Debug \
+  -t libmemalloc:debug .
+```
+
+### Run the Docker container
+
+```bash
+# Run the default Release container
+docker run --rm libmemalloc:latest
+
+# Or run the Debug container
+docker run --rm libmemalloc:debug
+```
+
+<p align="right">(<a href="#readme-top">Back to Top</a>)</p>
 
 ---
 
@@ -94,14 +164,6 @@ The CMake facilitates an automated and consistent build process, which is crucia
 | **Support Tools**          | ![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white)                                                                                                                                                    |
 | **Operating System**       | ![Ubuntu](https://img.shields.io/badge/Ubuntu-E95420?style=for-the-badge&logo=ubuntu&logoColor=white)                                                                                                                                                           |
 | **IDE**                    | ![Neovim](https://img.shields.io/badge/NeoVim-%2357A143.svg?&style=for-the-badge&logo=neovim&logoColor=white)                                                                                                                                                     |
-
-<p align="right">(<a href="#readme-top">Back to Top</a>)</p>
-
----
-
-# - Build and Use
-
-WIP
 
 <p align="right">(<a href="#readme-top">Back to Top</a>)</p>
 
