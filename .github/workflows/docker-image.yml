@@ -1,0 +1,33 @@
+name: Docker Image CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build-docker:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - mode: Release
+            tag: latest
+          - mode: Debug
+            tag: debug
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      - name: Build Docker image (${{ matrix.mode }})
+        run: |
+          docker build \
+            --platform linux/amd64 \
+            --file Dockerfile \
+            --build-arg BUILD_MODE=${{ matrix.mode }} \
+            -t libmemalloc:${{ matrix.tag }} .
+
+      - name: List local images
+        run: docker images libmemalloc:${{ matrix.tag }}
