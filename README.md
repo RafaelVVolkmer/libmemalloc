@@ -27,8 +27,6 @@
 
 # - Project Description
 
-**`v4.0.00`**
-
 `libmemalloc` is a lightweight, plug-and-play C library that gives you complete control and visibility over your program’s heap.  In addition to offering multiple allocation strategies and real-time tracking, it includes the following advanced features:
 
 * **Architecture-specific stack allocation**
