@@ -1,6 +1,3 @@
-# syntax=docker/dockerfile:1.4
-ARG TARGETPLATFORM
-
 LABEL maintainer="Rafael Volkmer <rafael.v.volkmer@gmail.com>"
 LABEL version="v4.0.00"
 LABEL description="Builder to libmemalloc"
@@ -8,7 +5,7 @@ LABEL description="Builder to libmemalloc"
 # ------------------------------------------------------------
 # Stage 1: Builder
 # ------------------------------------------------------------
-FROM --platform=${TARGETPLATFORM} alpine:3.18 AS builder
+FROM alpine:3.18 AS builder
 
 RUN apk update && \
     apk add --no-cache \
