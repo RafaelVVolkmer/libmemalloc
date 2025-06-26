@@ -1,4 +1,4 @@
-FROM alpine:edge AS builder
+FROM debian:bookworm-slim AS builder
 
 LABEL maintainer="Rafael Volkmer <rafael.v.volkmer@gmail.com>"
 LABEL version="v4.0.00"
