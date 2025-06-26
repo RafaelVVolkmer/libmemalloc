@@ -41,7 +41,7 @@ cmake -DCMAKE_BUILD_TYPE="$BUILD_TYPE" ..
 
 cmake --build . --config "$BUILD_TYPE"
 
-ctest --output-on-failure --config "$BUILD_TYPE"
+ctest --output-on-failure "$BUILD_TYPE"
 
 echo
 echo "Build and tests '$BUILD_TYPE' with success."
