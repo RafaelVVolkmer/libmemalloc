@@ -16,7 +16,7 @@ RUN apk update && \
       make \
       musl-dev \
       gcc \
-      g++ \
+      g++ && \
     rm -rf /var/cache/apk/*
 
 
