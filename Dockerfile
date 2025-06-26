@@ -31,6 +31,8 @@ COPY --chown=appuser:appgroup tests/ tests/
 
 USER appuser
 
+RUN chown -R appuser:appgroup /app
+
 RUN chmod +x build.sh
 
 ARG BUILD_MODE=Release
