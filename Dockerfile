@@ -1,4 +1,4 @@
-FROM alpine:3.18 AS builder
+FROM alpine:edge AS builder
 
 LABEL maintainer="Rafael Volkmer <rafael.v.volkmer@gmail.com>"
 LABEL version="v4.0.00"
