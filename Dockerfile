@@ -14,8 +14,8 @@ RUN apk update && \
       valgrind \
       make \
       musl-dev \
-      gcc=13.3.0-r0 \
-      g++=13.3.0-r0 && \
+      gcc \
+      g++ && \
     rm -rf /var/cache/apk/*
 
 RUN rm -rf /var/cache/apk/*
