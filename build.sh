@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-
+set -x
 set -euo pipefail
 
 BUILD_DIR="build"
