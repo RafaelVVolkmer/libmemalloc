@@ -30,14 +30,16 @@ jobs:
             --platform linux/amd64 \
             --file Dockerfile \
             --build-arg BUILD_MODE=${{ matrix.mode }} \
-            -t libmemalloc:${{ matrix.tag }} .
+            -t libmemalloc:${{ matrix.tag }} \
+            .
 
       - name: List local images
         run: docker images libmemalloc:${{ matrix.tag }}
 
       - name: Export libraries (.so / .a)
         run: |
-          # aqui usamos matrix.mode como pasta
+          # limpa pasta anterior (se existir)
+          rm -rf artifacts/${{ matrix.mode }}
           mkdir -p artifacts/${{ matrix.mode }}
           docker build \
             --platform linux/amd64 \
@@ -47,11 +49,12 @@ jobs:
             --output artifacts/${{ matrix.mode }} \
             .
 
+      - name: Show exported files
+        run: ls -l artifacts/${{ matrix.mode }}
+
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: libmemalloc-${{ matrix.mode }}
           path: artifacts/${{ matrix.mode }}
 
-      - name: List local artifacts
-        run: ls -l artifacts/${{ matrix.mode }}
