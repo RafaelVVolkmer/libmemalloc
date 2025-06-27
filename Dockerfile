@@ -1,5 +1,5 @@
 # syntax = docker/dockerfile:1.4
-ARG BUILD_MODE=release
+ARG BUILD_MODE=Release
 
 #-------------------------------------------------------------------------------
 # Stage 1: Builder
