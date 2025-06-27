@@ -10,7 +10,6 @@ jobs:
   build-docker:
     runs-on: ubuntu-latest
 
-    # BuildKit habilitado
     env:
       DOCKER_BUILDKIT: 1
 
