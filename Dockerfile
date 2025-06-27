@@ -78,6 +78,5 @@ FROM busybox AS export
 ARG BUILD_MODE
 WORKDIR /out
 
-# só copia os dois arquivos de interesse
 COPY --from=builder /app/bin/${BUILD_MODE}/libmemalloc.so .
 COPY --from=builder /app/bin/${BUILD_MODE}/libmemalloc.a  .
