@@ -51,16 +51,10 @@ RUN addgroup --system appgroup && \
 # ------------------------------------------------------------
 # Stage 3: Copy and Check
 # ------------------------------------------------------------
-USER appuser
-WORKDIR /home/appuser
+FROM busybox AS export
 
-ARG BUILD_MODE
-COPY --from=builder --chown=appuser:appgroup \
-     /app/bin/${BUILD_MODE}/libmemalloc_app \
-     /usr/local/bin/libmemalloc_app
+RUN mkdir /out
 
 
-HEALTHCHECK --interval=30s --timeout=5s --start-period=10s \
-  CMD pgrep libmemalloc_app >/dev/null || exit 1
-
-ENTRYPOINT ["/usr/local/bin/libmemalloc_app"]
+COPY --from=builder /app/bin/${BUILD_MODE}/libmemalloc.so  /out/
+COPY --from=builder /app/bin/${BUILD_MODE}/libmemalloc.a   /out/
