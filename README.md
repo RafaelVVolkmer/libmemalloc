@@ -190,7 +190,7 @@ docker build \
   .
 ```
 
-### Export Libraries (.a .so)
+### Export Libraries (.a/.so)
 
 ```bash
 # Release (latest)
