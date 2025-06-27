@@ -9,27 +9,30 @@ on:
 jobs:
   build-docker:
     runs-on: ubuntu-latest
+
+    # BuildKit habilitado
     env:
       DOCKER_BUILDKIT: 1
 
     strategy:
       matrix:
         include:
-          - mode: Release
+          - mode: release
             tag: latest
-          - mode: Debug
+          - mode: debug
             tag: debug
 
     steps:
       - name: Check out code
         uses: actions/checkout@v4
 
-      - name: Build Docker image (${{ matrix.mode }})
+      - name: Build & tag image (${{ matrix.mode }})
         run: |
           docker build \
             --platform linux/amd64 \
             --file Dockerfile \
             --build-arg BUILD_MODE=${{ matrix.mode }} \
+            --target runtime \
             -t libmemalloc:${{ matrix.tag }} \
             .
 
@@ -38,7 +41,6 @@ jobs:
 
       - name: Export libraries (.so / .a)
         run: |
-          # limpa pasta anterior (se existir)
           rm -rf artifacts/${{ matrix.mode }}
           mkdir -p artifacts/${{ matrix.mode }}
           docker build \
@@ -56,5 +58,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: libmemalloc-${{ matrix.mode }}
-          path: artifacts/${{ matrix.mode }}
-
+          path: artifacts/${{ matrix.mode }}/*.so
+                artifacts/${{ matrix.mode }}/*.a
