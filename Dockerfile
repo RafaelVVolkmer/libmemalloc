@@ -39,36 +39,6 @@ RUN ulimit -d unlimited \
  && ./build.sh "${BUILD_MODE}"
 
 #-------------------------------------------------------------------------------
-# Stage 2: Runtime
-#-------------------------------------------------------------------------------
-FROM debian:bookworm-slim AS runtime
-
-LABEL maintainer="Rafael Volkmer <rafael.v.volkmer@gmail.com>" \
-      version="v4.0.00" \
-      description="Runtime for libmemalloc_app"
-
-ENV DEBIAN_FRONTEND=noninteractive
-
-RUN apt-get update \
- && apt-get install -y --no-install-recommends \
-      libstdc++6 \
-      ca-certificates \
- && rm -rf /var/lib/apt/lists/*
-
-RUN groupadd --system appgroup \
- && useradd  --system --no-create-home --gid appgroup appuser
-
-USER appuser
-WORKDIR /home/appuser
-
-COPY --from=builder /app/bin/${BUILD_MODE}/libmemalloc_app /usr/local/bin/
-
-HEALTHCHECK --interval=30s --timeout=5s --start-period=10s \
-  CMD pgrep libmemalloc_app >/dev/null || exit 1
-
-ENTRYPOINT ["/usr/local/bin/libmemalloc_app"]
-
-#-------------------------------------------------------------------------------
 # Stage 3: Export artifacts
 #-------------------------------------------------------------------------------
 FROM busybox AS export
