@@ -17,9 +17,9 @@ jobs:
     strategy:
       matrix:
         include:
-          - mode: release
+          - mode: Release
             tag: latest
-          - mode: debug
+          - mode: Debug
             tag: debug
 
     steps:
