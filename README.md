@@ -171,23 +171,54 @@ chmod +x build.sh
 ### Build with Docker
 
 ```bash
-# Build the Docker image (defaults to Release)
-docker build --platform linux/amd64 -t libmemalloc:latest .
-
-# To build a Debug image:
+# Release (latest)
 docker build \
   --platform linux/amd64 \
+  --file Dockerfile \
+  --build-arg BUILD_MODE=Release \
+  --target runtime \
+  -t libmemalloc:latest \
+  .
+
+# Debug
+docker build \
+  --platform linux/amd64 \
+  --file Dockerfile \
   --build-arg BUILD_MODE=Debug \
-  -t libmemalloc:debug .
+  --target runtime \
+  -t libmemalloc:debug \
+  .
 ```
 
-### Run the Docker container
+### Export Libraries (.a .so)
 
 ```bash
-# Run the default Release container
+# Release (latest)
+docker build \
+  --platform linux/amd64 \
+  --file Dockerfile \
+  --build-arg BUILD_MODE=Release \
+  --target export \
+  --output ./artifacts/release \
+  .
+
+# Debug
+docker build \
+  --platform linux/amd64 \
+  --file Dockerfile \
+  --build-arg BUILD_MODE=Debug \
+  --target export \
+  --output ./artifacts/debug \
+  .
+```
+
+###  Container Run
+
+```bash
+# Release (latest)
 docker run --rm libmemalloc:latest
 
-# Or run the Debug container
+# Debug
 docker run --rm libmemalloc:debug
 ```
 
