@@ -1,3 +1,5 @@
+# syntax = docker/dockerfile:1.4
+
 # ------------------------------------------------------------
 # Stage 1: Builder (Debian Bookworm-Slim + glibc)
 # ------------------------------------------------------------
@@ -52,9 +54,8 @@ RUN addgroup --system appgroup && \
 # Stage 3: Copy and Check
 # ------------------------------------------------------------
 FROM busybox AS export
+ARG BUILD_MODE
+WORKDIR /out
 
-RUN mkdir /out
-
-
-COPY --from=builder /app/bin/${BUILD_MODE}/libmemalloc.so  /out/
-COPY --from=builder /app/bin/${BUILD_MODE}/libmemalloc.a   /out/
+COPY --from=builder /app/bin/${BUILD_MODE}/libmemalloc.so .
+COPY --from=builder /app/bin/${BUILD_MODE}/libmemalloc.a  .
