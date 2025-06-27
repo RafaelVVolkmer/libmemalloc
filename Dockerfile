@@ -32,13 +32,8 @@ COPY --chown=appuser:appgroup src/       src/
 COPY --chown=appuser:appgroup inc/       inc/
 COPY --chown=appuser:appgroup tests/     tests/
 
-RUN chmod +x build.sh \
-    && mkdir -p "${BUILD_DIR}" \
-    && cd "${BUILD_DIR}" \
-    && ulimit -d unlimited \
-    && cmake -DCMAKE_BUILD_TYPE=${BUILD_MODE} .. \
-    && cmake --build . --config ${BUILD_MODE} \
-    && ctest --output-on-failure --config ${BUILD_MODE}
+RUN ulimit -d unlimited && \
+    ./build.sh "${BUILD_MODE}"
 
 #-------------------------------------------------------------------------------
 # Stage 2: Runtime
