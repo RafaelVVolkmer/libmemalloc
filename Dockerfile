@@ -36,7 +36,7 @@ COPY --chown=appuser:appgroup tests/     tests/
         
 RUN chmod +x build.sh \
         && ulimit -d unlimited \
-        && ../build.sh "${BUILD_MODE}"
+        && ./build.sh "${BUILD_MODE}"
 
 #-------------------------------------------------------------------------------
 # Stage 2: Runtime
