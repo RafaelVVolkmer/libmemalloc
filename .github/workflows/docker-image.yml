@@ -9,8 +9,6 @@ on:
 jobs:
   build-docker:
     runs-on: ubuntu-latest
-
-    # Enable Docker BuildKit
     env:
       DOCKER_BUILDKIT: 1
 
@@ -33,26 +31,27 @@ jobs:
             --file Dockerfile \
             --build-arg BUILD_MODE=${{ matrix.mode }} \
             -t libmemalloc:${{ matrix.tag }} .
-    
+
       - name: List local images
         run: docker images libmemalloc:${{ matrix.tag }}
 
       - name: Export libraries (.so / .a)
         run: |
-          mkdir -p artifacts/${{ matrix.tag }}
+          # aqui usamos matrix.mode como pasta
+          mkdir -p artifacts/${{ matrix.mode }}
           docker build \
             --platform linux/amd64 \
             --file Dockerfile \
             --build-arg BUILD_MODE=${{ matrix.mode }} \
             --target export \
-            --output artifacts/${{ matrix.tag }} \
+            --output artifacts/${{ matrix.mode }} \
             .
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: libmemalloc-${{ matrix.tag }}
-          path: |
-            artifacts/${{ matrix.tag }}/*.so
-            artifacts/${{ matrix.tag }}/*.a
+          name: libmemalloc-${{ matrix.mode }}
+          path: artifacts/${{ matrix.mode }}
 
+      - name: List local artifacts
+        run: ls -l artifacts/${{ matrix.mode }}
