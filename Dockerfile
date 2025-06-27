@@ -32,6 +32,8 @@ COPY --chown=appuser:appgroup src/       src/
 COPY --chown=appuser:appgroup inc/       inc/
 COPY --chown=appuser:appgroup tests/     tests/
 
+RUN chmod +x build.sh
+
 RUN ulimit -d unlimited && \
     ./build.sh "${BUILD_MODE}"
 
