@@ -6,13 +6,16 @@ on:
   pull_request:
     branches: [ "main" ]
 
-env:
-  # Supported values: Release, Debug
-  BUILD_TYPE: Release
-
 jobs:
   build:
     runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        build_type: [ Release, Debug ]
+
+    env:
+      BUILD_TYPE: ${{ matrix.build_type }}
 
     steps:
       - name: Checkout repository
@@ -34,6 +37,5 @@ jobs:
       - name: Make build script executable
         run: chmod +x ./build.sh
 
-      - name: Build & test
-        run: |
-          ./build.sh ${{ env.BUILD_TYPE }}
+      - name: Build & test (${{ matrix.build_type }})
+        run: ./build.sh ${{ matrix.build_type }}
