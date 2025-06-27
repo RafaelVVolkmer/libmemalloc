@@ -48,12 +48,17 @@ RUN apt-get update && \
 RUN addgroup --system appgroup && \
     adduser --system --ingroup appgroup appuser
 
+# ------------------------------------------------------------
+# Stage 3: Copy and Check
+# ------------------------------------------------------------
 USER appuser
 WORKDIR /home/appuser
 
+ARG BUILD_MODE
 COPY --from=builder --chown=appuser:appgroup \
-     /app/build/libmemalloc_app \
+     /app/bin/${BUILD_MODE}/libmemalloc_app \
      /usr/local/bin/libmemalloc_app
+
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s \
   CMD pgrep libmemalloc_app >/dev/null || exit 1
