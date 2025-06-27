@@ -137,7 +137,7 @@ elseif(CMAKE_BUILD_TYPE STREQUAL "Release")
         # --- NDEBUG & Optimization ---
         -DNDEBUG
         -Ofast
-        # -Os
+        -Os
 
         # --- Link Time Optimization ---
         -flto
