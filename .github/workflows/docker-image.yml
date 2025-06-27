@@ -33,6 +33,24 @@ jobs:
             --file Dockerfile \
             --build-arg BUILD_MODE=${{ matrix.mode }} \
             -t libmemalloc:${{ matrix.tag }} .
-
+    
       - name: List local images
         run: docker images libmemalloc:${{ matrix.tag }}
+
+      - name: Export libraries (.so / .a)
+        run: |
+          mkdir -p artifacts/${{ matrix.tag }}
+          docker build \
+            --platform linux/amd64 \
+            --file Dockerfile \
+            --build-arg BUILD_MODE=${{ matrix.mode }} \
+            --target export \
+            --output artifacts/${{ matrix.tag }} \
+            .
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: libmemalloc-${{ matrix.tag }}
+          path: artifacts/${{ matrix.tag }}
+
