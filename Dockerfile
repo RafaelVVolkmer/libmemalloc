@@ -1,5 +1,4 @@
 # syntax = docker/dockerfile:1.4
-ARG BUILD_MODE=Release
 
 #-------------------------------------------------------------------------------
 # Stage 1: Builder
@@ -9,6 +8,8 @@ FROM debian:bookworm-slim AS builder
 LABEL maintainer="Rafael Volkmer <rafael.v.volkmer@gmail.com>" \
       version="v4.0.00" \
       description="Builder for libmemalloc"
+
+ARG BUILD_MODE=Release
 
 ENV DEBIAN_FRONTEND=noninteractive \
     BUILD_MODE=${BUILD_MODE} \
@@ -71,6 +72,8 @@ ENTRYPOINT ["/usr/local/bin/libmemalloc_app"]
 # Stage 3: Export artifacts
 #-------------------------------------------------------------------------------
 FROM busybox AS export
+
+ARG BUILD_MODE=Release
 
 WORKDIR /out
 
