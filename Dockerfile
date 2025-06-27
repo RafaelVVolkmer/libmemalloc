@@ -5,9 +5,9 @@
 #-------------------------------------------------------------------------------
 FROM debian:bookworm-slim AS builder
 
-LABEL maintainer="Rafael Volkmer <rafael.v.volkmer@gmail.com>" \
-      version="v4.0.00" \
-      description="Builder for libmemalloc"
+LABEL maintainer="Rafael Volkmer <rafael.v.volkmer@gmail.com>"
+LABEL version="v4.0.00"
+LABEL description="Builder for libmemalloc"
 
 ARG BUILD_MODE=Release
 
