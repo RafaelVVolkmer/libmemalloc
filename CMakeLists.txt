@@ -89,7 +89,14 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
         -fno-strict-aliasing
         -DDEBUG
 
-        # --- Static Analyzer Configuration ---
+        # --- Auxiliary Info ---
+        -aux-info filename
+    )
+
+    if (CMAKE_C_COMPILER_ID STREQUAL "Clang"
+        OR (CMAKE_C_COMPILER_ID STREQUAL "GNU"
+            AND CMAKE_C_COMPILER_VERSION VERSION_GREATER_EQUAL "13.0"))
+      set(ANALYZER_FLAGS
         -fanalyzer-verbosity=5
         -fanalyzer-fine-grained
         -fanalyzer-call-summaries
@@ -107,10 +114,9 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
         -fdump-analyzer-supergraph
         -fdump-analyzer-untracked
         -fdump-analyzer-stderr
-
-        # --- Auxiliary Info ---
-        -aux-info filename
-    )
+      )
+      add_compile_options(${ANALYZER_FLAGS})
+    endif()
 
     if (!VALGRIND_EXECUTABLE)
         set(SANITIZE_FLAGS
