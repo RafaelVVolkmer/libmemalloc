@@ -16,30 +16,30 @@
  *  @author     Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
  * ========================================================================== */
 
-#ifndef LOGS_H_
-#define LOGS_H_
+#pragma once
 
 /* < C++ Compatibility > */
 #ifdef __cplusplus
-    extern "C" {
+extern "C"
+{
 #endif
 
 /** ============================================================================
- *                      P U B L I C  I N C L U D E S                            
+ *                      P U B L I C  I N C L U D E S
  * ========================================================================== */
 
 /*< Dependencies >*/
 #include <errno.h>
 #include <pthread.h>
 #include <stdarg.h>
-#include <stdlib.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <time.h>
 #include <unistd.h>
 
 /** ============================================================================
- *              P U B L I C  S T R U C T U R E S  &  T Y P E S                  
+ *              P U B L I C  S T R U C T U R E S  &  T Y P E S
  * ========================================================================== */
 
 /** ============================================================================
@@ -49,15 +49,15 @@
  * ========================================================================== */
 typedef enum LogLevel
 {
-    LOG_LEVEL_NONE    = 0u,   /**< Disables all logs. */
-    LOG_LEVEL_ERROR   = 1u,   /**< Enables only error logs. */
-    LOG_LEVEL_WARNING = 2u,   /**< Enables error and warning logs. */
-    LOG_LEVEL_INFO    = 3u,   /**< Enables info, warning, and error logs. */
-    LOG_LEVEL_DEBUG   = 4u    /**< Enables all logs. */
+  LOG_LEVEL_NONE    = 0u, /**< Disables all logs. */
+  LOG_LEVEL_ERROR   = 1u, /**< Enables only error logs. */
+  LOG_LEVEL_WARNING = 2u, /**< Enables error and warning logs. */
+  LOG_LEVEL_INFO    = 3u, /**< Enables info, warning, and error logs. */
+  LOG_LEVEL_DEBUG   = 4u  /**< Enables all logs. */
 } log_level_t;
 
 /** ============================================================================
- *              P U B L I C  D E F I N E S  &  M A C R O S                      
+ *              P U B L I C  D E F I N E S  &  M A C R O S
  * ========================================================================== */
 
 /** ============================================================================
@@ -65,7 +65,7 @@ typedef enum LogLevel
  *  @brief      Default log level if not defined.
  * ========================================================================== */
 #ifndef LOG_LEVEL
-    #define LOG_LEVEL LOG_LEVEL_DEBUG
+  #define LOG_LEVEL LOG_LEVEL_DEBUG
 #endif
 
 /** ============================================================================
@@ -74,7 +74,7 @@ typedef enum LogLevel
  *              pthread mutex initializer.
  * ========================================================================== */
 #ifndef _POSIX_C_SOURCE
-    #define _POSIX_C_SOURCE 200809UL
+  #define _POSIX_C_SOURCE 200'809UL
 #endif
 
 /** ============================================================================
@@ -82,17 +82,15 @@ typedef enum LogLevel
  *  @brief      Compiler-specific printf abstraction.
  * ========================================================================== */
 #if defined(__GNUC__)
-    #define LOG_PRINTF(file, format, ...)                               \
-        __builtin_fprintf((FILE *)(file), (format), ##__VA_ARGS__)
+  #define LOG_PRINTF(file, format, ...) \
+    __builtin_fprintf((FILE *)(file), (format), ##__VA_ARGS__)
 
-    #define LOG_VPRINTF(file, format, args)                             \
-        __builtin_vfprintf((FILE *)(file), (format), (args))
+  #define LOG_VPRINTF(file, format, args) \
+    __builtin_vfprintf((FILE *)(file), (format), (args))
 #else
-    #define LOG_PRINTF(file, ...)                                       \
-        fprintf(file, __VA_ARGS__)
+  #define LOG_PRINTF(file, ...)        fprintf(file, __VA_ARGS__)
 
-    #define LOG_VPRINTF(file, fmt, args)                                \
-        vfprintf(file, fmt, args)
+  #define LOG_VPRINTF(file, fmt, args) vfprintf(file, fmt, args)
 #endif
 
 /** ============================================================================
@@ -109,31 +107,31 @@ typedef enum LogLevel
  *  @brief      ANSI escape sequences for colored output
  *              (red, yellow, blue, green), and reset.
  * ========================================================================== */
-#define COLOR_RED     "\033[0;31m"
-#define COLOR_YELLOW  "\033[0;33m"
-#define COLOR_BLUE    "\033[0;34m"
-#define COLOR_GREEN   "\033[0;32m"
-#define COLOR_RESET   "\033[0m"
+#define COLOR_RED      "\033[0;31m"
+#define COLOR_YELLOW   "\033[0;33m"
+#define COLOR_BLUE     "\033[0;34m"
+#define COLOR_GREEN    "\033[0;32m"
+#define COLOR_RESET    "\033[0m"
 
 /** ============================================================================
  *  @def        ATTR_PRINTF
  *  @brief      Macro to apply GCC printf-style format checking on custom functions.
  * ========================================================================== */
 #ifndef ATTR_PRINTF
-    #define ATTR_PRINTF(fmt_idx, var_idx)                       \
-        __attribute__((format (printf, fmt_idx, var_idx)))
+  #define ATTR_PRINTF(fmt_idx, var_idx) \
+    __attribute__((format(printf, fmt_idx, var_idx)))
 #endif
 
 /** ============================================================================
- *              P U B L I C  F U N C T I O N S  P R O T O T Y P E S             
+ *              P U B L I C  F U N C T I O N S  P R O T O T Y P E S
  * ========================================================================== */
 
- /** ============================================================================
+/** ============================================================================
  *  @fn         LOG_output
  *  @brief      Internal logging implementation: thread-safe, prints timestamp,
  *              color (if interactive), prefix, formatted message, and source info.
  *
- *  @attr       ATTR_PRINTF(7, 8) Apply printf-style format checking on 
+ *  @attr       ATTR_PRINTF(7, 8) Apply printf-style format checking on
  *              fmt and varargs.
  *
  *  @param      level    Log severity (ERROR, WARNING, INFO, DEBUG).
@@ -147,14 +145,15 @@ typedef enum LogLevel
  *  @return     EXIT_SUCCESS if message logged, -EIO if level > LOG_LEVEL
  * ========================================================================== */
 static inline int LOG_output(log_level_t level,
-                              const char *color,
-                              const char *prefix,
-                              const char *file,
-                              const char *func,
-                              int line,
-                              const char *fmt, ...) ATTR_PRINTF(7, 8);
+                             const char *color,
+                             const char *prefix,
+                             const char *file,
+                             const char *func,
+                             int         line,
+                             const char *fmt,
+                             ...) ATTR_PRINTF(7, 8);
 
- /** ============================================================================
+/** ============================================================================
  *  @fn         LOG_output
  *  @brief      Internal logging implementation: thread-safe, prints timestamp,
  *              color (if interactive), prefix, formatted message, and source info.
@@ -170,102 +169,124 @@ static inline int LOG_output(log_level_t level,
  *  @return     EXIT_SUCCESS if message logged, -EIO if level > LOG_LEVEL
  * ========================================================================== */
 static inline int LOG_output(log_level_t level,
-                              const char *color,
-                              const char *prefix,
-                              const char *file,
-                              const char *func,
-                              int line,
-                              const char *fmt, ...)
+                             const char *color,
+                             const char *prefix,
+                             const char *file,
+                             const char *func,
+                             int         line,
+                             const char *fmt,
+                             ...)
 {
-    int ret = EXIT_SUCCESS;
+  int ret = EXIT_SUCCESS;
 
-    FILE *out = NULL;
+  FILE *out = NULL;
 
-    static pthread_mutex_t log_mutex  = PTHREAD_MUTEX_INITIALIZER;
+  static pthread_mutex_t log_mutex = PTHREAD_MUTEX_INITIALIZER;
 
-    struct timespec ts;
-    struct tm *ptm = NULL;
-    time_t now = 0;
+  struct timespec ts;
+  struct tm      *ptm = NULL;
+  time_t          now = 0;
 
-    if (level > LOG_LEVEL)
-    {
-        ret = -EIO;
-        goto function_output;
-    }
+  if (level > LOG_LEVEL)
+  {
+    ret = -EIO;
+    goto function_output;
+  }
 
-    pthread_mutex_lock(&log_mutex);
+  pthread_mutex_lock(&log_mutex);
 
-    memset(&ts, 0, sizeof(ts));
+  memset(&ts, 0, sizeof(ts));
 
-    clock_gettime(CLOCK_REALTIME, &ts);
+  clock_gettime(CLOCK_REALTIME, &ts);
 
-    now = ts.tv_sec;
-    ptm = localtime(&now);
+  now = ts.tv_sec;
+  ptm = localtime(&now);
 
-    out = (level <= LOG_LEVEL_WARNING) ? stderr : stdout;
-    LOG_PRINTF(out, "[%02d:%02d:%02d.%03ld] ",
-            ptm->tm_hour, ptm->tm_min,
-            ptm->tm_sec, ts.tv_nsec / 1000000u);
+  out = (level <= LOG_LEVEL_WARNING) ? stderr : stdout;
+  LOG_PRINTF(out,
+             "[%02d:%02d:%02d.%03ld] ",
+             ptm->tm_hour,
+             ptm->tm_min,
+             ptm->tm_sec,
+             ts.tv_nsec / 1'000'000u);
 
-    if (isatty(fileno(out)))
-        LOG_PRINTF(out, "%s%s%s ", color, prefix, COLOR_RESET);
-    else
-        LOG_PRINTF(out, "%s ", prefix);
+  if (isatty(fileno(out)))
+    LOG_PRINTF(out, "%s%s%s ", color, prefix, COLOR_RESET);
+  else
+    LOG_PRINTF(out, "%s ", prefix);
 
-    va_list args;
-    va_start(args, fmt);
-    LOG_VPRINTF(out, fmt, args);
-    va_end(args);
+  va_list args;
+  va_start(args, fmt);
+  LOG_VPRINTF(out, fmt, args);
+  va_end(args);
 
-    LOG_PRINTF(out, " (at %s:%d:%s())\n", file, line, func);
-    pthread_mutex_unlock(&log_mutex);
+  LOG_PRINTF(out, " (at %s:%d:%s())\n", file, line, func);
+  pthread_mutex_unlock(&log_mutex);
 
 function_output:
-    return ret;
+  return ret;
 }
 
 /** ============================================================================
  *  @def        LOG_ERROR(fmt, ...)
  *  @brief      Logs an error message (red).
  * ========================================================================== */
-#define LOG_ERROR(fmt, ...)                         \
-    LOG_output(LOG_LEVEL_ERROR, COLOR_RED,          \
-                PREFIX_ERROR, __FILE__, __func__,   \
-                __LINE__, fmt, ##__VA_ARGS__)       \
+#define LOG_ERROR(fmt, ...)   \
+  LOG_output(LOG_LEVEL_ERROR, \
+             COLOR_RED,       \
+             PREFIX_ERROR,    \
+             __FILE__,        \
+             __func__,        \
+             __LINE__,        \
+             fmt,             \
+             ##__VA_ARGS__)
 
 /** ============================================================================
  *  @def        LOG_WARNING(fmt, ...)
  *  @brief      Logs a warning message (yellow).
  * ========================================================================== */
-#define LOG_WARNING(fmt, ...)                       \
-    LOG_output(LOG_LEVEL_WARNING,COLOR_YELLOW,      \
-                PREFIX_WARNING, __FILE__, __func__, \
-                __LINE__, fmt, ##__VA_ARGS__)       \
+#define LOG_WARNING(fmt, ...)   \
+  LOG_output(LOG_LEVEL_WARNING, \
+             COLOR_YELLOW,      \
+             PREFIX_WARNING,    \
+             __FILE__,          \
+             __func__,          \
+             __LINE__,          \
+             fmt,               \
+             ##__VA_ARGS__)
 
 /** ============================================================================
  *  @def        LOG_INFO(fmt, ...)
  *  @brief      Logs an info message (blue).
  * ========================================================================== */
-#define LOG_INFO(fmt, ...)                          \
-    LOG_output(LOG_LEVEL_INFO, COLOR_BLUE,          \
-                PREFIX_INFO, __FILE__, __func__,    \
-                __LINE__, fmt, ##__VA_ARGS__)       \
+#define LOG_INFO(fmt, ...)   \
+  LOG_output(LOG_LEVEL_INFO, \
+             COLOR_BLUE,     \
+             PREFIX_INFO,    \
+             __FILE__,       \
+             __func__,       \
+             __LINE__,       \
+             fmt,            \
+             ##__VA_ARGS__)
 
 /** ============================================================================
  *  @def        LOG_DEBUG(fmt, ...)
  *  @brief      Logs a debug message (green).
  * ========================================================================== */
-#define LOG_DEBUG(fmt, ...)                         \
-    LOG_output(LOG_LEVEL_DEBUG, COLOR_GREEN,        \
-                PREFIX_DEBUG, __FILE__, __func__,   \
-                __LINE__, fmt, ##__VA_ARGS__)       \
+#define LOG_DEBUG(fmt, ...)   \
+  LOG_output(LOG_LEVEL_DEBUG, \
+             COLOR_GREEN,     \
+             PREFIX_DEBUG,    \
+             __FILE__,        \
+             __func__,        \
+             __LINE__,        \
+             fmt,             \
+             ##__VA_ARGS__)
 
 /* < C++ Compatibility End > */
 #ifdef __cplusplus
-    }
+}
 #endif
-
-#endif /* LOGS_H_ */
 
 /** @} */
 /* < End of header file > */
