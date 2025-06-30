@@ -166,7 +166,7 @@
  *              (brk/sbrk) to using mmap for more efficient large-block
  *              handling and to reduce heap fragmentation.
  * ========================================================================== */
-#define MMAP_THRESHOLD   (size_t)(128U * 1'024U)
+#define MMAP_THRESHOLD   (size_t)(128U * 1024U)
 
 /** ============================================================================
  *  @def        MIN_BLOCK_SIZE
@@ -186,7 +186,7 @@
  *              successive garbage-collection cycles:
  *                  sleep_time = gc_interval_ms * NR_OBJS
  * ========================================================================== */
-#define NR_OBJS          (uint16_t)(1'000U)
+#define NR_OBJS          (uint16_t)(1000U)
 
 /** ============================================================================
  *  @def        LIKELY(x)
@@ -2593,15 +2593,15 @@ function_output:
  *  @brief      Mark all live blocks reachable from the stack
  *
  *  @details    1. Calls MEM_setInitialMarks to clear previous marks.
- *              2. Optionally informs Valgrind to treat the stack region as defined.
+ *              2. Optionally informs Valgrind to treat the stack region as
+ * defined.
  *              3. Ensures stack_bottom ≤ stack_top by swapping if needed.
  *              4. Scans each word on the application stack:
  *                   – If the word’s value falls within the heap bounds,
  *                     locates the corresponding block header.
- *                   – Verifies that the reference points inside the payload area
- *                     (between header end and footer).
- *                   – If valid and the block is not free, sets its mark bit.
- *                   – Logs each block that becomes marked.
+ *                   – Verifies that the reference points inside the payload
+ * area (between header end and footer). – If valid and the block is not free,
+ * sets its mark bit. – Logs each block that becomes marked.
  *              5. Repeats the same check against each mmap’d region,
  *                 marking those blocks whose payload contains the reference.
  *
