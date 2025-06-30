@@ -196,7 +196,6 @@ coverage/
 # Static Analysis Tools
 cppcheck/
 clang-tidy/
-*.clang-tidy
 
 # Test Reports
 test-results/
