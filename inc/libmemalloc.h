@@ -471,7 +471,8 @@ __LIBMEMALLOC_API int MEM_allocatorInit(mem_allocator_t *const allocator);
  *
  *  @note       Automatically passes file and line information.
  * ========================================================================== */
-__LIBMEMALLOC_API void *MEM_allocMallocFirstFit(mem_allocator_t *const allocator,
+__LIBMEMALLOC_API void *MEM_allocMallocFirstFit(mem_allocator_t
+                                                  *const          allocator,
                                                 const size_t      size,
                                                 const char *const var)
   __LIBMEMALLOC_MALLOC;
@@ -531,14 +532,16 @@ __LIBMEMALLOC_API void *MEM_allocMalloc(mem_allocator_t *const      allocator,
 
 /** ============================================================================
  *  @fn         MEM_allocCalloc
- *  @brief      Allocates and zero-initializes memory using a specified strategy.
+ *  @brief      Allocates and zero-initializes memory using a specified
+ * strategy.
  *
  *  @param[in]  allocator   Memory allocator context.
  *  @param[in]  size        Size of each element.
  *  @param[in]  var         Variable name (for debugging).
  *  @param[in]  strategy    Allocation strategy to use.
  *
- *  @return     Pointer to allocated and zero-initialized memory or NULL on failure.
+ *  @return     Pointer to allocated and zero-initialized memory or NULL on
+ * failure.
  *
  *  @note       Automatically passes file and line information.
  * ========================================================================== */
@@ -550,7 +553,8 @@ __LIBMEMALLOC_API void *MEM_allocCalloc(mem_allocator_t *const      allocator,
 
 /** ============================================================================
  *  @fn         MEM_allocRealloc
- *  @brief      Reallocates memory with safety checks using a specified strategy.
+ *  @brief      Reallocates memory with safety checks using a specified
+ * strategy.
  *
  *  @param[in]  allocator   Memory allocator context.
  *  @param[in]  ptr         Pointer to memory to reallocate.

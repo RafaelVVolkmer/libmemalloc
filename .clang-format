@@ -182,6 +182,6 @@ PenaltyReturnTypeOnItsOwnLine:              1000        # cost for breaking retu
 PenaltyBreakComment:                        1000        # cost for introducing breaks inside comments
 PenaltyBreakOpenParenthesis:                1000        # cost for breaking after '('
 PenaltyBreakBeforeFirstCallParameter:       1000        # cost for breaking before first call parameter
-PenaltyExcessCharacter:                     100         # cost per character beyond column limit
+PenaltyExcessCharacter:                     1000        # cost per character beyond column limit
 PenaltyIndentedWhitespace:                  0           # cost for indent whitespace
 PenaltyBreakString:                         0           # cost for breaking inside string literal

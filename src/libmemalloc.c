@@ -79,7 +79,8 @@
 
 /** ============================================================================
  *  @def        __GC_HOT
- *  @brief      Marks garbage-collector functions as “hot” (performance critical).
+ *  @brief      Marks garbage-collector functions as “hot” (performance
+ * critical).
  *
  *  @details    When supported by the compiler (GCC/Clang), expands to
  *              __attribute__((hot)), informing the optimizer that the
@@ -1326,9 +1327,11 @@ int MEM_allocatorInit(mem_allocator_t *const allocator)
     goto function_output;
   }
 
-  arena           = &allocator->arenas[0];
+  arena = &allocator->arenas[0];
+
   arena->num_bins = DEFAULT_NUM_BINS;
-  bins_bytes      = (size_t)(arena->num_bins * sizeof(block_header_t *));
+
+  bins_bytes = (size_t)(arena->num_bins * sizeof(block_header_t *));
 
   arena->bins = MEM_growUserHeap(allocator, (intptr_t)bins_bytes);
   if (arena->bins == (void *)(-ENOMEM))
@@ -1521,7 +1524,8 @@ static int *MEM_mapAlloc(mem_allocator_t *allocator, const size_t total_size)
   map_block->next      = allocator->mmap_list;
   allocator->mmap_list = map_block;
 
-  header           = (block_header_t *)ptr;
+  header = (block_header_t *)ptr;
+
   header->magic    = MAGIC_NUMBER;
   header->size     = map_size;
   header->free     = 0u;
@@ -1600,8 +1604,11 @@ static int MEM_mapFree(mem_allocator_t *const allocator, void *const addr)
       to_free  = *map_ref;
       *map_ref = to_free->next;
 
-      ret
-        = MEM_allocatorFree(allocator, to_free, __FILE__, __LINE__, "mmap_meta");
+      ret = MEM_allocatorFree(allocator,
+                              to_free,
+                              __FILE__,
+                              __LINE__,
+                              "mmap_meta");
       if (ret != EXIT_SUCCESS)
       {
         LOG_ERROR("Mmap metadata free failed: %zu bytes. "
@@ -2135,7 +2142,8 @@ static void *MEM_allocatorMalloc(mem_allocator_t *const      allocator,
   }
 
   total_size = ALIGN(size) + sizeof(block_header_t) + sizeof(uint32_t);
-  arena      = &allocator->arenas[0];
+
+  arena = &allocator->arenas[0];
 
   if (size > MMAP_THRESHOLD)
   {
@@ -2150,7 +2158,8 @@ static void *MEM_allocatorMalloc(mem_allocator_t *const      allocator,
       goto function_output;
     }
 
-    block         = (block_header_t *)raw_mmap;
+    block = (block_header_t *)raw_mmap;
+
     block->magic  = MAGIC_NUMBER;
     block->size   = total_size;
     block->free   = 0;
@@ -2200,7 +2209,8 @@ static void *MEM_allocatorMalloc(mem_allocator_t *const      allocator,
     *data = CANARY_VALUE;
 
     block->fl_prev = block->fl_next = NULL;
-    ret                             = MEM_removeFreeBlock(allocator, block);
+
+    ret = MEM_removeFreeBlock(allocator, block);
     if (ret != EXIT_SUCCESS)
       goto function_output;
 
@@ -2289,13 +2299,18 @@ static void *MEM_allocatorRealloc(mem_allocator_t *const      allocator,
 
   if (ptr == NULL)
   {
-    new_ptr
-      = MEM_allocatorMalloc(allocator, new_size, file, line, var_name, strategy);
+    new_ptr = MEM_allocatorMalloc(allocator,
+                                  new_size,
+                                  file,
+                                  line,
+                                  var_name,
+                                  strategy);
     goto function_output;
   }
 
   old_block = (block_header_t *)((uint8_t *)ptr - sizeof(block_header_t));
-  ret       = MEM_validateBlock(allocator, old_block);
+
+  ret = MEM_validateBlock(allocator, old_block);
   if (ret != EXIT_SUCCESS)
     goto function_output;
 
@@ -2446,7 +2461,8 @@ static int MEM_allocatorFree(mem_allocator_t *const allocator,
   }
 
   block = (block_header_t *)((uint8_t *)ptr - sizeof(block_header_t));
-  ret   = MEM_validateBlock(allocator, block);
+
+  ret = MEM_validateBlock(allocator, block);
   if (ret != EXIT_SUCCESS)
     goto function_output;
 
@@ -2566,8 +2582,9 @@ static int MEM_setInitialMarks(mem_allocator_t *const allocator)
     if (block->size >= sizeof(block_header_t)
         && (heap_ptr + block->size) <= heap_end)
     {
-      block->marked  = 0u;
-      heap_ptr      += block->size;
+      block->marked = 0u;
+
+      heap_ptr += block->size;
     }
     else
     {
@@ -2577,10 +2594,12 @@ static int MEM_setInitialMarks(mem_allocator_t *const allocator)
 
   for (map = allocator->mmap_list; map; map = map->next)
   {
-    block         = (block_header_t *)map->addr;
+    block = (block_header_t *)map->addr;
+
     block->marked = 0u;
 
     meta_data = (block_header_t *)((uint8_t *)map - sizeof(block_header_t));
+
     meta_data->marked = 1u;
   }
 
@@ -2643,7 +2662,8 @@ static int MEM_gcMark(mem_allocator_t *const allocator)
   }
 
   gc_thread = &allocator->gc_thread;
-  ret       = MEM_stackBounds(gc_thread->main_thread, allocator);
+
+  ret = MEM_stackBounds(gc_thread->main_thread, allocator);
   if (ret != EXIT_SUCCESS)
     goto function_output;
 
@@ -2696,7 +2716,8 @@ static int MEM_gcMark(mem_allocator_t *const allocator)
         else
         {
           block->marked = 0u;
-          ret           = EXIT_SUCCESS;
+
+          ret = EXIT_SUCCESS;
         }
       }
 
@@ -2739,7 +2760,7 @@ function_output:
  *                     invokes MEM_allocatorFree on its payload pointer,
  *                     marks it free, and logs the action.
  *                   – In all cases, clears the block’s mark flag.
- *                   – Advances by the block’s size (or header size on corruption).
+ *                   – Advances by the block’s size
  *              2. Traverses the mmap_list via a pointer-to-pointer scan:
  *                   – Logs each region’s status.
  *                   – If unmarked and not already free, unlinks the node,
@@ -2748,6 +2769,7 @@ function_output:
  *                   – Otherwise, clears its mark and moves to the next node.
  *
  *  @param[in]  allocator   Pointer to the allocator context
+ *
  *  @return     EXIT_SUCCESS on success, or -EINVAL if allocator is NULL
  * ========================================================================== */
 static int MEM_gcSweep(mem_allocator_t *const allocator)
@@ -2852,7 +2874,8 @@ static int MEM_gcSweep(mem_allocator_t *const allocator)
     else
     {
       block->marked = 0;
-      scan          = &map->next;
+
+      scan = &map->next;
     }
   }
 
@@ -2936,7 +2959,8 @@ function_output:
  *
  *  @details    - Captures the main thread’s stack bounds for later marking.
  *              - If the GC thread has not been started:
- *                   * Marks gc_thread_started, sets gc_running and gc_exit flags.
+ *                   * Marks gc_thread_started, sets gc_running and gc_exit
+ * flags.
  *                   * Creates the GC thread running MEM_gcThreadFunc.
  *                Otherwise:
  *                   * Sets gc_running and signals gc_cond to wake the thread.
@@ -2960,18 +2984,22 @@ static int MEM_runGc(mem_allocator_t *const allocator)
     goto function_output;
   }
 
-  gc_thread              = &allocator->gc_thread;
+  gc_thread = &allocator->gc_thread;
+
   gc_thread->main_thread = pthread_self( );
 
   pthread_mutex_lock(&gc_thread->gc_lock);
   if (!gc_thread->gc_thread_started)
   {
     gc_thread->gc_thread_started = 1u;
+
     atomic_store(&gc_thread->gc_running, true);
     atomic_store(&gc_thread->gc_exit, false);
 
-    ret
-      = pthread_create(&gc_thread->gc_thread, NULL, MEM_gcThreadFunc, allocator);
+    ret = pthread_create(&gc_thread->gc_thread,
+                         NULL,
+                         MEM_gcThreadFunc,
+                         allocator);
     if (ret != EXIT_SUCCESS)
     {
       LOG_ERROR("Failed to create gc thread: %p. "
@@ -2986,6 +3014,7 @@ static int MEM_runGc(mem_allocator_t *const allocator)
     atomic_store(&gc_thread->gc_running, true);
     pthread_cond_signal(&gc_thread->gc_cond);
   }
+
   pthread_mutex_unlock(&gc_thread->gc_lock);
 
 function_output:
@@ -3173,14 +3202,16 @@ void *MEM_allocMalloc(mem_allocator_t *const      allocator,
 
 /** ============================================================================
  *  @fn         MEM_allocCalloc
- *  @brief      Allocates and zero-initializes memory using a specified strategy.
+ *  @brief      Allocates and zero-initializes memory using a specified
+ * strategy.
  *
  *  @param[in]  allocator   Memory allocator context.
  *  @param[in]  size        Size of each element.
  *  @param[in]  var         Variable name (for debugging).
  *  @param[in]  strategy    Allocation strategy to use.
  *
- *  @return     Pointer to allocated and zero-initialized memory or NULL on failure.
+ *  @return     Pointer to allocated and zero-initialized memory or NULL on
+ * failure.
  *
  *  @note       Automatically passes file and line information.
  * ========================================================================== */
@@ -3204,7 +3235,8 @@ void *MEM_allocCalloc(mem_allocator_t *const      allocator,
 
 /** ============================================================================
  *  @fn         MEM_allocRealloc
- *  @brief      Reallocates memory with safety checks using a specified strategy.
+ *  @brief      Reallocates memory with safety checks using a specified
+ * strategy.
  *
  *  @param[in]  allocator   Memory allocator context.
  *  @param[in]  ptr         Pointer to memory to reallocate.

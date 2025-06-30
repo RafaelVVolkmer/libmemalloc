@@ -123,7 +123,8 @@ typedef enum LogLevel
 
 /** ============================================================================
  *  @def        ATTR_PRINTF
- *  @brief      Macro to apply GCC printf-style format checking on custom functions.
+ *  @brief      Macro to apply GCC printf-style format checking on custom
+ * functions.
  * ========================================================================== */
 #ifndef ATTR_PRINTF
   #define ATTR_PRINTF(fmt_idx, var_idx) \
@@ -137,7 +138,8 @@ typedef enum LogLevel
 /** ============================================================================
  *  @fn         LOG_output
  *  @brief      Internal logging implementation: thread-safe, prints timestamp,
- *              color (if interactive), prefix, formatted message, and source info.
+ *              color (if interactive), prefix, formatted message, and source
+ * info.
  *
  *  @attr       ATTR_PRINTF(7, 8) Apply printf-style format checking on
  *              fmt and varargs.
@@ -164,7 +166,8 @@ static inline int LOG_output(log_level_t level,
 /** ============================================================================
  *  @fn         LOG_output
  *  @brief      Internal logging implementation: thread-safe, prints timestamp,
- *              color (if interactive), prefix, formatted message, and source info.
+ *              color (if interactive), prefix, formatted message, and source
+ * info.
  *
  *  @param      level    Log severity (ERROR, WARNING, INFO, DEBUG).
  *  @param      color    ANSI color code to use for interactive terminals.
