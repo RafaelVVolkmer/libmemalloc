@@ -2163,7 +2163,7 @@ static void *MEM_allocatorMalloc(mem_allocator_t *const      allocator,
     *data = CANARY_VALUE;
 
     block->file     = file;
-    block->line     = (unsigned long long)line;
+    block->line     = (uint64_t)line;
     block->var_name = var_name;
 
     LOG_INFO("Mmap used for alloc: %p (%zu bytes).\n", raw_mmap, size);
@@ -2227,7 +2227,7 @@ static void *MEM_allocatorMalloc(mem_allocator_t *const      allocator,
     goto function_output;
 
   block->file     = file;
-  block->line     = (unsigned long long)line;
+  block->line     = (uint64_t)line;
   block->var_name = var_name;
 
   user_ptr = (void *)((uint8_t *)block + sizeof(block_header_t));
@@ -2467,7 +2467,7 @@ static int MEM_allocatorFree(mem_allocator_t *const allocator,
   block->free     = 1u;
   block->marked   = 0u;
   block->file     = file;
-  block->line     = (unsigned long long)line;
+  block->line     = (uint64_t)line;
   block->var_name = var_name;
 
   ret = MEM_mergeBlocks(allocator, block);

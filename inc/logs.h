@@ -46,14 +46,21 @@ extern "C"
  *  @enum       LogLevel
  *  @typedef    log_level_t
  *  @brief      Defines log levels for the logging system.
+ *
+ *  @par Fields
+ *    @li LOG_LEVEL_NONE    – Disables all logs
+ *    @li LOG_LEVEL_ERROR   – Enables only error logs
+ *    @li LOG_LEVEL_WARNING – Enables error and warning logs
+ *    @li LOG_LEVEL_INFO    – Enables info, warning, and error logs
+ *    @li LOG_LEVEL_DEBUG   – Enables all logs
  * ========================================================================== */
 typedef enum LogLevel
 {
-  LOG_LEVEL_NONE    = 0u, /**< Disables all logs. */
-  LOG_LEVEL_ERROR   = 1u, /**< Enables only error logs. */
-  LOG_LEVEL_WARNING = 2u, /**< Enables error and warning logs. */
-  LOG_LEVEL_INFO    = 3u, /**< Enables info, warning, and error logs. */
-  LOG_LEVEL_DEBUG   = 4u  /**< Enables all logs. */
+  LOG_LEVEL_NONE    = (uint8_t)(0u),
+  LOG_LEVEL_ERROR   = (uint8_t)(1u),
+  LOG_LEVEL_WARNING = (uint8_t)(2u),
+  LOG_LEVEL_INFO    = (uint8_t)(3u),
+  LOG_LEVEL_DEBUG   = (uint8_t)(4u)
 } log_level_t;
 
 /** ============================================================================

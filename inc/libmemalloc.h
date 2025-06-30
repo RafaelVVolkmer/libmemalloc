@@ -213,43 +213,62 @@ extern "C"
  *
  *  @details    This enum specifies the available strategies for
  *              memory block allocation within the heap.
+ *
+ *  @par Fields
+ *    @li FIRST_FIT – First available block allocation
+ *    @li NEXT_FIT  – Continue from last allocation
+ *    @li BEST_FIT  – Smallest block fitting the request
  * ========================================================================== */
 typedef enum AllocationStrategy
 {
-  FIRST_FIT = (uint8_t)(0u), /**< First available block allocation */
-  NEXT_FIT  = (uint8_t)(1u), /**< Continue from last allocation */
-  BEST_FIT  = (uint8_t)(2u)  /**< Smallest block fitting the request */
+  FIRST_FIT = (uint8_t)(0u),
+  NEXT_FIT  = (uint8_t)(1u),
+  BEST_FIT  = (uint8_t)(2u)
 } allocation_strategy_t;
 
 /** ============================================================================
- *  @struct     BlockHeader
- *  @typedef    block_header_t
- *  @brief      Represents the header for a memory block.
+ *  @struct  BlockHeader
+ *  @typedef block_header_t
+ *  @brief   Represents the header for a memory block.
  *
- *  @details    This structure manages metadata for each block
- *              within the heap, including size, status, and
- *              debugging information.
+ *  @details This structure manages metadata for each block
+ *           within the heap, including size, status, and
+ *           debugging information.
+ *
+ *  @par Fields
+ *    @li magic    – Magic number for integrity check
+ *    @li size     – Total block size (includes header, data, and canary)
+ *    @li free     – 1 if block is free, 0 if allocated
+ *    @li marked   – Garbage collector mark flag
+ *    @li var_name – Variable name (for debugging)
+ *    @li file     – Source file of allocation (for debugging)
+ *    @li line     – Line number of allocation (for debugging)
+ *    @li canary   – Canary value for buffer-overflow detection
+ *    @li next     – Pointer to the next block
+ *    @li prev     – Pointer to the previous block
+ *    @li fl_next  – Pointer to the next block on free list
+ *    @li fl_prev  – Pointer to the previous block on free list
  * ========================================================================== */
 typedef struct __PACKED BlockHeader
 {
-  uint32_t magic;  /**< Magic number for integrity check */
+  uint32_t magic;
 
-  size_t size;     /**< Total block size (includes header, data, and canary) */
+  size_t size;
 
-  uint32_t free;   /**< 1 if block is free, 0 if allocated */
-  uint32_t marked; /**< Garbage collector mark flag */
+  uint32_t free;
+  uint32_t marked;
 
-  const char        *var_name; /**< Variable name (for debugging) */
-  const char        *file;     /**< Source file of allocation (for debugging) */
-  unsigned long long line;     /**< Line number of allocation (for debugging) */
+  const char *var_name;
+  const char *file;
+  uint64_t    line;
 
-  uint32_t canary;          /**< Canary value for buffer overflow detection */
+  uint32_t canary;
 
-  struct BlockHeader *next; /**< Pointer to the next block */
-  struct BlockHeader *prev; /**< Pointer to the previous block */
+  struct BlockHeader *next;
+  struct BlockHeader *prev;
 
-  struct BlockHeader *fl_next; /**< Pointer to the next block on free list */
-  struct BlockHeader *fl_prev; /**< Pointer to the previous block on free list */
+  struct BlockHeader *fl_next;
+  struct BlockHeader *fl_prev;
 } block_header_t;
 
 /** ============================================================================
@@ -262,14 +281,18 @@ typedef struct __PACKED BlockHeader
  *              strategies like top chunk extension. Each arena can
  *              hold multiple size classes to optimize allocation
  *              and minimize fragmentation.
+ *
+ *  @par Fields
+ *    @li bins      – Array of free lists (one per size class)
+ *    @li top_chunk – Top free block in the heap (for fast extension)
+ *    @li num_bins  – Number of size classes (bins) managed by this arena
  * ========================================================================== */
 typedef struct __PACKED MemArena
 {
-  block_header_t **bins; /**< Array of free lists (one per size class). */
-  block_header_t
-    *top_chunk;    /**< Top free block in the heap (for fast extension). */
+  size_t num_bins;
 
-  size_t num_bins; /**< Number of size classes (bins) managed by this arena. */
+  block_header_t **bins;
+  block_header_t  *top_chunk;
 } mem_arena_t;
 
 /** ============================================================================
@@ -280,12 +303,18 @@ typedef struct __PACKED MemArena
  *  @details    Each node records the base address and size of
  *              an mmap() allocation, forming a linked list
  *              maintained by the allocator.
+ *
+ *  @par Fields
+ *    @li addr – Base address returned by mmap()
+ *    @li size – Total mapped region size (rounded to pages)
+ *    @li next – Next region in allocator’s mmap list
  * ========================================================================== */
 typedef struct __PACKED MmapBlock
 {
-  void             *addr; /**< Base address returned by mmap(). */
-  size_t            size; /**< Total mapped region size (rounded to pages). */
-  struct MmapBlock *next; /**< Next region in allocator's mmap list. */
+  void  *addr;
+  size_t size;
+
+  struct MmapBlock *next;
 } mmap_t;
 
 /** ============================================================================
@@ -300,21 +329,31 @@ typedef struct __PACKED MmapBlock
  *              reclaim them, and then sleep again. The structure holds the
  *              timing parameters, the thread handle, and the primitives used
  *              to signal the collector to start or stop its work.
+ *
+ *  @par Fields
+ *    @li gc_thread        – Handle to the GC pthread
+ *    @li main_thread      – Handle to the application’s main pthread
+ *    @li gc_running       – Whether the GC thread is active and should run
+ *    @li gc_exit          – Signal for the GC thread to exit
+ *    @li gc_interval_ms   – Interval between GC cycles, in milliseconds
+ *    @li gc_thread_started – Flag indicating the GC thread has been created
+ *    @li gc_cond          – Condition variable to signal GC thread
+ *    @li gc_lock          – Mutex for synchronizing GC start/stop
  * ========================================================================== */
 typedef struct __PACKED GcThread
 {
-  pthread_t gc_thread;    /**< Handle to the GC pthread */
+  pthread_t gc_thread;
   pthread_t main_thread;
 
-  atomic_bool gc_running; /**< Whether the GC thread is active and should run */
-  atomic_bool gc_exit;    /**< Signal for the GC thread to exit */
+  atomic_bool gc_running;
+  atomic_bool gc_exit;
 
-  uint32_t gc_interval_ms; /**< Interval between GC cycles, in milliseconds */
-  uint16_t
-    gc_thread_started; /**< Flag indicating the GC thread has been created */
+  uint32_t gc_interval_ms;
 
-  pthread_cond_t  gc_cond; /**< Condition variable to signal GC thread */
-  pthread_mutex_t gc_lock; /**< Mutex for synchronizing GC start/stop */
+  uint16_t gc_thread_started;
+
+  pthread_cond_t  gc_cond;
+  pthread_mutex_t gc_lock;
 } gc_thread_t;
 
 /** ============================================================================
@@ -325,26 +364,39 @@ typedef struct __PACKED GcThread
  *  @details    This structure manages the heap, including free
  *              lists for memory blocks, garbage collection, and
  *              allocation strategies.
+ *
+ *  @par Member Documentation
+ *    @li heap_start       – Base of the user heap region
+ *    @li heap_end         – Current end of the heap
+ *    @li metadata_size    – Bytes reserved for bins and arenas
+ *    @li stack_top        – Upper bound of application stack
+ *    @li stack_bottom     – Lower bound of application stack
+ *    @li last_allocated   – Last block returned (NEXT_FIT)
+ *    @li num_size_classes – Total size classes available
+ *    @li num_arenas       – Number of arena partitions
+ *    @li arenas           – Array of arena metadata
+ *    @li mmap_list        – Linked list of mmap’d regions
+ *    @li free_lists       – Segregated free lists by size class
+ *    @li gc_thread        – Garbage collector controller
  * ========================================================================== */
 typedef struct __PACKED MemoryAllocator
 {
-  uint8_t *heap_start;            /**< Base of the user heap region */
-  uint8_t *heap_end;              /**< Current end of the heap */
-  size_t   metadata_size;         /**< Bytes reserved for bins and arenas */
+  uint8_t *heap_start;
+  uint8_t *heap_end;
 
-  uintptr_t *stack_top;           /**< Upper bound of application stack */
-  uintptr_t *stack_bottom;        /**< Lower bound of application stack */
+  size_t metadata_size;
 
-  block_header_t *last_allocated; /**< Last block returned (NEXT_FIT) */
+  uintptr_t *stack_top;
+  uintptr_t *stack_bottom;
 
-  size_t       num_size_classes;  /**< Total size classes available */
-  size_t       num_arenas;        /**< Number of arena partitions */
-  mem_arena_t *arenas;            /**< Array of arena metadata */
+  size_t num_size_classes;
+  size_t num_arenas;
 
-  mmap_t          *mmap_list;     /**< Linked list of mmap’d regions */
-  block_header_t **free_lists;    /**< Segregated free lists by size class */
-
-  gc_thread_t gc_thread;          /**< Garbage collector controller */
+  block_header_t  *last_allocated;
+  mem_arena_t     *arenas;
+  mmap_t          *mmap_list;
+  block_header_t **free_lists;
+  gc_thread_t      gc_thread;
 } mem_allocator_t;
 
 /** ============================================================================
