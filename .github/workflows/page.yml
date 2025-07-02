@@ -2,8 +2,10 @@ name: Web Page
 
 permissions:
   contents: read
-  checks:   read
-  actions:  read
+  pages:   write
+  id-token: write
+  actions: read
+
 
 on:
   push:
