@@ -19,6 +19,9 @@ RUN apt-get update \
  && apt-get install -y --no-install-recommends \
       build-essential \
       cmake \
+      git \
+      wget \
+      ca-certificates \
       valgrind \
       doxygen \
       graphviz \
