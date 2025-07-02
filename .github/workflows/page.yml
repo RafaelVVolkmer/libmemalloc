@@ -1,34 +1,51 @@
-name: Build & Publish webpage
+name: Style Check
 
 permissions:
-  contents: write
-  pages: write
+  contents: read
+  checks:   write
+  actions:  read
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ main ]
   pull_request:
-    branches: [ "main" ]
-
+    branches: [ main ]
 jobs:
-  build-docs:
+  build:
     runs-on: ubuntu-latest
 
+    strategy:
+      matrix:
+        build_type: [Release]
+
+    env:
+      BUILD_TYPE: ${{ matrix.build_type }}
+
     steps:
-      - name: Checkout
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Install Doxygen
-        run: sudo apt-get update && sudo apt-get install -y doxygen
-
-      - name: Generate docs
+      - name: Install build dependencies
         run: |
-          chmod +x ./doc.sh
-          ./doc.sh
+          sudo apt-get update
+          sudo apt-get install -y software-properties-common
+          sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
+          sudo apt-get update
+          sudo apt-get install -y \
+          gcc-13 g++-13 cmake make valgrind doxygen graphviz
+          sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-13 100
+          sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-13 100
+          gcc --version
+          g++ --version
+
+      - name: Make build script executable
+        run: chmod +x ./build.sh
+
+      - name: Build (${{ env.BUILD_TYPE }})
+        run: ./build.sh ${{ env.BUILD_TYPE }}
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./docs/html
-          
+          publish_dir: ./build/html
