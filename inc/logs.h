@@ -1,5 +1,5 @@
 /** ============================================================================
- *  @addtogroup Libmemalloc
+ *  @addtogroup Logs
  *  @{
  *
  *  @file       logs.h
@@ -46,9 +46,10 @@ extern "C"
 /** ============================================================================
  *  @enum       LogLevel
  *  @typedef    log_level_t
+ *
  *  @brief      Defines log levels for the logging system.
  *
- *  @par Fields
+ *  @par Fields:
  *    @li LOG_LEVEL_NONE    – Disables all logs
  *    @li LOG_LEVEL_ERROR   – Enables only error logs
  *    @li LOG_LEVEL_WARNING – Enables error and warning logs
@@ -57,11 +58,11 @@ extern "C"
  * ========================================================================== */
 typedef enum LogLevel
 {
-  LOG_LEVEL_NONE    = (uint8_t)(0u),
-  LOG_LEVEL_ERROR   = (uint8_t)(1u),
-  LOG_LEVEL_WARNING = (uint8_t)(2u),
-  LOG_LEVEL_INFO    = (uint8_t)(3u),
-  LOG_LEVEL_DEBUG   = (uint8_t)(4u)
+  LOG_LEVEL_NONE    = (uint8_t)(0u), /**< Disables all logs */
+  LOG_LEVEL_ERROR   = (uint8_t)(1u), /**< Enables error logs */
+  LOG_LEVEL_WARNING = (uint8_t)(2u), /**< Enables warning logs */
+  LOG_LEVEL_INFO    = (uint8_t)(3u), /**< Enables info logs */
+  LOG_LEVEL_DEBUG   = (uint8_t)(4u)  /**< Enables all logs */
 } log_level_t;
 
 /** ============================================================================
@@ -196,7 +197,8 @@ static inline int LOG_output(log_level_t level,
 
   struct timespec ts;
   struct tm      *ptm = NULL;
-  time_t          now = 0;
+
+  time_t now = 0;
 
   if (level > LOG_LEVEL)
   {

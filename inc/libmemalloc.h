@@ -7,7 +7,6 @@
  *  @file       libmemalloc.h
  *
  *  @details    Implements memory allocator with advanced features:
- *              - Architecture-specific stack allocation (alloca)
  *              - Garbage collection (mark & sweep)
  *              - Multiple allocation strategies (First/Best/Next Fit)
  *
@@ -66,11 +65,11 @@ extern "C"
 #elif defined(__AVR__)
   #define ARCH_ALIGNMENT ((uint8_t)2U) /**< AVR (8 bits) */
 #else
-  #define ARCH_ALIGNMENT ((uint8_t)4U) /**< Fallback */
+  #define ARCH_ALIGNMENT ((uint8_t)4U)
 #endif
 
 /** ============================================================================
- *  @def        LIBMEMALLOC_API
+ *  @def        __LIBMEMALLOC_API
  *  @brief      Defines the default visibility attribute
  *              for exported symbols.
  *
@@ -94,7 +93,7 @@ extern "C"
 #endif
 
 /** ============================================================================
- *  @def        LIBMEMALLOC_MALLOC
+ *  @def        __LIBMEMALLOC_MALLOC
  *  @brief      Annotates allocator functions that return
  *              newly allocated memory.
  *
@@ -114,7 +113,7 @@ extern "C"
 #endif
 
 /** ============================================================================
- *  @def        LIBMEMALLOC_REALLOC
+ *  @def        __LIBMEMALLOC_REALLOC
  *  @brief      Annotates reallocator functions that may return
  *              a pointer to resized memory.
  *
@@ -130,24 +129,6 @@ extern "C"
     __attribute__((malloc, alloc_size(3), warn_unused_result))
 #else
   #define __LIBMEMALLOC_REALLOC
-#endif
-
-/** ============================================================================
- *  @def        __PACKED
- *  @brief      Defines packed structure attribute with alignment.
- *
- *  @details    When using GCC or Clang, expands to
- *              __attribute__((packed, aligned(ARCH_ALIGNMENT))) to ensure
- *              minimal padding in structures while enforcing the architecture-
- *              specific alignment. On compilers that do not support this
- *              attribute, expands to nothing.
- * ========================================================================== */
-#ifndef __PACKED
-  #if defined(__GNUC__)
-    #define __PACKED __attribute__((packed, aligned(ARCH_ALIGNMENT)))
-  #else
-    #define __PACKED
-  #endif
 #endif
 
 /** ============================================================================
@@ -192,7 +173,7 @@ extern "C"
 #define ALIGN(x)       (((x) + (ARCH_ALIGNMENT - 1U)) & ~(ARCH_ALIGNMENT - 1U))
 
 /** ============================================================================
- *  @def        DEFAULT_GC_INTERVAL_MS
+ *  @def        GC_INTERVAL_MS
  *  @brief      Default interval in milliseconds between GC cycles.
  *
  *  @details    Defines the time (in milliseconds) the garbage collector
@@ -214,66 +195,65 @@ extern "C"
  *  @details    This enum specifies the available strategies for
  *              memory block allocation within the heap.
  *
- *  @par Fields
- *    @li FIRST_FIT – First available block allocation
- *    @li NEXT_FIT  – Continue from last allocation
- *    @li BEST_FIT  – Smallest block fitting the request
+ *  @par Fields:
+ *    @li @b FIRST_FIT – First available block allocation
+ *    @li @b NEXT_FIT – Continue from last allocation
+ *    @li @b BEST_FIT – Smallest block fitting the request
  * ========================================================================== */
 typedef enum AllocationStrategy
 {
-  FIRST_FIT = (uint8_t)(0u),
-  NEXT_FIT  = (uint8_t)(1u),
-  BEST_FIT  = (uint8_t)(2u)
+  FIRST_FIT = (uint8_t)(0u), /**< Allocate the first available block */
+  NEXT_FIT  = (uint8_t)(1u), /**< Continue searching from the last allocation */
+  BEST_FIT  = (uint8_t)(2u) /**< Use the smallest block that fits the request */
 } allocation_strategy_t;
 
 /** ============================================================================
- *  @struct  BlockHeader
- *  @typedef block_header_t
+ *  @struct  block_header_t
+ *
  *  @brief   Represents the header for a memory block.
  *
  *  @details This structure manages metadata for each block
  *           within the heap, including size, status, and
  *           debugging information.
  *
- *  @par Fields
- *    @li magic    – Magic number for integrity check
- *    @li size     – Total block size (includes header, data, and canary)
- *    @li free     – 1 if block is free, 0 if allocated
- *    @li marked   – Garbage collector mark flag
- *    @li var_name – Variable name (for debugging)
- *    @li file     – Source file of allocation (for debugging)
- *    @li line     – Line number of allocation (for debugging)
- *    @li canary   – Canary value for buffer-overflow detection
- *    @li next     – Pointer to the next block
- *    @li prev     – Pointer to the previous block
- *    @li fl_next  – Pointer to the next block on free list
- *    @li fl_prev  – Pointer to the previous block on free list
+ *  @par Fields:
+ *    @li @b magic    – Magic number for integrity check
+ *    @li @b size     – Total block size (includes header, data, and canary)
+ *    @li @b free     – 1 if block is free, 0 if allocated
+ *    @li @b marked   – Garbage collector mark flag
+ *    @li @b var_name – Variable name (for debugging)
+ *    @li @b file     – Source file of allocation (for debugging)
+ *    @li @b line     – Line number of allocation (for debugging)
+ *    @li @b canary   – Canary value for buffer-overflow detection
+ *    @li @b next     – Pointer to the next block
+ *    @li @b prev     – Pointer to the previous block
+ *    @li @b fl_next  – Pointer to the next block on free list
+ *    @li @b fl_prev  – Pointer to the previous block on free list
  * ========================================================================== */
 typedef struct __PACKED BlockHeader
 {
-  uint32_t magic;
+  uint32_t magic;  /**< Magic number for integrity check */
+  size_t   size;   /**< Total block size (includes header, data, and canary) */
 
-  size_t size;
+  uint32_t free;   /**< 1 if block is free, 0 if allocated */
+  uint32_t marked; /**< Garbage collector mark flag */
 
-  uint32_t free;
-  uint32_t marked;
+  const char *var_name;     /**< Variable name (for debugging) */
+  const char *file;         /**< Source file of allocation (for debugging) */
+  uint64_t    line;         /**< Line number of allocation (for debugging) */
 
-  const char *var_name;
-  const char *file;
-  uint64_t    line;
+  uint32_t canary;          /**< Canary value for buffer-overflow detection */
 
-  uint32_t canary;
+  struct BlockHeader *next; /**< Pointer to the next block */
+  struct BlockHeader *prev; /**< Pointer to the previous block */
 
-  struct BlockHeader *next;
-  struct BlockHeader *prev;
-
-  struct BlockHeader *fl_next;
-  struct BlockHeader *fl_prev;
+  struct BlockHeader *fl_next; /**< Pointer to the next block on free list */
+  struct BlockHeader
+    *fl_prev; /**< Pointer to the previous block on free list */
 } block_header_t;
 
 /** ============================================================================
- *  @struct     MemArena
- *  @typedef    mem_arena_t
+ *  @struct     mem_arena_t
  *  @brief      Represents a memory arena with its own free lists.
  *
  *  @details    This structure manages a group of free lists (bins)
@@ -282,44 +262,42 @@ typedef struct __PACKED BlockHeader
  *              hold multiple size classes to optimize allocation
  *              and minimize fragmentation.
  *
- *  @par Fields
- *    @li bins      – Array of free lists (one per size class)
- *    @li top_chunk – Top free block in the heap (for fast extension)
- *    @li num_bins  – Number of size classes (bins) managed by this arena
+ *  @par Fields:
+ *    @li @b bins      – Array of free lists (one per size class)
+ *    @li @b top_chunk – Top free block in the heap (for fast extension)
+ *    @li @b num_bins  – Number of size classes (bins) managed by this arena
  * ========================================================================== */
 typedef struct __PACKED MemArena
 {
-  size_t num_bins;
+  size_t num_bins;            /**< Number of bins in this arena */
 
-  block_header_t **bins;
-  block_header_t  *top_chunk;
+  block_header_t **bins;      /**< Array of pointers to bin heads */
+  block_header_t  *top_chunk; /**< Pointer to the top (wilderness) chunk */
 } mem_arena_t;
 
 /** ============================================================================
- *  @struct     MmapBlock
- *  @typedef    mmap_t
+ *  @struct     mmap_t
  *  @brief      Tracks memory-mapped regions for large allocations.
  *
  *  @details    Each node records the base address and size of
  *              an mmap() allocation, forming a linked list
  *              maintained by the allocator.
  *
- *  @par Fields
- *    @li addr – Base address returned by mmap()
- *    @li size – Total mapped region size (rounded to pages)
- *    @li next – Next region in allocator’s mmap list
+ *  @par Fields:
+ *    @li @b addr – Base address returned by mmap()
+ *    @li @b size – Total mapped region size (rounded to pages)
+ *    @li @b next – Next region in allocator’s mmap list
  * ========================================================================== */
 typedef struct __PACKED MmapBlock
 {
-  void  *addr;
-  size_t size;
+  void  *addr;            /**< Base address returned by mmap() */
+  size_t size;            /**< Total mapped region size (rounded to pages) */
 
-  struct MmapBlock *next;
+  struct MmapBlock *next; /**< Next region in the allocator’s mmap list */
 } mmap_t;
 
 /** ============================================================================
- *  @struct     GcThread
- *  @typedef    gc_thread_t
+ *  @struct     gc_thread_t
  *  @brief      Orchestrates the background mark-and-sweep garbage collector.
  *
  *  @details    The structure encapsulates all state and
@@ -330,73 +308,72 @@ typedef struct __PACKED MmapBlock
  *              timing parameters, the thread handle, and the primitives used
  *              to signal the collector to start or stop its work.
  *
- *  @par Fields
- *    @li gc_thread        – Handle to the GC pthread
- *    @li main_thread      – Handle to the application’s main pthread
- *    @li gc_running       – Whether the GC thread is active and should run
- *    @li gc_exit          – Signal for the GC thread to exit
- *    @li gc_interval_ms   – Interval between GC cycles, in milliseconds
- *    @li gc_thread_started – Flag indicating the GC thread has been created
- *    @li gc_cond          – Condition variable to signal GC thread
- *    @li gc_lock          – Mutex for synchronizing GC start/stop
+ *  @par Fields:
+ *    @li @b gc_thread        – Handle to the GC pthread
+ *    @li @b main_thread      – Handle to the application’s main pthread
+ *    @li @b gc_running       – Whether the GC thread is active and should run
+ *    @li @b gc_exit          – Signal for the GC thread to exit
+ *    @li @b gc_interval_ms   – Interval between GC cycles, in milliseconds
+ *    @li @b gc_thread_started – Flag indicating the GC thread has been created
+ *    @li @b gc_cond          – Condition variable to signal GC thread
+ *    @li @b gc_lock          – Mutex for synchronizing GC start/stop
  * ========================================================================== */
 typedef struct __PACKED GcThread
 {
-  pthread_t gc_thread;
-  pthread_t main_thread;
+  pthread_t gc_thread;        /**< GC thread handle */
+  pthread_t main_thread;      /**< Main thread handle */
 
-  atomic_bool gc_running;
-  atomic_bool gc_exit;
+  atomic_bool gc_running;     /**< Flag indicating GC is running */
+  atomic_bool gc_exit;        /**< Flag to signal GC shutdown */
 
-  uint32_t gc_interval_ms;
+  uint32_t gc_interval_ms;    /**< Interval between GC cycles (ms) */
 
-  uint16_t gc_thread_started;
+  uint16_t gc_thread_started; /**< Indicates whether GC thread has started */
 
-  pthread_cond_t  gc_cond;
-  pthread_mutex_t gc_lock;
+  pthread_cond_t  gc_cond;    /**< Condition variable for GC signaling */
+  pthread_mutex_t gc_lock;    /**< Mutex protecting the condition */
 } gc_thread_t;
 
 /** ============================================================================
- *  @struct     MemoryAllocator
- *  @typedef    mem_allocator_t
+ *  @struct     mem_allocator_t
  *  @brief      Manages dynamic memory allocation.
  *
  *  @details    This structure manages the heap, including free
  *              lists for memory blocks, garbage collection, and
  *              allocation strategies.
  *
- *  @par Member Documentation
- *    @li heap_start       – Base of the user heap region
- *    @li heap_end         – Current end of the heap
- *    @li metadata_size    – Bytes reserved for bins and arenas
- *    @li stack_top        – Upper bound of application stack
- *    @li stack_bottom     – Lower bound of application stack
- *    @li last_allocated   – Last block returned (NEXT_FIT)
- *    @li num_size_classes – Total size classes available
- *    @li num_arenas       – Number of arena partitions
- *    @li arenas           – Array of arena metadata
- *    @li mmap_list        – Linked list of mmap’d regions
- *    @li free_lists       – Segregated free lists by size class
- *    @li gc_thread        – Garbage collector controller
+ *  @par Fields:
+ *    @li @b heap_start       – Base of the user heap region
+ *    @li @b heap_end         – Current end of the heap
+ *    @li @b metadata_size    – Bytes reserved for bins and arenas
+ *    @li @b stack_top        – Upper bound of application stack
+ *    @li @b stack_bottom     – Lower bound of application stack
+ *    @li @b last_allocated   – Last block returned (NEXT_FIT)
+ *    @li @b num_size_classes – Total size classes available
+ *    @li @b num_arenas       – Number of arena partitions
+ *    @li @b arenas           – Array of arena metadata
+ *    @li @b mmap_list        – Linked list of mmap’d regions
+ *    @li @b free_lists       – Segregated free lists by size class
+ *    @li @b gc_thread        – Garbage collector controller
  * ========================================================================== */
 typedef struct __PACKED MemoryAllocator
 {
-  uint8_t *heap_start;
-  uint8_t *heap_end;
+  uint8_t *heap_start;             /**< Base of the user heap region */
+  uint8_t *heap_end;               /**< Current end of the heap */
 
-  size_t metadata_size;
+  size_t metadata_size;            /**< Bytes reserved for bins and arenas */
 
-  uintptr_t *stack_top;
-  uintptr_t *stack_bottom;
+  uintptr_t *stack_top;            /**< Upper bound of application stack */
+  uintptr_t *stack_bottom;         /**< Lower bound of application stack */
 
-  size_t num_size_classes;
-  size_t num_arenas;
+  size_t num_size_classes;         /**< Total size classes available */
+  size_t num_arenas;               /**< Number of arena partitions */
 
-  block_header_t  *last_allocated;
-  mem_arena_t     *arenas;
-  mmap_t          *mmap_list;
-  block_header_t **free_lists;
-  gc_thread_t      gc_thread;
+  block_header_t  *last_allocated; /**< Last block returned (NEXT_FIT) */
+  mem_arena_t     *arenas;         /**< Array of arena metadata */
+  mmap_t          *mmap_list;      /**< Linked list of mmap’d regions */
+  block_header_t **free_lists;     /**< Segregated free lists by size class */
+  gc_thread_t      gc_thread;      /**< Garbage collector controller */
 } mem_allocator_t;
 
 /** ============================================================================
@@ -404,7 +381,6 @@ typedef struct __PACKED MemoryAllocator
  * ========================================================================== */
 
 /** ============================================================================
- *  @fn         MEM_memset
  *  @brief      Fills a memory block with a specified byte value
  *              using optimized operations
  *
@@ -423,7 +399,6 @@ __LIBMEMALLOC_API void *MEM_memset(void *const  source,
                                    const size_t size);
 
 /** ============================================================================
- *  @fn         MEM_memcpy
  *  @brief      Copies memory block between buffers using
  *              optimized operations
  *
@@ -442,7 +417,6 @@ __LIBMEMALLOC_API void *MEM_memcpy(void *const  dest,
                                    const size_t size);
 
 /** ============================================================================
- *  @fn         MEM_allocatorInit
  *  @brief      Initializes the memory allocator and its
  *              internal structures
  *
@@ -460,7 +434,6 @@ __LIBMEMALLOC_API int MEM_allocatorInit(mem_allocator_t *const allocator);
  * ========================================================================== */
 
 /** ============================================================================
- *  @fn         MEM_allocMallocFirstFit
  *  @brief      Allocates memory using the FIRST_FIT strategy.
  *
  *  @param[in]  allocator   Memory allocator context.
@@ -478,7 +451,6 @@ __LIBMEMALLOC_API void *MEM_allocMallocFirstFit(mem_allocator_t
   __LIBMEMALLOC_MALLOC;
 
 /** ============================================================================
- *  @fn         MEM_allocMallocBestFit
  *  @brief      Allocates memory using the BEST_FIT strategy.
  *
  *  @param[in]  allocator   Memory allocator context.
@@ -495,7 +467,6 @@ __LIBMEMALLOC_API void *MEM_allocMallocBestFit(mem_allocator_t *const allocator,
   __LIBMEMALLOC_MALLOC;
 
 /** ============================================================================
- *  @fn         MEM_allocMallocNextFit
  *  @brief      Allocates memory using the NEXT_FIT strategy.
  *
  *  @param[in]  allocator   Memory allocator context.
@@ -512,7 +483,6 @@ __LIBMEMALLOC_API void *MEM_allocMallocNextFit(mem_allocator_t *const allocator,
   __LIBMEMALLOC_MALLOC;
 
 /** ============================================================================
- *  @fn         MEM_allocMalloc
  *  @brief      Allocates memory using a specified strategy.
  *
  *  @param[in]  allocator   Memory allocator context.
@@ -531,7 +501,6 @@ __LIBMEMALLOC_API void *MEM_allocMalloc(mem_allocator_t *const      allocator,
   __LIBMEMALLOC_MALLOC;
 
 /** ============================================================================
- *  @fn         MEM_allocCalloc
  *  @brief      Allocates and zero-initializes memory using a specified
  * strategy.
  *
@@ -552,7 +521,6 @@ __LIBMEMALLOC_API void *MEM_allocCalloc(mem_allocator_t *const      allocator,
   __LIBMEMALLOC_MALLOC;
 
 /** ============================================================================
- *  @fn         MEM_allocRealloc
  *  @brief      Reallocates memory with safety checks using a specified
  * strategy.
  *
@@ -574,7 +542,6 @@ __LIBMEMALLOC_API void *MEM_allocRealloc(mem_allocator_t *const      allocator,
   __LIBMEMALLOC_REALLOC;
 
 /** ============================================================================
- *  @fn         MEM_allocFree
  *  @brief      Releases allocated memory back to the heap.
  *
  *  @param[in]  allocator   Memory allocator context.
@@ -594,7 +561,6 @@ __LIBMEMALLOC_API int MEM_allocFree(mem_allocator_t *const allocator,
  * ========================================================================== */
 
 /** ============================================================================
- *  @fn         MEM_enableGc
  *  @brief      Initialize or signal the garbage collector thread to run
  *
  *  @param[in]  allocator   Pointer to the memory allocator context
@@ -604,7 +570,6 @@ __LIBMEMALLOC_API int MEM_allocFree(mem_allocator_t *const allocator,
 __LIBMEMALLOC_API int MEM_enableGc(mem_allocator_t *const allocator);
 
 /** ============================================================================
- *  @fn         MEM_disableGc
  *  @brief      Stop the garbage collector thread and perform a final collection
  *              cycle
  *

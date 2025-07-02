@@ -15,6 +15,7 @@
  *  @version    v4.0.00
  *  @date       26.06.2025
  *  @author     Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
+ *
  * ========================================================================== */
 
 /** ============================================================================
@@ -32,7 +33,9 @@
  *              specifications, such as nonstandard functions, constants,
  *              and structures.
  * ========================================================================== */
-#define _GNU_SOURCE
+#ifndef _GNU_SOURCE
+  #define _GNU_SOURCE
+#endif
 
 /** ============================================================================
  *  @def        LOG_LEVEL
@@ -56,17 +59,11 @@
  * ========================================================================== */
 
 /*< Dependencies >*/
-#include <errno.h>
 #include <inttypes.h>
-#include <stdarg.h>
 #include <stdbool.h>
 #include <stddef.h>
-#include <stdint.h>
-#include <stdio.h>
-#include <stdlib.h>
 #include <sys/mman.h>
 #include <sys/resource.h>
-#include <unistd.h>
 #include <valgrind/memcheck.h>
 
 /*< Implemented >*/
@@ -127,6 +124,18 @@
  *              allocated memory blocks and detect corruption.
  * ========================================================================== */
 #define MAGIC_NUMBER     (uint32_t)(0xBE'EF'DE'ADU)
+
+/** ============================================================================
+ *  @def        CACHE_LINE_SIZE
+ *  @brief      Size of the CPU cache line in bytes.
+ *
+ *  @details    This constant defines the cache-line size used for
+ *              prefetching and alignment optimizations, ensuring memory
+ *              accesses align to hardware cache boundaries for maximum
+ *              performance and correctness on platforms with strict
+ *              alignment requirements.
+ * ========================================================================== */
+#define CACHE_LINE_SIZE  (uint8_t)(64U)
 
 /** ============================================================================
  *  @def        CANARY_VALUE
@@ -234,7 +243,6 @@ typedef int (*find_fn_t)(mem_allocator_t *const,
  * ========================================================================== */
 
 /** ============================================================================
- *  @fn         MEM_sbrk
  *  @brief      Invokes sbrk-like behavior by calling MEM_brk()
  *              to move the program break by a signed offset
  *
@@ -251,7 +259,6 @@ typedef int (*find_fn_t)(mem_allocator_t *const,
 void *MEM_sbrk(const intptr_t increment);
 
 /** ============================================================================
- *  @fn         MEM_getSizeClass
  *  @brief      Calculates the size class index for a requested
  *              memory size
  *
@@ -267,7 +274,6 @@ void *MEM_sbrk(const intptr_t increment);
 static int MEM_getSizeClass(mem_allocator_t *const allocator,
                             const size_t           size);
 /** ============================================================================
- *  @fn         MEM_validateBlock
  *  @brief      Validates the integrity and boundaries of a
  *              memory block
  *
@@ -288,7 +294,6 @@ static int MEM_validateBlock(mem_allocator_t *const allocator,
                              block_header_t *const  block);
 
 /** ============================================================================
- *  @fn         MEM_insertFreeBlock
  *  @brief      Inserts a block into the appropriate free list
  *              based on its size
  *
@@ -304,7 +309,6 @@ static int MEM_insertFreeBlock(mem_allocator_t *const allocator,
                                block_header_t *const  block);
 
 /** ============================================================================
- *  @fn         MEM_removeFreeBlock
  *  @brief      Removes a block from its free list
  *
  *  @param[in]  allocator   Memory allocator context
@@ -319,7 +323,6 @@ static int MEM_removeFreeBlock(mem_allocator_t *const allocator,
                                block_header_t *const  block);
 
 /** ============================================================================
- *  @fn         MEM_findFirstFit
  *  @brief      Searches for the first suitable free memory
  *              block in size-class free lists
  *
@@ -339,7 +342,6 @@ static int MEM_findFirstFit(mem_allocator_t *const allocator,
                             block_header_t       **fit_block);
 
 /** ============================================================================
- *  @fn         MEM_findNextFit
  *  @brief      Searches for next suitable free memory block using
  *              NEXT_FIT strategy from last allocated position
  *
@@ -358,7 +360,6 @@ static int MEM_findNextFit(mem_allocator_t *const allocator,
                            block_header_t       **fit_block);
 
 /** ============================================================================
- *  @fn         MEM_findBestFit
  *  @brief      Searches for smallest suitable free block
  *              in size-class free lists (BEST_FIT)
  *
@@ -377,7 +378,6 @@ static int MEM_findBestFit(mem_allocator_t *const allocator,
                            block_header_t       **best_fit);
 
 /** ============================================================================
- *  @fn         MEM_mergeBlocks
  *  @brief      Merges adjacent free memory blocks
  *
  *  @param[in]  allocator   Memory allocator context
@@ -394,7 +394,6 @@ static int MEM_mergeBlocks(mem_allocator_t *const allocator,
                            block_header_t        *block);
 
 /** ============================================================================
- *  @fn         MEM_splitBlock
  *  @brief      Splits a memory block into allocated and free portions
  *
  *  @param[in]  allocator   Memory allocator context
@@ -413,7 +412,6 @@ static int MEM_splitBlock(mem_allocator_t *const allocator,
                           const size_t           req_size);
 
 /** ============================================================================
- *  @fn         MEM_growUserHeap
  *  @brief      Expands the user heap by a specified increment.
  *
  *  @param[in]  allocator   Memory allocator context.
@@ -429,7 +427,6 @@ static void *MEM_growUserHeap(mem_allocator_t *const allocator,
                               const intptr_t         inc);
 
 /** ============================================================================
- *  @fn         MEM_mapAlloc
  *  @brief      Allocates a page‐aligned memory region via mmap and registers it
  *              in the allocator’s mmap list for later freeing.
  *
@@ -447,10 +444,10 @@ static void *MEM_growUserHeap(mem_allocator_t *const allocator,
  *  @retval     (void*)(intptr_t)(-ENOMEM)
  *                          Allocation of metadata node failed.
  * ========================================================================== */
-static int *MEM_mapAlloc(mem_allocator_t *allocator, const size_t total_size);
+static int *MEM_mapAlloc(mem_allocator_t *const allocator,
+                         const size_t           total_size);
 
 /** ============================================================================
- *  @fn         MEM_mapFree
  *  @brief      Unmaps a previously mapped memory region and removes its
  * metadata entry from the allocator’s mmap list.
  *
@@ -472,7 +469,6 @@ static int *MEM_mapAlloc(mem_allocator_t *allocator, const size_t total_size);
 static int MEM_mapFree(mem_allocator_t *const allocator, void *const addr);
 
 /** ============================================================================
- *  @fn         MEM_allocatorMalloc
  *  @brief      Allocates memory using specified strategy
  *
  *  @param[in]  allocator   Memory allocator context
@@ -493,7 +489,6 @@ static void *MEM_allocatorMalloc(mem_allocator_t *const      allocator,
   __LIBMEMALLOC_MALLOC;
 
 /** ============================================================================
- *  @fn         MEM_allocatorCalloc
  *  @brief      Allocates and zero-initializes memory
  *
  *  @param[in]  allocator   Memory allocator context
@@ -514,7 +509,6 @@ static void *MEM_allocatorCalloc(mem_allocator_t *const      allocator,
   __LIBMEMALLOC_MALLOC;
 
 /** ============================================================================
- *  @fn         MEM_allocatorRealloc
  *  @brief      Reallocates memory with safety checks
  *
  *  @param[in]  allocator   Memory allocator context
@@ -537,7 +531,6 @@ static void *MEM_allocatorRealloc(mem_allocator_t *const      allocator,
   __LIBMEMALLOC_REALLOC;
 
 /** ============================================================================
- *  @fn         MEM_allocatorFree
  *  @brief      Releases allocated memory back to the heap
  *
  *  @param[in]  allocator   Memory allocator context
@@ -558,29 +551,44 @@ static int MEM_allocatorFree(mem_allocator_t *const allocator,
                              const char *const      var_name);
 
 /** ============================================================================
- *  @fn         MEM_stackGrowsDown
  *  @brief      Determine at runtime whether the stack grows downward
  *
+ *  This function places two volatile local variables on the stack and compares
+ *  their addresses to infer the growth direction:
+ *    - If &addr_1 < &addr_0, the stack grows toward lower addresses.
+ *    - Otherwise, it grows toward higher addresses.
+ *
  *  @return     true if stack grows down (higher addresses → lower),
- *              false if it grows up
+ *              false if it grows up (lower addresses → higher)
+ *
+ *  @retval     true   Stack grows downward (newer frames at lower addresses)
+ *  @retval     false  Stack grows upward (newer frames at higher addresses)
  * ========================================================================== */
 static bool MEM_stackGrowsDown(void);
 
 /** ============================================================================
- *  @fn         MEM_stackBounds
- *  @brief      Retrieve and record the stack limits for a given thread
+ *  @brief      Query and record the bounding addresses of a thread’s stack
  *
- *  @param[in]  tid        pthread_t of the thread whose stack is to be measured
- *  @param[in]  allocator  Pointer to mem_allocator_t where stack_top and
- *                         stack_bottom will be stored (must not be NULL)
+ *  This function retrieves the stack base address, total stack size, and
+ *  guard size for the specified thread, then computes the usable stack
+ *  bounds within the allocator object, taking into account whether the
+ *  stack grows up or down in memory.
  *
- *  @return     EXIT_SUCCESS on success, or -EINVAL if attribute query fails
+ *  @param[in]  id         The thread identifier  whose stack to inspect.
+ *  @param[in]  allocator  Pointer to the allocator object where stack_bottom
+ *                         and stack_top will be stored.
+ *
+ *  @return     EXIT_SUCCESS on success,
+ *              negative error code on failure.
+ *
+ *  @retval     EXIT_SUCCESS  Stack bounds successfully recorded.
+ *  @retval     -EINVAL       allocator was NULL.
+ *  @retval     ret > 0       Error code from one of the pthread or system calls
  * ========================================================================== */
 static int MEM_stackBounds(const pthread_t        id,
                            mem_allocator_t *const allocator);
 
 /** ============================================================================
- *  @fn         MEM_gcThreadFunc
  *  @brief      Thread function that runs the mark-and-sweep garbage collector
  *
  *  @param[in]  arg     Pointer to mem_allocator_t context (must not be NULL)
@@ -590,7 +598,6 @@ static int MEM_stackBounds(const pthread_t        id,
 __GC_HOT static void *MEM_gcThreadFunc(void *arg);
 
 /** ============================================================================
- *  @fn         MEM_setInitialMarks
  *  @brief      Initialize the mark bits for all heap and memory-mapped blocks
  *
  *  @param[in]  allocator   Pointer to the mem_allocator_t context
@@ -600,7 +607,6 @@ __GC_HOT static void *MEM_gcThreadFunc(void *arg);
 __GC_HOT static int MEM_setInitialMarks(mem_allocator_t *const allocator);
 
 /** ============================================================================
- *  @fn         MEM_gcMark
  *  @brief      Mark all allocated blocks that are still reachable on the heap
  *
  *  @param[in]  allocator   Pointer to the memory allocator context
@@ -610,7 +616,6 @@ __GC_HOT static int MEM_setInitialMarks(mem_allocator_t *const allocator);
 __GC_HOT static int MEM_gcMark(mem_allocator_t *const allocator);
 
 /** ============================================================================
- *  @fn         MEM_gcSweep
  *  @brief      Sweep the heap, free unmarked blocks, and unmap memory-mapped
  *              regions
  *
@@ -621,7 +626,6 @@ __GC_HOT static int MEM_gcMark(mem_allocator_t *const allocator);
 __GC_HOT static int MEM_gcSweep(mem_allocator_t *const allocator);
 
 /** ============================================================================
- *  @fn         MEM_runGc
  *  @brief      Initialize or signal the garbage collector thread to run
  *
  *  @param[in]  allocator   Pointer to the memory allocator context
@@ -631,7 +635,6 @@ __GC_HOT static int MEM_gcSweep(mem_allocator_t *const allocator);
 __GC_COLD static int MEM_runGc(mem_allocator_t *const allocator);
 
 /** ============================================================================
- *  @fn         MEM_stopGc
  *  @brief      Stop the garbage collector thread and perform a final collection
  *              cycle
  *
@@ -646,11 +649,18 @@ __GC_COLD static int MEM_stopGc(mem_allocator_t *const allocator);
  * ========================================================================== */
 
 /** ============================================================================
- *  @fn         MEM_stackGrowsDown
  *  @brief      Determine at runtime whether the stack grows downward
  *
+ *  This function places two volatile local variables on the stack and compares
+ *  their addresses to infer the growth direction:
+ *    - If &addr_1 < &addr_0, the stack grows toward lower addresses.
+ *    - Otherwise, it grows toward higher addresses.
+ *
  *  @return     true if stack grows down (higher addresses → lower),
- *              false if it grows up
+ *              false if it grows up (lower addresses → higher)
+ *
+ *  @retval     true   Stack grows downward (newer frames at lower addresses)
+ *  @retval     false  Stack grows upward (newer frames at higher addresses)
  * ========================================================================== */
 static bool MEM_stackGrowsDown(void)
 {
@@ -659,20 +669,30 @@ static bool MEM_stackGrowsDown(void)
   volatile int addr_0 = 0u;
   volatile int addr_1 = 0u;
 
-  ret = (&addr_1 < &addr_0) ? true : false;
+  ret = (bool)(&addr_1 < &addr_0);
 
   return ret;
 }
 
 /** ============================================================================
- *  @fn         MEM_stackBounds
- *  @brief      Retrieve and record the stack limits for a given thread
+ *  @brief      Query and record the bounding addresses of a thread’s stack
  *
- *  @param[in]  tid        pthread_t of the thread whose stack is to be measured
- *  @param[in]  allocator  Pointer to mem_allocator_t where stack_top and
- *                         stack_bottom will be stored (must not be NULL)
+ *  This function retrieves the stack base address, total stack size, and
+ *  guard size for the specified thread, then computes the usable stack
+ *  bounds within the allocator object, taking into account whether the
+ *  stack grows up or down in memory.
  *
- *  @return     EXIT_SUCCESS on success, or -EINVAL if attribute query fails
+ *  @param[in]  id         The thread identifier (pthread_t) whose stack to
+ * inspect.
+ *  @param[in]  allocator  Pointer to the allocator object where stack_bottom
+ *                         and stack_top will be stored.
+ *
+ *  @return     EXIT_SUCCESS on success,
+ *              negative error code on failure.
+ *
+ *  @retval     EXIT_SUCCESS  Stack bounds successfully recorded.
+ *  @retval     -EINVAL       allocator was NULL.
+ *  @retval     ret > 0       Error code from one of the pthread or system calls
  * ========================================================================== */
 static int MEM_stackBounds(const pthread_t id, mem_allocator_t *const allocator)
 {
@@ -721,7 +741,7 @@ static int MEM_stackBounds(const pthread_t id, mem_allocator_t *const allocator)
     guard_size = page;
 
   grows_down = MEM_stackGrowsDown( );
-  if (grows_down == true)
+  if (grows_down)
   {
     allocator->stack_bottom = (uintptr_t *)((char *)base_addr + guard_size);
     allocator->stack_top    = (uintptr_t *)((char *)base_addr + stack_size);
@@ -744,7 +764,6 @@ function_output:
 }
 
 /** ============================================================================
- *  @fn         MEM_memset
  *  @brief      Fills a memory block with a specified byte value
  *              using optimized operations
  *
@@ -795,7 +814,7 @@ void *MEM_memset(void *const source, const int value, const size_t size)
   {
     *(uint64_t *)(ptr + iterator)
       = ((uint64_t)(unsigned char)value) * PREFETCH_MULT;
-    __builtin_prefetch(((ptr + iterator) + 64u), 1u, 1u);
+    __builtin_prefetch(((ptr + iterator) + CACHE_LINE_SIZE), 1u, 1u);
   }
 
   ptr_aux = (unsigned char *)(ptr + iterator);
@@ -816,7 +835,6 @@ function_output:
 }
 
 /** ============================================================================
- *  @fn         MEM_memcpy
  *  @brief      Copies memory block between buffers using
  *              optimized operations
  *
@@ -870,8 +888,8 @@ void *MEM_memcpy(void *const dest, const void *src, const size_t size)
        iterator += (size_t)ARCH_ALIGNMENT)
   {
     *(uint64_t *)(destine + iterator) = *(const uint64_t *)(source + iterator);
-    __builtin_prefetch((source + iterator) + 64u, 0u, 1u);
-    __builtin_prefetch((destine + iterator) + 64u, 1u, 1u);
+    __builtin_prefetch((source + iterator) + CACHE_LINE_SIZE, 0u, 1u);
+    __builtin_prefetch((destine + iterator) + CACHE_LINE_SIZE, 1u, 1u);
   }
 
   destine_aux = (unsigned char *)(destine + iterator);
@@ -889,7 +907,6 @@ function_output:
 }
 
 /** ============================================================================
- *  @fn         MEM_sbrk
  *  @brief      Invokes sbrk-like behavior by calling MEM_brk()
  *              to move the program break by a signed offset
  *
@@ -948,7 +965,6 @@ function_output:
 }
 
 /** ============================================================================
- *  @fn         MEM_validateBlock
  *  @brief      Validates the integrity and boundaries of a
  *              memory block
  *
@@ -974,10 +990,14 @@ static int MEM_validateBlock(mem_allocator_t *const allocator,
 
   mmap_t *map = NULL;
 
-  uint8_t *region_start = NULL;
-  uint8_t *region_end   = NULL;
+  uintptr_t addr       = 0u;
+  uintptr_t heap_start = 0u;
+  uintptr_t heap_end   = 0u;
+  uintptr_t map_start  = 0u;
+  uintptr_t map_end    = 0u;
 
   bool in_heap = false;
+  bool found   = false;
 
   if (UNLIKELY((allocator == NULL) || (block == NULL)))
   {
@@ -990,49 +1010,37 @@ static int MEM_validateBlock(mem_allocator_t *const allocator,
     goto function_output;
   }
 
-  region_start = allocator->heap_start;
-  region_end   = allocator->heap_end;
+  heap_start = (uintptr_t)allocator->heap_start;
+  heap_end   = (uintptr_t)allocator->heap_end;
+  addr       = (uintptr_t)block;
 
-  if ((uint8_t *)block < region_start || (uint8_t *)block >= region_end)
+  if (addr >= heap_start && addr < heap_end)
   {
-    for (map = allocator->mmap_list; map; map = map->next)
-    {
-      region_start = (uint8_t *)map->addr;
-      region_end   = region_start + map->size;
-
-      if ((uint8_t *)block >= region_start && (uint8_t *)block < region_end)
-        break;
-    }
-    if (map == NULL)
-    {
-      ret = -EFAULT;
-      LOG_ERROR("Block %p outside heap and mmap regions. "
-                "Error code: %d.\n",
-                (void *)block,
-                ret);
-      return ret;
-    }
-  }
-  else
-  {
-    in_heap      = true;
-    region_start = allocator->heap_start + allocator->metadata_size;
-    region_end   = allocator->heap_end;
+    in_heap = true;
+    found   = true;
   }
 
-  if (block->magic != MAGIC_NUMBER && in_heap)
+  for (map = allocator->mmap_list; map && !found; map = map->next)
   {
-    ret = -ENOTRECOVERABLE;
-    LOG_ERROR("Invalid magic at %p: 0x%X (expected 0x%X). "
-              "Error code: %d.\n",
+    map_start = (uintptr_t)map->addr;
+    map_end   = map_start + map->size;
+
+    found = (bool)(addr >= map_start && addr < map_end);
+  }
+
+  if (!found)
+  {
+    ret = -EFAULT;
+    LOG_ERROR("Block %p outside heap [%p ... %p] and mmap regions. "
+              "Error: %d\n",
               (void *)block,
-              block->magic,
-              MAGIC_NUMBER,
+              (void *)allocator->heap_start,
+              (void *)allocator->heap_end,
               ret);
     goto function_output;
   }
 
-  if (block->canary != CANARY_VALUE && in_heap)
+  if (block->canary != CANARY_VALUE && (int)in_heap)
   {
     ret = -EPROTO;
     LOG_ERROR("Corrupted header at %p: 0x%X vs 0x%X. "
@@ -1045,7 +1053,7 @@ static int MEM_validateBlock(mem_allocator_t *const allocator,
   }
 
   data_canary = (uint32_t *)((uint8_t *)block + block->size - sizeof(uint32_t));
-  if (*data_canary != CANARY_VALUE && in_heap)
+  if (*data_canary != CANARY_VALUE && (int)in_heap)
   {
     ret = -EOVERFLOW;
     LOG_ERROR("Data overflow detected at %p (canary: 0x%X). "
@@ -1056,7 +1064,7 @@ static int MEM_validateBlock(mem_allocator_t *const allocator,
     goto function_output;
   }
 
-  if (((uint8_t *)block + block->size) > allocator->heap_end && in_heap)
+  if (((uint8_t *)block + block->size) > allocator->heap_end && (int)in_heap)
   {
     ret = -EFBIG;
     LOG_ERROR("Structural overflow at %p (size: %zu). Heap range [%p - %p]. "
@@ -1074,7 +1082,6 @@ function_output:
 }
 
 /** ============================================================================
- *  @fn         MEM_getSizeClass
  *  @brief      Calculates the size class index for a requested
  *              memory size
  *
@@ -1144,7 +1151,6 @@ function_output:
 }
 
 /** ============================================================================
- *  @fn         MEM_insertFreeBlock
  *  @brief      Inserts a block into the appropriate free list
  *              based on its size
  *
@@ -1198,7 +1204,6 @@ function_output:
 }
 
 /** ============================================================================
- *  @fn         MEM_removeFreeBlock
  *  @brief      Removes a block from its free list
  *
  *  @param[in]  allocator   Memory allocator context
@@ -1255,7 +1260,6 @@ function_output:
 }
 
 /** ============================================================================
- *  @fn         MEM_allocatorInit
  *  @brief      Initializes the memory allocator and its
  *              internal structures
  *
@@ -1379,7 +1383,7 @@ int MEM_allocatorInit(mem_allocator_t *const allocator)
   }
 
 #ifdef RUNNING_ON_VALGRIND
-  if (mempool_created == true)
+  if (mempool_created)
     VALGRIND_DESTROY_MEMPOOL(allocator);
 
   VALGRIND_CREATE_MEMPOOL(allocator, 0, false);
@@ -1396,7 +1400,6 @@ function_output:
 }
 
 /** ============================================================================
- *  @fn         MEM_growUserHeap
  *  @brief      Expands the user heap by a specified increment.
  *
  *  @param[in]  allocator   Memory allocator context.
@@ -1444,7 +1447,6 @@ function_output:
 }
 
 /** ============================================================================
- *  @fn         MEM_mapAlloc
  *  @brief      Allocates a page‐aligned memory region via mmap and registers it
  *              in the allocator’s mmap list for later freeing.
  *
@@ -1462,7 +1464,8 @@ function_output:
  *  @retval     (void*)(intptr_t)(-ENOMEM)
  *                          Allocation of metadata node failed.
  * ========================================================================== */
-static int *MEM_mapAlloc(mem_allocator_t *allocator, const size_t total_size)
+static int *MEM_mapAlloc(mem_allocator_t *const allocator,
+                         const size_t           total_size)
 {
   void *ptr = NULL;
 
@@ -1484,7 +1487,7 @@ static int *MEM_mapAlloc(mem_allocator_t *allocator, const size_t total_size)
   }
 
   page     = (size_t)sysconf(_SC_PAGESIZE);
-  map_size = (size_t)(((total_size + page - 1u) / page) * page);
+  map_size = ((total_size + page - 1u) / page) * page;
 
   ptr = mmap(NULL,
              map_size,
@@ -1545,7 +1548,6 @@ function_output:
 }
 
 /** ============================================================================
- *  @fn         MEM_mapFree
  *  @brief      Unmaps a previously mapped memory region and removes its
  * metadata entry from the allocator’s mmap list.
  *
@@ -1631,7 +1633,6 @@ function_output:
 }
 
 /** ============================================================================
- *  @fn         MEM_findFirstFit
  *  @brief      Searches for the first suitable free memory
  *              block in size-class free lists
  *
@@ -1693,7 +1694,6 @@ function_output:
 }
 
 /** ============================================================================
- *  @fn         MEM_findNextFit
  *  @brief      Searches for next suitable free memory block using
  *              NEXT_FIT strategy from last allocated position
  *
@@ -1768,7 +1768,6 @@ function_output:
 }
 
 /** ============================================================================
- *  @fn         MEM_findBestFit
  *  @brief      Searches for smallest suitable free block
  *              in size-class free lists (BEST_FIT)
  *
@@ -1814,8 +1813,7 @@ static int MEM_findBestFit(mem_allocator_t *const allocator,
     goto function_output;
   }
 
-  for (iterator = (size_t)start_class;
-       iterator < (size_t)allocator->num_size_classes;
+  for (iterator = (size_t)start_class; iterator < allocator->num_size_classes;
        iterator++)
   {
     current = allocator->free_lists[iterator];
@@ -1849,7 +1847,6 @@ function_output:
 }
 
 /** ============================================================================
- *  @fn         MEM_splitBlock
  *  @brief      Splits a memory block into allocated and free portions
  *
  *  @param[in]  allocator   Memory allocator context
@@ -1910,7 +1907,7 @@ static int MEM_splitBlock(mem_allocator_t *const allocator,
     goto function_output;
   }
 
-  remaining_size = (size_t)(block->size - total_size);
+  remaining_size = block->size - total_size;
 
   ret = MEM_removeFreeBlock(allocator, block);
   if (ret != EXIT_SUCCESS)
@@ -1968,7 +1965,6 @@ function_output:
 }
 
 /** ============================================================================
- *  @fn         MEM_mergeBlocks
  *  @brief      Merges adjacent free memory blocks
  *
  *  @param[in]  allocator   Memory allocator context
@@ -2091,7 +2087,6 @@ function_output:
 }
 
 /** ============================================================================
- *  @fn         MEM_allocatorMalloc
  *  @brief      Allocates memory using specified strategy
  *
  *  @param[in]  allocator   Memory allocator context
@@ -2257,7 +2252,6 @@ null_pointer:
 }
 
 /** ============================================================================
- *  @fn         MEM_allocatorRealloc
  *  @brief      Reallocates memory with safety checks
  *
  *  @param[in]  allocator   Memory allocator context
@@ -2353,7 +2347,6 @@ function_output:
 }
 
 /** ============================================================================
- *  @fn         MEM_allocatorCalloc
  *  @brief      Allocates and zero-initializes memory
  *
  *  @param[in]  allocator   Memory allocator context
@@ -2405,7 +2398,6 @@ function_output:
 }
 
 /** ============================================================================
- *  @fn         MEM_allocatorFree
  *  @brief      Releases allocated memory back to the heap
  *
  *  @param[in]  allocator   Memory allocator context
@@ -2505,7 +2497,7 @@ static int MEM_allocatorFree(mem_allocator_t *const allocator,
     old = MEM_sbrk(delta);
     if ((intptr_t)old >= 0)
     {
-      allocator->heap_end       = (uint8_t *)allocator->heap_end + delta;
+      allocator->heap_end       = allocator->heap_end + delta;
       allocator->last_allocated = (block_header_t *)allocator->heap_start;
 
       LOG_INFO("Heap shrunk by %zu bytes. New heap_end=%p.\n",
@@ -2536,7 +2528,6 @@ function_output:
  * ========================================================================== */
 
 /** ============================================================================
- *  @fn         MEM_setInitialMarks
  *  @brief      Reset mark flags across all allocated regions
  *
  *  @details    This routine walks through every block in the heap area,
@@ -2608,7 +2599,6 @@ function_output:
 }
 
 /** ============================================================================
- *  @fn         MEM_gcMark
  *  @brief      Mark all live blocks reachable from the stack
  *
  *  @details    1. Calls MEM_setInitialMarks to clear previous marks.
@@ -2637,8 +2627,9 @@ static int MEM_gcMark(mem_allocator_t *const allocator)
 
   mmap_t *map = NULL;
 
-  volatile uintptr_t *stack_ptr   = NULL;
-  void               *stack_frame = NULL;
+  volatile uintptr_t *stack_ptr = NULL;
+
+  void *stack_frame = NULL;
 
   uintptr_t *stack_tmp    = NULL;
   uintptr_t *stack_bottom = NULL;
@@ -2650,6 +2641,8 @@ static int MEM_gcMark(mem_allocator_t *const allocator)
   uintptr_t block_addr    = 0u;
   uintptr_t payload_start = 0u;
   uintptr_t payload_end   = 0u;
+
+  bool mmap_found = false;
 
   if (UNLIKELY(allocator == NULL))
   {
@@ -2668,7 +2661,6 @@ static int MEM_gcMark(mem_allocator_t *const allocator)
     goto function_output;
 
   heap_start = (uintptr_t)allocator->heap_start + allocator->metadata_size;
-  heap_end   = (uintptr_t)allocator->heap_end;
 
   stack_bottom = allocator->stack_bottom;
   stack_top    = allocator->stack_top;
@@ -2716,12 +2708,11 @@ static int MEM_gcMark(mem_allocator_t *const allocator)
         else
         {
           block->marked = 0u;
-
-          ret = EXIT_SUCCESS;
         }
       }
 
-      for (map = allocator->mmap_list; map; map = map->next)
+      mmap_found = false;
+      for (map = allocator->mmap_list; map && !mmap_found; map = map->next)
       {
         block = (block_header_t *)map->addr;
 
@@ -2731,18 +2722,16 @@ static int MEM_gcMark(mem_allocator_t *const allocator)
         if (block_addr >= payload_start && block_addr < payload_end
             && !block->free)
         {
-          block->marked = 1;
+          block->marked = 1u;
           LOG_INFO("Block Marked(sbrk): %p (%zu bytes).\n",
                    (void *)((uint8_t *)block + sizeof(block_header_t)),
                    block->size);
-          break;
-        }
-        else
-        {
-          ret = EXIT_SUCCESS;
+          mmap_found = true;
         }
       }
     }
+
+    ret = EXIT_SUCCESS;
   }
 
 function_output:
@@ -2750,7 +2739,6 @@ function_output:
 }
 
 /** ============================================================================
- *  @fn         MEM_gcSweep
  *  @brief      Reclaim any unmarked blocks from heap and mmap regions
  *
  *  @details    1. Iterates the heap sequentially:
@@ -2803,7 +2791,7 @@ static int MEM_gcSweep(mem_allocator_t *const allocator)
 
   heap_start
     = (uint8_t *)((uintptr_t)allocator->heap_start + allocator->metadata_size);
-  heap_end = (uint8_t *)allocator->heap_end;
+  heap_end = allocator->heap_end;
 
   min_size = sizeof(block_header_t);
 
@@ -2844,7 +2832,7 @@ static int MEM_gcSweep(mem_allocator_t *const allocator)
     }
 
     heap_ptr += step;
-    heap_end  = (uint8_t *)allocator->heap_end;
+    heap_end  = allocator->heap_end;
   }
 
   scan = &allocator->mmap_list;
@@ -2884,7 +2872,6 @@ function_output:
 }
 
 /** ============================================================================
- *  @fn         MEM_gcThreadFunc
  *  @brief      Dedicated thread loop driving mark-and-sweep iterations
  *
  *  @details    This thread waits on a condition variable until signaled to run:
@@ -2931,30 +2918,30 @@ static void *MEM_gcThreadFunc(void *arg)
       pthread_cond_wait(&gc_thread->gc_cond, &gc_thread->gc_lock);
 
     if (atomic_load(&gc_thread->gc_exit))
-      break;
+      goto mutex_unlock;
 
     pthread_mutex_unlock(&gc_thread->gc_lock);
 
     ret = PTR_ERR(MEM_gcMark(allocator));
     if (ret != PTR_ERR(EXIT_SUCCESS))
-      goto function_output;
+      goto mutex_unlock;
 
     ret = PTR_ERR(MEM_gcSweep(allocator));
     if (ret != PTR_ERR(EXIT_SUCCESS))
-      goto function_output;
+      goto mutex_unlock;
 
     usleep(gc_thread->gc_interval_ms * NR_OBJS);
 
     pthread_mutex_lock(&gc_thread->gc_lock);
   }
 
-function_output:
+mutex_unlock:
   pthread_mutex_unlock(&gc_thread->gc_lock);
+function_output:
   return ret;
 }
 
 /** ============================================================================
- *  @fn         MEM_runGc
  *  @brief      Start or signal the GC thread to perform a collection cycle
  *
  *  @details    - Captures the main thread’s stack bounds for later marking.
@@ -3022,7 +3009,6 @@ function_output:
 }
 
 /** ============================================================================
- *  @fn         MEM_stopGc
  *  @brief      Stop the GC thread and perform a final collection
  *
  *  @details    - Sets gc_running to false and gc_exit to true.
@@ -3082,7 +3068,6 @@ function_output:
  * ========================================================================== */
 
 /** ============================================================================
- *  @fn         MEM_allocMallocFirstFit
  *  @brief      Allocates memory using the FIRST_FIT strategy.
  *
  *  @param[in]  allocator   Memory allocator context.
@@ -3112,7 +3097,6 @@ void *MEM_allocMallocFirstFit(mem_allocator_t *const allocator,
 }
 
 /** ============================================================================
- *  @fn         MEM_allocMallocBestFit
  *  @brief      Allocates memory using the BEST_FIT strategy.
  *
  *  @param[in]  allocator   Memory allocator context.
@@ -3141,7 +3125,6 @@ void *MEM_allocMallocBestFit(mem_allocator_t *const allocator,
 }
 
 /** ============================================================================
- *  @fn         MEM_allocMallocNextFit
  *  @brief      Allocates memory using the NEXT_FIT strategy.
  *
  *  @param[in]  allocator   Memory allocator context.
@@ -3170,7 +3153,6 @@ void *MEM_allocMallocNextFit(mem_allocator_t *const allocator,
 }
 
 /** ============================================================================
- *  @fn         MEM_allocMalloc
  *  @brief      Allocates memory using a specified strategy.
  *
  *  @param[in]  allocator   Memory allocator context.
@@ -3201,7 +3183,6 @@ void *MEM_allocMalloc(mem_allocator_t *const      allocator,
 }
 
 /** ============================================================================
- *  @fn         MEM_allocCalloc
  *  @brief      Allocates and zero-initializes memory using a specified
  * strategy.
  *
@@ -3234,7 +3215,6 @@ void *MEM_allocCalloc(mem_allocator_t *const      allocator,
 }
 
 /** ============================================================================
- *  @fn         MEM_allocRealloc
  *  @brief      Reallocates memory with safety checks using a specified
  * strategy.
  *
@@ -3274,7 +3254,6 @@ void *MEM_allocRealloc(mem_allocator_t *const      allocator,
 }
 
 /** ============================================================================
- *  @fn         MEM_allocFree
  *  @brief      Releases allocated memory back to the heap.
  *
  *  @param[in]  allocator   Memory allocator context.
@@ -3303,7 +3282,6 @@ int MEM_allocFree(mem_allocator_t *const allocator,
 }
 
 /** ============================================================================
- *  @fn         MEM_enableGc
  *  @brief      Wrapper to start or signal the garbage collector thread
  *
  *  @param[in]  allocator   Pointer to the memory allocator context
@@ -3322,7 +3300,6 @@ int MEM_enableGc(mem_allocator_t *const allocator)
 }
 
 /** ============================================================================
- *  @fn         MEM_disableGc
  *  @brief      Wrapper to stop the garbage collector thread and perform a final
  *              collection
  *
