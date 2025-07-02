@@ -1,5 +1,10 @@
 name: Style Check
 
+permissions:
+  contents: read
+  checks:   write
+  actions:  read
+
 on:
   push:
     branches: [ main ]
