@@ -26,10 +26,9 @@
 ##
 # - Project Description
 
-[libmemalloc Documentation](https://rafaelvvolkmer.github.io/libmemalloc/)
+- *Library documentation available at: [libmemalloc](https://rafaelvvolkmer.github.io/libmemalloc/)*
 
 `libmemalloc` is a lightweight C library that replaces the standard allocator with a fully introspectable, high-performance heap manager. It features multiple allocation strategies (First-Fit, Next-Fit, Best-Fit), segregated free lists for O(1) operations, large-block optimization via `mmap`, and dynamic heap growth/shrinkage using `sbrk`. Advanced capabilities include background mark-and-sweep garbage collection, custom `MEM_memset`/`MEM_memcpy` accelerated by prefetch hints, thread safety with internal locking, Valgrind integration for detailed leak reports, and configurable logging levels. Simply link against the provided `.a` or `.so`, include `libmemalloc.h`, and swap your `malloc`/`free` calls for `MEM_*` APIs to transform memory management into a robust, self-healing subsystem.
-
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
