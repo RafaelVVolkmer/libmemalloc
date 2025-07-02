@@ -24,53 +24,11 @@
 </div>
 
 ##
-
 # - Project Description
 
-`libmemalloc` is a lightweight, plug-and-play C library that gives you complete control and visibility over your program’s heap.  In addition to offering multiple allocation strategies and real-time tracking, it includes the following advanced features:
+[libmemalloc Documentation](https://rafaelvvolkmer.github.io/libmemalloc/)
 
-* **Architecture-specific stack allocation**
-  
-  A custom `alloca-style` mechanism captures the current thread’s stack bounds and lets you carve out stack-based allocations when low-latency, automatic cleanup is desired.
-
-* **Background garbage collection (mark & sweep)**
-  
-  A dedicated GC thread periodically scans both the heap and mmap’d regions, marks live blocks by walking the stack, then reclaims unreachable blocks—no manual free required if you enable GC.
-
-* **Multiple allocation strategies**
-  
-  First-Fit, Next-Fit (with “last allocated” pointer), and Best-Fit algorithms let you tune for allocation speed, fragmentation, or memory footprint on a per-call basis.
-
-* **Segregated free lists & size classes**
-  
-  Maintains a configurable number of size “bins” (default 10, each 128 B) for O(1) inserts/removals and reduced fragmentation.
-
-* **Large-block optimization via `mmap`**
-  
-  Requests ≥ 128 KiB bypass `sbrk` in favor of `mmap`, reducing heap fragmentation for big allocations and automatically tracking them in a separate list.
-
-* **Dynamic heap growth & shrinkage**
-  
-  Uses `sbrk` under the hood to expand or contract the program break, automatically returning memory to the OS when the top chunk is freed.
-
-* **High-performance memory ops**
-  
-  Custom `MEM_memset` and `MEM_memcpy` implementations use alignment checks, 64-bit prefetch‐aligned writes, and `__builtin_prefetch` hints for maximum throughput.
-
-* **Thread-safety & Valgrind integration**
-
-  * Internal locks around every allocation/free call ensure safe use in multi-threaded programs.
-  * When built under Valgrind, creates and annotates a MemPool for fine-grained leak reporting.
-
-* **Configurable logging & diagnostics**
-  
-  Compile-time `LOG_LEVEL` switches control verbosity (ERROR, WARN, INFO, DEBUG).  The API can dump a live allocation map, query individual blocks by address or call site (file, line, variable name), and produce fragmentation or leak reports on demand.
-
-* **Seamless integration**
-  
-  Link against a static (`.a`) or shared (`.so`) library; include `libmemalloc.h` and replace your `malloc`, `free`, etc., calls with the `MEM_alloc*` and `MEM_free` wrappers—no source changes required.
-
-With this feature set, `libmemalloc` not only replaces your standard allocator, but also transforms it into a fully introspectable, self-healing subsystem—ideal for debugging leaks, hardening safety-critical systems, or squeezing every last cycle out of your memory operations.
+`libmemalloc` is a lightweight C library that replaces the standard allocator with a fully introspectable, high-performance heap manager. It features multiple allocation strategies (First-Fit, Next-Fit, Best-Fit), segregated free lists for O(1) operations, large-block optimization via `mmap`, and dynamic heap growth/shrinkage using `sbrk`. Advanced capabilities include background mark-and-sweep garbage collection, custom `MEM_memset`/`MEM_memcpy` accelerated by prefetch hints, thread safety with internal locking, Valgrind integration for detailed leak reports, and configurable logging levels. Simply link against the provided `.a` or `.so`, include `libmemalloc.h`, and swap your `malloc`/`free` calls for `MEM_*` APIs to transform memory management into a robust, self-healing subsystem.
 
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
