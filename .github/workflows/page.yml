@@ -1,8 +1,8 @@
-name: Style Check
+name: Web Page
 
 permissions:
   contents: read
-  checks:   write
+  checks:   read
   actions:  read
 
 on:

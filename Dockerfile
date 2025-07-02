@@ -20,6 +20,8 @@ RUN apt-get update \
       build-essential \
       cmake \
       valgrind \
+      doxygen \
+      graphviz \
  && rm -rf /var/lib/apt/lists/*
 
 RUN groupadd --system appgroup \
