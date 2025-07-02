@@ -1,5 +1,8 @@
 name: Build and Test libmemalloc
 
+permissions:
+  contents: read
+
 on:
   push:
     branches: [ "main" ]
