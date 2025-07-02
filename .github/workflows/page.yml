@@ -1,4 +1,4 @@
-name: Build & Publish Doxygen Docs
+name: Build & Publish webpage
 
 on:
   push:
