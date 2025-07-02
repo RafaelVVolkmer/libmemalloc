@@ -244,6 +244,7 @@ logs/
 *.temp
 *.swp
 *.swo
+*.tag
 
 # Build Directories
 build/
@@ -253,6 +254,7 @@ out/
 release/
 debug/
 bin/
+docs/
 
 # System Files
 .DS_Store
