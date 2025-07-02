@@ -1,7 +1,8 @@
 <a id="readme-top"></a>
 
 <div align="center">
-  
+
+  [![Maintainability][maintainability-shield]][maintainability-url]
   [![Contributors][contributors-shield]][contributors-url]
   [![Forks][forks-shield]][forks-url]
   [![Stargazers][stars-shield]][stars-url]
@@ -14,7 +15,7 @@
 ---
 
 <div align="center">
-  <img src="libmemalloc.svg" alt="libmemalloc logo" width="20%"/>
+  <img src="libmemalloc.svg" alt="libmemalloc logo" width="50%"/>
 </div>
 
 ---
@@ -75,6 +76,8 @@ int main(void)
 ```
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
+[maintainability-shield]: https://qlty.sh/gh/RafaelVVolkmer/projects/libmemalloc/badges/maintainability.svg?style=flat-square
+[maintainability-url]:   https://qlty.sh/gh/RafaelVVolkmer/projects/libmemalloc
 [stars-shield]: https://img.shields.io/github/stars/RafaelVVolkmer/libmemalloc.svg?style=flat-square
 [stars-url]: https://github.com/RafaelVVolkmer/libmemalloc/stargazers
 [contributors-shield]: https://img.shields.io/github/contributors/RafaelVVolkmer/libmemalloc.svg?style=flat-square

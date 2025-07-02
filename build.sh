@@ -43,5 +43,7 @@ cmake --build . --config "$BUILD_TYPE"
 
 ctest --output-on-failure "$BUILD_TYPE"
 
+cmake --build . --target doc > /dev/null 2>&1
+
 echo
 echo "Build and tests '$BUILD_TYPE' with success."

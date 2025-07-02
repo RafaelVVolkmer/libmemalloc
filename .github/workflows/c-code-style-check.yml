@@ -10,29 +10,42 @@ on:
     branches: [ main ]
   pull_request:
     branches: [ main ]
-
 jobs:
-  lint:
-    name: Lint & Format
+  build:
     runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        build_type: [Release]
+
+    env:
+      BUILD_TYPE: ${{ matrix.build_type }}
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Install clang-format & clang-tidy
+      - name: Install build dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y clang-format clang-tidy cmake valgrind
+          sudo apt-get install -y software-properties-common
+          sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
+          sudo apt-get update
+          sudo apt-get install -y \
+          gcc-13 g++-13 cmake make valgrind doxygen graphviz
+          sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-13 100
+          sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-13 100
+          gcc --version
+          g++ --version
 
-      - name: Prepare style script
-        run: chmod +x ./style_check.sh
+      - name: Make build script executable
+        run: chmod +x ./build.sh
 
-      - name: Run style_check.sh
-        run: ./style_check.sh
+      - name: Build (${{ env.BUILD_TYPE }})
+        run: ./build.sh ${{ env.BUILD_TYPE }}
 
-      - name: Upload tidy log
-        if: failure()
-        uses: actions/upload-artifact@v4
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
         with:
-          name: clang-tidy-log
-          path: /tmp/tidy_log*
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./build/html

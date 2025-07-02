@@ -1,11 +1,10 @@
 cmake_minimum_required(VERSION 3.15)
 project(libmemalloc C)
+include(FetchContent)
 # enable_language(ASM)
 
 # ----------------------------------------------------------------------------
 # 1. Basic Project Settings
-#    - C Standard: C11
-#    - Default Build Type: Release (unless specified)
 # ----------------------------------------------------------------------------
 set(CMAKE_C_STANDARD 23)
 set(CMAKE_C_STANDARD_REQUIRED ON)
@@ -52,6 +51,7 @@ else()
 endif()
 
 find_program(VALGRIND_EXECUTABLE NAMES valgrind)
+find_package(Doxygen QUIET)
 
 # ----------------------------------------------------------------------------
 # 3. Output Directories for Binaries
@@ -313,11 +313,11 @@ add_compile_options(
     -Wno-deprecated-declarations
 )
 
-
 # ----------------------------------------------------------------------------
 # 6. Include Subdirectories and Enable Testing
 # ----------------------------------------------------------------------------
 add_subdirectory(src)
+add_subdirectory(doxygen)
 
 enable_testing()
 add_subdirectory(tests)
@@ -338,7 +338,10 @@ if (VALGRIND_EXECUTABLE)
 else()
     message(STATUS "Valgrind not found. Fallback without memcheck")
 endif()
+if (DOXYGEN_EXECUTABLE)
+    message(STATUS "Doxygen:        ${DOXYGEN_EXECUTABLE}")
+else()
+    message(STATUS "Doxygen not found. Fallback without documentation")
+endif()
 message(STATUS "=====================================================================")
 message(STATUS " ")
-
-
