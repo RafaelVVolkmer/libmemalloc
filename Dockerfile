@@ -70,7 +70,7 @@ ENTRYPOINT ["/usr/local/bin/libmemalloc_app"]
 #-------------------------------------------------------------------------------
 # Stage 3: Export artifacts
 #-------------------------------------------------------------------------------
-FROM busybox AS export
+FROM busybox:1.36.1 AS export
 
 ARG BUILD_MODE=Release
 
