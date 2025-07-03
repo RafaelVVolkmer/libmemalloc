@@ -13,6 +13,7 @@ find_package(Threads REQUIRED)
 add_library(libmemalloc_obj OBJECT
     ${LIBMEMALLOC_SOURCES}
 )
+
 target_include_directories(libmemalloc_obj PRIVATE
     "${CMAKE_SOURCE_DIR}/inc"
 )

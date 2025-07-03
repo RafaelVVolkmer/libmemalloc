@@ -64,7 +64,12 @@
 #include <stddef.h>
 #include <sys/mman.h>
 #include <sys/resource.h>
-#include <valgrind/memcheck.h>
+
+#if defined(__linux__) || defined(__unix__) || defined(__APPLE__)
+  #if __has_include(<valgrind/memcheck.h>)
+    #include <valgrind/memcheck.h>
+  #endif
+#endif
 
 /*< Implemented >*/
 #include "libmemalloc.h"
@@ -123,7 +128,7 @@
  *  @details    This constant is used to verify the integrity of
  *              allocated memory blocks and detect corruption.
  * ========================================================================== */
-#define MAGIC_NUMBER     (uint32_t)(0xBE'EF'DE'ADU)
+#define MAGIC_NUMBER     (uint32_t)(0xBEEFDEADU)
 
 /** ============================================================================
  *  @def        CACHE_LINE_SIZE
@@ -144,7 +149,7 @@
  *  @details    This constant is placed at the boundaries of
  *              memory allocations to detect buffer overflows.
  * ========================================================================== */
-#define CANARY_VALUE     (uint32_t)(0xDE'AD'BE'EFULL)
+#define CANARY_VALUE     (uint32_t)(0xDEADBEEFULL)
 
 /** ============================================================================
  *  @def        PREFETCH_MULT
@@ -155,7 +160,7 @@
  *              single-byte value replication across full register
  *              width in vectorized operations.
  * ========================================================================== */
-#define PREFETCH_MULT    (uint64_t)(0x01'01'01'01'01'01'01'01ULL)
+#define PREFETCH_MULT    (uint64_t)(0x0101010101010101ULL)
 
 /** ============================================================================
  *  @def        BYTES_PER_CLASS
@@ -225,14 +230,14 @@
  * ========================================================================== */
 
 /** ============================================================================
- *  @typedef    find_fn_t
- *  @brief      Type for functions that locate a suitable free block.
+ *  @typedef  find_fn_t
+ *  @brief    Type for functions that locate a suitable free block.
  *
- *  @param [in]  allocator   Memory allocator context in which to search.
- *  @param [in]  size        Total size requested (including header and canary).
- *  @param [out] block       Address of pointer to store the found block header.
+ *  @param [in]  allocator  Memory allocator context in which to search.
+ *  @param [in]  size       Total size requested (including header and canary).
+ *  @param [out] block      Address of pointer to store the found block header.
  *
- *  @return     EXIT_SUCCESS if a suitable block was found; negative errno code.
+ *  @return Integer
  * ========================================================================== */
 typedef int (*find_fn_t)(mem_allocator_t *const,
                          const size_t,
@@ -243,242 +248,331 @@ typedef int (*find_fn_t)(mem_allocator_t *const,
  * ========================================================================== */
 
 /** ============================================================================
- *  @brief      Invokes sbrk-like behavior by calling MEM_brk()
- *              to move the program break by a signed offset
+ *  @brief  Invokes sbrk-like behavior by moving the program break.
  *
- *  @param[in]  allocator   Memory allocator context
- *  @param[in]  increment   Signed offset in bytes to move the break
+ *  This function reads the current program break, attempts to move it by the
+ *  signed offset @p increment via sbrk(), and returns the original break on
+ *  success.  If any call to sbrk() or reading the break fails, it encodes the
+ *  negative errno into a pointer via PTR_ERR.
  *
- *  @return     On success, returns the previous program break address.
- *              On failure, returns (void*)(-errno).
+ *  @param[in]  increment Signed offset in bytes to move the program break:
+ *                        positive to grow, negative to shrink.
  *
- *  @retval     != (void*)-1    Previous break on success
- *  @retval     (void*)-EINVAL  Invalid parameters
- *  @retval     (void*)-ENOMEM  Unable to grow/shrink heap
+ *  @return Original program break address on success;
+ *          an error-encoded pointer (via PTR_ERR()) on failure.
+ *
+ *  @retval ret>-1:   Previous break on success.
+ *  @retval -ENOMEM:  Failed to read or adjust the break.
  * ========================================================================== */
 void *MEM_sbrk(const intptr_t increment);
 
 /** ============================================================================
- *  @brief      Calculates the size class index for a requested
- *              memory size
+ *  @brief  Calculates the size class index for a requested memory size.
  *
- *  @param[in]  allocator   Memory allocator context
- *  @param[in]  size        Requested memory size in bytes
+ *  This function determines which size class the given allocation request
+ *  belongs to by dividing the requested @p size by BYTES_PER_CLASS (rounding
+ *  up). If the computed index exceeds the maximum available class, it will
+ *  be clamped to the highest class and a warning emitted.
  *
- *  @return     Integer representing size class index on success,
- *              negative error code on failure
+ *  @param[in]  allocator Pointer to the allocator context.
+ *  @param[in]  size  Requested memory size in bytes (must be > 0).
  *
- *  @retval     ret >= 0:   Valid size class index
- *  @retval     -EINVAL:    Invalid arguments
+ *  @return On success, returns a non-negative integer size class index;
+ *          on failure, returns a negative error code.
+ *
+ *  @retval ret>0:    Valid size class index.
+ *  @retval -EINVAL:  @p allocator is NULL, or @p size is zero.
  * ========================================================================== */
 static int MEM_getSizeClass(mem_allocator_t *const allocator,
                             const size_t           size);
+
 /** ============================================================================
- *  @brief      Validates the integrity and boundaries of a
- *              memory block
+ *  @brief  Validates the integrity and boundaries of a memory block.
  *
- *  @param[in]  allocator   Memory allocator context
- *  @param[in]  block       Block header to validate
+ *  This function ensures that the specified @p block lies within the allocator’s
+ *  heap or one of its mmap regions, that its header canary matches the expected
+ *  magic value to detect metadata corruption, that its data canary is intact to
+ *  catch buffer overruns, and that the block’s size does not extend past the
+ *  heap’s end.  On any failure, an appropriate negative errno is returned.
  *
- *  @return     Integer status code indicating validation result
+ *  @param[in]  allocator Pointer to the allocator context.
+ *  @param[in]  block     Pointer to the block header to validate.
  *
- *  @retval     EXIT_SUCCESS:       Block is valid
- *  @retval     -EINVAL:            Invalid NULL parameters
- *  @retval     -EFAULT:            Block outside heap boundaries
- *  @retval     -ENOTRECOVERABLE:   Invalid magic number
- *  @retval     -EPROTO:            Corrupted header canary
- *  @retval     -EOVERFLOW:         Data canary corruption
- *  @retval     -EFBIG:             Block size exceeds heap end
+ *  @return Integer status code.
+ *
+ *  @retval EXIT_SUCCESS: @p block is valid.
+ *  @retval -EINVAL:      @p allocator or @p block pointer is NULL.
+ *  @retval -EFAULT:      @p block lies outside heap and mmap regions.
+ *  @retval -EPROTO:      @p block canary does not match expected value.
+ *  @retval -EFBIG:       @p block size causes it to extend past heap end.
+ *  @retval -EOVERFLOW:   @p block canary indicates buffer overflow.
  * ========================================================================== */
 static int MEM_validateBlock(mem_allocator_t *const allocator,
                              block_header_t *const  block);
 
 /** ============================================================================
- *  @brief      Inserts a block into the appropriate free list
- *              based on its size
+ *  @brief  Inserts a block into the appropriate free list based on its size.
  *
- *  @param[in]  allocator   Memory allocator context
- *  @param[in]  block       Block header to insert into the free list
+ *  This function computes the size class index for the given @p block by
+ *  calling MEM_getSizeClass(), then pushes the block onto the head of that
+ *  free list within the allocator. It updates both forward and backward
+ *  links to maintain the doubly‐linked list of free blocks.
  *
- *  @return     Integer status code indicating operation result
+ *  @param[in]  allocator Pointer to the allocator context.
+ *  @param[in]  block     Pointer to the block header to insert.
  *
- *  @retval     EXIT_SUCCESS:   Block successfully inserted
- *  @retval     -EINVAL:        Invalid arguments or size class
+ *  @return Integer status code.
+ *
+ *  @retval EXIT_SUCCESS: @p block successfully inserted.
+ *  @retval -EINVAL:      @p allocator or @p block is NULL.
+ *  @retval -ENOMEM:      Size class calculation failed (request too large).
  * ========================================================================== */
 static int MEM_insertFreeBlock(mem_allocator_t *const allocator,
                                block_header_t *const  block);
 
 /** ============================================================================
- *  @brief      Removes a block from its free list
+ *  @brief  Removes a block from its free list.
  *
- *  @param[in]  allocator   Memory allocator context
- *  @param[in]  block       Block header to remove
+ *  This function unlinks the specified @p block from the free list corresponding
+ *  to its size class within the allocator. It computes the size‐class index via
+ *  MEM_getSizeClass(), validates parameters, then adjusts the neighboring blocks’
+ *  fl_next and fl_prev pointers (or the list head) to remove @p block. The block’s
+ *  own fl_next and fl_prev are then cleared.
  *
- *  @return     Integer status code
+ *  @param[in]  allocator Memory allocator context.
+ *  @param[in]  block     Block header to remove.
  *
- *  @retval     EXIT_SUCCESS:   Block removed successfully
- *  @retval     -EINVAL:        Invalid arguments or size class
+ *  @return Integer status code.
+ *
+ *  @retval EXIT_SUCCESS: Block removed successfully.
+ *  @retval -EINVAL:      @p allocator or @p block is NULL.
+ *  @retval -ENOMEM:      Size‐class calculation failed.
  * ========================================================================== */
 static int MEM_removeFreeBlock(mem_allocator_t *const allocator,
                                block_header_t *const  block);
 
 /** ============================================================================
- *  @brief      Searches for the first suitable free memory
- *              block in size-class free lists
+ *  @brief  Searches for the first suitable free memory block in size‐class lists.
  *
- *  @param[in]  allocator   Memory allocator context
- *  @param[in]  size        Requested allocation size
- *  @param[out] fit_block   Pointer to store found suitable
- *                          block address
+ *  This function computes the starting size class for the requested @p size via
+ *  MEM_getSizeClass(), then scans each free‐list from that class upward.  For each
+ *  candidate block, it calls MEM_validateBlock() to ensure integrity, and returns
+ *  the first block that is marked free and large enough. The found block pointer
+ *  is stored in @p fit_block.
  *
- *  @return     Integer status code
+ *  @param[in]  allocator Pointer to the allocator context.
+ *  @param[in]  siz       Requested allocation size in bytes.
+ *  @param[out] fit_block On success, set to the pointer of a suitable free block.
  *
- *  @retval     EXIT_SUCCESS:   Suitable block found successfully
- *  @retval     -EINVAL:        Invalid parameters or corrupted size class index
- *  @retval     -ENOMEM:        No suitable block found in free lists
+ *  @return Integer status code.
+ *
+ *  @retval EXIT_SUCCESS: Suitable block found successfully.
+ *  @retval -EINVAL:      @p allocator or @p fit_block are NULL;
+ *  @retval -ENOMEM:      Siz calculation failed or no suitable block found.
  * ========================================================================== */
 static int MEM_findFirstFit(mem_allocator_t *const allocator,
                             const size_t           size,
                             block_header_t       **fit_block);
 
 /** ============================================================================
- *  @brief      Searches for next suitable free memory block using
- *              NEXT_FIT strategy from last allocated position
+ *  @brief  Searches for the next suitable free memory block using the
+ *          NEXT_FIT strategy starting from the last allocated position.
  *
- *  @param[in]  allocator   Memory allocator context
- *  @param[in]  size        Requested allocation size
- *  @param[out] fit_block   Pointer to store found suitable block address
+ *  This function attempts to find a free block of at least @p size bytes by
+ *  scanning the heap starting at allocator->last_allocated.  If last_allocated
+ *  is NULL, not free, or corrupted, it falls back to First-Fit.  It wraps
+ *  around to the heap start if needed, stopping once it returns to the start.
  *
- *  @return     Integer status code
+ *  @param[in]  allocator Pointer to the allocator context.
+ *  @param[in]  size      Requested allocation size in bytes.
+ *  @param[out] fit_block Pointer to store the address of the found block.
  *
- *  @retval     EXIT_SUCCESS:   Suitable block found successfully
- *  @retval     -EINVAL:        Invalid parameters
- *  @retval     -ENOMEM:        No suitable block found in heap
+ *  @return Integer status code.
+ *
+ *  @retval EXIT_SUCCESS: Suitable block found and fit_block set.
+ *  @retval -EINVAL:      @p allocator or @p fit_block is NULL.
+ *  @retval -ENOMEM:      No suitable block found in heap.
  * ========================================================================== */
 static int MEM_findNextFit(mem_allocator_t *const allocator,
                            const size_t           size,
                            block_header_t       **fit_block);
 
 /** ============================================================================
- *  @brief      Searches for smallest suitable free block
- *              in size-class free lists (BEST_FIT)
+ *  @brief  Searches for the smallest suitable free memory block
+ *          in size‐class lists (BEST_FIT).
  *
- *  @param[in]  allocator   Memory allocator context
- *  @param[in]  size        Requested allocation size
- *  @param[out] best_fit    Pointer to store found optimal block address
+ *  This function computes the starting size class for the requested @p size via
+ *  MEM_getSizeClass(), then scans each free‐list from that class upward.  It
+ *  validates each candidate with MEM_validateBlock() and tracks the smallest
+ *  free block that is large enough.  Once a block in any class is chosen, the
+ *  search stops.
  *
- *  @return     Integer status code
+ *  @param[in]   allocator  Pointer to the allocator context.
+ *  @param[in]   size       Requested allocation size in bytes.
+ *  @param[out]  best_fit   On success, set to the pointer of the free block.
  *
- *  @retval     EXIT_SUCCESS:   Suitable block found successfully
- *  @retval     -EINVAL:        Invalid parameters or corrupted size class index
- *  @retval     -ENOMEM:        No suitable block found in free lists
+ *  @return Integer status code.
+ *
+ *  @retval EXIT_SUCCESS: Suitable block found successfully.
+ *  @retval -EINVAL:      @p allocator or @p best_fit is NULL.
+ *  @retval -ENOMEM:      Size calculation failed or no suitable block found.
  * ========================================================================== */
 static int MEM_findBestFit(mem_allocator_t *const allocator,
                            const size_t           size,
                            block_header_t       **best_fit);
 
 /** ============================================================================
- *  @brief      Merges adjacent free memory blocks
+ *  @brief  Splits a memory block into allocated and free portions.
  *
- *  @param[in]  allocator   Memory allocator context
- *  @param[in]  block       Block header to merge with neighbors
+ *  This function takes an existing free @p block and a requested allocation
+ *  size @p req_size, and divides the block into:
+ *    - an allocated portion of size aligned up to ALIGN(req_size) plus header
+ *      and canary, marked as used;
+ *    - a remaining free portion (if its size ≥ MIN_BLOCK_SIZE) inserted back
+ *      into the appropriate free list.
+ *  If the leftover space would be too small (< MIN_BLOCK_SIZE), the entire
+ *  block is allocated without splitting.
  *
- *  @return     Integer status code
+ *  @param[in]  allocator Pointer to the mem_allocator_t context.
+ *  @param[in]  block     Pointer to the block_header_t to split.
+ *  @param[in]  req_size  Requested allocation size in bytes.
  *
- *  @retval     EXIT_SUCCESS:   Blocks merged successfully
- *  @retval     -EINVAL:        Invalid parameters or corrupted blocks
+ *  @return Integer status code.
  *
- *  @note       Merges with both previous and next blocks if possible
- * ========================================================================== */
-static int MEM_mergeBlocks(mem_allocator_t *const allocator,
-                           block_header_t        *block);
-
-/** ============================================================================
- *  @brief      Splits a memory block into allocated and free portions
+ *  @retval EXIT_SUCCESS: Block split (or fully allocated) successfully.
+ *  @retval -EINVAL:      nvalid @p allocator or @p block pointer.
+ *  @retval -EPROTO:      Header canary mismatch (block corrupted).
+ *  @retval -EOVERFLOW:   Data canary mismatch (buffer overflow detected).
+ *  @retval -EFBIG:       Block’s size would extend past heap end.
+ *  @retval -EFAULT:      Block lies outside heap or mmap regions.
+ *  @retval -ENOMEM:      Failed to insert the new free remainder block.
  *
- *  @param[in]  allocator   Memory allocator context
- *  @param[in]  block       Block header to split
- *  @param[in]  req_size    Requested allocation size
- *
- *  @return     Integer status code
- *
- *  @retval     EXIT_SUCCESS:   Block split successfully
- *  @retval     -EINVAL:        Invalid parameters or corrupted block
- *
- *  @note       If remaining space < MIN_BLOCK_SIZE, uses entire block
+ *  @note If the remaining space after splitting would be less than
+ *        MIN_BLOCK_SIZE, this function allocates the entire block
+ *        no split) and removes it from its free list.
  * ========================================================================== */
 static int MEM_splitBlock(mem_allocator_t *const allocator,
                           block_header_t *const  block,
                           const size_t           req_size);
 
 /** ============================================================================
- *  @brief      Expands the user heap by a specified increment.
+ *  @brief      Merges adjacent free memory blocks.
  *
- *  @param[in]  allocator   Memory allocator context.
- *  @param[in]  inc         Heap size increment (in bytes).
+ *  This function removes the specified @p block from its free list, then checks
+ *  its immediate neighbor blocks in memory.  If the next block is free and
+ *  valid, it unlinks and combines it with @p block, updating size, links, and
+ *  trailing canary.  It then checks the previous block; if it is also free and
+ *  valid, it merges @p block into the previous block.  Finally, the resulting
+ *  merged block is reinserted into the appropriate free list.
  *
- *  @return     Previous end address of the heap, or error code.
+ *  @param[in]  allocator Pointer to the allocator context.
+ *  @param[in]  block     Pointer to the free block header to merge.
  *
- *  @retval     Valid address: Heap successfully expanded.
- *  @retval     (void*)(-EINVAL): Invalid allocator context.
- *  @retval     (void*)(-ENOMEM): Heap expansion failed (out of memory).
+ *  @return Integer status code.
+ *
+ *  @retval EXIT_SUCCESS: Blocks merged (or single block reinserted) successfully.
+ *  @retval -EINVAL:      @p allocator or @p block is NULL.
+ *  @retval ret<0:        Returned by MEM_removeFreeBlock(), MEM_validateBlock(),
+ *                        MEM_insertFreeBlock(), or munmap() in inner calls
+ *                        indicating the specific failure.
+ * ========================================================================== */
+static int MEM_mergeBlocks(mem_allocator_t *const allocator,
+                           block_header_t        *block);
+
+/** ============================================================================
+ *  @brief  Expands the user heap by a specified increment.
+ *
+ *  This function moves the program break by @p inc bytes via MEM_sbrk(),
+ *  zeroes the newly allocated region, updates the allocator’s heap_end, and
+ *  initializes a block_header_t at the start of the new region to record its
+ *  size, mark it as allocated, and set its free flag to false.
+ *
+ *  @param[in]  allocator Pointer to the allocator context.
+ *  @param[in]  inc       Signed number of bytes to grow (or shrink) the heap.
+ *
+ *  @return Pointer to the previous program break (start of new region)
+ *          on success; an error-encoded pointer (via PTR_ERR()) on failure.
+ *
+ *  @retval (ret>=0): Previous heap end address (new region start).
+ *  @retval -EINVAL:  @p allocator is NULL.
+ *  @retval -ENOMEM:  Heap expansion failed (out of memory).
  * ========================================================================== */
 static void *MEM_growUserHeap(mem_allocator_t *const allocator,
                               const intptr_t         inc);
 
 /** ============================================================================
- *  @brief      Allocates a page‐aligned memory region via mmap and registers it
+ *  @brief      Allocates a page-aligned memory region via mmap and registers it
  *              in the allocator’s mmap list for later freeing.
  *
+ *  This function rounds up @p total_size to a multiple of the system page size,
+ *  invokes mmap() to obtain an anonymous read/write region, then allocates
+ *  an mmap_t metadata node via MEM_allocatorMalloc() and links it into
+ *  allocator->mmap_list.  It initializes a block_header_t and trailing canary
+ *  in the mapped region to integrate with the allocator’s debugging and GC.
+ *
  *  @param[in]  allocator   Pointer to the memory allocator context.
- *                          Must not be NULL.
- *  @param[in]  total_size  Number of bytes requested (will be rounded up to a
- *                          multiple of the system page size).
+ *  @param[in]  total_size  Number of bytes requested.
  *
- *  @return     On success, returns the address of the mapped region.
+ *  @return On success, returns the address of the mapped region.
+ *          On failure, returns an error-encoded pointer (via PTR_ERR()).
  *
- *  @retval     (void*)(intptr_t)(-EINVAL)
- *                          allocator is NULL.
- *  @retval     (void*)(intptr_t)(-EIO)
- *                          mmap() failed.
- *  @retval     (void*)(intptr_t)(-ENOMEM)
- *                          Allocation of metadata node failed.
+ *  @retval ret!=MAP_FAILED:  Address of the mapped region.
+ *  @retval -EINVAL:          @p allocator is NULL.
+ *  @retval -EIO:             mmap() failed.
+ *  @retval -ENOMEM:          Allocation of mmap_t metadata failed.
  * ========================================================================== */
 static int *MEM_mapAlloc(mem_allocator_t *const allocator,
                          const size_t           total_size);
 
 /** ============================================================================
- *  @brief      Unmaps a previously mapped memory region and removes its
- * metadata entry from the allocator’s mmap list.
+ *  @brief  Unmaps a previously mapped memory region and removes its
+ *          metadata entry from the allocator’s mmap list.
  *
- *  @param[in]  allocator   Memory allocator context. Must not be NULL.
- *  @param[in]  addr        Address of the memory region to unmap.
+ *  This function searches the allocator’s mmap_list for an entry matching
+ *  @p addr, calls munmap() to unmap the region, unlinks the corresponding
+ *  mmap_t metadata node, and frees it via MEM_allocatorFree().  Errors during
+ *  munmap are returned; if metadata freeing fails, an error is logged but
+ *  success is returned.
  *
- *  @return     Integer status code.
+ *  @param[in]  allocator Memory allocator context.
+ *  @param[in]  addr      Address of the memory region to unmap.
  *
- *  @retval     EXIT_SUCCESS
- *                          Region was successfully unmapped and its metadata
- *                          entry freed. (If freeing metadata fails, an error
- *                          is logged but success is still returned.)
- *  @retval     -EINVAL
- *                          allocator is NULL, or addr was not found in the
- *                          allocator’s mmap list.
- *  @retval     -ENOMEM
- *                          munmap() failed to unmap the region.
+ *  @return Integer status code.
+ *
+ *  @retval EXIT_SUCCESS: Region unmapped and metadata entry removed.
+ *  @retval -EINVAL:      @p allocator / @p addr is NULL, or not found in list.
+ *  @retval -ENOMEM:      munmap() failed to unmap the region.
  * ========================================================================== */
 static int MEM_mapFree(mem_allocator_t *const allocator, void *const addr);
 
 /** ============================================================================
- *  @brief      Allocates memory using specified strategy
+ *  @brief  Allocates memory using the specified strategy.
  *
- *  @param[in]  allocator   Memory allocator context
- *  @param[in]  size        Requested allocation size
- *  @param[in]  file        Source file name
- *  @param[in]  line        Source line number
- *  @param[in]  var_name    Variable name for tracking
- *  @param[in]  strategy    Allocation strategy to use
+ *  This function attempts to allocate at least @p size bytes of user data by
+ *  choosing between heap‐based allocation (via free‐lists and optional heap
+ *  growth) or mmap (for large requests > MMAP_THRESHOLD).  It uses the
+ *  given @p strategy (FIRST_FIT, NEXT_FIT, BEST_FIT) to locate a free block,
+ *  grows the heap if necessary, splits a larger block to fit exactly, and
+ *  records debugging metadata (source file, line, variable name).  For mmap
+ *  allocations it rounds up to page size and tracks the region in the allocator.
  *
- *  @return     Pointer to allocated memory or NULL
+ *  @param[in]  allocator Memory allocator context.
+ *  @param[in]  size      Number of bytes requested.
+ *  @param[in]  file      Source file name for debugging metadata.
+ *  @param[in]  line      Source line number for debugging metadata.
+ *  @param[in]  var_name  Variable name for tracking.
+ *  @param[in]  strategy  Allocation strategy.
+ *
+ *  @return Pointer to the start of the allocated user region (just past
+ *          the internal header) on success; an error‐encoded pointer
+ *          (via PTR_ERR()) on failure.
+ *
+ *  @retval ptr:      Valid user pointer on success.
+ *  @retval -EINVAL:  @p allocator is NULL or @p size is zero.
+ *  @retval -ENOMEM:  Out of memory: heap grow failed, no free
+ *                    block found, or internal metadata allocation
+ *                    (e.g. mmap_t node) failed.
+ *  @retval -EIO:     mmap() I/O error for large allocations.
  * ========================================================================== */
 static void *MEM_allocatorMalloc(mem_allocator_t *const      allocator,
                                  const size_t                size,
@@ -489,37 +583,31 @@ static void *MEM_allocatorMalloc(mem_allocator_t *const      allocator,
   __LIBMEMALLOC_MALLOC;
 
 /** ============================================================================
- *  @brief      Allocates and zero-initializes memory
+ *  @brief  Reallocates memory with safety checks.
  *
- *  @param[in]  allocator   Memory allocator context
- *  @param[in]  size        Element size
- *  @param[in]  file        Source file name
- *  @param[in]  line        Source line number
- *  @param[in]  var_name    Variable name for tracking
- *  @param[in]  strategy    Allocation strategy to use
+ *  This function resizes an existing allocation to @p new_size bytes:
+ *    - If @p ptr is NULL, behaves like malloc().
+ *    - If the existing block is already large enough, returns the same pointer.
+ *    - Otherwise, allocates a new block with the specified @p strategy,
+ *      copies the lesser of old and new sizes, frees the old block, and
+ *      returns the new pointer.
  *
- *  @return     Pointer to allocated memory or NULL
- * ========================================================================== */
-static void *MEM_allocatorCalloc(mem_allocator_t *const      allocator,
-                                 const size_t                size,
-                                 const char *const           file,
-                                 const int                   line,
-                                 const char *const           var_name,
-                                 const allocation_strategy_t strategy)
-  __LIBMEMALLOC_MALLOC;
-
-/** ============================================================================
- *  @brief      Reallocates memory with safety checks
+ *  @param[in]  allocator Memory allocator context.
+ *  @param[in]  ptr       Pointer to the block to resize, or NULL to allocate.
+ *  @param[in]  new_size  New requested size in bytes.
+ *  @param[in]  file      Source file name for debugging metadata.
+ *  @param[in]  line      Source line number for debugging metadata.
+ *  @param[in]  var_name  Variable name for tracking.
+ *  @param[in]  strategy  Allocation strategy to use.
  *
- *  @param[in]  allocator   Memory allocator context
- *  @param[in]  ptr         Pointer to reallocate
- *  @param[in]  new_size    New allocation size
- *  @param[in]  file        Source file name
- *  @param[in]  line        Source line number
- *  @param[in]  var_name    Variable name for tracking
- *  @param[in]  strategy    Allocation strategy to use
+ *  @return Pointer to the reallocated memory region (which may be the same
+ *          as @p ptr) on success; an error-encoded pointer (via PTR_ERR())
+ *          on failure.
  *
- *  @return     Pointer to reallocated memory or NULL
+ *  @retval ptr:      Valid pointer to a block of at least @p new_size bytes.
+ *  @retval -EINVAL:  @p allocator is NULL, @p new_size is zero.
+ *  @retval -ENOMEM:  Out of memory (allocation or free failure).
+ *  @retval -EIO:     I/O error for large mmap-based allocations.
  * ========================================================================== */
 static void *MEM_allocatorRealloc(mem_allocator_t *const      allocator,
                                   void *const                 ptr,
@@ -531,18 +619,66 @@ static void *MEM_allocatorRealloc(mem_allocator_t *const      allocator,
   __LIBMEMALLOC_REALLOC;
 
 /** ============================================================================
- *  @brief      Releases allocated memory back to the heap
+ *  @brief  Allocates and zero‐initializes memory.
  *
- *  @param[in]  allocator   Memory allocator context
- *  @param[in]  ptr         Pointer to memory to free
- *  @param[in]  file        Source file name
- *  @param[in]  line        Source line number
- *  @param[in]  var_name    Variable name for tracking
+ *  This function behaves like calloc(), allocating at least @p size bytes of
+ *  zeroed memory via MEM_allocatorMalloc() and then setting all bytes to zero.
+ *  It records debugging metadata (source file, line, variable name) and uses
+ *  the given @p strategy for allocation.
  *
- *  @return     Integer status code
+ *  @param[in]  allocator Pointer to the mem_allocator_t context.
+ *  @param[in]  size      Number of bytes to allocate.
+ *  @param[in]  file      Source file name for debugging metadata.
+ *  @param[in]  line      Source line number for debugging metadata.
+ *  @param[in]  var_name  Variable name for tracking.
+ *  @param[in]  strategy  Allocation strategy to use.
  *
- *  @retval     EXIT_SUCCESS:   Memory freed successfully
- *  @retval     -EINVAL:        Invalid parameters or corrupted block
+ *  @return Pointer to the start of the allocated zeroed region;
+ *          an error‐encoded pointer via PTR_ERR() on failure.
+ *
+ *  @retval ptr:      Valid pointer to @p size bytes of zeroed memory.
+ *  @retval -EINVAL:  @p allocator is NULL or @p size is zero.
+ *  @retval -ENOMEM:  Out of memory: allocation failed.
+ *  @retval -EIO:     I/O error for large mmap‐based allocations.
+ * ========================================================================== */
+static void *MEM_allocatorCalloc(mem_allocator_t *const      allocator,
+                                 const size_t                size,
+                                 const char *const           file,
+                                 const int                   line,
+                                 const char *const           var_name,
+                                 const allocation_strategy_t strategy)
+  __LIBMEMALLOC_MALLOC;
+
+/** ============================================================================
+ *  @brief  Releases allocated memory back to the heap.
+ *
+ *  This function frees a pointer previously returned by MEM_allocatorMalloc().
+ *  It supports both heap‐based and mmap‐based allocations:
+ *    - For mmap regions, it delegates to MEM_mapFree() to unmap and remove metadata.
+ *    - For heap blocks, it validates the block, checks for double frees,
+ *      marks the block free, merges with adjacent free blocks, and reinserts
+ *      the merged block into the free list.  If the freed block lies at the
+ *      current heap end, it shrinks the heap via MEM_sbrk().
+ *
+ *  @param[in]  allocator Memory allocator context.
+ *  @param[in]  ptr       Pointer to memory to free.
+ *  @param[in]  file      Source file name for debugging metadata.
+ *  @param[in]  line      Source line number for debugging metadata.
+ *  @param[in]  var_name  Variable name for tracking.
+ *
+ *  @return Integer status code.
+ *
+ *  @retval EXIT_SUCCESS: Memory freed (and heap possibly shrunk) successfully.
+ *  @retval -EINVAL:      @p allocator or @p ptr is NULL, @p ptr not found in
+                          @p allocator, or double free detected.
+ *  @retval -ENOMEM:      munmap() failed when freeing an mmap region.
+ *  @retval -EFAULT:      Block lies outside heap and mmap regions.
+ *  @retval -EPROTO:      Header canary mismatch (block corrupted).
+ *  @retval -EOVERFLOW:   Data canary mismatch (buffer overrun detected).
+ *  @retval -EFBIG:       Block size extends past heap end.
+ *  @retval rer<0:        Errors returned by MEM_validateBlock(),
+ *                        MEM_removeFreeBlock(), MEM_mergeBlocks(),
+ *                        or MEM_insertFreeBlock().
  * ========================================================================== */
 static int MEM_allocatorFree(mem_allocator_t *const allocator,
                              void *const            ptr,
@@ -551,96 +687,167 @@ static int MEM_allocatorFree(mem_allocator_t *const allocator,
                              const char *const      var_name);
 
 /** ============================================================================
- *  @brief      Determine at runtime whether the stack grows downward
+ *  @brief  Determine at runtime whether the stack grows downward
  *
  *  This function places two volatile local variables on the stack and compares
  *  their addresses to infer the growth direction:
  *    - If &addr_1 < &addr_0, the stack grows toward lower addresses.
  *    - Otherwise, it grows toward higher addresses.
  *
- *  @return     true if stack grows down (higher addresses → lower),
- *              false if it grows up (lower addresses → higher)
+ *  @return true if stack grows down (higher addresses → lower),
+ *          false if it grows up (lower addresses → higher)
  *
- *  @retval     true   Stack grows downward (newer frames at lower addresses)
- *  @retval     false  Stack grows upward (newer frames at higher addresses)
+ *  @retval true:   Stack grows downward (newer frames at lower addresses)
+ *  @retval false:  Stack grows upward (newer frames at higher addresses)
  * ========================================================================== */
 static bool MEM_stackGrowsDown(void);
 
 /** ============================================================================
- *  @brief      Query and record the bounding addresses of a thread’s stack
+ *  @brief  Query and record the bounding addresses of a thread’s stack
  *
  *  This function retrieves the stack base address, total stack size, and
  *  guard size for the specified thread, then computes the usable stack
  *  bounds within the allocator object, taking into account whether the
  *  stack grows up or down in memory.
  *
- *  @param[in]  id         The thread identifier  whose stack to inspect.
- *  @param[in]  allocator  Pointer to the allocator object where stack_bottom
- *                         and stack_top will be stored.
+ *  @param[in]  id          The thread identifier whose stack to inspect.
+ *  @param[in]  allocator   Pointer to the allocator object where stack_bottom
+ *                          and stack_top will be stored.
  *
- *  @return     EXIT_SUCCESS on success,
- *              negative error code on failure.
+ *  @return Integer status code.
  *
- *  @retval     EXIT_SUCCESS  Stack bounds successfully recorded.
- *  @retval     -EINVAL       allocator was NULL.
- *  @retval     ret > 0       Error code from one of the pthread or system calls
+ *  @retval EXIT_SUCCESS: Stack bounds successfully recorded.
+ *  @retval -EINVAL:      @p allocator was NULL.
+ *  @retval ret>0:        Error code from one of the pthread or system calls
  * ========================================================================== */
 static int MEM_stackBounds(const pthread_t        id,
                            mem_allocator_t *const allocator);
 
 /** ============================================================================
- *  @brief      Thread function that runs the mark-and-sweep garbage collector
+ *  @brief  Dedicated thread loop driving mark-and-sweep iterations.
  *
- *  @param[in]  arg     Pointer to mem_allocator_t context (must not be NULL)
+ *  This function runs as the GC worker thread.  It locks gc_lock and waits
+ *  on gc_cond until either gc_running or gc_exit is set.  On wakeup, if
+ *  gc_exit is true, it breaks and exits the loop; otherwise it unlocks and
+ *  performs one full GC cycle by calling MEM_gcMark() and MEM_gcSweep(),
+ *  then sleeps for gc_interval_ms before re-acquiring the lock and waiting
+ *  again.  On exit it ensures gc_lock is released.
  *
- *  @return     PTR_ERR code on failure, or NULL on success
+ *  @param[in]  arg Pointer to the mem_allocator_t context.
+ *
+ *  @return NULL on clean exit; an error-encoded pointer (via PTR_ERR())
+ *          if any initialization or GC step fails.
+ *
+ *  @retval NULL:     Clean exit after gc_exit.
+ *  @retval -EINVAL:  @p arg is NULL.
+ *  @retval ret<0:    cond errors, or MEM_gcMark() / MEM_gcSweep() failures.
  * ========================================================================== */
 __GC_HOT static void *MEM_gcThreadFunc(void *arg);
 
 /** ============================================================================
- *  @brief      Initialize the mark bits for all heap and memory-mapped blocks
+ *  @brief  Reset “marked” flags across all allocated regions.
  *
- *  @param[in]  allocator   Pointer to the mem_allocator_t context
+ *  This function prepares for a new garbage-collection cycle by clearing the
+ *  mark flag on every heap block and every mmap’d block payload.  It scans
+ *  the heap from allocator->heap_start + metadata_size up to allocator->heap_end,
+ *  resetting each valid block’s marked flag (and skipping malformed blocks to
+ *  avoid infinite loops).  It then iterates allocator->mmap_list, clearing the
+ *  mark on each payload block while preserving the metadata header’s mark so
+ *  the allocator’s own bookkeeping regions are never freed.
  *
- *  @return     EXIT_SUCCESS on success, or -EINVAL if the allocator pointer
+ *  @param[in]  allocator Memory allocator context.
+ *
+ *  @return Integer status code.
+ *
+ *  @retval EXIT_SUCCESS: All marks cleared and metadata marks preserved.
+ *  @retval -EINVAL:      @p allocator is NULL.
  * ========================================================================== */
 __GC_HOT static int MEM_setInitialMarks(mem_allocator_t *const allocator);
 
 /** ============================================================================
- *  @brief      Mark all allocated blocks that are still reachable on the heap
+ *  @brief  Mark all live blocks reachable from the stack.
  *
- *  @param[in]  allocator   Pointer to the memory allocator context
+ *  This function performs the marking phase of garbage collection by:
+ *    - Calling MEM_setInitialMarks() to clear previous marks.
+ *    - Capturing stack bounds via MEM_stackBounds() for the current thread.
+ *    - Optionally informing Valgrind to treat the stack region as defined.
+ *    - Scanning each word between stack_bottom and stack_top:
+ *        • If the word’s value lies within the heap bounds, validating the
+ *          corresponding block header and marking the block if it is live.
+ *    - Iterating the allocator’s mmap_list and marking any mmap’d block whose
+ *      payload contains a stack reference.
  *
- *  @return     EXIT_SUCCESS (0) on success, or negative error code on failure
+ *  @param[in]  allocator Memory allocator context.
+ *
+ *  @return Integer status code.
+ *
+ *  @retval EXIT_SUCCESS: All reachable blocks marked successfully.
+ *  @retval -EINVAL:      @p allocator is NULL.
+ *  @retval ret<0:        Error code returned by MEM_stackBounds(),
+ *                        MEM_validateBlock(), or other internal calls.
  * ========================================================================== */
 __GC_HOT static int MEM_gcMark(mem_allocator_t *const allocator);
 
 /** ============================================================================
- *  @brief      Sweep the heap, free unmarked blocks, and unmap memory-mapped
- *              regions
+ *  @brief  Reclaim any unmarked blocks from heap and mmap regions.
  *
- *  @param[in]  allocator   Pointer to the memory allocator context
+ *  This function performs the “sweep” phase of garbage collection:
+ *    - It iterates over every block in the heap:
+ *        • Logs each block’s free and marked status.
+ *        • If a block is allocated (free==0) but unmarked, calls
+ *          MEM_allocatorFree() on its payload pointer to reclaim it.
+ *        • Clears each block’s marked flag.
+ *    - It then traverses allocator->mmap_list via a pointer-to-pointer scan:
+ *        • Logs each mmap’d region’s status.
+ *        • If an mmap’d block is unmarked and not already free, unlinks
+ *          the mmap_t node, calls munmap() on the region, and frees its
+ *          metadata header via MEM_allocatorFree().
+ *        • Otherwise, clears the block’s marked flag and advances to the next node.
  *
- *  @return     EXIT_SUCCESS (0) on success, or negative error code on failure
+ *  @param[in]  allocator Memory allocator context.
+ *
+ *  @return Integer status code.
+ *
+ *  @retval EXIT_SUCCESS: All unreachable blocks reclaimed successfully.
+ *  @retval -EINVAL:      @p allocator is NULL.
+ *  @retval ret<0:        Errors returned by MEM_allocatorFree(),
+ *                        munmap(), or internal validation functions.
  * ========================================================================== */
 __GC_HOT static int MEM_gcSweep(mem_allocator_t *const allocator);
 
 /** ============================================================================
- *  @brief      Initialize or signal the garbage collector thread to run
+ *  @brief  Start or signal the GC thread to perform a collection cycle.
  *
- *  @param[in]  allocator   Pointer to the memory allocator context
+ *  This function saves the caller’s thread ID as main_thread, locks gc_lock,
+ *  and if the GC thread has not been started, sets gc_running and gc_exit
+ *  flags and spawns MEM_gcThreadFunc(); otherwise it sets gc_running and
+ *  signals gc_cond to wake the existing thread.  Finally it unlocks gc_lock.
  *
- *  @return     EXIT_SUCCESS (0) on success, or negative error code on failure
+ *  @param[in]  allocator Pointer to the mem_allocator_t context.
+ *
+ *  @return Integer status code.
+ *
+ *  @retval EXIT_SUCCESS: GC thread started or signaled successfully.
+ *  @retval -EINVAL:      @p allocator is NULL.
+ *  @retval ret<0:        Error code returned by pthread_create().
  * ========================================================================== */
 __GC_COLD static int MEM_runGc(mem_allocator_t *const allocator);
 
 /** ============================================================================
- *  @brief      Stop the garbage collector thread and perform a final collection
- *              cycle
+ *  @brief  Stop the GC thread and perform a final collection.
  *
- *  @param[in]  allocator   Pointer to the memory allocator context
+ *  This function clears gc_running and sets gc_exit, signals gc_cond to wake
+ *  the GC thread if it’s running, then joins it.  After the thread exits, it
+ *  runs one final MEM_gcMark() + MEM_gcSweep() on the caller thread to
+ *  reclaim any remaining garbage, then clears gc_thread_started.
  *
- *  @return     EXIT_SUCCESS (0) on success, or negative error code on failure
+ *  @param[in]  allocator Pointer to the mem_allocator_t context.
+ *
+ *  @return Integer status code.
+ *
+ *  @retval EXIT_SUCCESS: GC thread stopped and final collection done.
+ *  @retval -EINVAL:      @p allocator is NULL.
+ *  @retval ret<0:        Error code from pthread MEM_gcMark(), or MEM_gcSweep().
  * ========================================================================== */
 __GC_COLD static int MEM_stopGc(mem_allocator_t *const allocator);
 
@@ -649,18 +856,18 @@ __GC_COLD static int MEM_stopGc(mem_allocator_t *const allocator);
  * ========================================================================== */
 
 /** ============================================================================
- *  @brief      Determine at runtime whether the stack grows downward
+ *  @brief  Determine at runtime whether the stack grows downward
  *
  *  This function places two volatile local variables on the stack and compares
  *  their addresses to infer the growth direction:
  *    - If &addr_1 < &addr_0, the stack grows toward lower addresses.
  *    - Otherwise, it grows toward higher addresses.
  *
- *  @return     true if stack grows down (higher addresses → lower),
- *              false if it grows up (lower addresses → higher)
+ *  @return true if stack grows down (higher addresses → lower),
+ *          false if it grows up (lower addresses → higher)
  *
- *  @retval     true   Stack grows downward (newer frames at lower addresses)
- *  @retval     false  Stack grows upward (newer frames at higher addresses)
+ *  @retval true:   Stack grows downward (newer frames at lower addresses)
+ *  @retval false:  Stack grows upward (newer frames at higher addresses)
  * ========================================================================== */
 static bool MEM_stackGrowsDown(void)
 {
@@ -675,24 +882,22 @@ static bool MEM_stackGrowsDown(void)
 }
 
 /** ============================================================================
- *  @brief      Query and record the bounding addresses of a thread’s stack
+ *  @brief  Query and record the bounding addresses of a thread’s stack
  *
  *  This function retrieves the stack base address, total stack size, and
  *  guard size for the specified thread, then computes the usable stack
  *  bounds within the allocator object, taking into account whether the
  *  stack grows up or down in memory.
  *
- *  @param[in]  id         The thread identifier (pthread_t) whose stack to
- * inspect.
- *  @param[in]  allocator  Pointer to the allocator object where stack_bottom
- *                         and stack_top will be stored.
+ *  @param[in]  id          The thread identifier whose stack to inspect.
+ *  @param[in]  allocator   Pointer to the allocator object where stack_bottom
+ *                          and stack_top will be stored.
  *
- *  @return     EXIT_SUCCESS on success,
- *              negative error code on failure.
+ *  @return Integer status code.
  *
- *  @retval     EXIT_SUCCESS  Stack bounds successfully recorded.
- *  @retval     -EINVAL       allocator was NULL.
- *  @retval     ret > 0       Error code from one of the pthread or system calls
+ *  @retval EXIT_SUCCESS: Stack bounds successfully recorded.
+ *  @retval -EINVAL:      @p allocator was NULL.
+ *  @retval ret>0:        Error code from one of the pthread or system calls
  * ========================================================================== */
 static int MEM_stackBounds(const pthread_t id, mem_allocator_t *const allocator)
 {
@@ -764,18 +969,24 @@ function_output:
 }
 
 /** ============================================================================
- *  @brief      Fills a memory block with a specified byte value
- *              using optimized operations
+ *  @brief  Fills a memory block with a specified byte value
+ *          using optimized operations.
  *
- *  @param[in]  source  Pointer to the memory block to fill
- *  @param[in]  value   Byte value to set
- *  @param[in]  size    Number of bytes to set
+ *  This function sets each byte in the given memory region to the specified
+ *  value. It first advances the pointer to meet the architecture’s alignment
+ *  requirements, then writes data in ARCH_ALIGNMENT-sized chunks using 64-bit
+ *  stores multiplied by PREFETCH_MULT, with prefetch hints for cache lines.
+ *  Any remaining bytes at the end are filled one by one.
  *
- *  @return     Original source pointer on success
- *              error code cast to void* on failure
+ *  @param[in]  source  Pointer to the memory block to fill.
+ *  @param[in]  value   Byte value to set (0–255).
+ *  @param[in]  size    Number of bytes to set.
  *
- *  @retval     source:     (input pointer) on successful operation
- *  @retval     -EINVAL:    (cast to void*) invalid parameters
+ *  @return Original source pointer on success,
+ *          an error‐encoded pointer (via PTR_ERR()) on failure.
+ *
+ *  @retval dest:     Original Pointer on successful operation.
+ *  @retval -EINVAL:  Invalid @p src or @p size.
  * ========================================================================== */
 void *MEM_memset(void *const source, const int value, const size_t size)
 {
@@ -835,18 +1046,23 @@ function_output:
 }
 
 /** ============================================================================
- *  @brief      Copies memory block between buffers using
- *              optimized operations
+ *  @brief  Copies a memory block between buffers using optimized operations.
  *
- *  @param[in]  dest    Destination buffer
- *  @param[in]  src     Source buffer
- *  @param[in]  size    Number of bytes to copy
+ *  This function copies `size` bytes from the source buffer to the destination
+ *  buffer. It first advances the destination pointer to meet the architecture’s
+ *  alignment requirements, then copies data in ARCH_ALIGNMENT-sized chunks
+ *  using 64-bit loads and stores, with prefetch hints for both source and
+ *  destination cache lines. Any remaining bytes at the end are copied.
  *
- *  @return     Original dest pointer on success,
- *              error code cast to void* on failure
+ *  @param[in]  dest  Destination buffer pointer.
+ *  @param[in]  src   Source buffer pointer.
+ *  @param[in]  size  Number of bytes to copy.
  *
- *  @retval     dest:       (input pointer) on successful operation
- *  @retval     -EINVAL:    (cast to void*) invalid parameters
+ *  @return Original dest pointer on success,
+ *          an error-encoded pointer (via PTR_ERR()) on failure.
+ *
+ *  @retval dest:     Original Pointer on successful operation.
+ *  @retval -EINVAL:  Invalid @p src or @p size.
  * ========================================================================== */
 void *MEM_memcpy(void *const dest, const void *src, const size_t size)
 {
@@ -907,18 +1123,21 @@ function_output:
 }
 
 /** ============================================================================
- *  @brief      Invokes sbrk-like behavior by calling MEM_brk()
- *              to move the program break by a signed offset
+ *  @brief  Invokes sbrk-like behavior by moving the program break.
  *
- *  @param[in]  allocator   Memory allocator context
- *  @param[in]  increment   Signed offset in bytes to move the break
+ *  This function reads the current program break, attempts to move it by the
+ *  signed offset @p increment via sbrk(), and returns the original break on
+ *  success.  If any call to sbrk() or reading the break fails, it encodes the
+ *  negative errno into a pointer via PTR_ERR.
  *
- *  @return     On success, returns the previous program break address.
- *              On failure, returns (void*)(-errno).
+ *  @param[in]  increment Signed offset in bytes to move the program break:
+ *                        positive to grow, negative to shrink.
  *
- *  @retval     != (void*)-1    Previous break on success
- *  @retval     (void*)-EINVAL  Invalid parameters
- *  @retval     (void*)-ENOMEM  Unable to grow/shrink heap
+ *  @return Original program break address on success;
+ *          an error-encoded pointer (via PTR_ERR()) on failure.
+ *
+ *  @retval ret>-1:   Previous break on success.
+ *  @retval -ENOMEM:  Failed to read or adjust the break.
  * ========================================================================== */
 void *MEM_sbrk(const intptr_t increment)
 {
@@ -965,21 +1184,25 @@ function_output:
 }
 
 /** ============================================================================
- *  @brief      Validates the integrity and boundaries of a
- *              memory block
+ *  @brief  Validates the integrity and boundaries of a memory block.
  *
- *  @param[in]  allocator   Memory allocator context
- *  @param[in]  block       Block header to validate
+ *  This function ensures that the specified @p block lies within the allocator’s
+ *  heap or one of its mmap regions, that its header canary matches the expected
+ *  magic value to detect metadata corruption, that its data canary is intact to
+ *  catch buffer overruns, and that the block’s size does not extend past the
+ *  heap’s end.  On any failure, an appropriate negative errno is returned.
  *
- *  @return     Integer status code indicating validation result
+ *  @param[in]  allocator Pointer to the allocator context.
+ *  @param[in]  block     Pointer to the block header to validate.
  *
- *  @retval     EXIT_SUCCESS:       Block is valid
- *  @retval     -EINVAL:            Invalid NULL parameters
- *  @retval     -EFAULT:            Block outside heap boundaries
- *  @retval     -ENOTRECOVERABLE:   Invalid magic number
- *  @retval     -EPROTO:            Corrupted header canary
- *  @retval     -EOVERFLOW:         Data canary corruption
- *  @retval     -EFBIG:             Block size exceeds heap end
+ *  @return Integer status code.
+ *
+ *  @retval EXIT_SUCCESS: @p block is valid.
+ *  @retval -EINVAL:      @p allocator or @p block pointer is NULL.
+ *  @retval -EFAULT:      @p block lies outside heap and mmap regions.
+ *  @retval -EPROTO:      @p block canary does not match expected value.
+ *  @retval -EFBIG:       @p block size causes it to extend past heap end.
+ *  @retval -EOVERFLOW:   @p block canary indicates buffer overflow.
  * ========================================================================== */
 static int MEM_validateBlock(mem_allocator_t *const allocator,
                              block_header_t *const  block)
@@ -1082,17 +1305,21 @@ function_output:
 }
 
 /** ============================================================================
- *  @brief      Calculates the size class index for a requested
- *              memory size
+ *  @brief  Calculates the size class index for a requested memory size.
  *
- *  @param[in]  allocator   Memory allocator context
- *  @param[in]  size        Requested memory size in bytes
+ *  This function determines which size class the given allocation request
+ *  belongs to by dividing the requested @p size by BYTES_PER_CLASS (rounding
+ *  up). If the computed index exceeds the maximum available class, it will
+ *  be clamped to the highest class and a warning emitted.
  *
- *  @return     Integer representing size class index on success,
- *              negative error code on failure
+ *  @param[in]  allocator Pointer to the allocator context.
+ *  @param[in]  size  Requested memory size in bytes (must be > 0).
  *
- *  @retval     ret >= 0:   Valid size class index
- *  @retval     -EINVAL:    Invalid arguments
+ *  @return On success, returns a non-negative integer size class index;
+ *          on failure, returns a negative error code.
+ *
+ *  @retval ret>0:    Valid size class index.
+ *  @retval -EINVAL:  @p allocator is NULL, or @p size is zero.
  * ========================================================================== */
 static int MEM_getSizeClass(mem_allocator_t *const allocator, const size_t size)
 {
@@ -1151,16 +1378,21 @@ function_output:
 }
 
 /** ============================================================================
- *  @brief      Inserts a block into the appropriate free list
- *              based on its size
+ *  @brief  Inserts a block into the appropriate free list based on its size.
  *
- *  @param[in]  allocator   Memory allocator context
- *  @param[in]  block       Block header to insert into the free list
+ *  This function computes the size class index for the given @p block by
+ *  calling MEM_getSizeClass(), then pushes the block onto the head of that
+ *  free list within the allocator. It updates both forward and backward
+ *  links to maintain the doubly‐linked list of free blocks.
  *
- *  @return     Integer status code indicating operation result
+ *  @param[in]  allocator Pointer to the allocator context.
+ *  @param[in]  block     Pointer to the block header to insert.
  *
- *  @retval     EXIT_SUCCESS:   Block successfully inserted
- *  @retval     -EINVAL:        Invalid arguments or size class
+ *  @return Integer status code.
+ *
+ *  @retval EXIT_SUCCESS: @p block successfully inserted.
+ *  @retval -EINVAL:      @p allocator or @p block is NULL.
+ *  @retval -ENOMEM:      Size class calculation failed (request too large).
  * ========================================================================== */
 static int MEM_insertFreeBlock(mem_allocator_t *const allocator,
                                block_header_t *const  block)
@@ -1204,15 +1436,22 @@ function_output:
 }
 
 /** ============================================================================
- *  @brief      Removes a block from its free list
+ *  @brief  Removes a block from its free list.
  *
- *  @param[in]  allocator   Memory allocator context
- *  @param[in]  block       Block header to remove
+ *  This function unlinks the specified @p block from the free list corresponding
+ *  to its size class within the allocator. It computes the size‐class index via
+ *  MEM_getSizeClass(), validates parameters, then adjusts the neighboring blocks’
+ *  fl_next and fl_prev pointers (or the list head) to remove @p block. The block’s
+ *  own fl_next and fl_prev are then cleared.
  *
- *  @return     Integer status code
+ *  @param[in]  allocator Memory allocator context.
+ *  @param[in]  block     Block header to remove.
  *
- *  @retval     EXIT_SUCCESS:   Block removed successfully
- *  @retval     -EINVAL:        Invalid arguments or size class
+ *  @return Integer status code.
+ *
+ *  @retval EXIT_SUCCESS: Block removed successfully.
+ *  @retval -EINVAL:      @p allocator or @p block is NULL.
+ *  @retval -ENOMEM:      Size‐class calculation failed.
  * ========================================================================== */
 static int MEM_removeFreeBlock(mem_allocator_t *const allocator,
                                block_header_t *const  block)
@@ -1235,7 +1474,7 @@ static int MEM_removeFreeBlock(mem_allocator_t *const allocator,
   index = MEM_getSizeClass(allocator, block->size);
   if (index < 0)
   {
-    ret = -EINVAL;
+    ret = -ENOMEM;
     goto function_output;
   }
 
@@ -1260,15 +1499,24 @@ function_output:
 }
 
 /** ============================================================================
- *  @brief      Initializes the memory allocator and its
- *              internal structures
+ *  @brief  Initializes the memory allocator and its internal structures.
  *
- *  @param[in]  allocator   Pointer to the allocator
+ *  This function prepares the allocator’s heap by:
+ *    - Reading and aligning the initial program break to ARCH_ALIGNMENT.
+ *    - Allocating the arena array and free‐list bins via MEM_growUserHeap().
+ *    - Zeroing out the free‐list bins.
+ *    - Initializing the allocator fields (heap_start, heap_end, free_lists).
+ *    - Setting up the garbage‐collector thread state and its mutex/cond.
+ *    - Capturing the current thread’s stack bounds via MEM_stackBounds().
+ *    - (If under Valgrind) creating a mempool for the allocator.
  *
- *  @return     Integer status code
+ *  @param[in]  allocator Pointer to a mem_allocator_t instance to initialize.
  *
- *  @retval     -EINVAL:    Invalid allocator pointer provided
- *  @retval     -EINVAL:    Invalid allocator pointer provided
+ *  @return Integer status code indicating initialization result.
+ *
+ *  @retval EXIT_SUCCESS: Allocator initialized successfully.
+ *  @retval -EINVAL:      Invalid @p allocator pointer.
+ *  @retval -ENOMEM:      Heap alignment or arena/bin allocation failed.
  * ========================================================================== */
 int MEM_allocatorInit(mem_allocator_t *const allocator)
 {
@@ -1400,16 +1648,22 @@ function_output:
 }
 
 /** ============================================================================
- *  @brief      Expands the user heap by a specified increment.
+ *  @brief  Expands the user heap by a specified increment.
  *
- *  @param[in]  allocator   Memory allocator context.
- *  @param[in]  inc         Heap size increment (in bytes).
+ *  This function moves the program break by @p inc bytes via MEM_sbrk(),
+ *  zeroes the newly allocated region, updates the allocator’s heap_end, and
+ *  initializes a block_header_t at the start of the new region to record its
+ *  size, mark it as allocated, and set its free flag to false.
  *
- *  @return     Previous end address of the heap, or error code.
+ *  @param[in]  allocator Pointer to the allocator context.
+ *  @param[in]  inc       Signed number of bytes to grow (or shrink) the heap.
  *
- *  @retval     Valid address: Heap successfully expanded.
- *  @retval     (void*)(-EINVAL): Invalid allocator context.
- *  @retval     (void*)(-ENOMEM): Heap expansion failed (out of memory).
+ *  @return Pointer to the previous program break (start of new region)
+ *          on success; an error-encoded pointer (via PTR_ERR()) on failure.
+ *
+ *  @retval (ret>=0): Previous heap end address (new region start).
+ *  @retval -EINVAL:  @p allocator is NULL.
+ *  @retval -ENOMEM:  Heap expansion failed (out of memory).
  * ========================================================================== */
 static void *MEM_growUserHeap(mem_allocator_t *const allocator,
                               const intptr_t         inc)
@@ -1447,22 +1701,25 @@ function_output:
 }
 
 /** ============================================================================
- *  @brief      Allocates a page‐aligned memory region via mmap and registers it
+ *  @brief      Allocates a page-aligned memory region via mmap and registers it
  *              in the allocator’s mmap list for later freeing.
  *
+ *  This function rounds up @p total_size to a multiple of the system page size,
+ *  invokes mmap() to obtain an anonymous read/write region, then allocates
+ *  an mmap_t metadata node via MEM_allocatorMalloc() and links it into
+ *  allocator->mmap_list.  It initializes a block_header_t and trailing canary
+ *  in the mapped region to integrate with the allocator’s debugging and GC.
+ *
  *  @param[in]  allocator   Pointer to the memory allocator context.
- *                          Must not be NULL.
- *  @param[in]  total_size  Number of bytes requested (will be rounded up to a
- *                          multiple of the system page size).
+ *  @param[in]  total_size  Number of bytes requested.
  *
- *  @return     On success, returns the address of the mapped region.
+ *  @return On success, returns the address of the mapped region.
+ *          On failure, returns an error-encoded pointer (via PTR_ERR()).
  *
- *  @retval     (void*)(intptr_t)(-EINVAL)
- *                          allocator is NULL.
- *  @retval     (void*)(intptr_t)(-EIO)
- *                          mmap() failed.
- *  @retval     (void*)(intptr_t)(-ENOMEM)
- *                          Allocation of metadata node failed.
+ *  @retval ret!=MAP_FAILED:  Address of the mapped region.
+ *  @retval -EINVAL:          @p allocator is NULL.
+ *  @retval -EIO:             mmap() failed.
+ *  @retval -ENOMEM:          Allocation of mmap_t metadata failed.
  * ========================================================================== */
 static int *MEM_mapAlloc(mem_allocator_t *const allocator,
                          const size_t           total_size)
@@ -1548,23 +1805,23 @@ function_output:
 }
 
 /** ============================================================================
- *  @brief      Unmaps a previously mapped memory region and removes its
- * metadata entry from the allocator’s mmap list.
+ *  @brief  Unmaps a previously mapped memory region and removes its
+ *          metadata entry from the allocator’s mmap list.
  *
- *  @param[in]  allocator   Memory allocator context. Must not be NULL.
- *  @param[in]  addr        Address of the memory region to unmap.
+ *  This function searches the allocator’s mmap_list for an entry matching
+ *  @p addr, calls munmap() to unmap the region, unlinks the corresponding
+ *  mmap_t metadata node, and frees it via MEM_allocatorFree().  Errors during
+ *  munmap are returned; if metadata freeing fails, an error is logged but
+ *  success is returned.
  *
- *  @return     Integer status code.
+ *  @param[in]  allocator Memory allocator context.
+ *  @param[in]  addr      Address of the memory region to unmap.
  *
- *  @retval     EXIT_SUCCESS
- *                          Region was successfully unmapped and its metadata
- *                          entry freed. (If freeing metadata fails, an error
- *                          is logged but success is still returned.)
- *  @retval     -EINVAL
- *                          allocator is NULL, or addr was not found in the
- *                          allocator’s mmap list.
- *  @retval     -ENOMEM
- *                          munmap() failed to unmap the region.
+ *  @return Integer status code.
+ *
+ *  @retval EXIT_SUCCESS: Region unmapped and metadata entry removed.
+ *  @retval -EINVAL:      @p allocator / @p addr is NULL, or not found in list.
+ *  @retval -ENOMEM:      munmap() failed to unmap the region.
  * ========================================================================== */
 static int MEM_mapFree(mem_allocator_t *const allocator, void *const addr)
 {
@@ -1633,18 +1890,23 @@ function_output:
 }
 
 /** ============================================================================
- *  @brief      Searches for the first suitable free memory
- *              block in size-class free lists
+ *  @brief  Searches for the first suitable free memory block in size‐class lists.
  *
- *  @param[in]  allocator   Memory allocator context
- *  @param[in]  size        Requested allocation size
- *  @param[out] fit_block   Pointer to store found suitable block address
+ *  This function computes the starting size class for the requested @p size via
+ *  MEM_getSizeClass(), then scans each free‐list from that class upward.  For each
+ *  candidate block, it calls MEM_validateBlock() to ensure integrity, and returns
+ *  the first block that is marked free and large enough. The found block pointer
+ *  is stored in @p fit_block.
  *
- *  @return     Integer status code
+ *  @param[in]  allocator Pointer to the allocator context.
+ *  @param[in]  siz       Requested allocation size in bytes.
+ *  @param[out] fit_block On success, set to the pointer of a suitable free block.
  *
- *  @retval     EXIT_SUCCESS:   Suitable block found successfully
- *  @retval     -EINVAL:        Invalid parameters or corrupted size class index
- *  @retval     -ENOMEM:        No suitable block found in free lists
+ *  @return Integer status code.
+ *
+ *  @retval EXIT_SUCCESS: Suitable block found successfully.
+ *  @retval -EINVAL:      @p allocator or @p fit_block are NULL;
+ *  @retval -ENOMEM:      Siz calculation failed or no suitable block found.
  * ========================================================================== */
 static int MEM_findFirstFit(mem_allocator_t *const allocator,
                             const size_t           size,
@@ -1656,6 +1918,17 @@ static int MEM_findFirstFit(mem_allocator_t *const allocator,
 
   int    start_class = 0;
   size_t class_idx   = 0u;
+
+  if (UNLIKELY(allocator == NULL || fit_block == NULL))
+  {
+    ret = -EINVAL;
+    LOG_ERROR("Invalid parameters: allocator %p | fit_block %p. "
+              "Error code: %d.\n",
+              (void *)allocator,
+              (void *)fit_block,
+              ret);
+    goto function_output;
+  }
 
   start_class = MEM_getSizeClass(allocator, size);
   if (start_class < 0)
@@ -1694,18 +1967,23 @@ function_output:
 }
 
 /** ============================================================================
- *  @brief      Searches for next suitable free memory block using
- *              NEXT_FIT strategy from last allocated position
+ *  @brief  Searches for the next suitable free memory block using the
+ *          NEXT_FIT strategy starting from the last allocated position.
  *
- *  @param[in]  allocator   Memory allocator context
- *  @param[in]  size        Requested allocation size
- *  @param[out] fit_block   Pointer to store found suitable block address
+ *  This function attempts to find a free block of at least @p size bytes by
+ *  scanning the heap starting at allocator->last_allocated.  If last_allocated
+ *  is NULL, not free, or corrupted, it falls back to First-Fit.  It wraps
+ *  around to the heap start if needed, stopping once it returns to the start.
  *
- *  @return     Integer status code
+ *  @param[in]  allocator Pointer to the allocator context.
+ *  @param[in]  size      Requested allocation size in bytes.
+ *  @param[out] fit_block Pointer to store the address of the found block.
  *
- *  @retval      EXIT_SUCCESS:   Suitable block found successfully
- *  @retval     -EINVAL:        Invalid parameters
- *  @retval     -ENOMEM:        No suitable block found in heap
+ *  @return Integer status code.
+ *
+ *  @retval EXIT_SUCCESS: Suitable block found and fit_block set.
+ *  @retval -EINVAL:      @p allocator or @p fit_block is NULL.
+ *  @retval -ENOMEM:      No suitable block found in heap.
  * ========================================================================== */
 static int MEM_findNextFit(mem_allocator_t *const allocator,
                            const size_t           size,
@@ -1768,18 +2046,24 @@ function_output:
 }
 
 /** ============================================================================
- *  @brief      Searches for smallest suitable free block
- *              in size-class free lists (BEST_FIT)
+ *  @brief  Searches for the smallest suitable free memory block
+ *          in size‐class lists (BEST_FIT).
  *
- *  @param[in]  allocator   Memory allocator context
- *  @param[in]  size        Requested allocation size
- *  @param[out] best_fit    Pointer to store found optimal block address
+ *  This function computes the starting size class for the requested @p size via
+ *  MEM_getSizeClass(), then scans each free‐list from that class upward.  It
+ *  validates each candidate with MEM_validateBlock() and tracks the smallest
+ *  free block that is large enough.  Once a block in any class is chosen, the
+ *  search stops.
  *
- *  @return     Integer status code
+ *  @param[in]   allocator  Pointer to the allocator context.
+ *  @param[in]   size       Requested allocation size in bytes.
+ *  @param[out]  best_fit   On success, set to the pointer of the free block.
  *
- *  @retval     EXIT_SUCCESS:   Suitable block found successfully
- *  @retval     -EINVAL:        Invalid parameters or corrupted size class index
- *  @retval     -ENOMEM:        No suitable block found in free lists
+ *  @return Integer status code.
+ *
+ *  @retval EXIT_SUCCESS: Suitable block found successfully.
+ *  @retval -EINVAL:      @p allocator or @p best_fit is NULL.
+ *  @retval -ENOMEM:      Size calculation failed or no suitable block found.
  * ========================================================================== */
 static int MEM_findBestFit(mem_allocator_t *const allocator,
                            const size_t           size,
@@ -1847,18 +2131,34 @@ function_output:
 }
 
 /** ============================================================================
- *  @brief      Splits a memory block into allocated and free portions
+ *  @brief  Splits a memory block into allocated and free portions.
  *
- *  @param[in]  allocator   Memory allocator context
- *  @param[in]  block       Block header to split
- *  @param[in]  req_size    Requested allocation size
+ *  This function takes an existing free @p block and a requested allocation
+ *  size @p req_size, and divides the block into:
+ *    - an allocated portion of size aligned up to ALIGN(req_size) plus header
+ *      and canary, marked as used;
+ *    - a remaining free portion (if its size ≥ MIN_BLOCK_SIZE) inserted back
+ *      into the appropriate free list.
+ *  If the leftover space would be too small (< MIN_BLOCK_SIZE), the entire
+ *  block is allocated without splitting.
  *
- *  @return     Integer status code
+ *  @param[in]  allocator Pointer to the mem_allocator_t context.
+ *  @param[in]  block     Pointer to the block_header_t to split.
+ *  @param[in]  req_size  Requested allocation size in bytes.
  *
- *  @retval     EXIT_SUCCESS:   Block split successfully
- *  @retval     -EINVAL:        Invalid parameters or corrupted block
+ *  @return Integer status code.
  *
- *  @note       If remaining space < MIN_BLOCK_SIZE, uses entire block
+ *  @retval EXIT_SUCCESS: Block split (or fully allocated) successfully.
+ *  @retval -EINVAL:      nvalid @p allocator or @p block pointer.
+ *  @retval -EPROTO:      Header canary mismatch (block corrupted).
+ *  @retval -EOVERFLOW:   Data canary mismatch (buffer overflow detected).
+ *  @retval -EFBIG:       Block’s size would extend past heap end.
+ *  @retval -EFAULT:      Block lies outside heap or mmap regions.
+ *  @retval -ENOMEM:      Failed to insert the new free remainder block.
+ *
+ *  @note If the remaining space after splitting would be less than
+ *        MIN_BLOCK_SIZE, this function allocates the entire block
+ *        no split) and removes it from its free list.
  * ========================================================================== */
 static int MEM_splitBlock(mem_allocator_t *const allocator,
                           block_header_t *const  block,
@@ -1965,15 +2265,25 @@ function_output:
 }
 
 /** ============================================================================
- *  @brief      Merges adjacent free memory blocks
+ *  @brief      Merges adjacent free memory blocks.
  *
- *  @param[in]  allocator   Memory allocator context
- *  @param[in]  block       Block header to merge with neighbors
+ *  This function removes the specified @p block from its free list, then checks
+ *  its immediate neighbor blocks in memory.  If the next block is free and
+ *  valid, it unlinks and combines it with @p block, updating size, links, and
+ *  trailing canary.  It then checks the previous block; if it is also free and
+ *  valid, it merges @p block into the previous block.  Finally, the resulting
+ *  merged block is reinserted into the appropriate free list.
  *
- *  @return     Integer status code
+ *  @param[in]  allocator Pointer to the allocator context.
+ *  @param[in]  block     Pointer to the free block header to merge.
  *
- *  @retval     EXIT_SUCCESS:   Blocks merged successfully
- *  @retval     -EINVAL:        Invalid parameters or corrupted blocks
+ *  @return Integer status code.
+ *
+ *  @retval EXIT_SUCCESS: Blocks merged (or single block reinserted) successfully.
+ *  @retval -EINVAL:      @p allocator or @p block is NULL.
+ *  @retval ret<0:        Returned by MEM_removeFreeBlock(), MEM_validateBlock(),
+ *                        MEM_insertFreeBlock(), or munmap() in inner calls
+ *                        indicating the specific failure.
  * ========================================================================== */
 static int MEM_mergeBlocks(mem_allocator_t *const allocator,
                            block_header_t        *block)
@@ -2087,16 +2397,33 @@ function_output:
 }
 
 /** ============================================================================
- *  @brief      Allocates memory using specified strategy
+ *  @brief  Allocates memory using the specified strategy.
  *
- *  @param[in]  allocator   Memory allocator context
- *  @param[in]  size        Requested allocation size
- *  @param[in]  file        Source file name
- *  @param[in]  line        Source line number
- *  @param[in]  var_name    Variable name for tracking
- *  @param[in]  strategy    Allocation strategy to use
+ *  This function attempts to allocate at least @p size bytes of user data by
+ *  choosing between heap‐based allocation (via free‐lists and optional heap
+ *  growth) or mmap (for large requests > MMAP_THRESHOLD).  It uses the
+ *  given @p strategy (FIRST_FIT, NEXT_FIT, BEST_FIT) to locate a free block,
+ *  grows the heap if necessary, splits a larger block to fit exactly, and
+ *  records debugging metadata (source file, line, variable name).  For mmap
+ *  allocations it rounds up to page size and tracks the region in the allocator.
  *
- *  @return     Pointer to allocated memory or NULL
+ *  @param[in]  allocator Memory allocator context.
+ *  @param[in]  size      Number of bytes requested.
+ *  @param[in]  file      Source file name for debugging metadata.
+ *  @param[in]  line      Source line number for debugging metadata.
+ *  @param[in]  var_name  Variable name for tracking.
+ *  @param[in]  strategy  Allocation strategy.
+ *
+ *  @return Pointer to the start of the allocated user region (just past
+ *          the internal header) on success; an error‐encoded pointer
+ *          (via PTR_ERR()) on failure.
+ *
+ *  @retval ptr:      Valid user pointer on success.
+ *  @retval -EINVAL:  @p allocator is NULL or @p size is zero.
+ *  @retval -ENOMEM:  Out of memory: heap grow failed, no free
+ *                    block found, or internal metadata allocation
+ *                    (e.g. mmap_t node) failed.
+ *  @retval -EIO:     mmap() I/O error for large allocations.
  * ========================================================================== */
 static void *MEM_allocatorMalloc(mem_allocator_t *const      allocator,
                                  const size_t                size,
@@ -2252,17 +2579,31 @@ null_pointer:
 }
 
 /** ============================================================================
- *  @brief      Reallocates memory with safety checks
+ *  @brief  Reallocates memory with safety checks.
  *
- *  @param[in]  allocator   Memory allocator context
- *  @param[in]  ptr         Pointer to reallocate
- *  @param[in]  new_size    New allocation size
- *  @param[in]  file        Source file name
- *  @param[in]  line        Source line number
- *  @param[in]  var_name    Variable name for tracking
- *  @param[in]  strategy    Allocation strategy to use
+ *  This function resizes an existing allocation to @p new_size bytes:
+ *    - If @p ptr is NULL, behaves like malloc().
+ *    - If the existing block is already large enough, returns the same pointer.
+ *    - Otherwise, allocates a new block with the specified @p strategy,
+ *      copies the lesser of old and new sizes, frees the old block, and
+ *      returns the new pointer.
  *
- *  @return     Pointer to reallocated memory or NULL
+ *  @param[in]  allocator Memory allocator context.
+ *  @param[in]  ptr       Pointer to the block to resize, or NULL to allocate.
+ *  @param[in]  new_size  New requested size in bytes.
+ *  @param[in]  file      Source file name for debugging metadata.
+ *  @param[in]  line      Source line number for debugging metadata.
+ *  @param[in]  var_name  Variable name for tracking.
+ *  @param[in]  strategy  Allocation strategy to use.
+ *
+ *  @return Pointer to the reallocated memory region (which may be the same
+ *          as @p ptr) on success; an error-encoded pointer (via PTR_ERR())
+ *          on failure.
+ *
+ *  @retval ptr:      Valid pointer to a block of at least @p new_size bytes.
+ *  @retval -EINVAL:  @p allocator is NULL, @p new_size is zero.
+ *  @retval -ENOMEM:  Out of memory (allocation or free failure).
+ *  @retval -EIO:     I/O error for large mmap-based allocations.
  * ========================================================================== */
 static void *MEM_allocatorRealloc(mem_allocator_t *const      allocator,
                                   void *const                 ptr,
@@ -2347,16 +2688,27 @@ function_output:
 }
 
 /** ============================================================================
- *  @brief      Allocates and zero-initializes memory
+ *  @brief  Allocates and zero‐initializes memory.
  *
- *  @param[in]  allocator   Memory allocator context
- *  @param[in]  size        Element size
- *  @param[in]  file        Source file name
- *  @param[in]  line        Source line number
- *  @param[in]  var_name    Variable name for tracking
- *  @param[in]  strategy    Allocation strategy to use
+ *  This function behaves like calloc(), allocating at least @p size bytes of
+ *  zeroed memory via MEM_allocatorMalloc() and then setting all bytes to zero.
+ *  It records debugging metadata (source file, line, variable name) and uses
+ *  the given @p strategy for allocation.
  *
- *  @return     Pointer to allocated memory or NULL
+ *  @param[in]  allocator Pointer to the mem_allocator_t context.
+ *  @param[in]  size      Number of bytes to allocate.
+ *  @param[in]  file      Source file name for debugging metadata.
+ *  @param[in]  line      Source line number for debugging metadata.
+ *  @param[in]  var_name  Variable name for tracking.
+ *  @param[in]  strategy  Allocation strategy to use.
+ *
+ *  @return Pointer to the start of the allocated zeroed region;
+ *          an error‐encoded pointer via PTR_ERR() on failure.
+ *
+ *  @retval ptr:      Valid pointer to @p size bytes of zeroed memory.
+ *  @retval -EINVAL:  @p allocator is NULL or @p size is zero.
+ *  @retval -ENOMEM:  Out of memory: allocation failed.
+ *  @retval -EIO:     I/O error for large mmap‐based allocations.
  * ========================================================================== */
 static void *MEM_allocatorCalloc(mem_allocator_t *const      allocator,
                                  const size_t                size,
@@ -2398,18 +2750,35 @@ function_output:
 }
 
 /** ============================================================================
- *  @brief      Releases allocated memory back to the heap
+ *  @brief  Releases allocated memory back to the heap.
  *
- *  @param[in]  allocator   Memory allocator context
- *  @param[in]  ptr         Pointer to memory to free
- *  @param[in]  file        Source file name
- *  @param[in]  line        Source line number
- *  @param[in]  var_name    Variable name for tracking
+ *  This function frees a pointer previously returned by MEM_allocatorMalloc().
+ *  It supports both heap‐based and mmap‐based allocations:
+ *    - For mmap regions, it delegates to MEM_mapFree() to unmap and remove metadata.
+ *    - For heap blocks, it validates the block, checks for double frees,
+ *      marks the block free, merges with adjacent free blocks, and reinserts
+ *      the merged block into the free list.  If the freed block lies at the
+ *      current heap end, it shrinks the heap via MEM_sbrk().
  *
- *  @return     Integer status code
+ *  @param[in]  allocator Memory allocator context.
+ *  @param[in]  ptr       Pointer to memory to free.
+ *  @param[in]  file      Source file name for debugging metadata.
+ *  @param[in]  line      Source line number for debugging metadata.
+ *  @param[in]  var_name  Variable name for tracking.
  *
- *  @retval     EXIT_SUCCESS:   Memory freed successfully
- *  @retval     -EINVAL:        Invalid parameters or corrupted block
+ *  @return Integer status code.
+ *
+ *  @retval EXIT_SUCCESS: Memory freed (and heap possibly shrunk) successfully.
+ *  @retval -EINVAL:      @p allocator or @p ptr is NULL, @p ptr not found in
+                          @p allocator, or double free detected.
+ *  @retval -ENOMEM:      munmap() failed when freeing an mmap region.
+ *  @retval -EFAULT:      Block lies outside heap and mmap regions.
+ *  @retval -EPROTO:      Header canary mismatch (block corrupted).
+ *  @retval -EOVERFLOW:   Data canary mismatch (buffer overrun detected).
+ *  @retval -EFBIG:       Block size extends past heap end.
+ *  @retval rer<0:        Errors returned by MEM_validateBlock(),
+ *                        MEM_removeFreeBlock(), MEM_mergeBlocks(),
+ *                        or MEM_insertFreeBlock().
  * ========================================================================== */
 static int MEM_allocatorFree(mem_allocator_t *const allocator,
                              void *const            ptr,
@@ -2528,17 +2897,22 @@ function_output:
  * ========================================================================== */
 
 /** ============================================================================
- *  @brief      Reset mark flags across all allocated regions
+ *  @brief  Reset “marked” flags across all allocated regions.
  *
- *  @details    This routine walks through every block in the heap area,
- *              clearing its “marked” flag to prepare for a fresh GC cycle.
- *              It then iterates the list of memory-mapped regions (mmap_list),
- *              also clearing each payload block’s mark, but explicitly
- *              setting the metadata header for those mmap regions to “marked”
- *              so that the allocator’s own bookkeeping blocks are never freed.
+ *  This function prepares for a new garbage-collection cycle by clearing the
+ *  mark flag on every heap block and every mmap’d block payload.  It scans
+ *  the heap from allocator->heap_start + metadata_size up to allocator->heap_end,
+ *  resetting each valid block’s marked flag (and skipping malformed blocks to
+ *  avoid infinite loops).  It then iterates allocator->mmap_list, clearing the
+ *  mark on each payload block while preserving the metadata header’s mark so
+ *  the allocator’s own bookkeeping regions are never freed.
  *
- *  @param[in]  allocator   Pointer to the allocator context
- *  @return     EXIT_SUCCESS on success, or -EINVAL if the allocator is NULL
+ *  @param[in]  allocator Memory allocator context.
+ *
+ *  @return Integer status code.
+ *
+ *  @retval EXIT_SUCCESS: All marks cleared and metadata marks preserved.
+ *  @retval -EINVAL:      @p allocator is NULL.
  * ========================================================================== */
 static int MEM_setInitialMarks(mem_allocator_t *const allocator)
 {
@@ -2599,23 +2973,26 @@ function_output:
 }
 
 /** ============================================================================
- *  @brief      Mark all live blocks reachable from the stack
+ *  @brief  Mark all live blocks reachable from the stack.
  *
- *  @details    1. Calls MEM_setInitialMarks to clear previous marks.
- *              2. Optionally informs Valgrind to treat the stack region as
- * defined.
- *              3. Ensures stack_bottom ≤ stack_top by swapping if needed.
- *              4. Scans each word on the application stack:
- *                   – If the word’s value falls within the heap bounds,
- *                     locates the corresponding block header.
- *                   – Verifies that the reference points inside the payload
- * area (between header end and footer). – If valid and the block is not free,
- * sets its mark bit. – Logs each block that becomes marked.
- *              5. Repeats the same check against each mmap’d region,
- *                 marking those blocks whose payload contains the reference.
+ *  This function performs the marking phase of garbage collection by:
+ *    - Calling MEM_setInitialMarks() to clear previous marks.
+ *    - Capturing stack bounds via MEM_stackBounds() for the current thread.
+ *    - Optionally informing Valgrind to treat the stack region as defined.
+ *    - Scanning each word between stack_bottom and stack_top:
+ *        • If the word’s value lies within the heap bounds, validating the
+ *          corresponding block header and marking the block if it is live.
+ *    - Iterating the allocator’s mmap_list and marking any mmap’d block whose
+ *      payload contains a stack reference.
  *
- *  @param[in]  allocator   Pointer to the allocator context
- *  @return     EXIT_SUCCESS on success, or negative error code on failure
+ *  @param[in]  allocator Memory allocator context.
+ *
+ *  @return Integer status code.
+ *
+ *  @retval EXIT_SUCCESS: All reachable blocks marked successfully.
+ *  @retval -EINVAL:      @p allocator is NULL.
+ *  @retval ret<0:        Error code returned by MEM_stackBounds(),
+ *                        MEM_validateBlock(), or other internal calls.
  * ========================================================================== */
 static int MEM_gcMark(mem_allocator_t *const allocator)
 {
@@ -2739,26 +3116,29 @@ function_output:
 }
 
 /** ============================================================================
- *  @brief      Reclaim any unmarked blocks from heap and mmap regions
+ *  @brief  Reclaim any unmarked blocks from heap and mmap regions.
  *
- *  @details    1. Iterates the heap sequentially:
- *                   – Reads each block’s size and flags.
- *                   – Logs its current free/marked status.
- *                   – If the block is allocated (free==0) but unmarked,
- *                     invokes MEM_allocatorFree on its payload pointer,
- *                     marks it free, and logs the action.
- *                   – In all cases, clears the block’s mark flag.
- *                   – Advances by the block’s size
- *              2. Traverses the mmap_list via a pointer-to-pointer scan:
- *                   – Logs each region’s status.
- *                   – If unmarked and not already free, unlinks the node,
- *                     calls munmap on the mapped area, and frees the
- *                     metadata header via MEM_allocatorFree.
- *                   – Otherwise, clears its mark and moves to the next node.
+ *  This function performs the “sweep” phase of garbage collection:
+ *    - It iterates over every block in the heap:
+ *        • Logs each block’s free and marked status.
+ *        • If a block is allocated (free==0) but unmarked, calls
+ *          MEM_allocatorFree() on its payload pointer to reclaim it.
+ *        • Clears each block’s marked flag.
+ *    - It then traverses allocator->mmap_list via a pointer-to-pointer scan:
+ *        • Logs each mmap’d region’s status.
+ *        • If an mmap’d block is unmarked and not already free, unlinks
+ *          the mmap_t node, calls munmap() on the region, and frees its
+ *          metadata header via MEM_allocatorFree().
+ *        • Otherwise, clears the block’s marked flag and advances to the next node.
  *
- *  @param[in]  allocator   Pointer to the allocator context
+ *  @param[in]  allocator Memory allocator context.
  *
- *  @return     EXIT_SUCCESS on success, or -EINVAL if allocator is NULL
+ *  @return Integer status code.
+ *
+ *  @retval EXIT_SUCCESS: All unreachable blocks reclaimed successfully.
+ *  @retval -EINVAL:      @p allocator is NULL.
+ *  @retval ret<0:        Errors returned by MEM_allocatorFree(),
+ *                        munmap(), or internal validation functions.
  * ========================================================================== */
 static int MEM_gcSweep(mem_allocator_t *const allocator)
 {
@@ -2872,21 +3252,23 @@ function_output:
 }
 
 /** ============================================================================
- *  @brief      Dedicated thread loop driving mark-and-sweep iterations
+ *  @brief  Dedicated thread loop driving mark-and-sweep iterations.
  *
- *  @details    This thread waits on a condition variable until signaled to run:
- *              1. Locks its gc_lock and blocks on gc_cond while neither
- *                 “gc_running” nor “gc_exit” is true.
- *              2. On wakeup, if gc_exit is set, breaks the loop and exits.
- *              3. Releases the lock and performs one pass of:
- *                   – MEM_gcMark to mark live blocks.
- *                   – MEM_gcSweep to free unreachable blocks.
- *                 Errors in either are logged and abort the thread.
- *              4. Sleeps for the configured gc_interval before repeating.
- *              5. On exit, ensures the lock is released and returns its status.
+ *  This function runs as the GC worker thread.  It locks gc_lock and waits
+ *  on gc_cond until either gc_running or gc_exit is set.  On wakeup, if
+ *  gc_exit is true, it breaks and exits the loop; otherwise it unlocks and
+ *  performs one full GC cycle by calling MEM_gcMark() and MEM_gcSweep(),
+ *  then sleeps for gc_interval_ms before re-acquiring the lock and waiting
+ *  again.  On exit it ensures gc_lock is released.
  *
- *  @param[in]  arg     Pointer to mem_allocator_t (must not be NULL)
- *  @return     NULL on clean exit, or PTR_ERR on failure
+ *  @param[in]  arg Pointer to the mem_allocator_t context.
+ *
+ *  @return NULL on clean exit; an error-encoded pointer (via PTR_ERR())
+ *          if any initialization or GC step fails.
+ *
+ *  @retval NULL:     Clean exit after gc_exit.
+ *  @retval -EINVAL:  @p arg is NULL.
+ *  @retval ret<0:    cond errors, or MEM_gcMark() / MEM_gcSweep() failures.
  * ========================================================================== */
 static void *MEM_gcThreadFunc(void *arg)
 {
@@ -2942,18 +3324,20 @@ function_output:
 }
 
 /** ============================================================================
- *  @brief      Start or signal the GC thread to perform a collection cycle
+ *  @brief  Start or signal the GC thread to perform a collection cycle.
  *
- *  @details    - Captures the main thread’s stack bounds for later marking.
- *              - If the GC thread has not been started:
- *                   * Marks gc_thread_started, sets gc_running and gc_exit
- * flags.
- *                   * Creates the GC thread running MEM_gcThreadFunc.
- *                Otherwise:
- *                   * Sets gc_running and signals gc_cond to wake the thread.
+ *  This function saves the caller’s thread ID as main_thread, locks gc_lock,
+ *  and if the GC thread has not been started, sets gc_running and gc_exit
+ *  flags and spawns MEM_gcThreadFunc(); otherwise it sets gc_running and
+ *  signals gc_cond to wake the existing thread.  Finally it unlocks gc_lock.
  *
- *  @param[in]  allocator   Pointer to the allocator context
- *  @return     EXIT_SUCCESS, or negative error code on failure
+ *  @param[in]  allocator Pointer to the mem_allocator_t context.
+ *
+ *  @return Integer status code.
+ *
+ *  @retval EXIT_SUCCESS: GC thread started or signaled successfully.
+ *  @retval -EINVAL:      @p allocator is NULL.
+ *  @retval ret<0:        Error code returned by pthread_create().
  * ========================================================================== */
 static int MEM_runGc(mem_allocator_t *const allocator)
 {
@@ -3009,18 +3393,20 @@ function_output:
 }
 
 /** ============================================================================
- *  @brief      Stop the GC thread and perform a final collection
+ *  @brief  Stop the GC thread and perform a final collection.
  *
- *  @details    - Sets gc_running to false and gc_exit to true.
- *              - If the thread is active:
- *                   * Signals gc_cond to wake it up.
- *                   * Joins the thread (waits for its termination).
- *                   * Runs one last MEM_gcMark + MEM_gcSweep cycle on the
- *                     calling thread to clean up any remaining garbage.
- *                   * Resets gc_thread_started flag.
+ *  This function clears gc_running and sets gc_exit, signals gc_cond to wake
+ *  the GC thread if it’s running, then joins it.  After the thread exits, it
+ *  runs one final MEM_gcMark() + MEM_gcSweep() on the caller thread to
+ *  reclaim any remaining garbage, then clears gc_thread_started.
  *
- *  @param[in]  allocator   Pointer to the allocator context
- *  @return     EXIT_SUCCESS, or negative error code on failure
+ *  @param[in]  allocator Pointer to the mem_allocator_t context.
+ *
+ *  @return Integer status code.
+ *
+ *  @retval EXIT_SUCCESS: GC thread stopped and final collection done.
+ *  @retval -EINVAL:      @p allocator is NULL.
+ *  @retval ret<0:        Error code from pthread MEM_gcMark(), or MEM_gcSweep().
  * ========================================================================== */
 static int MEM_stopGc(mem_allocator_t *const allocator)
 {
@@ -3068,15 +3454,18 @@ function_output:
  * ========================================================================== */
 
 /** ============================================================================
- *  @brief      Allocates memory using the FIRST_FIT strategy.
+ *  @brief  Allocates memory using the FIRST_FIT strategy.
  *
- *  @param[in]  allocator   Memory allocator context.
- *  @param[in]  size        Requested allocation size.
- *  @param[in]  var         Variable name (for debugging).
+ *  This function locks the GC mutex, invokes MEM_allocatorMalloc() with
+ *  FIRST_FIT strategy, automatically supplying __FILE__, __LINE__, and variable
+ *  name for debugging, then unlocks the mutex.
  *
- *  @return     Pointer to allocated memory or NULL on failure.
+ *  @param[in]  allocator Memory allocator context.
+ *  @param[in]  size      Number of bytes requested.
+ *  @param[in]  var       Variable name for debugging.
  *
- *  @note       Automatically passes file and line information.
+ *  @return Pointer to the allocated user memory on success,
+ *          or an error‐encoded pointer (via PTR_ERR()) on failure.
  * ========================================================================== */
 void *MEM_allocMallocFirstFit(mem_allocator_t *const allocator,
                               const size_t           size,
@@ -3097,15 +3486,18 @@ void *MEM_allocMallocFirstFit(mem_allocator_t *const allocator,
 }
 
 /** ============================================================================
- *  @brief      Allocates memory using the BEST_FIT strategy.
+ *  @brief  Allocates memory using the BEST_FIT strategy.
  *
- *  @param[in]  allocator   Memory allocator context.
- *  @param[in]  size        Requested allocation size.
- *  @param[in]  var         Variable name (for debugging).
+ *  This function locks the GC mutex, invokes MEM_allocatorMalloc() with
+ *  BEST_FIT strategy, automatically supplying __FILE__, __LINE__, and variable
+ *  name for debugging, then unlocks the mutex.
  *
- *  @return     Pointer to allocated memory or NULL on failure.
+ *  @param[in]  allocator Memory allocator context.
+ *  @param[in]  size      Number of bytes requested.
+ *  @param[in]  var       Variable name for debugging.
  *
- *  @note       Automatically passes file and line information.
+ *  @return Pointer to the allocated user memory on success,
+ *          or an error‐encoded pointer (via PTR_ERR()) on failure.
  * ========================================================================== */
 void *MEM_allocMallocBestFit(mem_allocator_t *const allocator,
                              const size_t           size,
@@ -3125,15 +3517,18 @@ void *MEM_allocMallocBestFit(mem_allocator_t *const allocator,
 }
 
 /** ============================================================================
- *  @brief      Allocates memory using the NEXT_FIT strategy.
+ *  @brief  Allocates memory using the NEXT_FIT strategy.
  *
- *  @param[in]  allocator   Memory allocator context.
- *  @param[in]  size        Requested allocation size.
- *  @param[in]  var         Variable name (for debugging).
+ *  This function locks the GC mutex, invokes MEM_allocatorMalloc() with
+ *  NEXT_FIT strategy, automatically supplying __FILE__, __LINE__, and variable
+ *  name for debugging, then unlocks the mutex.
  *
- *  @return     Pointer to allocated memory or NULL on failure.
+ *  @param[in]  allocator Memory allocator context.
+ *  @param[in]  size      Number of bytes requested.
+ *  @param[in]  var       Variable name for debugging.
  *
- *  @note       Automatically passes file and line information.
+ *  @return Pointer to the allocated user memory on success,
+ *          or an error‐encoded pointer (via PTR_ERR()) on failure.
  * ========================================================================== */
 void *MEM_allocMallocNextFit(mem_allocator_t *const allocator,
                              const size_t           size,
@@ -3153,16 +3548,19 @@ void *MEM_allocMallocNextFit(mem_allocator_t *const allocator,
 }
 
 /** ============================================================================
- *  @brief      Allocates memory using a specified strategy.
+ *  @brief  Allocates memory using the specified strategy.
  *
- *  @param[in]  allocator   Memory allocator context.
- *  @param[in]  size        Requested allocation size.
- *  @param[in]  var         Variable name (for debugging).
- *  @param[in]  strategy    Allocation strategy to use.
+ *  This function locks the GC mutex, invokes MEM_allocatorMalloc() with the
+ *  given @p strategy, automatically supplying __FILE__, __LINE__, and variable
+ *  name for debugging, then unlocks the mutex.
  *
- *  @return     Pointer to allocated memory or NULL on failure.
+ *  @param[in]  allocator Memory allocator context.
+ *  @param[in]  size      Number of bytes requested
+ *  @param[in]  var       Variable name for debugging.
+ *  @param[in]  strategy  Allocation strategy.
  *
- *  @note       Automatically passes file and line information.
+ *  @return Pointer to the allocated user memory on success,
+ *          or an error‐encoded pointer (via PTR_ERR()) on failure.
  * ========================================================================== */
 void *MEM_allocMalloc(mem_allocator_t *const      allocator,
                       const size_t                size,
@@ -3183,18 +3581,19 @@ void *MEM_allocMalloc(mem_allocator_t *const      allocator,
 }
 
 /** ============================================================================
- *  @brief      Allocates and zero-initializes memory using a specified
- * strategy.
+ *  @brief  Allocates and zero‐initializes memory using the specified strategy.
  *
- *  @param[in]  allocator   Memory allocator context.
- *  @param[in]  size        Size of each element.
- *  @param[in]  var         Variable name (for debugging).
- *  @param[in]  strategy    Allocation strategy to use.
+ *  This function locks the GC mutex, invokes MEM_allocatorCalloc() with the
+ *  given @p strategy, automatically supplying __FILE__, __LINE__, and variable
+ *  name for debugging, then unlocks the mutex.
  *
- *  @return     Pointer to allocated and zero-initialized memory or NULL on
- * failure.
+ *  @param[in]  allocator Memory allocator context.
+ *  @param[in]  size      Number of bytes requested.
+ *  @param[in]  var       Variable name for debugging.
+ *  @param[in]  strategy  Allocation strategy.
  *
- *  @note       Automatically passes file and line information.
+ *  @return Pointer to the allocated zeroed memory on success,
+ *          or an error‐encoded pointer (via PTR_ERR()) on failure.
  * ========================================================================== */
 void *MEM_allocCalloc(mem_allocator_t *const      allocator,
                       const size_t                size,
@@ -3215,18 +3614,20 @@ void *MEM_allocCalloc(mem_allocator_t *const      allocator,
 }
 
 /** ============================================================================
- *  @brief      Reallocates memory with safety checks using a specified
- * strategy.
+ *  @brief  Reallocates memory with safety checks using the specified strategy.
  *
- *  @param[in]  allocator   Memory allocator context.
- *  @param[in]  ptr         Pointer to memory to reallocate.
- *  @param[in]  new_size    New requested allocation size.
- *  @param[in]  var         Variable name (for debugging).
- *  @param[in]  strategy    Allocation strategy to use.
+ *  This function locks the GC mutex, invokes MEM_allocatorRealloc() with the
+ *  given @p strategy, automatically supplying __FILE__, __LINE__, and variable
+ *  name for debugging, then unlocks the mutex.
  *
- *  @return     Pointer to reallocated memory or NULL on failure.
+ *  @param[in]  allocator Memory allocator context.
+ *  @param[in]  ptr       Pointer to existing memory.
+ *  @param[in]  new_size  New requested size.
+ *  @param[in]  var       Variable name for debugging.
+ *  @param[in]  strategy  Allocation strategy.
  *
- *  @note       Automatically passes file and line information.
+ *  @return Pointer to the reallocated memory on success (may be same as @p ptr),
+ *          or an error‐encoded pointer (via PTR_ERR()) on failure.
  * ========================================================================== */
 void *MEM_allocRealloc(mem_allocator_t *const      allocator,
                        void *const                 ptr,
@@ -3254,15 +3655,18 @@ void *MEM_allocRealloc(mem_allocator_t *const      allocator,
 }
 
 /** ============================================================================
- *  @brief      Releases allocated memory back to the heap.
+ *  @brief  Releases allocated memory back to the heap.
  *
- *  @param[in]  allocator   Memory allocator context.
- *  @param[in]  ptr         Pointer to memory to free.
- *  @param[in]  var         Variable name (for debugging).
+ *  This function locks the GC mutex, invokes MEM_allocatorFree() with
+ *  automatically supplied __FILE__, __LINE__, and variable name for debugging,
+ *  then unlocks the mutex.
  *
- *  @return     Integer status code (EXIT_SUCCESS if successful).
+ *  @param[in]  allocator Memory allocator context.
+ *  @param[in]  ptr       Pointer to memory to free.
+ *  @param[in]  var       Variable name for debugging.
  *
- *  @note       Automatically passes file and line information.
+ *  @return EXIT_SUCCESS on success,
+ *          negative error code on failure.
  * ========================================================================== */
 int MEM_allocFree(mem_allocator_t *const allocator,
                   void *const            ptr,
@@ -3282,13 +3686,15 @@ int MEM_allocFree(mem_allocator_t *const allocator,
 }
 
 /** ============================================================================
- *  @brief      Wrapper to start or signal the garbage collector thread
+ *  @brief  Start or signal the garbage collector thread.
  *
- *  @param[in]  allocator   Pointer to the memory allocator context
+ *  This function simply wraps MEM_runGc(), starting the GC thread if needed
+ *  or signaling it to perform a collection cycle.
  *
- *  @return     EXIT_SUCCESS (0) on success, or negative error code on failure
+ *  @param[in]  allocator Memory allocator context.
  *
- *  @note       This is simply a thin wrapper around MEM_runGc().
+ *  @return EXIT_SUCCESS on success,
+ *          negative error code on failure.
  * ========================================================================== */
 int MEM_enableGc(mem_allocator_t *const allocator)
 {
@@ -3300,14 +3706,15 @@ int MEM_enableGc(mem_allocator_t *const allocator)
 }
 
 /** ============================================================================
- *  @brief      Wrapper to stop the garbage collector thread and perform a final
- *              collection
+ *  @brief  Stop the garbage collector thread and perform a final collection.
  *
- *  @param[in]  allocator   Pointer to the memory allocator context
+ *  This function simply wraps MEM_stopGc(), signaling the GC thread to exit,
+ *  joining it, and running a final mark-and-sweep cycle on the caller thread.
  *
- *  @return     EXIT_SUCCESS (0) on success, or negative error code on failure
+ *  @param[in]  allocator Memory allocator context
  *
- *  @note       This is simply a thin wrapper around MEM_stopGc().
+ *  @return EXIT_SUCCESS on success,
+ *          negative error code on failure.
  * ========================================================================== */
 int MEM_disableGc(mem_allocator_t *const allocator)
 {
@@ -3317,5 +3724,7 @@ int MEM_disableGc(mem_allocator_t *const allocator)
 
   return ret;
 }
+
+/** @} */
 
 /*< end of file >*/

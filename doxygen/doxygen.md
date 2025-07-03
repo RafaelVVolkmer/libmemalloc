@@ -15,7 +15,7 @@
 ---
 
 <div align="center">
-  <img src="libmemalloc.svg" alt="libmemalloc logo" width="50%"/>
+  <img src="libmemalloc.svg" alt="libmemalloc logo" width="55%"/>
 </div>
 
 ---
@@ -75,6 +75,8 @@ int main(void)
 }
 ```
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+---
 
 [maintainability-shield]: https://qlty.sh/gh/RafaelVVolkmer/projects/libmemalloc/badges/maintainability.svg?style=flat-square
 [maintainability-url]:   https://qlty.sh/gh/RafaelVVolkmer/projects/libmemalloc
