@@ -37,6 +37,7 @@ COPY --chown=appuser:appgroup build.sh   CMakeLists.txt ./
 COPY --chown=appuser:appgroup src/       src/
 COPY --chown=appuser:appgroup inc/       inc/
 COPY --chown=appuser:appgroup tests/     tests/
+COPY --chown=appuser:appgroup doxygen/  doxygen/
 
 RUN chmod +x build.sh
 
