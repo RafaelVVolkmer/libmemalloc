@@ -2,6 +2,7 @@
 
 set -euo pipefail
 
+ROOT_DIR="."
 BUILD_DIR="./build"
 DOCS_DIR="./docs"
 DOXYGEN_DIR="./doxygen/doxygen-awesome"
@@ -64,11 +65,9 @@ cleanup()
 {
     for dir in "$BUILD_DIR" "$DOCS_DIR" "$BIN_DIR" "$DOXYGEN_DIR"; do
         if [ -d "$dir" ]; then
-            rm -rf "$dir"
+            sudo rm -rf "$dir"
         fi
     done
-
-    mkdir -p "$BUILD_DIR"
 }
 
 if [ "$DOCKER" = true ]; then
@@ -78,25 +77,40 @@ if [ "$DOCKER" = true ]; then
 
     IMAGE_TAG="libmemalloc:${BUILD_TYPE,,}"
 
+    if [ "$BUILD_TYPE" = "Release" ]; then
+      TARGET="docs-export"
+    else
+      TARGET="export"
+    fi
+
     docker build \
       --build-arg BUILD_MODE="$BUILD_TYPE" \
+      --target "$TARGET" \
       --tag "$IMAGE_TAG" \
       .
 
     CONTAINER_ID=$(docker create "$IMAGE_TAG")
 
-    mkdir -p ./bin/"$BUILD_TYPE"
-    docker cp "$CONTAINER_ID":/out/. ./bin/"$BUILD_TYPE"/
+    cleanup
 
-    docker rm "$CONTAINER_ID"
-    docker rmi "$IMAGE_TAG"
+    mkdir -p "$BIN_DIR"
+    docker cp "$CONTAINER_ID":/out/libmemalloc.so "$BIN_DIR"
+    docker cp "$CONTAINER_ID":/out/libmemalloc.a  "$BIN_DIR"
+
+    if [ "$BUILD_TYPE" = "Release" ]; then
+      docker cp "$CONTAINER_ID":/out/docs "$ROOT_DIR"
+    fi
+
+    docker rm -f "$CONTAINER_ID" 2>/dev/null || true
+    docker rmi -f "$IMAGE_TAG" 2>/dev/null || true
 else
     echo
     echo "${GREEN}→  Build local - mode: $BUILD_TYPE.${RESET}"
     echo
 
     cleanup
-
+  
+    mkdir -p "$BUILD_DIR"
     cd "$BUILD_DIR"
 
     cmake -DCMAKE_BUILD_TYPE="$BUILD_TYPE" ..
@@ -112,6 +126,9 @@ else
 fi
 
 echo
-echo "${GREEN}✓ Build and testing '$BUILD_TYPE' completed successfully.${RESET}"
-echo "${GREEN}→ Binaries (.a .so) are in ./bin/$BUILD_TYPE.${RESET}"
+echo "${GREEN}✓ Build and testing '$BUILD_TYPE' completed successfully!${RESET}"
+echo "${GREEN}→ Binaries (.a .so) are in: "$BIN_DIR" !${RESET}"
+if [ "$BUILD_TYPE" = "Release" ]; then
+  echo "${GREEN}→ Doxygen docs are in: "$DOCS_DIR" !${RESET}"
+fi
 echo

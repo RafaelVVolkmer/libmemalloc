@@ -53,11 +53,15 @@ COPY --chown=appuser:appgroup src/              src/
 COPY --chown=appuser:appgroup inc/              inc/
 COPY --chown=appuser:appgroup tests/            tests/
 COPY --chown=appuser:appgroup doxygen/          doxygen/
+COPY --chown=appuser:appgroup readme/           readme/
 
 RUN cmake -S . -B "${BUILD_DIR}" -DCMAKE_BUILD_TYPE=${BUILD_MODE} \
         && cmake --build "${BUILD_DIR}" --config ${BUILD_MODE} -- -j"$(nproc)" \
         && ctest --test-dir "${BUILD_DIR}" -C ${BUILD_MODE} --output-on-failure --parallel "$(nproc)" \
-        && cmake --build "${BUILD_DIR}" --config ${BUILD_MODE} --target doc
+        && \
+if [ "${BUILD_MODE}" = "Release" ]; then \
+        cmake --build "${BUILD_DIR}" --config "${BUILD_MODE}" --target doc; \
+fi
 
 #-------------------------------------------------------------------------------
 # Stage 2: Runtime
@@ -104,5 +108,17 @@ ARG BUILD_MODE=Release
 
 WORKDIR /out
 
-COPY --from=builder /app/bin/${BUILD_MODE}/libmemalloc.so .
-COPY --from=builder /app/bin/${BUILD_MODE}/libmemalloc.a  .
+COPY --from=builder /app/bin/${BUILD_MODE}/libmemalloc.so       .
+COPY --from=builder /app/bin/${BUILD_MODE}/libmemalloc.a        .
+
+#-------------------------------------------------------------------------------
+# Stage 4: Export with docs (Release only)
+#-------------------------------------------------------------------------------
+FROM export AS docs-export
+
+WORKDIR /out
+
+RUN mkdir -p docs
+
+COPY --from=builder /app/docs                           docs/
+COPY --from=builder /app/readme/libmemalloc.svg         docs/html/
