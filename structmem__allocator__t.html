@@ -1,0 +1,385 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=9"/>
+<meta name="generator" content="Doxygen 1.9.8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<!-- BEGIN opengraph metadata -->
+<meta property="og:title" content="Doxygen Awesome" />
+<meta property="og:image" content="https://repository-images.githubusercontent.com/348492097/4f16df80-88fb-11eb-9d31-4015ff22c452" />
+<meta property="og:description" content="Custom CSS theme for doxygen html-documentation with lots of customization parameters." />
+<meta property="og:url" content="https://jothepro.github.io/doxygen-awesome-css/" />
+<!-- END opengraph metadata -->
+<!-- BEGIN twitter metadata -->
+<meta name="twitter:image:src" content="https://repository-images.githubusercontent.com/348492097/4f16df80-88fb-11eb-9d31-4015ff22c452" />
+<meta name="twitter:title" content="Doxygen Awesome" />
+<meta name="twitter:description" content="Custom CSS theme for doxygen html-documentation with lots of customization parameters." />
+<!-- END twitter metadata -->
+<title>libmemalloc: mem_allocator_t Struct Reference</title>
+<link href="tabs.css" rel="stylesheet" type="text/css"/>
+<link rel="icon" type="image/svg+xml" href="logo.drawio.svg"/>
+<script type="text/javascript" src="jquery.js"></script>
+<script type="text/javascript" src="dynsections.js"></script>
+<script type="text/javascript" src="doxygen-awesome-darkmode-toggle.js"></script>
+<script type="text/javascript" src="doxygen-awesome-fragment-copy-button.js"></script>
+<script type="text/javascript" src="doxygen-awesome-paragraph-link.js"></script>
+<script type="text/javascript" src="doxygen-awesome-interactive-toc.js"></script>
+<script type="text/javascript" src="doxygen-awesome-tabs.js"></script>
+<script type="text/javascript" src="toggle-alternative-theme.js"></script>
+<script type="text/javascript">
+    DoxygenAwesomeFragmentCopyButton.init()
+    DoxygenAwesomeDarkModeToggle.init()
+    DoxygenAwesomeParagraphLink.init()
+    DoxygenAwesomeInteractiveToc.init()
+    DoxygenAwesomeTabs.init()
+</script>
+<link href="navtree.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="resize.js"></script>
+<script type="text/javascript" src="navtreedata.js"></script>
+<script type="text/javascript" src="navtree.js"></script>
+<link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+<link href="doxygen.css" rel="stylesheet" type="text/css" />
+<link href="doxygen-awesome.css" rel="stylesheet" type="text/css"/>
+<link href="custom.css" rel="stylesheet" type="text/css"/>
+<link href="doxygen-awesome-sidebar-only.css" rel="stylesheet" type="text/css"/>
+<link href="doxygen-awesome-sidebar-only-darkmode-toggle.css" rel="stylesheet" type="text/css"/>
+<link href="custom-alternative.css" rel="stylesheet" type="text/css"/>
+</head>
+<body>
+<!-- https://tholman.com/github-corners/ -->
+<a href="https://github.com/jothepro/doxygen-awesome-css" class="github-corner" title="View source on GitHub" target="_blank" rel="noopener noreferrer">
+    <svg viewBox="0 0 250 250" width="40" height="40" style="position: absolute; top: 0; border: 0; right: 0; z-index: 99;" aria-hidden="true">
+    <path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a><style>.github-corner:hover .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes octocat-wave{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-25deg)}40%,80%{transform:rotate(10deg)}}@media (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner .octo-arm{animation:octocat-wave 560ms ease-in-out}}</style>
+<div id="top"><!-- do not remove this div, it is closed by doxygen! -->
+<div id="titlearea">
+<table cellspacing="0" cellpadding="0">
+ <tbody>
+ <tr style="height: 56px;">
+  <td id="projectlogo"><img alt="Logo" src="libmemalloc.svg"/></td>
+  <td id="projectalign" style="padding-left: 0.5em;">
+   <div id="projectname">libmemalloc
+   &#160;<span id="projectnumber">v4.0.00</span>
+   </div>
+   <div id="projectbrief">Modern Memory Allocator</div>
+  </td>
+ </tr>
+ </tbody>
+</table>
+</div>
+<!-- end header part -->
+<!-- Generated by Doxygen 1.9.8 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&amp;dn=expat.txt MIT */
+var searchBox = new SearchBox("searchBox", "search/",'.html');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&amp;dn=expat.txt MIT */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */
+</script>
+<div id="main-nav"></div>
+</div><!-- top -->
+<div id="side-nav" class="ui-resizable side-nav-resizable">
+  <div id="nav-tree">
+    <div id="nav-tree-contents">
+      <div id="nav-sync" class="sync"></div>
+    </div>
+  </div>
+  <div id="splitbar" style="-moz-user-select:none;" 
+       class="ui-resizable-handle">
+  </div>
+</div>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&amp;dn=expat.txt MIT */
+$(document).ready(function(){initNavTree('structmem__allocator__t.html',''); initResizable(); });
+/* @license-end */
+</script>
+<div id="doc-content">
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<div id="MSearchResults">
+<div class="SRPage">
+<div id="SRIndex">
+<div id="SRResults"></div>
+<div class="SRStatus" id="Loading">Loading...</div>
+<div class="SRStatus" id="Searching">Searching...</div>
+<div class="SRStatus" id="NoMatches">No Matches</div>
+</div>
+</div>
+</div>
+</div>
+
+<div class="header">
+  <div class="summary">
+<a href="#pub-attribs">Public Attributes</a> &#124;
+<a href="structmem__allocator__t-members.html">List of all members</a>  </div>
+  <div class="headertitle"><div class="title">mem_allocator_t Struct Reference<div class="ingroups"><a class="el" href="group___libmemalloc.html">Libmemalloc</a></div></div></div>
+</div><!--header-->
+<div class="contents">
+
+<p>Manages dynamic memory allocation.  
+ <a href="structmem__allocator__t.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="libmemalloc_8h_source.html">libmemalloc.h</a>&gt;</code></p>
+<div class="dynheader">
+Collaboration diagram for mem_allocator_t:</div>
+<div class="dyncontent">
+<div class="center"><iframe scrolling="no" frameborder="0" src="structmem__allocator__t__coll__graph.svg" width="539" height="827"><p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p></iframe></div>
+</div>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
+Public Attributes</h2></td></tr>
+<tr class="memitem:ae831d3516bdc9ac76ed6af36c5756be7" id="r_ae831d3516bdc9ac76ed6af36c5756be7"><td class="memItemLeft" align="right" valign="top">uint8_t *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structmem__allocator__t.html#ae831d3516bdc9ac76ed6af36c5756be7">heap_start</a></td></tr>
+<tr class="separator:ae831d3516bdc9ac76ed6af36c5756be7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a89169fae7690e6c03ae7497295d8a108" id="r_a89169fae7690e6c03ae7497295d8a108"><td class="memItemLeft" align="right" valign="top">uint8_t *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structmem__allocator__t.html#a89169fae7690e6c03ae7497295d8a108">heap_end</a></td></tr>
+<tr class="separator:a89169fae7690e6c03ae7497295d8a108"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a38b67d7d6571b362988889757072206f" id="r_a38b67d7d6571b362988889757072206f"><td class="memItemLeft" align="right" valign="top">size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structmem__allocator__t.html#a38b67d7d6571b362988889757072206f">metadata_size</a></td></tr>
+<tr class="separator:a38b67d7d6571b362988889757072206f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a75895b02081348b494c934885e577404" id="r_a75895b02081348b494c934885e577404"><td class="memItemLeft" align="right" valign="top">uintptr_t *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structmem__allocator__t.html#a75895b02081348b494c934885e577404">stack_top</a></td></tr>
+<tr class="separator:a75895b02081348b494c934885e577404"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a86338c8c7a96d574fd49451509a67394" id="r_a86338c8c7a96d574fd49451509a67394"><td class="memItemLeft" align="right" valign="top">uintptr_t *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structmem__allocator__t.html#a86338c8c7a96d574fd49451509a67394">stack_bottom</a></td></tr>
+<tr class="separator:a86338c8c7a96d574fd49451509a67394"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3d9edab1f863b6f1f6842712e73e8c6d" id="r_a3d9edab1f863b6f1f6842712e73e8c6d"><td class="memItemLeft" align="right" valign="top">size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structmem__allocator__t.html#a3d9edab1f863b6f1f6842712e73e8c6d">num_size_classes</a></td></tr>
+<tr class="separator:a3d9edab1f863b6f1f6842712e73e8c6d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa436c6fa1bf7250087fee87eb9606e77" id="r_aa436c6fa1bf7250087fee87eb9606e77"><td class="memItemLeft" align="right" valign="top">size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structmem__allocator__t.html#aa436c6fa1bf7250087fee87eb9606e77">num_arenas</a></td></tr>
+<tr class="separator:aa436c6fa1bf7250087fee87eb9606e77"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0129f049944df54604d51bbfb48176ec" id="r_a0129f049944df54604d51bbfb48176ec"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structblock__header__t.html">block_header_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structmem__allocator__t.html#a0129f049944df54604d51bbfb48176ec">last_allocated</a></td></tr>
+<tr class="separator:a0129f049944df54604d51bbfb48176ec"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acf9ba831053285626fc8dda2c693db07" id="r_acf9ba831053285626fc8dda2c693db07"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structmem__arena__t.html">mem_arena_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structmem__allocator__t.html#acf9ba831053285626fc8dda2c693db07">arenas</a></td></tr>
+<tr class="separator:acf9ba831053285626fc8dda2c693db07"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0f5301b0eb8a8efb7299960dbfe9aa3f" id="r_a0f5301b0eb8a8efb7299960dbfe9aa3f"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structmmap__t.html">mmap_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structmem__allocator__t.html#a0f5301b0eb8a8efb7299960dbfe9aa3f">mmap_list</a></td></tr>
+<tr class="separator:a0f5301b0eb8a8efb7299960dbfe9aa3f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a64944a78431e46bb8557b9ff07cbf124" id="r_a64944a78431e46bb8557b9ff07cbf124"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structblock__header__t.html">block_header_t</a> **&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structmem__allocator__t.html#a64944a78431e46bb8557b9ff07cbf124">free_lists</a></td></tr>
+<tr class="separator:a64944a78431e46bb8557b9ff07cbf124"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a04e38db7363434b17376426ff75921e2" id="r_a04e38db7363434b17376426ff75921e2"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structgc__thread__t.html">gc_thread_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structmem__allocator__t.html#a04e38db7363434b17376426ff75921e2">gc_thread</a></td></tr>
+<tr class="separator:a04e38db7363434b17376426ff75921e2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Manages dynamic memory allocation. </p>
+<p>This structure manages the heap, including free lists for memory blocks, garbage collection, and allocation strategies.</p>
+<dl class="section user"><dt>Fields:</dt><dd><ul>
+<li><b>heap_start</b> – Base of the user heap region </li>
+<li><b>heap_end</b> – Current end of the heap </li>
+<li><b>metadata_size</b> – Bytes reserved for bins and arenas </li>
+<li><b>stack_top</b> – Upper bound of application stack </li>
+<li><b>stack_bottom</b> – Lower bound of application stack </li>
+<li><b>last_allocated</b> – Last block returned (NEXT_FIT) </li>
+<li><b>num_size_classes</b> – Total size classes available </li>
+<li><b>num_arenas</b> – Number of arena partitions </li>
+<li><b>arenas</b> – Array of arena metadata </li>
+<li><b>mmap_list</b> – Linked list of mmap’d regions </li>
+<li><b>free_lists</b> – Segregated free lists by size class </li>
+<li><b>gc_thread</b> – Garbage collector controller </li>
+</ul>
+</dd></dl>
+</div><h2 class="groupheader">Member Data Documentation</h2>
+<a id="acf9ba831053285626fc8dda2c693db07" name="acf9ba831053285626fc8dda2c693db07"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#acf9ba831053285626fc8dda2c693db07">&#9670;&#160;</a></span>arenas</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structmem__arena__t.html">mem_arena_t</a>* mem_allocator_t::arenas</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Array of arena metadata </p>
+
+</div>
+</div>
+<a id="a64944a78431e46bb8557b9ff07cbf124" name="a64944a78431e46bb8557b9ff07cbf124"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a64944a78431e46bb8557b9ff07cbf124">&#9670;&#160;</a></span>free_lists</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structblock__header__t.html">block_header_t</a>** mem_allocator_t::free_lists</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Segregated free lists by size class </p>
+
+</div>
+</div>
+<a id="a04e38db7363434b17376426ff75921e2" name="a04e38db7363434b17376426ff75921e2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a04e38db7363434b17376426ff75921e2">&#9670;&#160;</a></span>gc_thread</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structgc__thread__t.html">gc_thread_t</a> mem_allocator_t::gc_thread</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Garbage collector controller </p>
+
+</div>
+</div>
+<a id="a89169fae7690e6c03ae7497295d8a108" name="a89169fae7690e6c03ae7497295d8a108"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a89169fae7690e6c03ae7497295d8a108">&#9670;&#160;</a></span>heap_end</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint8_t* mem_allocator_t::heap_end</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Current end of the heap </p>
+
+</div>
+</div>
+<a id="ae831d3516bdc9ac76ed6af36c5756be7" name="ae831d3516bdc9ac76ed6af36c5756be7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae831d3516bdc9ac76ed6af36c5756be7">&#9670;&#160;</a></span>heap_start</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint8_t* mem_allocator_t::heap_start</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Base of the user heap region </p>
+
+</div>
+</div>
+<a id="a0129f049944df54604d51bbfb48176ec" name="a0129f049944df54604d51bbfb48176ec"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0129f049944df54604d51bbfb48176ec">&#9670;&#160;</a></span>last_allocated</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structblock__header__t.html">block_header_t</a>* mem_allocator_t::last_allocated</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Last block returned (NEXT_FIT) </p>
+
+</div>
+</div>
+<a id="a38b67d7d6571b362988889757072206f" name="a38b67d7d6571b362988889757072206f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a38b67d7d6571b362988889757072206f">&#9670;&#160;</a></span>metadata_size</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">size_t mem_allocator_t::metadata_size</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Bytes reserved for bins and arenas </p>
+
+</div>
+</div>
+<a id="a0f5301b0eb8a8efb7299960dbfe9aa3f" name="a0f5301b0eb8a8efb7299960dbfe9aa3f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0f5301b0eb8a8efb7299960dbfe9aa3f">&#9670;&#160;</a></span>mmap_list</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structmmap__t.html">mmap_t</a>* mem_allocator_t::mmap_list</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Linked list of mmap’d regions </p>
+
+</div>
+</div>
+<a id="aa436c6fa1bf7250087fee87eb9606e77" name="aa436c6fa1bf7250087fee87eb9606e77"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa436c6fa1bf7250087fee87eb9606e77">&#9670;&#160;</a></span>num_arenas</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">size_t mem_allocator_t::num_arenas</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Number of arena partitions </p>
+
+</div>
+</div>
+<a id="a3d9edab1f863b6f1f6842712e73e8c6d" name="a3d9edab1f863b6f1f6842712e73e8c6d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3d9edab1f863b6f1f6842712e73e8c6d">&#9670;&#160;</a></span>num_size_classes</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">size_t mem_allocator_t::num_size_classes</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Total size classes available </p>
+
+</div>
+</div>
+<a id="a86338c8c7a96d574fd49451509a67394" name="a86338c8c7a96d574fd49451509a67394"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a86338c8c7a96d574fd49451509a67394">&#9670;&#160;</a></span>stack_bottom</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uintptr_t* mem_allocator_t::stack_bottom</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Lower bound of application stack </p>
+
+</div>
+</div>
+<a id="a75895b02081348b494c934885e577404" name="a75895b02081348b494c934885e577404"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a75895b02081348b494c934885e577404">&#9670;&#160;</a></span>stack_top</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uintptr_t* mem_allocator_t::stack_top</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Upper bound of application stack </p>
+
+</div>
+</div>
+<hr/>The documentation for this struct was generated from the following file:<ul>
+<li>/home/runner/work/libmemalloc/libmemalloc/inc/<a class="el" href="libmemalloc_8h_source.html">libmemalloc.h</a></li>
+</ul>
+</div><!-- contents -->
+</div><!-- doc-content -->
+<!-- start footer part -->
+<div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
+  <ul>
+    <li class="navelem"><a class="el" href="structmem__allocator__t.html">mem_allocator_t</a></li>
+    <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.8 </li>
+  </ul>
+</div>
+</body>
+</html>

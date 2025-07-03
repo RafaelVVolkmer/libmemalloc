@@ -1,0 +1,302 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=9"/>
+<meta name="generator" content="Doxygen 1.9.8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<!-- BEGIN opengraph metadata -->
+<meta property="og:title" content="Doxygen Awesome" />
+<meta property="og:image" content="https://repository-images.githubusercontent.com/348492097/4f16df80-88fb-11eb-9d31-4015ff22c452" />
+<meta property="og:description" content="Custom CSS theme for doxygen html-documentation with lots of customization parameters." />
+<meta property="og:url" content="https://jothepro.github.io/doxygen-awesome-css/" />
+<!-- END opengraph metadata -->
+<!-- BEGIN twitter metadata -->
+<meta name="twitter:image:src" content="https://repository-images.githubusercontent.com/348492097/4f16df80-88fb-11eb-9d31-4015ff22c452" />
+<meta name="twitter:title" content="Doxygen Awesome" />
+<meta name="twitter:description" content="Custom CSS theme for doxygen html-documentation with lots of customization parameters." />
+<!-- END twitter metadata -->
+<title>libmemalloc: /home/runner/work/libmemalloc/libmemalloc/src/libmemalloc.c File Reference</title>
+<link href="tabs.css" rel="stylesheet" type="text/css"/>
+<link rel="icon" type="image/svg+xml" href="logo.drawio.svg"/>
+<script type="text/javascript" src="jquery.js"></script>
+<script type="text/javascript" src="dynsections.js"></script>
+<script type="text/javascript" src="doxygen-awesome-darkmode-toggle.js"></script>
+<script type="text/javascript" src="doxygen-awesome-fragment-copy-button.js"></script>
+<script type="text/javascript" src="doxygen-awesome-paragraph-link.js"></script>
+<script type="text/javascript" src="doxygen-awesome-interactive-toc.js"></script>
+<script type="text/javascript" src="doxygen-awesome-tabs.js"></script>
+<script type="text/javascript" src="toggle-alternative-theme.js"></script>
+<script type="text/javascript">
+    DoxygenAwesomeFragmentCopyButton.init()
+    DoxygenAwesomeDarkModeToggle.init()
+    DoxygenAwesomeParagraphLink.init()
+    DoxygenAwesomeInteractiveToc.init()
+    DoxygenAwesomeTabs.init()
+</script>
+<link href="navtree.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="resize.js"></script>
+<script type="text/javascript" src="navtreedata.js"></script>
+<script type="text/javascript" src="navtree.js"></script>
+<link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+<link href="doxygen.css" rel="stylesheet" type="text/css" />
+<link href="doxygen-awesome.css" rel="stylesheet" type="text/css"/>
+<link href="custom.css" rel="stylesheet" type="text/css"/>
+<link href="doxygen-awesome-sidebar-only.css" rel="stylesheet" type="text/css"/>
+<link href="doxygen-awesome-sidebar-only-darkmode-toggle.css" rel="stylesheet" type="text/css"/>
+<link href="custom-alternative.css" rel="stylesheet" type="text/css"/>
+</head>
+<body>
+<!-- https://tholman.com/github-corners/ -->
+<a href="https://github.com/jothepro/doxygen-awesome-css" class="github-corner" title="View source on GitHub" target="_blank" rel="noopener noreferrer">
+    <svg viewBox="0 0 250 250" width="40" height="40" style="position: absolute; top: 0; border: 0; right: 0; z-index: 99;" aria-hidden="true">
+    <path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a><style>.github-corner:hover .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes octocat-wave{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-25deg)}40%,80%{transform:rotate(10deg)}}@media (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner .octo-arm{animation:octocat-wave 560ms ease-in-out}}</style>
+<div id="top"><!-- do not remove this div, it is closed by doxygen! -->
+<div id="titlearea">
+<table cellspacing="0" cellpadding="0">
+ <tbody>
+ <tr style="height: 56px;">
+  <td id="projectlogo"><img alt="Logo" src="libmemalloc.svg"/></td>
+  <td id="projectalign" style="padding-left: 0.5em;">
+   <div id="projectname">libmemalloc
+   &#160;<span id="projectnumber">v4.0.00</span>
+   </div>
+   <div id="projectbrief">Modern Memory Allocator</div>
+  </td>
+ </tr>
+ </tbody>
+</table>
+</div>
+<!-- end header part -->
+<!-- Generated by Doxygen 1.9.8 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&amp;dn=expat.txt MIT */
+var searchBox = new SearchBox("searchBox", "search/",'.html');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&amp;dn=expat.txt MIT */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */
+</script>
+<div id="main-nav"></div>
+</div><!-- top -->
+<div id="side-nav" class="ui-resizable side-nav-resizable">
+  <div id="nav-tree">
+    <div id="nav-tree-contents">
+      <div id="nav-sync" class="sync"></div>
+    </div>
+  </div>
+  <div id="splitbar" style="-moz-user-select:none;" 
+       class="ui-resizable-handle">
+  </div>
+</div>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&amp;dn=expat.txt MIT */
+$(document).ready(function(){initNavTree('libmemalloc_8c.html',''); initResizable(); });
+/* @license-end */
+</script>
+<div id="doc-content">
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<div id="MSearchResults">
+<div class="SRPage">
+<div id="SRIndex">
+<div id="SRResults"></div>
+<div class="SRStatus" id="Loading">Loading...</div>
+<div class="SRStatus" id="Searching">Searching...</div>
+<div class="SRStatus" id="NoMatches">No Matches</div>
+</div>
+</div>
+</div>
+</div>
+
+<div class="header">
+  <div class="summary">
+<a href="#define-members">Macros</a>  </div>
+  <div class="headertitle"><div class="title">libmemalloc.c File Reference<div class="ingroups"><a class="el" href="group___libmemalloc.html">Libmemalloc</a></div></div></div>
+</div><!--header-->
+<div class="contents">
+
+<p>Core memory management components for libmemalloc.  
+<a href="#details">More...</a></p>
+<div class="textblock"><code>#include &lt;inttypes.h&gt;</code><br />
+<code>#include &lt;stdbool.h&gt;</code><br />
+<code>#include &lt;stddef.h&gt;</code><br />
+<code>#include &lt;sys/mman.h&gt;</code><br />
+<code>#include &lt;sys/resource.h&gt;</code><br />
+<code>#include &quot;<a class="el" href="libmemalloc_8h_source.html">libmemalloc.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="logs_8h_source.html">logs.h</a>&quot;</code><br />
+</div><div class="textblock"><div class="dynheader">
+Include dependency graph for libmemalloc.c:</div>
+<div class="dyncontent">
+<div class="center"><iframe scrolling="no" frameborder="0" src="libmemalloc_8c__incl.svg" width="1348" height="198"><p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p></iframe></div>
+</div>
+</div><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="define-members" name="define-members"></a>
+Macros</h2></td></tr>
+<tr class="memitem:a369266c24eacffb87046522897a570d5" id="r_a369266c24eacffb87046522897a570d5"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="libmemalloc_8c.html#a369266c24eacffb87046522897a570d5">_GNU_SOURCE</a></td></tr>
+<tr class="memdesc:a369266c24eacffb87046522897a570d5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Enable GNU extensions on POSIX systems.  <br /></td></tr>
+<tr class="separator:a369266c24eacffb87046522897a570d5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0b87e0d3bf5853bcbb0b66a7c48fdc05" id="r_a0b87e0d3bf5853bcbb0b66a7c48fdc05"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="libmemalloc_8c.html#a0b87e0d3bf5853bcbb0b66a7c48fdc05">LOG_LEVEL</a>&#160;&#160;&#160;<a class="el" href="group___logs.html#gga98121d38a8cf3daf5246a349f912ca1da69dacb1837e1e37c6ed34cc2ee1d8848">LOG_LEVEL_NONE</a></td></tr>
+<tr class="memdesc:a0b87e0d3bf5853bcbb0b66a7c48fdc05"><td class="mdescLeft">&#160;</td><td class="mdescRight">Logging verbosity threshold for this module.  <br /></td></tr>
+<tr class="separator:a0b87e0d3bf5853bcbb0b66a7c48fdc05"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0f87f19f941b9a5843c969926ff03174" id="r_a0f87f19f941b9a5843c969926ff03174"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="libmemalloc_8c.html#a0f87f19f941b9a5843c969926ff03174">__GC_HOT</a></td></tr>
+<tr class="memdesc:a0f87f19f941b9a5843c969926ff03174"><td class="mdescLeft">&#160;</td><td class="mdescRight">Marks garbage-collector functions as “hot” (performance critical).  <br /></td></tr>
+<tr class="separator:a0f87f19f941b9a5843c969926ff03174"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab9da8f4b500180e347293fb86ac4dd3a" id="r_ab9da8f4b500180e347293fb86ac4dd3a"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="libmemalloc_8c.html#ab9da8f4b500180e347293fb86ac4dd3a">__GC_COLD</a></td></tr>
+<tr class="memdesc:ab9da8f4b500180e347293fb86ac4dd3a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Marks garbage-collector functions as “cold” (infrequently used).  <br /></td></tr>
+<tr class="separator:ab9da8f4b500180e347293fb86ac4dd3a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8acceb8a32aeb665817bcac0ae976c3e" id="r_a8acceb8a32aeb665817bcac0ae976c3e"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="libmemalloc_8c.html#a8acceb8a32aeb665817bcac0ae976c3e">DEFAULT_NUM_BINS</a>&#160;&#160;&#160;(uint8_t)(10U)</td></tr>
+<tr class="memdesc:a8acceb8a32aeb665817bcac0ae976c3e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Default number of size classes (bins) for free lists.  <br /></td></tr>
+<tr class="separator:a8acceb8a32aeb665817bcac0ae976c3e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a54061e5993a5517320d425f44408cc86" id="r_a54061e5993a5517320d425f44408cc86"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="libmemalloc_8c.html#a54061e5993a5517320d425f44408cc86">MAGIC_NUMBER</a>&#160;&#160;&#160;(uint32_t)(0xBE'EF'DE'ADU)#define CACHE_LINE_SIZE  (uint8_t)(64U)#define CANARY_VALUE     (uint32_t)(0xDE'AD'BE'EFULL)</td></tr>
+<tr class="memdesc:a54061e5993a5517320d425f44408cc86"><td class="mdescLeft">&#160;</td><td class="mdescRight">Magic number to validate memory blocks.  <br /></td></tr>
+<tr class="separator:a54061e5993a5517320d425f44408cc86"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Core memory management components for libmemalloc. </p>
+<p>Implements memory allocator with advanced features:</p><ul>
+<li>Architecture-specific stack allocation (alloca)</li>
+<li>Garbage collection (mark &amp; sweep)</li>
+<li>Block validation with magic numbers/canaries</li>
+<li>Multiple allocation strategies (First/Best/Next Fit)</li>
+</ul>
+<dl class="section version"><dt>Version</dt><dd>v4.0.00 </dd></dl>
+<dl class="section date"><dt>Date</dt><dd>26.06.2025 </dd></dl>
+<dl class="section author"><dt>Author</dt><dd>Rafael V. Volkmer <a href="#" onclick="location.href='mai'+'lto:'+'raf'+'ae'+'l.v'+'.v'+'olk'+'me'+'r@g'+'ma'+'il.'+'co'+'m'; return false;">rafae<span class="obfuscator">.nosp@m.</span>l.v.<span class="obfuscator">.nosp@m.</span>volkm<span class="obfuscator">.nosp@m.</span>er@g<span class="obfuscator">.nosp@m.</span>mail.<span class="obfuscator">.nosp@m.</span>com</a> </dd></dl>
+</div><h2 class="groupheader">Macro Definition Documentation</h2>
+<a id="ab9da8f4b500180e347293fb86ac4dd3a" name="ab9da8f4b500180e347293fb86ac4dd3a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab9da8f4b500180e347293fb86ac4dd3a">&#9670;&#160;</a></span>__GC_COLD</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define __GC_COLD</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Marks garbage-collector functions as “cold” (infrequently used). </p>
+<p>When supported by the compiler (GCC/Clang), expands to <b>attribute</b>((cold)), informing the optimizer that the annotated function is unlikely to execute frequently and may be placed out-of-line to reduce code size in hot paths. Otherwise, expands to nothing. </p>
+
+</div>
+</div>
+<a id="a0f87f19f941b9a5843c969926ff03174" name="a0f87f19f941b9a5843c969926ff03174"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0f87f19f941b9a5843c969926ff03174">&#9670;&#160;</a></span>__GC_HOT</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define __GC_HOT</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Marks garbage-collector functions as “hot” (performance critical). </p>
+<p>When supported by the compiler (GCC/Clang), expands to <b>attribute</b>((hot)), informing the optimizer that the annotated function is on a performance-critical path and should be optimized accordingly. Otherwise, expands to nothing. </p>
+
+</div>
+</div>
+<a id="a369266c24eacffb87046522897a570d5" name="a369266c24eacffb87046522897a570d5"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a369266c24eacffb87046522897a570d5">&#9670;&#160;</a></span>_GNU_SOURCE</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define _GNU_SOURCE</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Enable GNU extensions on POSIX systems. </p>
+<p>P R I V A T E P R E - I N C L U D E D E F I N E S</p>
+<p>Defining _GNU_SOURCE before including any headers activates GNU-specific library features and extensions in glibc and other GNU-compatible C libraries. This enables additional APIs beyond the standard C/POSIX specifications, such as nonstandard functions, constants, and structures. </p>
+
+</div>
+</div>
+<a id="a8acceb8a32aeb665817bcac0ae976c3e" name="a8acceb8a32aeb665817bcac0ae976c3e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8acceb8a32aeb665817bcac0ae976c3e">&#9670;&#160;</a></span>DEFAULT_NUM_BINS</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define DEFAULT_NUM_BINS&#160;&#160;&#160;(uint8_t)(10U)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Default number of size classes (bins) for free lists. </p>
+<p>Defines how many size categories (bins) the allocator will maintain for managing free memory blocks. This value affects allocation speed and fragmentation behavior. </p>
+
+</div>
+</div>
+<a id="a0b87e0d3bf5853bcbb0b66a7c48fdc05" name="a0b87e0d3bf5853bcbb0b66a7c48fdc05"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0b87e0d3bf5853bcbb0b66a7c48fdc05">&#9670;&#160;</a></span>LOG_LEVEL</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define LOG_LEVEL&#160;&#160;&#160;<a class="el" href="group___logs.html#gga98121d38a8cf3daf5246a349f912ca1da69dacb1837e1e37c6ed34cc2ee1d8848">LOG_LEVEL_NONE</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Logging verbosity threshold for this module. </p>
+<p>Sets the minimum severity of log messages that will be compiled into this translation unit. Only log calls at or below the specified level are enabled:</p><ul>
+<li>LOG_LEVEL_NONE (0): disable all logging</li>
+<li>LOG_LEVEL_ERROR (1): errors only</li>
+<li>LOG_LEVEL_WARNING (2): warnings and errors</li>
+<li>LOG_LEVEL_INFO (3): info, warnings, and errors</li>
+<li>LOG_LEVEL_DEBUG (4): debug, info, warnings, and errors </li>
+</ul>
+
+</div>
+</div>
+<a id="a54061e5993a5517320d425f44408cc86" name="a54061e5993a5517320d425f44408cc86"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a54061e5993a5517320d425f44408cc86">&#9670;&#160;</a></span>MAGIC_NUMBER</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define MAGIC_NUMBER&#160;&#160;&#160;(uint32_t)(0xBE'EF'DE'ADU)#define CACHE_LINE_SIZE  (uint8_t)(64U)#define CANARY_VALUE     (uint32_t)(0xDE'AD'BE'EFULL)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Magic number to validate memory blocks. </p>
+<p>This constant is used to verify the integrity of allocated memory blocks and detect corruption. </p>
+
+</div>
+</div>
+</div><!-- contents -->
+</div><!-- doc-content -->
+<!-- start footer part -->
+<div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
+  <ul>
+    <li class="navelem"><a class="el" href="dir_68267d1309a1af8e8297ef4c3efbcdba.html">src</a></li><li class="navelem"><a class="el" href="libmemalloc_8c.html">libmemalloc.c</a></li>
+    <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.8 </li>
+  </ul>
+</div>
+</body>
+</html>

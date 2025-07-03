@@ -1,0 +1,24 @@
+var searchData=
+[
+  ['magic_0',['magic',['../structblock__header__t.html#a25ef50e448cc72c4f8e71a8287ebea6b',1,'block_header_t']]],
+  ['magic_5fnumber_1',['MAGIC_NUMBER',['../libmemalloc_8c.html#a54061e5993a5517320d425f44408cc86',1,'libmemalloc.c']]],
+  ['main_5fthread_2',['main_thread',['../structgc__thread__t.html#ab3a0de50979ee678096ff29da01af9b4',1,'gc_thread_t']]],
+  ['marked_3',['marked',['../structblock__header__t.html#a654b34f813df916058d9cc1ee256f027',1,'block_header_t']]],
+  ['mem_5fallocator_5ft_4',['mem_allocator_t',['../structmem__allocator__t.html',1,'']]],
+  ['mem_5fallocatorinit_5',['MEM_allocatorInit',['../group___libmemalloc.html#ga29b089596d8875787349365defca54e3',1,'libmemalloc.h']]],
+  ['mem_5falloccalloc_6',['MEM_allocCalloc',['../group___libmemalloc.html#ga7b69c79c27b1d2b7984b828b97ff5541',1,'libmemalloc.h']]],
+  ['mem_5fallocfree_7',['MEM_allocFree',['../group___libmemalloc.html#ga3cab92042cc5e42c0b275df4628f604c',1,'libmemalloc.h']]],
+  ['mem_5fallocmalloc_8',['MEM_allocMalloc',['../group___libmemalloc.html#gaf47b919f35d0b68fb150fa7bcfc26e09',1,'libmemalloc.h']]],
+  ['mem_5fallocmallocbestfit_9',['MEM_allocMallocBestFit',['../group___libmemalloc.html#ga8188c29f62d50e0ac2817c97a5725eb2',1,'libmemalloc.h']]],
+  ['mem_5fallocmallocfirstfit_10',['MEM_allocMallocFirstFit',['../group___libmemalloc.html#ga974e87377bc908b49153828daf968d7d',1,'libmemalloc.h']]],
+  ['mem_5fallocmallocnextfit_11',['MEM_allocMallocNextFit',['../group___libmemalloc.html#gab05eb289fbab89920c21abe7f8d9ff1b',1,'libmemalloc.h']]],
+  ['mem_5fallocrealloc_12',['MEM_allocRealloc',['../group___libmemalloc.html#gaf8c7a8857b519e657735f716d4023b47',1,'libmemalloc.h']]],
+  ['mem_5farena_5ft_13',['mem_arena_t',['../structmem__arena__t.html',1,'']]],
+  ['mem_5fdisablegc_14',['MEM_disableGc',['../group___libmemalloc.html#gac52c90f06b2f9aee3f5350c46852dbaa',1,'libmemalloc.h']]],
+  ['mem_5fenablegc_15',['MEM_enableGc',['../group___libmemalloc.html#gada7e498922ace7676e4b928e0c3fbfdd',1,'libmemalloc.h']]],
+  ['mem_5fmemcpy_16',['MEM_memcpy',['../group___libmemalloc.html#gaf0f38e83f3601cb880ea1feeb6deaf93',1,'libmemalloc.h']]],
+  ['mem_5fmemset_17',['MEM_memset',['../group___libmemalloc.html#gacfe1e6a057174df954033f59117b9cde',1,'libmemalloc.h']]],
+  ['metadata_5fsize_18',['metadata_size',['../structmem__allocator__t.html#a38b67d7d6571b362988889757072206f',1,'mem_allocator_t']]],
+  ['mmap_5flist_19',['mmap_list',['../structmem__allocator__t.html#a0f5301b0eb8a8efb7299960dbfe9aa3f',1,'mem_allocator_t']]],
+  ['mmap_5ft_20',['mmap_t',['../structmmap__t.html',1,'']]]
+];

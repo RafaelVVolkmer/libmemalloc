@@ -1,0 +1,414 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=9"/>
+<meta name="generator" content="Doxygen 1.9.8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<!-- BEGIN opengraph metadata -->
+<meta property="og:title" content="Doxygen Awesome" />
+<meta property="og:image" content="https://repository-images.githubusercontent.com/348492097/4f16df80-88fb-11eb-9d31-4015ff22c452" />
+<meta property="og:description" content="Custom CSS theme for doxygen html-documentation with lots of customization parameters." />
+<meta property="og:url" content="https://jothepro.github.io/doxygen-awesome-css/" />
+<!-- END opengraph metadata -->
+<!-- BEGIN twitter metadata -->
+<meta name="twitter:image:src" content="https://repository-images.githubusercontent.com/348492097/4f16df80-88fb-11eb-9d31-4015ff22c452" />
+<meta name="twitter:title" content="Doxygen Awesome" />
+<meta name="twitter:description" content="Custom CSS theme for doxygen html-documentation with lots of customization parameters." />
+<!-- END twitter metadata -->
+<title>libmemalloc: /home/runner/work/libmemalloc/libmemalloc/inc/libmemalloc.h Source File</title>
+<link href="tabs.css" rel="stylesheet" type="text/css"/>
+<link rel="icon" type="image/svg+xml" href="logo.drawio.svg"/>
+<script type="text/javascript" src="jquery.js"></script>
+<script type="text/javascript" src="dynsections.js"></script>
+<script type="text/javascript" src="doxygen-awesome-darkmode-toggle.js"></script>
+<script type="text/javascript" src="doxygen-awesome-fragment-copy-button.js"></script>
+<script type="text/javascript" src="doxygen-awesome-paragraph-link.js"></script>
+<script type="text/javascript" src="doxygen-awesome-interactive-toc.js"></script>
+<script type="text/javascript" src="doxygen-awesome-tabs.js"></script>
+<script type="text/javascript" src="toggle-alternative-theme.js"></script>
+<script type="text/javascript">
+    DoxygenAwesomeFragmentCopyButton.init()
+    DoxygenAwesomeDarkModeToggle.init()
+    DoxygenAwesomeParagraphLink.init()
+    DoxygenAwesomeInteractiveToc.init()
+    DoxygenAwesomeTabs.init()
+</script>
+<link href="navtree.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="resize.js"></script>
+<script type="text/javascript" src="navtreedata.js"></script>
+<script type="text/javascript" src="navtree.js"></script>
+<link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+<link href="doxygen.css" rel="stylesheet" type="text/css" />
+<link href="doxygen-awesome.css" rel="stylesheet" type="text/css"/>
+<link href="custom.css" rel="stylesheet" type="text/css"/>
+<link href="doxygen-awesome-sidebar-only.css" rel="stylesheet" type="text/css"/>
+<link href="doxygen-awesome-sidebar-only-darkmode-toggle.css" rel="stylesheet" type="text/css"/>
+<link href="custom-alternative.css" rel="stylesheet" type="text/css"/>
+</head>
+<body>
+<!-- https://tholman.com/github-corners/ -->
+<a href="https://github.com/jothepro/doxygen-awesome-css" class="github-corner" title="View source on GitHub" target="_blank" rel="noopener noreferrer">
+    <svg viewBox="0 0 250 250" width="40" height="40" style="position: absolute; top: 0; border: 0; right: 0; z-index: 99;" aria-hidden="true">
+    <path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a><style>.github-corner:hover .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes octocat-wave{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-25deg)}40%,80%{transform:rotate(10deg)}}@media (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner .octo-arm{animation:octocat-wave 560ms ease-in-out}}</style>
+<div id="top"><!-- do not remove this div, it is closed by doxygen! -->
+<div id="titlearea">
+<table cellspacing="0" cellpadding="0">
+ <tbody>
+ <tr style="height: 56px;">
+  <td id="projectlogo"><img alt="Logo" src="libmemalloc.svg"/></td>
+  <td id="projectalign" style="padding-left: 0.5em;">
+   <div id="projectname">libmemalloc
+   &#160;<span id="projectnumber">v4.0.00</span>
+   </div>
+   <div id="projectbrief">Modern Memory Allocator</div>
+  </td>
+ </tr>
+ </tbody>
+</table>
+</div>
+<!-- end header part -->
+<!-- Generated by Doxygen 1.9.8 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&amp;dn=expat.txt MIT */
+var searchBox = new SearchBox("searchBox", "search/",'.html');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&amp;dn=expat.txt MIT */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */
+</script>
+<div id="main-nav"></div>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&amp;dn=expat.txt MIT */
+$(document).ready(function() { init_codefold(0); });
+/* @license-end */
+</script>
+</div><!-- top -->
+<div id="side-nav" class="ui-resizable side-nav-resizable">
+  <div id="nav-tree">
+    <div id="nav-tree-contents">
+      <div id="nav-sync" class="sync"></div>
+    </div>
+  </div>
+  <div id="splitbar" style="-moz-user-select:none;" 
+       class="ui-resizable-handle">
+  </div>
+</div>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&amp;dn=expat.txt MIT */
+$(document).ready(function(){initNavTree('libmemalloc_8h_source.html',''); initResizable(); });
+/* @license-end */
+</script>
+<div id="doc-content">
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<div id="MSearchResults">
+<div class="SRPage">
+<div id="SRIndex">
+<div id="SRResults"></div>
+<div class="SRStatus" id="Loading">Loading...</div>
+<div class="SRStatus" id="Searching">Searching...</div>
+<div class="SRStatus" id="NoMatches">No Matches</div>
+</div>
+</div>
+</div>
+</div>
+
+<div class="header">
+  <div class="headertitle"><div class="title">libmemalloc.h</div></div>
+</div><!--header-->
+<div class="contents">
+<a href="libmemalloc_8h.html">Go to the documentation of this file.</a><div class="fragment"><div class="line"><a id="l00001" name="l00001"></a><span class="lineno">    1</span> </div>
+<div class="line"><a id="l00018" name="l00018"></a><span class="lineno">   18</span><span class="preprocessor">#pragma once</span></div>
+<div class="line"><a id="l00019" name="l00019"></a><span class="lineno">   19</span> </div>
+<div class="line"><a id="l00020" name="l00020"></a><span class="lineno">   20</span><span class="comment">/*&lt; C++ Compatibility &gt;*/</span></div>
+<div class="line"><a id="l00021" name="l00021"></a><span class="lineno">   21</span><span class="preprocessor">#ifdef __cplusplus</span></div>
+<div class="line"><a id="l00022" name="l00022"></a><span class="lineno">   22</span><span class="keyword">extern</span> <span class="stringliteral">&quot;C&quot;</span></div>
+<div class="line"><a id="l00023" name="l00023"></a><span class="lineno">   23</span>{</div>
+<div class="line"><a id="l00024" name="l00024"></a><span class="lineno">   24</span><span class="preprocessor">#endif</span></div>
+<div class="line"><a id="l00025" name="l00025"></a><span class="lineno">   25</span> </div>
+<div class="line"><a id="l00030" name="l00030"></a><span class="lineno">   30</span><span class="comment">/*&lt; Dependencies &gt;*/</span></div>
+<div class="line"><a id="l00031" name="l00031"></a><span class="lineno">   31</span><span class="preprocessor">#include &lt;pthread.h&gt;</span></div>
+<div class="line"><a id="l00032" name="l00032"></a><span class="lineno">   32</span><span class="preprocessor">#include &lt;stdatomic.h&gt;</span></div>
+<div class="line"><a id="l00033" name="l00033"></a><span class="lineno">   33</span><span class="preprocessor">#include &lt;stdint.h&gt;</span></div>
+<div class="line"><a id="l00034" name="l00034"></a><span class="lineno">   34</span><span class="preprocessor">#include &lt;string.h&gt;</span></div>
+<div class="line"><a id="l00035" name="l00035"></a><span class="lineno">   35</span> </div>
+<div class="line"><a id="l00047" name="l00047"></a><span class="lineno">   47</span><span class="preprocessor">#if defined(__x86_64__) || defined(_M_X64)</span></div>
+<div class="line"><a id="l00048" name="l00048"></a><span class="lineno">   48</span><span class="preprocessor">  #define ARCH_ALIGNMENT ((uint8_t)8U) </span></div>
+<div class="line"><a id="l00049" name="l00049"></a><span class="lineno">   49</span><span class="preprocessor">#elif defined(__i386__) || defined(_M_IX86)</span></div>
+<div class="line"><a id="l00050" name="l00050"></a><span class="lineno">   50</span><span class="preprocessor">  #define ARCH_ALIGNMENT ((uint8_t)4U) </span></div>
+<div class="line"><a id="l00051" name="l00051"></a><span class="lineno">   51</span><span class="preprocessor">#elif defined(__aarch64__) || defined(_M_ARM64)</span></div>
+<div class="line"><a id="l00052" name="l00052"></a><span class="lineno">   52</span><span class="preprocessor">  #define ARCH_ALIGNMENT ((uint8_t)8U) </span></div>
+<div class="line"><a id="l00053" name="l00053"></a><span class="lineno">   53</span><span class="preprocessor">#elif defined(__arm__) || defined(_M_ARM)</span></div>
+<div class="line"><a id="l00054" name="l00054"></a><span class="lineno">   54</span><span class="preprocessor">  #define ARCH_ALIGNMENT ((uint8_t)4U) </span></div>
+<div class="line"><a id="l00055" name="l00055"></a><span class="lineno">   55</span><span class="preprocessor">#elif defined(__riscv) &amp;&amp; (__riscv_xlen == 64)</span></div>
+<div class="line"><a id="l00056" name="l00056"></a><span class="lineno">   56</span><span class="preprocessor">  #define ARCH_ALIGNMENT ((uint8_t)8U) </span></div>
+<div class="line"><a id="l00057" name="l00057"></a><span class="lineno">   57</span><span class="preprocessor">#elif defined(__riscv) &amp;&amp; (__riscv_xlen == 32)</span></div>
+<div class="line"><a id="l00058" name="l00058"></a><span class="lineno">   58</span><span class="preprocessor">  #define ARCH_ALIGNMENT ((uint8_t)4U) </span></div>
+<div class="line"><a id="l00059" name="l00059"></a><span class="lineno">   59</span><span class="preprocessor">#elif defined(__powerpc64__)</span></div>
+<div class="line"><a id="l00060" name="l00060"></a><span class="lineno">   60</span><span class="preprocessor">  #define ARCH_ALIGNMENT ((uint8_t)8U) </span></div>
+<div class="line"><a id="l00061" name="l00061"></a><span class="lineno">   61</span><span class="preprocessor">#elif defined(__powerpc__)</span></div>
+<div class="line"><a id="l00062" name="l00062"></a><span class="lineno">   62</span><span class="preprocessor">  #define ARCH_ALIGNMENT ((uint8_t)4U) </span></div>
+<div class="line"><a id="l00063" name="l00063"></a><span class="lineno">   63</span><span class="preprocessor">#elif defined(__TI_PRU__) || defined(__PRU__)</span></div>
+<div class="line"><a id="l00064" name="l00064"></a><span class="lineno">   64</span><span class="preprocessor">  #define ARCH_ALIGNMENT ((uint8_t)4U) </span></div>
+<div class="line"><a id="l00065" name="l00065"></a><span class="lineno">   65</span><span class="preprocessor">#elif defined(__AVR__)</span></div>
+<div class="line"><a id="l00066" name="l00066"></a><span class="lineno"><a class="line" href="group___libmemalloc.html#ga07ea769b5c72cdf928879e29e16edf82">   66</a></span><span class="preprocessor">  #define ARCH_ALIGNMENT ((uint8_t)2U) </span></div>
+<div class="line"><a id="l00067" name="l00067"></a><span class="lineno">   67</span><span class="preprocessor">#else</span></div>
+<div class="line"><a id="l00068" name="l00068"></a><span class="lineno">   68</span><span class="preprocessor">  #define ARCH_ALIGNMENT ((uint8_t)4U)</span></div>
+<div class="line"><a id="l00069" name="l00069"></a><span class="lineno">   69</span><span class="preprocessor">#endif</span></div>
+<div class="line"><a id="l00070" name="l00070"></a><span class="lineno">   70</span> </div>
+<div class="line"><a id="l00083" name="l00083"></a><span class="lineno">   83</span><span class="preprocessor">#if defined(_WIN32)</span></div>
+<div class="line"><a id="l00084" name="l00084"></a><span class="lineno">   84</span><span class="preprocessor">  #ifdef BUILDING_LIBMEMALLOC</span></div>
+<div class="line"><a id="l00085" name="l00085"></a><span class="lineno">   85</span><span class="preprocessor">    #define __LIBMEMALLOC_API __declspec(dllexport)</span></div>
+<div class="line"><a id="l00086" name="l00086"></a><span class="lineno">   86</span><span class="preprocessor">  #else</span></div>
+<div class="line"><a id="l00087" name="l00087"></a><span class="lineno">   87</span><span class="preprocessor">    #define __LIBMEMALLOC_API __declspec(dllimport)</span></div>
+<div class="line"><a id="l00088" name="l00088"></a><span class="lineno">   88</span><span class="preprocessor">  #endif</span></div>
+<div class="line"><a id="l00089" name="l00089"></a><span class="lineno">   89</span><span class="preprocessor">#elif defined(__GNUC__)</span></div>
+<div class="line"><a id="l00090" name="l00090"></a><span class="lineno"><a class="line" href="group___libmemalloc.html#gab530abfacb1e55f2317fe51a1dfc9f61">   90</a></span><span class="preprocessor">  #define __LIBMEMALLOC_API __attribute__((visibility(&quot;default&quot;)))</span></div>
+<div class="line"><a id="l00091" name="l00091"></a><span class="lineno">   91</span><span class="preprocessor">#else</span></div>
+<div class="line"><a id="l00092" name="l00092"></a><span class="lineno">   92</span><span class="preprocessor">  #define __LIBMEMALLOC_API</span></div>
+<div class="line"><a id="l00093" name="l00093"></a><span class="lineno">   93</span><span class="preprocessor">#endif</span></div>
+<div class="line"><a id="l00094" name="l00094"></a><span class="lineno">   94</span> </div>
+<div class="line"><a id="l00108" name="l00108"></a><span class="lineno">  108</span><span class="preprocessor">#if defined(__GNUC__)</span></div>
+<div class="line"><a id="l00109" name="l00109"></a><span class="lineno">  109</span><span class="preprocessor">  #define __LIBMEMALLOC_MALLOC \</span></div>
+<div class="line"><a id="l00110" name="l00110"></a><span class="lineno"><a class="line" href="group___libmemalloc.html#gaf415f4394a90cbf3b58ffb43c1d26122">  110</a></span><span class="preprocessor">    __attribute__((malloc, alloc_size(2), warn_unused_result))</span></div>
+<div class="line"><a id="l00111" name="l00111"></a><span class="lineno">  111</span><span class="preprocessor">#else</span></div>
+<div class="line"><a id="l00112" name="l00112"></a><span class="lineno">  112</span><span class="preprocessor">  #define __LIBMEMALLOC_MALLOC</span></div>
+<div class="line"><a id="l00113" name="l00113"></a><span class="lineno">  113</span><span class="preprocessor">#endif</span></div>
+<div class="line"><a id="l00114" name="l00114"></a><span class="lineno">  114</span> </div>
+<div class="line"><a id="l00127" name="l00127"></a><span class="lineno">  127</span><span class="preprocessor">#if defined(__GNUC__)</span></div>
+<div class="line"><a id="l00128" name="l00128"></a><span class="lineno">  128</span><span class="preprocessor">  #define __LIBMEMALLOC_REALLOC \</span></div>
+<div class="line"><a id="l00129" name="l00129"></a><span class="lineno"><a class="line" href="group___libmemalloc.html#gab2ea557d67d841f4f1a765a7ebb2ec4c">  129</a></span><span class="preprocessor">    __attribute__((malloc, alloc_size(3), warn_unused_result))</span></div>
+<div class="line"><a id="l00130" name="l00130"></a><span class="lineno">  130</span><span class="preprocessor">#else</span></div>
+<div class="line"><a id="l00131" name="l00131"></a><span class="lineno">  131</span><span class="preprocessor">  #define __LIBMEMALLOC_REALLOC</span></div>
+<div class="line"><a id="l00132" name="l00132"></a><span class="lineno">  132</span><span class="preprocessor">#endif</span></div>
+<div class="line"><a id="l00133" name="l00133"></a><span class="lineno">  133</span> </div>
+<div class="line"><a id="l00144" name="l00144"></a><span class="lineno">  144</span><span class="preprocessor">#ifndef __PACKED</span></div>
+<div class="line"><a id="l00145" name="l00145"></a><span class="lineno">  145</span><span class="preprocessor">  #if defined(__GNUC__)</span></div>
+<div class="line"><a id="l00146" name="l00146"></a><span class="lineno"><a class="line" href="group___libmemalloc.html#gabe8996d3d985ee1529475443cc635bf1">  146</a></span><span class="preprocessor">    #define __PACKED __attribute__((packed, aligned(ARCH_ALIGNMENT)))</span></div>
+<div class="line"><a id="l00147" name="l00147"></a><span class="lineno">  147</span><span class="preprocessor">  #else</span></div>
+<div class="line"><a id="l00148" name="l00148"></a><span class="lineno">  148</span><span class="preprocessor">    #define __PACKED</span></div>
+<div class="line"><a id="l00149" name="l00149"></a><span class="lineno">  149</span><span class="preprocessor">  #endif</span></div>
+<div class="line"><a id="l00150" name="l00150"></a><span class="lineno">  150</span><span class="preprocessor">#endif</span></div>
+<div class="line"><a id="l00151" name="l00151"></a><span class="lineno">  151</span> </div>
+<div class="line"><a id="l00162" name="l00162"></a><span class="lineno">  162</span><span class="preprocessor">#define PTR_ERR(x)     ((void *)((intptr_t)(x)))</span></div>
+<div class="line"><a id="l00163" name="l00163"></a><span class="lineno">  163</span> </div>
+<div class="line"><a id="l00173" name="l00173"></a><span class="lineno">  173</span><span class="preprocessor">#define ALIGN(x)       (((x) + (ARCH_ALIGNMENT - 1U)) &amp; ~(ARCH_ALIGNMENT - 1U))</span></div>
+<div class="line"><a id="l00174" name="l00174"></a><span class="lineno">  174</span> </div>
+<div class="line"><a id="l00184" name="l00184"></a><span class="lineno">  184</span><span class="preprocessor">#define GC_INTERVAL_MS (uint16_t)(100U)</span></div>
+<div class="line"><a id="l00185" name="l00185"></a><span class="lineno">  185</span> </div>
+<div class="line"><a id="l00203" name="l00203"></a><span class="lineno"><a class="line" href="group___libmemalloc.html#gga36d2f4c096864df4566ad4ccbf9f1cc8a509b34c444b7ee18d4187e9f942b8778">  203</a></span><span class="keyword">typedef</span> <span class="keyword">enum</span> AllocationStrategy</div>
+<div class="line"><a id="l00204" name="l00204"></a><span class="lineno">  204</span>{</div>
+<div class="line"><a id="l00205" name="l00205"></a><span class="lineno"><a class="line" href="group___libmemalloc.html#gga36d2f4c096864df4566ad4ccbf9f1cc8af78ff891c96ec23919b6c7068f25a05d">  205</a></span>  <a class="code hl_enumvalue" href="group___libmemalloc.html#gga36d2f4c096864df4566ad4ccbf9f1cc8a8dba223d467d98a5827105bfb9e1f7f9">FIRST_FIT</a> = (uint8_t)(0u), </div>
+<div class="line"><a id="l00206" name="l00206"></a><span class="lineno">  206</span>  <a class="code hl_enumvalue" href="group___libmemalloc.html#gga36d2f4c096864df4566ad4ccbf9f1cc8a509b34c444b7ee18d4187e9f942b8778">NEXT_FIT</a>  = (uint8_t)(1u), </div>
+<div class="line"><a id="l00207" name="l00207"></a><span class="lineno">  207</span>  <a class="code hl_enumvalue" href="group___libmemalloc.html#gga36d2f4c096864df4566ad4ccbf9f1cc8af78ff891c96ec23919b6c7068f25a05d">BEST_FIT</a>  = (uint8_t)(2u) </div>
+<div class="line"><a id="l00208" name="l00208"></a><span class="lineno">  208</span>} <a class="code hl_enumeration" href="group___libmemalloc.html#ga36d2f4c096864df4566ad4ccbf9f1cc8">allocation_strategy_t</a>;</div>
+<div class="line"><a id="l00209" name="l00209"></a><span class="lineno">  209</span> </div>
+<div class="line"><a id="l00233" name="l00233"></a><span class="lineno"><a class="line" href="structblock__header__t.html#a0f7cccc0c1922adaf4656efadd2cdaa2">  233</a></span><span class="keyword">typedef</span> <span class="keyword">struct </span><a class="code hl_define" href="group___libmemalloc.html#gabe8996d3d985ee1529475443cc635bf1">__PACKED</a> BlockHeader</div>
+<div class="line"><a id="l00234" name="l00234"></a><span class="lineno">  234</span>{</div>
+<div class="line"><a id="l00235" name="l00235"></a><span class="lineno"><a class="line" href="structblock__header__t.html#a1887e332e1371bc734d1d18178630587">  235</a></span>  uint32_t magic;  </div>
+<div class="line"><a id="l00236" name="l00236"></a><span class="lineno"><a class="line" href="structblock__header__t.html#a654b34f813df916058d9cc1ee256f027">  236</a></span>  <span class="keywordtype">size_t</span>   size;   </div>
+<div class="line"><a id="l00238" name="l00238"></a><span class="lineno"><a class="line" href="structblock__header__t.html#a980672b953020cecfd1dcc7e5bfaee16">  238</a></span>  uint32_t free;   </div>
+<div class="line"><a id="l00239" name="l00239"></a><span class="lineno"><a class="line" href="structblock__header__t.html#a7800923f2b82407895d9bea9038bcd7c">  239</a></span>  uint32_t marked; </div>
+<div class="line"><a id="l00241" name="l00241"></a><span class="lineno">  241</span>  <span class="keyword">const</span> <span class="keywordtype">char</span> *var_name;     </div>
+<div class="line"><a id="l00242" name="l00242"></a><span class="lineno"><a class="line" href="structblock__header__t.html#a3323d5eba891c30ef471b6a96becdf73">  242</a></span>  <span class="keyword">const</span> <span class="keywordtype">char</span> *file;         </div>
+<div class="line"><a id="l00243" name="l00243"></a><span class="lineno">  243</span>  uint64_t    line;         </div>
+<div class="line"><a id="l00245" name="l00245"></a><span class="lineno"><a class="line" href="structblock__header__t.html#a635c6d653e8d114cb528c9c4b144c11d">  245</a></span>  uint32_t canary;          </div>
+<div class="line"><a id="l00247" name="l00247"></a><span class="lineno"><a class="line" href="structblock__header__t.html#a47740c34b4cb213e0123617ef86424a4">  247</a></span>  <span class="keyword">struct </span>BlockHeader *next; </div>
+<div class="line"><a id="l00248" name="l00248"></a><span class="lineno">  248</span>  <span class="keyword">struct </span>BlockHeader *prev; </div>
+<div class="line"><a id="l00250" name="l00250"></a><span class="lineno">  250</span>  <span class="keyword">struct </span>BlockHeader *fl_next; </div>
+<div class="line"><a id="l00251" name="l00251"></a><span class="lineno">  251</span>  <span class="keyword">struct </span>BlockHeader</div>
+<div class="line"><a id="l00252" name="l00252"></a><span class="lineno">  252</span>    *fl_prev; </div>
+<div class="line"><a id="l00253" name="l00253"></a><span class="lineno">  253</span>} <a class="code hl_struct" href="structblock__header__t.html">block_header_t</a>;</div>
+<div class="line"><a id="l00254" name="l00254"></a><span class="lineno">  254</span> </div>
+<div class="line"><a id="l00270" name="l00270"></a><span class="lineno">  270</span><span class="keyword">typedef</span> <span class="keyword">struct </span><a class="code hl_define" href="group___libmemalloc.html#gabe8996d3d985ee1529475443cc635bf1">__PACKED</a> MemArena</div>
+<div class="line"><a id="l00271" name="l00271"></a><span class="lineno"><a class="line" href="structmem__arena__t.html#a95292ddb78cf299b50c5602dff22bf9e">  271</a></span>{</div>
+<div class="line"><a id="l00272" name="l00272"></a><span class="lineno"><a class="line" href="structmem__arena__t.html#a777b6a59aa9d583320b3baa739a6496e">  272</a></span>  <span class="keywordtype">size_t</span> num_bins;            </div>
+<div class="line"><a id="l00274" name="l00274"></a><span class="lineno">  274</span>  <a class="code hl_struct" href="structblock__header__t.html">block_header_t</a> **bins;      </div>
+<div class="line"><a id="l00275" name="l00275"></a><span class="lineno">  275</span>  <a class="code hl_struct" href="structblock__header__t.html">block_header_t</a>  *top_chunk; </div>
+<div class="line"><a id="l00276" name="l00276"></a><span class="lineno">  276</span>} <a class="code hl_struct" href="structmem__arena__t.html">mem_arena_t</a>;</div>
+<div class="line"><a id="l00277" name="l00277"></a><span class="lineno">  277</span> </div>
+<div class="line"><a id="l00291" name="l00291"></a><span class="lineno"><a class="line" href="structmmap__t.html#a6829cb09e7d351843d818f58552e17e2">  291</a></span><span class="keyword">typedef</span> <span class="keyword">struct </span><a class="code hl_define" href="group___libmemalloc.html#gabe8996d3d985ee1529475443cc635bf1">__PACKED</a> MmapBlock</div>
+<div class="line"><a id="l00292" name="l00292"></a><span class="lineno">  292</span>{</div>
+<div class="line"><a id="l00293" name="l00293"></a><span class="lineno"><a class="line" href="structmmap__t.html#ae9e8c0d75c25852e91494813342ec480">  293</a></span>  <span class="keywordtype">void</span>  *addr;            </div>
+<div class="line"><a id="l00294" name="l00294"></a><span class="lineno">  294</span>  <span class="keywordtype">size_t</span> size;            </div>
+<div class="line"><a id="l00296" name="l00296"></a><span class="lineno">  296</span>  <span class="keyword">struct </span>MmapBlock *next; </div>
+<div class="line"><a id="l00297" name="l00297"></a><span class="lineno">  297</span>} <a class="code hl_struct" href="structmmap__t.html">mmap_t</a>;</div>
+<div class="line"><a id="l00298" name="l00298"></a><span class="lineno">  298</span> </div>
+<div class="line"><a id="l00321" name="l00321"></a><span class="lineno"><a class="line" href="structgc__thread__t.html#ab3a0de50979ee678096ff29da01af9b4">  321</a></span><span class="keyword">typedef</span> <span class="keyword">struct </span><a class="code hl_define" href="group___libmemalloc.html#gabe8996d3d985ee1529475443cc635bf1">__PACKED</a> GcThread</div>
+<div class="line"><a id="l00322" name="l00322"></a><span class="lineno">  322</span>{</div>
+<div class="line"><a id="l00323" name="l00323"></a><span class="lineno"><a class="line" href="structgc__thread__t.html#adae1f67a73cf0d9b5e2d60e36973dac2">  323</a></span>  pthread_t gc_thread;        </div>
+<div class="line"><a id="l00324" name="l00324"></a><span class="lineno"><a class="line" href="structgc__thread__t.html#a315eff0904496bc69e87b9d2ef5daa61">  324</a></span>  pthread_t main_thread;      </div>
+<div class="line"><a id="l00326" name="l00326"></a><span class="lineno"><a class="line" href="structgc__thread__t.html#abb3a53fa2e193eee90728b9fe2d66ac8">  326</a></span>  atomic_bool gc_running;     </div>
+<div class="line"><a id="l00327" name="l00327"></a><span class="lineno">  327</span>  atomic_bool gc_exit;        </div>
+<div class="line"><a id="l00329" name="l00329"></a><span class="lineno">  329</span>  uint32_t gc_interval_ms;    </div>
+<div class="line"><a id="l00331" name="l00331"></a><span class="lineno"><a class="line" href="structgc__thread__t.html#a990abb01e5dc1f62d0c3393656312a5a">  331</a></span>  uint16_t gc_thread_started; </div>
+<div class="line"><a id="l00333" name="l00333"></a><span class="lineno">  333</span>  pthread_cond_t  gc_cond;    </div>
+<div class="line"><a id="l00334" name="l00334"></a><span class="lineno">  334</span>  pthread_mutex_t gc_lock;    </div>
+<div class="line"><a id="l00335" name="l00335"></a><span class="lineno">  335</span>} <a class="code hl_struct" href="structgc__thread__t.html">gc_thread_t</a>;</div>
+<div class="line"><a id="l00336" name="l00336"></a><span class="lineno">  336</span> </div>
+<div class="line"><a id="l00359" name="l00359"></a><span class="lineno"><a class="line" href="structmem__allocator__t.html#a89169fae7690e6c03ae7497295d8a108">  359</a></span><span class="keyword">typedef</span> <span class="keyword">struct </span><a class="code hl_define" href="group___libmemalloc.html#gabe8996d3d985ee1529475443cc635bf1">__PACKED</a> MemoryAllocator</div>
+<div class="line"><a id="l00360" name="l00360"></a><span class="lineno">  360</span>{</div>
+<div class="line"><a id="l00361" name="l00361"></a><span class="lineno"><a class="line" href="structmem__allocator__t.html#a38b67d7d6571b362988889757072206f">  361</a></span>  uint8_t *heap_start;             </div>
+<div class="line"><a id="l00362" name="l00362"></a><span class="lineno">  362</span>  uint8_t *heap_end;               </div>
+<div class="line"><a id="l00364" name="l00364"></a><span class="lineno"><a class="line" href="structmem__allocator__t.html#a86338c8c7a96d574fd49451509a67394">  364</a></span>  <span class="keywordtype">size_t</span> metadata_size;            </div>
+<div class="line"><a id="l00366" name="l00366"></a><span class="lineno"><a class="line" href="structmem__allocator__t.html#a3d9edab1f863b6f1f6842712e73e8c6d">  366</a></span>  uintptr_t *stack_top;            </div>
+<div class="line"><a id="l00367" name="l00367"></a><span class="lineno"><a class="line" href="structmem__allocator__t.html#aa436c6fa1bf7250087fee87eb9606e77">  367</a></span>  uintptr_t *stack_bottom;         </div>
+<div class="line"><a id="l00369" name="l00369"></a><span class="lineno"><a class="line" href="structmem__allocator__t.html#a0129f049944df54604d51bbfb48176ec">  369</a></span>  <span class="keywordtype">size_t</span> num_size_classes;         </div>
+<div class="line"><a id="l00370" name="l00370"></a><span class="lineno"><a class="line" href="structmem__allocator__t.html#acf9ba831053285626fc8dda2c693db07">  370</a></span>  <span class="keywordtype">size_t</span> num_arenas;               </div>
+<div class="line"><a id="l00372" name="l00372"></a><span class="lineno"><a class="line" href="structmem__allocator__t.html#a64944a78431e46bb8557b9ff07cbf124">  372</a></span>  <a class="code hl_struct" href="structblock__header__t.html">block_header_t</a>  *last_allocated; </div>
+<div class="line"><a id="l00373" name="l00373"></a><span class="lineno"><a class="line" href="structmem__allocator__t.html#a04e38db7363434b17376426ff75921e2">  373</a></span>  <a class="code hl_struct" href="structmem__arena__t.html">mem_arena_t</a>     *arenas;         </div>
+<div class="line"><a id="l00374" name="l00374"></a><span class="lineno">  374</span>  <a class="code hl_struct" href="structmmap__t.html">mmap_t</a>          *mmap_list;      </div>
+<div class="line"><a id="l00375" name="l00375"></a><span class="lineno">  375</span>  <a class="code hl_struct" href="structblock__header__t.html">block_header_t</a> **free_lists;     </div>
+<div class="line"><a id="l00376" name="l00376"></a><span class="lineno">  376</span>  <a class="code hl_struct" href="structgc__thread__t.html">gc_thread_t</a>      gc_thread;      </div>
+<div class="line"><a id="l00377" name="l00377"></a><span class="lineno">  377</span>} <a class="code hl_struct" href="structmem__allocator__t.html">mem_allocator_t</a>;</div>
+<div class="line"><a id="l00378" name="l00378"></a><span class="lineno">  378</span> </div>
+<div class="line"><a id="l00403" name="l00403"></a><span class="lineno">  403</span><a class="code hl_define" href="group___libmemalloc.html#gab530abfacb1e55f2317fe51a1dfc9f61">__LIBMEMALLOC_API</a> <span class="keywordtype">void</span> *<a class="code hl_function" href="group___libmemalloc.html#gacfe1e6a057174df954033f59117b9cde">MEM_memset</a>(<span class="keywordtype">void</span> *<span class="keyword">const</span>  source,</div>
+<div class="line"><a id="l00404" name="l00404"></a><span class="lineno">  404</span>                                   <span class="keyword">const</span> <span class="keywordtype">int</span>    value,</div>
+<div class="line"><a id="l00405" name="l00405"></a><span class="lineno">  405</span>                                   <span class="keyword">const</span> <span class="keywordtype">size_t</span> size);</div>
+<div class="line"><a id="l00406" name="l00406"></a><span class="lineno">  406</span> </div>
+<div class="line"><a id="l00426" name="l00426"></a><span class="lineno">  426</span><a class="code hl_define" href="group___libmemalloc.html#gab530abfacb1e55f2317fe51a1dfc9f61">__LIBMEMALLOC_API</a> <span class="keywordtype">void</span> *<a class="code hl_function" href="group___libmemalloc.html#gaf0f38e83f3601cb880ea1feeb6deaf93">MEM_memcpy</a>(<span class="keywordtype">void</span> *<span class="keyword">const</span>  dest,</div>
+<div class="line"><a id="l00427" name="l00427"></a><span class="lineno">  427</span>                                   <span class="keyword">const</span> <span class="keywordtype">void</span>  *src,</div>
+<div class="line"><a id="l00428" name="l00428"></a><span class="lineno">  428</span>                                   <span class="keyword">const</span> <span class="keywordtype">size_t</span> size);</div>
+<div class="line"><a id="l00429" name="l00429"></a><span class="lineno">  429</span> </div>
+<div class="line"><a id="l00450" name="l00450"></a><span class="lineno">  450</span><a class="code hl_define" href="group___libmemalloc.html#gab530abfacb1e55f2317fe51a1dfc9f61">__LIBMEMALLOC_API</a> <span class="keywordtype">int</span> <a class="code hl_function" href="group___libmemalloc.html#ga29b089596d8875787349365defca54e3">MEM_allocatorInit</a>(<a class="code hl_struct" href="structmem__allocator__t.html">mem_allocator_t</a> *<span class="keyword">const</span> allocator);</div>
+<div class="line"><a id="l00451" name="l00451"></a><span class="lineno">  451</span> </div>
+<div class="line"><a id="l00470" name="l00470"></a><span class="lineno">  470</span><a class="code hl_define" href="group___libmemalloc.html#gab530abfacb1e55f2317fe51a1dfc9f61">__LIBMEMALLOC_API</a> <span class="keywordtype">void</span> *<a class="code hl_function" href="group___libmemalloc.html#ga974e87377bc908b49153828daf968d7d">MEM_allocMallocFirstFit</a>(<a class="code hl_struct" href="structmem__allocator__t.html">mem_allocator_t</a></div>
+<div class="line"><a id="l00471" name="l00471"></a><span class="lineno">  471</span>                                                  *<span class="keyword">const</span>          allocator,</div>
+<div class="line"><a id="l00472" name="l00472"></a><span class="lineno">  472</span>                                                <span class="keyword">const</span> <span class="keywordtype">size_t</span>      size,</div>
+<div class="line"><a id="l00473" name="l00473"></a><span class="lineno">  473</span>                                                <span class="keyword">const</span> <span class="keywordtype">char</span> *<span class="keyword">const</span> var)</div>
+<div class="line"><a id="l00474" name="l00474"></a><span class="lineno">  474</span>  <a class="code hl_define" href="group___libmemalloc.html#gaf415f4394a90cbf3b58ffb43c1d26122">__LIBMEMALLOC_MALLOC</a>;</div>
+<div class="line"><a id="l00475" name="l00475"></a><span class="lineno">  475</span> </div>
+<div class="line"><a id="l00490" name="l00490"></a><span class="lineno">  490</span><a class="code hl_define" href="group___libmemalloc.html#gab530abfacb1e55f2317fe51a1dfc9f61">__LIBMEMALLOC_API</a> <span class="keywordtype">void</span> *<a class="code hl_function" href="group___libmemalloc.html#ga8188c29f62d50e0ac2817c97a5725eb2">MEM_allocMallocBestFit</a>(<a class="code hl_struct" href="structmem__allocator__t.html">mem_allocator_t</a> *<span class="keyword">const</span> allocator,</div>
+<div class="line"><a id="l00491" name="l00491"></a><span class="lineno">  491</span>                                               <span class="keyword">const</span> <span class="keywordtype">size_t</span>           size,</div>
+<div class="line"><a id="l00492" name="l00492"></a><span class="lineno">  492</span>                                               <span class="keyword">const</span> <span class="keywordtype">char</span> *<span class="keyword">const</span>      var)</div>
+<div class="line"><a id="l00493" name="l00493"></a><span class="lineno">  493</span>  <a class="code hl_define" href="group___libmemalloc.html#gaf415f4394a90cbf3b58ffb43c1d26122">__LIBMEMALLOC_MALLOC</a>;</div>
+<div class="line"><a id="l00494" name="l00494"></a><span class="lineno">  494</span> </div>
+<div class="line"><a id="l00509" name="l00509"></a><span class="lineno">  509</span><a class="code hl_define" href="group___libmemalloc.html#gab530abfacb1e55f2317fe51a1dfc9f61">__LIBMEMALLOC_API</a> <span class="keywordtype">void</span> *<a class="code hl_function" href="group___libmemalloc.html#gab05eb289fbab89920c21abe7f8d9ff1b">MEM_allocMallocNextFit</a>(<a class="code hl_struct" href="structmem__allocator__t.html">mem_allocator_t</a> *<span class="keyword">const</span> allocator,</div>
+<div class="line"><a id="l00510" name="l00510"></a><span class="lineno">  510</span>                                               <span class="keyword">const</span> <span class="keywordtype">size_t</span>           size,</div>
+<div class="line"><a id="l00511" name="l00511"></a><span class="lineno">  511</span>                                               <span class="keyword">const</span> <span class="keywordtype">char</span> *<span class="keyword">const</span>      var)</div>
+<div class="line"><a id="l00512" name="l00512"></a><span class="lineno">  512</span>  <a class="code hl_define" href="group___libmemalloc.html#gaf415f4394a90cbf3b58ffb43c1d26122">__LIBMEMALLOC_MALLOC</a>;</div>
+<div class="line"><a id="l00513" name="l00513"></a><span class="lineno">  513</span> </div>
+<div class="line"><a id="l00529" name="l00529"></a><span class="lineno">  529</span><a class="code hl_define" href="group___libmemalloc.html#gab530abfacb1e55f2317fe51a1dfc9f61">__LIBMEMALLOC_API</a> <span class="keywordtype">void</span> *<a class="code hl_function" href="group___libmemalloc.html#gaf47b919f35d0b68fb150fa7bcfc26e09">MEM_allocMalloc</a>(<a class="code hl_struct" href="structmem__allocator__t.html">mem_allocator_t</a> *<span class="keyword">const</span>      allocator,</div>
+<div class="line"><a id="l00530" name="l00530"></a><span class="lineno">  530</span>                                        <span class="keyword">const</span> <span class="keywordtype">size_t</span>                size,</div>
+<div class="line"><a id="l00531" name="l00531"></a><span class="lineno">  531</span>                                        <span class="keyword">const</span> <span class="keywordtype">char</span> *<span class="keyword">const</span>           var,</div>
+<div class="line"><a id="l00532" name="l00532"></a><span class="lineno">  532</span>                                        <span class="keyword">const</span> <a class="code hl_enumeration" href="group___libmemalloc.html#ga36d2f4c096864df4566ad4ccbf9f1cc8">allocation_strategy_t</a> strategy)</div>
+<div class="line"><a id="l00533" name="l00533"></a><span class="lineno">  533</span>  <a class="code hl_define" href="group___libmemalloc.html#gaf415f4394a90cbf3b58ffb43c1d26122">__LIBMEMALLOC_MALLOC</a>;</div>
+<div class="line"><a id="l00534" name="l00534"></a><span class="lineno">  534</span> </div>
+<div class="line"><a id="l00550" name="l00550"></a><span class="lineno">  550</span><a class="code hl_define" href="group___libmemalloc.html#gab530abfacb1e55f2317fe51a1dfc9f61">__LIBMEMALLOC_API</a> <span class="keywordtype">void</span> *<a class="code hl_function" href="group___libmemalloc.html#ga7b69c79c27b1d2b7984b828b97ff5541">MEM_allocCalloc</a>(<a class="code hl_struct" href="structmem__allocator__t.html">mem_allocator_t</a> *<span class="keyword">const</span>      allocator,</div>
+<div class="line"><a id="l00551" name="l00551"></a><span class="lineno">  551</span>                                        <span class="keyword">const</span> <span class="keywordtype">size_t</span>                size,</div>
+<div class="line"><a id="l00552" name="l00552"></a><span class="lineno">  552</span>                                        <span class="keyword">const</span> <span class="keywordtype">char</span> *<span class="keyword">const</span>           var,</div>
+<div class="line"><a id="l00553" name="l00553"></a><span class="lineno">  553</span>                                        <span class="keyword">const</span> <a class="code hl_enumeration" href="group___libmemalloc.html#ga36d2f4c096864df4566ad4ccbf9f1cc8">allocation_strategy_t</a> strategy)</div>
+<div class="line"><a id="l00554" name="l00554"></a><span class="lineno">  554</span>  <a class="code hl_define" href="group___libmemalloc.html#gaf415f4394a90cbf3b58ffb43c1d26122">__LIBMEMALLOC_MALLOC</a>;</div>
+<div class="line"><a id="l00555" name="l00555"></a><span class="lineno">  555</span> </div>
+<div class="line"><a id="l00572" name="l00572"></a><span class="lineno">  572</span><a class="code hl_define" href="group___libmemalloc.html#gab530abfacb1e55f2317fe51a1dfc9f61">__LIBMEMALLOC_API</a> <span class="keywordtype">void</span> *<a class="code hl_function" href="group___libmemalloc.html#gaf8c7a8857b519e657735f716d4023b47">MEM_allocRealloc</a>(<a class="code hl_struct" href="structmem__allocator__t.html">mem_allocator_t</a> *<span class="keyword">const</span>      allocator,</div>
+<div class="line"><a id="l00573" name="l00573"></a><span class="lineno">  573</span>                                         <span class="keywordtype">void</span> *<span class="keyword">const</span>                 ptr,</div>
+<div class="line"><a id="l00574" name="l00574"></a><span class="lineno">  574</span>                                         <span class="keyword">const</span> <span class="keywordtype">size_t</span>                new_size,</div>
+<div class="line"><a id="l00575" name="l00575"></a><span class="lineno">  575</span>                                         <span class="keyword">const</span> <span class="keywordtype">char</span> *<span class="keyword">const</span>           var,</div>
+<div class="line"><a id="l00576" name="l00576"></a><span class="lineno">  576</span>                                         <span class="keyword">const</span> <a class="code hl_enumeration" href="group___libmemalloc.html#ga36d2f4c096864df4566ad4ccbf9f1cc8">allocation_strategy_t</a> strategy)</div>
+<div class="line"><a id="l00577" name="l00577"></a><span class="lineno">  577</span>  <a class="code hl_define" href="group___libmemalloc.html#gab2ea557d67d841f4f1a765a7ebb2ec4c">__LIBMEMALLOC_REALLOC</a>;</div>
+<div class="line"><a id="l00578" name="l00578"></a><span class="lineno">  578</span> </div>
+<div class="line"><a id="l00593" name="l00593"></a><span class="lineno">  593</span><a class="code hl_define" href="group___libmemalloc.html#gab530abfacb1e55f2317fe51a1dfc9f61">__LIBMEMALLOC_API</a> <span class="keywordtype">int</span> <a class="code hl_function" href="group___libmemalloc.html#ga3cab92042cc5e42c0b275df4628f604c">MEM_allocFree</a>(<a class="code hl_struct" href="structmem__allocator__t.html">mem_allocator_t</a> *<span class="keyword">const</span> allocator,</div>
+<div class="line"><a id="l00594" name="l00594"></a><span class="lineno">  594</span>                                    <span class="keywordtype">void</span> *<span class="keyword">const</span>            ptr,</div>
+<div class="line"><a id="l00595" name="l00595"></a><span class="lineno">  595</span>                                    <span class="keyword">const</span> <span class="keywordtype">char</span> *<span class="keyword">const</span>      var);</div>
+<div class="line"><a id="l00596" name="l00596"></a><span class="lineno">  596</span> </div>
+<div class="line"><a id="l00612" name="l00612"></a><span class="lineno">  612</span><a class="code hl_define" href="group___libmemalloc.html#gab530abfacb1e55f2317fe51a1dfc9f61">__LIBMEMALLOC_API</a> <span class="keywordtype">int</span> <a class="code hl_function" href="group___libmemalloc.html#gada7e498922ace7676e4b928e0c3fbfdd">MEM_enableGc</a>(<a class="code hl_struct" href="structmem__allocator__t.html">mem_allocator_t</a> *<span class="keyword">const</span> allocator);</div>
+<div class="line"><a id="l00613" name="l00613"></a><span class="lineno">  613</span> </div>
+<div class="line"><a id="l00625" name="l00625"></a><span class="lineno">  625</span><a class="code hl_define" href="group___libmemalloc.html#gab530abfacb1e55f2317fe51a1dfc9f61">__LIBMEMALLOC_API</a> <span class="keywordtype">int</span> <a class="code hl_function" href="group___libmemalloc.html#gac52c90f06b2f9aee3f5350c46852dbaa">MEM_disableGc</a>(<a class="code hl_struct" href="structmem__allocator__t.html">mem_allocator_t</a> *<span class="keyword">const</span> allocator);</div>
+<div class="line"><a id="l00626" name="l00626"></a><span class="lineno">  626</span> </div>
+<div class="line"><a id="l00627" name="l00627"></a><span class="lineno">  627</span><span class="comment">/*&lt; C++ Compatibility &gt;*/</span></div>
+<div class="line"><a id="l00628" name="l00628"></a><span class="lineno">  628</span><span class="preprocessor">#ifdef __cplusplus</span></div>
+<div class="line"><a id="l00629" name="l00629"></a><span class="lineno">  629</span>}</div>
+<div class="line"><a id="l00630" name="l00630"></a><span class="lineno">  630</span><span class="preprocessor">#endif</span></div>
+<div class="line"><a id="l00631" name="l00631"></a><span class="lineno">  631</span> </div>
+<div class="line"><a id="l00634" name="l00634"></a><span class="lineno">  634</span><span class="comment">/*&lt; end of header file &gt;*/</span></div>
+<div class="ttc" id="agroup___libmemalloc_html_ga29b089596d8875787349365defca54e3"><div class="ttname"><a href="group___libmemalloc.html#ga29b089596d8875787349365defca54e3">MEM_allocatorInit</a></div><div class="ttdeci">int MEM_allocatorInit(mem_allocator_t *const allocator)</div><div class="ttdoc">Initializes the memory allocator and its internal structures.</div></div>
+<div class="ttc" id="agroup___libmemalloc_html_ga36d2f4c096864df4566ad4ccbf9f1cc8"><div class="ttname"><a href="group___libmemalloc.html#ga36d2f4c096864df4566ad4ccbf9f1cc8">allocation_strategy_t</a></div><div class="ttdeci">allocation_strategy_t</div><div class="ttdoc">Defines allocation strategies for memory management.</div><div class="ttdef"><b>Definition</b> libmemalloc.h:201</div></div>
+<div class="ttc" id="agroup___libmemalloc_html_ga3cab92042cc5e42c0b275df4628f604c"><div class="ttname"><a href="group___libmemalloc.html#ga3cab92042cc5e42c0b275df4628f604c">MEM_allocFree</a></div><div class="ttdeci">int MEM_allocFree(mem_allocator_t *const allocator, void *const ptr, const char *const var)</div><div class="ttdoc">Releases allocated memory back to the heap.</div></div>
+<div class="ttc" id="agroup___libmemalloc_html_ga7b69c79c27b1d2b7984b828b97ff5541"><div class="ttname"><a href="group___libmemalloc.html#ga7b69c79c27b1d2b7984b828b97ff5541">MEM_allocCalloc</a></div><div class="ttdeci">void * MEM_allocCalloc(mem_allocator_t *const allocator, const size_t size, const char *const var, const allocation_strategy_t strategy)</div><div class="ttdoc">Allocates and zero‐initializes memory using the specified strategy.</div></div>
+<div class="ttc" id="agroup___libmemalloc_html_ga8188c29f62d50e0ac2817c97a5725eb2"><div class="ttname"><a href="group___libmemalloc.html#ga8188c29f62d50e0ac2817c97a5725eb2">MEM_allocMallocBestFit</a></div><div class="ttdeci">void * MEM_allocMallocBestFit(mem_allocator_t *const allocator, const size_t size, const char *const var)</div><div class="ttdoc">Allocates memory using the BEST_FIT strategy.</div></div>
+<div class="ttc" id="agroup___libmemalloc_html_ga974e87377bc908b49153828daf968d7d"><div class="ttname"><a href="group___libmemalloc.html#ga974e87377bc908b49153828daf968d7d">MEM_allocMallocFirstFit</a></div><div class="ttdeci">void * MEM_allocMallocFirstFit(mem_allocator_t *const allocator, const size_t size, const char *const var)</div><div class="ttdoc">Allocates memory using the FIRST_FIT strategy.</div></div>
+<div class="ttc" id="agroup___libmemalloc_html_gab05eb289fbab89920c21abe7f8d9ff1b"><div class="ttname"><a href="group___libmemalloc.html#gab05eb289fbab89920c21abe7f8d9ff1b">MEM_allocMallocNextFit</a></div><div class="ttdeci">void * MEM_allocMallocNextFit(mem_allocator_t *const allocator, const size_t size, const char *const var)</div><div class="ttdoc">Allocates memory using the NEXT_FIT strategy.</div></div>
+<div class="ttc" id="agroup___libmemalloc_html_gab2ea557d67d841f4f1a765a7ebb2ec4c"><div class="ttname"><a href="group___libmemalloc.html#gab2ea557d67d841f4f1a765a7ebb2ec4c">__LIBMEMALLOC_REALLOC</a></div><div class="ttdeci">#define __LIBMEMALLOC_REALLOC</div><div class="ttdoc">Annotates reallocator functions that may return a pointer to resized memory.</div><div class="ttdef"><b>Definition</b> libmemalloc.h:129</div></div>
+<div class="ttc" id="agroup___libmemalloc_html_gab530abfacb1e55f2317fe51a1dfc9f61"><div class="ttname"><a href="group___libmemalloc.html#gab530abfacb1e55f2317fe51a1dfc9f61">__LIBMEMALLOC_API</a></div><div class="ttdeci">#define __LIBMEMALLOC_API</div><div class="ttdoc">Defines the default visibility attribute for exported symbols.</div><div class="ttdef"><b>Definition</b> libmemalloc.h:90</div></div>
+<div class="ttc" id="agroup___libmemalloc_html_gabe8996d3d985ee1529475443cc635bf1"><div class="ttname"><a href="group___libmemalloc.html#gabe8996d3d985ee1529475443cc635bf1">__PACKED</a></div><div class="ttdeci">#define __PACKED</div><div class="ttdoc">Defines packed structure attribute with alignment.</div><div class="ttdef"><b>Definition</b> libmemalloc.h:146</div></div>
+<div class="ttc" id="agroup___libmemalloc_html_gac52c90f06b2f9aee3f5350c46852dbaa"><div class="ttname"><a href="group___libmemalloc.html#gac52c90f06b2f9aee3f5350c46852dbaa">MEM_disableGc</a></div><div class="ttdeci">int MEM_disableGc(mem_allocator_t *const allocator)</div><div class="ttdoc">Stop the garbage collector thread and perform a final collection.</div></div>
+<div class="ttc" id="agroup___libmemalloc_html_gacfe1e6a057174df954033f59117b9cde"><div class="ttname"><a href="group___libmemalloc.html#gacfe1e6a057174df954033f59117b9cde">MEM_memset</a></div><div class="ttdeci">void * MEM_memset(void *const source, const int value, const size_t size)</div><div class="ttdoc">Fills a memory block with a specified byte value using optimized operations.</div></div>
+<div class="ttc" id="agroup___libmemalloc_html_gada7e498922ace7676e4b928e0c3fbfdd"><div class="ttname"><a href="group___libmemalloc.html#gada7e498922ace7676e4b928e0c3fbfdd">MEM_enableGc</a></div><div class="ttdeci">int MEM_enableGc(mem_allocator_t *const allocator)</div><div class="ttdoc">Start or signal the garbage collector thread.</div></div>
+<div class="ttc" id="agroup___libmemalloc_html_gaf0f38e83f3601cb880ea1feeb6deaf93"><div class="ttname"><a href="group___libmemalloc.html#gaf0f38e83f3601cb880ea1feeb6deaf93">MEM_memcpy</a></div><div class="ttdeci">void * MEM_memcpy(void *const dest, const void *src, const size_t size)</div><div class="ttdoc">Copies a memory block between buffers using optimized operations.</div></div>
+<div class="ttc" id="agroup___libmemalloc_html_gaf415f4394a90cbf3b58ffb43c1d26122"><div class="ttname"><a href="group___libmemalloc.html#gaf415f4394a90cbf3b58ffb43c1d26122">__LIBMEMALLOC_MALLOC</a></div><div class="ttdeci">#define __LIBMEMALLOC_MALLOC</div><div class="ttdoc">Annotates allocator functions that return newly allocated memory.</div><div class="ttdef"><b>Definition</b> libmemalloc.h:110</div></div>
+<div class="ttc" id="agroup___libmemalloc_html_gaf47b919f35d0b68fb150fa7bcfc26e09"><div class="ttname"><a href="group___libmemalloc.html#gaf47b919f35d0b68fb150fa7bcfc26e09">MEM_allocMalloc</a></div><div class="ttdeci">void * MEM_allocMalloc(mem_allocator_t *const allocator, const size_t size, const char *const var, const allocation_strategy_t strategy)</div><div class="ttdoc">Allocates memory using the specified strategy.</div></div>
+<div class="ttc" id="agroup___libmemalloc_html_gaf8c7a8857b519e657735f716d4023b47"><div class="ttname"><a href="group___libmemalloc.html#gaf8c7a8857b519e657735f716d4023b47">MEM_allocRealloc</a></div><div class="ttdeci">void * MEM_allocRealloc(mem_allocator_t *const allocator, void *const ptr, const size_t new_size, const char *const var, const allocation_strategy_t strategy)</div><div class="ttdoc">Reallocates memory with safety checks using the specified strategy.</div></div>
+<div class="ttc" id="agroup___libmemalloc_html_gga36d2f4c096864df4566ad4ccbf9f1cc8a509b34c444b7ee18d4187e9f942b8778"><div class="ttname"><a href="group___libmemalloc.html#gga36d2f4c096864df4566ad4ccbf9f1cc8a509b34c444b7ee18d4187e9f942b8778">NEXT_FIT</a></div><div class="ttdeci">@ NEXT_FIT</div><div class="ttdef"><b>Definition</b> libmemalloc.h:203</div></div>
+<div class="ttc" id="agroup___libmemalloc_html_gga36d2f4c096864df4566ad4ccbf9f1cc8a8dba223d467d98a5827105bfb9e1f7f9"><div class="ttname"><a href="group___libmemalloc.html#gga36d2f4c096864df4566ad4ccbf9f1cc8a8dba223d467d98a5827105bfb9e1f7f9">FIRST_FIT</a></div><div class="ttdeci">@ FIRST_FIT</div><div class="ttdef"><b>Definition</b> libmemalloc.h:202</div></div>
+<div class="ttc" id="agroup___libmemalloc_html_gga36d2f4c096864df4566ad4ccbf9f1cc8af78ff891c96ec23919b6c7068f25a05d"><div class="ttname"><a href="group___libmemalloc.html#gga36d2f4c096864df4566ad4ccbf9f1cc8af78ff891c96ec23919b6c7068f25a05d">BEST_FIT</a></div><div class="ttdeci">@ BEST_FIT</div><div class="ttdef"><b>Definition</b> libmemalloc.h:204</div></div>
+<div class="ttc" id="astructblock__header__t_html"><div class="ttname"><a href="structblock__header__t.html">block_header_t</a></div><div class="ttdoc">Represents the header for a memory block.</div><div class="ttdef"><b>Definition</b> libmemalloc.h:231</div></div>
+<div class="ttc" id="astructblock__header__t_html_a0f7cccc0c1922adaf4656efadd2cdaa2"><div class="ttname"><a href="structblock__header__t.html#a0f7cccc0c1922adaf4656efadd2cdaa2">block_header_t::size</a></div><div class="ttdeci">size_t size</div><div class="ttdef"><b>Definition</b> libmemalloc.h:233</div></div>
+<div class="ttc" id="astructblock__header__t_html_a16d2f2ab5fba6039bc0d866925c599d7"><div class="ttname"><a href="structblock__header__t.html#a16d2f2ab5fba6039bc0d866925c599d7">block_header_t::fl_prev</a></div><div class="ttdeci">struct BlockHeader * fl_prev</div><div class="ttdef"><b>Definition</b> libmemalloc.h:248</div></div>
+<div class="ttc" id="astructblock__header__t_html_a1887e332e1371bc734d1d18178630587"><div class="ttname"><a href="structblock__header__t.html#a1887e332e1371bc734d1d18178630587">block_header_t::free</a></div><div class="ttdeci">uint32_t free</div><div class="ttdef"><b>Definition</b> libmemalloc.h:235</div></div>
+<div class="ttc" id="astructblock__header__t_html_a25ef50e448cc72c4f8e71a8287ebea6b"><div class="ttname"><a href="structblock__header__t.html#a25ef50e448cc72c4f8e71a8287ebea6b">block_header_t::magic</a></div><div class="ttdeci">uint32_t magic</div><div class="ttdef"><b>Definition</b> libmemalloc.h:232</div></div>
+<div class="ttc" id="astructblock__header__t_html_a3323d5eba891c30ef471b6a96becdf73"><div class="ttname"><a href="structblock__header__t.html#a3323d5eba891c30ef471b6a96becdf73">block_header_t::canary</a></div><div class="ttdeci">uint32_t canary</div><div class="ttdef"><b>Definition</b> libmemalloc.h:242</div></div>
+<div class="ttc" id="astructblock__header__t_html_a47740c34b4cb213e0123617ef86424a4"><div class="ttname"><a href="structblock__header__t.html#a47740c34b4cb213e0123617ef86424a4">block_header_t::fl_next</a></div><div class="ttdeci">struct BlockHeader * fl_next</div><div class="ttdef"><b>Definition</b> libmemalloc.h:247</div></div>
+<div class="ttc" id="astructblock__header__t_html_a635c6d653e8d114cb528c9c4b144c11d"><div class="ttname"><a href="structblock__header__t.html#a635c6d653e8d114cb528c9c4b144c11d">block_header_t::prev</a></div><div class="ttdeci">struct BlockHeader * prev</div><div class="ttdef"><b>Definition</b> libmemalloc.h:245</div></div>
+<div class="ttc" id="astructblock__header__t_html_a654b34f813df916058d9cc1ee256f027"><div class="ttname"><a href="structblock__header__t.html#a654b34f813df916058d9cc1ee256f027">block_header_t::marked</a></div><div class="ttdeci">uint32_t marked</div><div class="ttdef"><b>Definition</b> libmemalloc.h:236</div></div>
+<div class="ttc" id="astructblock__header__t_html_a7800923f2b82407895d9bea9038bcd7c"><div class="ttname"><a href="structblock__header__t.html#a7800923f2b82407895d9bea9038bcd7c">block_header_t::file</a></div><div class="ttdeci">const char * file</div><div class="ttdef"><b>Definition</b> libmemalloc.h:239</div></div>
+<div class="ttc" id="astructblock__header__t_html_a980672b953020cecfd1dcc7e5bfaee16"><div class="ttname"><a href="structblock__header__t.html#a980672b953020cecfd1dcc7e5bfaee16">block_header_t::var_name</a></div><div class="ttdeci">const char * var_name</div><div class="ttdef"><b>Definition</b> libmemalloc.h:238</div></div>
+<div class="ttc" id="astructblock__header__t_html_aaa54e46e5a8474f0c807305dc261bd04"><div class="ttname"><a href="structblock__header__t.html#aaa54e46e5a8474f0c807305dc261bd04">block_header_t::next</a></div><div class="ttdeci">struct BlockHeader * next</div><div class="ttdef"><b>Definition</b> libmemalloc.h:244</div></div>
+<div class="ttc" id="astructblock__header__t_html_ad109a8f3a52c7e56e8e28cd49a171865"><div class="ttname"><a href="structblock__header__t.html#ad109a8f3a52c7e56e8e28cd49a171865">block_header_t::line</a></div><div class="ttdeci">uint64_t line</div><div class="ttdef"><b>Definition</b> libmemalloc.h:240</div></div>
+<div class="ttc" id="astructgc__thread__t_html"><div class="ttname"><a href="structgc__thread__t.html">gc_thread_t</a></div><div class="ttdoc">Orchestrates the background mark-and-sweep garbage collector.</div><div class="ttdef"><b>Definition</b> libmemalloc.h:319</div></div>
+<div class="ttc" id="astructgc__thread__t_html_a09fab33e3b06ebd8f10b8c9c2d4fe77a"><div class="ttname"><a href="structgc__thread__t.html#a09fab33e3b06ebd8f10b8c9c2d4fe77a">gc_thread_t::gc_thread</a></div><div class="ttdeci">pthread_t gc_thread</div><div class="ttdef"><b>Definition</b> libmemalloc.h:320</div></div>
+<div class="ttc" id="astructgc__thread__t_html_a25f5fbdfae2bcdafb66e3e859d2344b9"><div class="ttname"><a href="structgc__thread__t.html#a25f5fbdfae2bcdafb66e3e859d2344b9">gc_thread_t::gc_cond</a></div><div class="ttdeci">pthread_cond_t gc_cond</div><div class="ttdef"><b>Definition</b> libmemalloc.h:330</div></div>
+<div class="ttc" id="astructgc__thread__t_html_a315eff0904496bc69e87b9d2ef5daa61"><div class="ttname"><a href="structgc__thread__t.html#a315eff0904496bc69e87b9d2ef5daa61">gc_thread_t::gc_exit</a></div><div class="ttdeci">atomic_bool gc_exit</div><div class="ttdef"><b>Definition</b> libmemalloc.h:324</div></div>
+<div class="ttc" id="astructgc__thread__t_html_a990abb01e5dc1f62d0c3393656312a5a"><div class="ttname"><a href="structgc__thread__t.html#a990abb01e5dc1f62d0c3393656312a5a">gc_thread_t::gc_lock</a></div><div class="ttdeci">pthread_mutex_t gc_lock</div><div class="ttdef"><b>Definition</b> libmemalloc.h:331</div></div>
+<div class="ttc" id="astructgc__thread__t_html_ab3a0de50979ee678096ff29da01af9b4"><div class="ttname"><a href="structgc__thread__t.html#ab3a0de50979ee678096ff29da01af9b4">gc_thread_t::main_thread</a></div><div class="ttdeci">pthread_t main_thread</div><div class="ttdef"><b>Definition</b> libmemalloc.h:321</div></div>
+<div class="ttc" id="astructgc__thread__t_html_abb3a53fa2e193eee90728b9fe2d66ac8"><div class="ttname"><a href="structgc__thread__t.html#abb3a53fa2e193eee90728b9fe2d66ac8">gc_thread_t::gc_interval_ms</a></div><div class="ttdeci">uint32_t gc_interval_ms</div><div class="ttdef"><b>Definition</b> libmemalloc.h:326</div></div>
+<div class="ttc" id="astructgc__thread__t_html_adae1f67a73cf0d9b5e2d60e36973dac2"><div class="ttname"><a href="structgc__thread__t.html#adae1f67a73cf0d9b5e2d60e36973dac2">gc_thread_t::gc_running</a></div><div class="ttdeci">atomic_bool gc_running</div><div class="ttdef"><b>Definition</b> libmemalloc.h:323</div></div>
+<div class="ttc" id="astructgc__thread__t_html_adb6b8bd4be1d66cab34111b0987d5abc"><div class="ttname"><a href="structgc__thread__t.html#adb6b8bd4be1d66cab34111b0987d5abc">gc_thread_t::gc_thread_started</a></div><div class="ttdeci">uint16_t gc_thread_started</div><div class="ttdef"><b>Definition</b> libmemalloc.h:328</div></div>
+<div class="ttc" id="astructmem__allocator__t_html"><div class="ttname"><a href="structmem__allocator__t.html">mem_allocator_t</a></div><div class="ttdoc">Manages dynamic memory allocation.</div><div class="ttdef"><b>Definition</b> libmemalloc.h:357</div></div>
+<div class="ttc" id="astructmem__allocator__t_html_a0129f049944df54604d51bbfb48176ec"><div class="ttname"><a href="structmem__allocator__t.html#a0129f049944df54604d51bbfb48176ec">mem_allocator_t::last_allocated</a></div><div class="ttdeci">block_header_t * last_allocated</div><div class="ttdef"><b>Definition</b> libmemalloc.h:369</div></div>
+<div class="ttc" id="astructmem__allocator__t_html_a04e38db7363434b17376426ff75921e2"><div class="ttname"><a href="structmem__allocator__t.html#a04e38db7363434b17376426ff75921e2">mem_allocator_t::gc_thread</a></div><div class="ttdeci">gc_thread_t gc_thread</div><div class="ttdef"><b>Definition</b> libmemalloc.h:373</div></div>
+<div class="ttc" id="astructmem__allocator__t_html_a0f5301b0eb8a8efb7299960dbfe9aa3f"><div class="ttname"><a href="structmem__allocator__t.html#a0f5301b0eb8a8efb7299960dbfe9aa3f">mem_allocator_t::mmap_list</a></div><div class="ttdeci">mmap_t * mmap_list</div><div class="ttdef"><b>Definition</b> libmemalloc.h:371</div></div>
+<div class="ttc" id="astructmem__allocator__t_html_a38b67d7d6571b362988889757072206f"><div class="ttname"><a href="structmem__allocator__t.html#a38b67d7d6571b362988889757072206f">mem_allocator_t::metadata_size</a></div><div class="ttdeci">size_t metadata_size</div><div class="ttdef"><b>Definition</b> libmemalloc.h:361</div></div>
+<div class="ttc" id="astructmem__allocator__t_html_a3d9edab1f863b6f1f6842712e73e8c6d"><div class="ttname"><a href="structmem__allocator__t.html#a3d9edab1f863b6f1f6842712e73e8c6d">mem_allocator_t::num_size_classes</a></div><div class="ttdeci">size_t num_size_classes</div><div class="ttdef"><b>Definition</b> libmemalloc.h:366</div></div>
+<div class="ttc" id="astructmem__allocator__t_html_a64944a78431e46bb8557b9ff07cbf124"><div class="ttname"><a href="structmem__allocator__t.html#a64944a78431e46bb8557b9ff07cbf124">mem_allocator_t::free_lists</a></div><div class="ttdeci">block_header_t ** free_lists</div><div class="ttdef"><b>Definition</b> libmemalloc.h:372</div></div>
+<div class="ttc" id="astructmem__allocator__t_html_a75895b02081348b494c934885e577404"><div class="ttname"><a href="structmem__allocator__t.html#a75895b02081348b494c934885e577404">mem_allocator_t::stack_top</a></div><div class="ttdeci">uintptr_t * stack_top</div><div class="ttdef"><b>Definition</b> libmemalloc.h:363</div></div>
+<div class="ttc" id="astructmem__allocator__t_html_a86338c8c7a96d574fd49451509a67394"><div class="ttname"><a href="structmem__allocator__t.html#a86338c8c7a96d574fd49451509a67394">mem_allocator_t::stack_bottom</a></div><div class="ttdeci">uintptr_t * stack_bottom</div><div class="ttdef"><b>Definition</b> libmemalloc.h:364</div></div>
+<div class="ttc" id="astructmem__allocator__t_html_a89169fae7690e6c03ae7497295d8a108"><div class="ttname"><a href="structmem__allocator__t.html#a89169fae7690e6c03ae7497295d8a108">mem_allocator_t::heap_end</a></div><div class="ttdeci">uint8_t * heap_end</div><div class="ttdef"><b>Definition</b> libmemalloc.h:359</div></div>
+<div class="ttc" id="astructmem__allocator__t_html_aa436c6fa1bf7250087fee87eb9606e77"><div class="ttname"><a href="structmem__allocator__t.html#aa436c6fa1bf7250087fee87eb9606e77">mem_allocator_t::num_arenas</a></div><div class="ttdeci">size_t num_arenas</div><div class="ttdef"><b>Definition</b> libmemalloc.h:367</div></div>
+<div class="ttc" id="astructmem__allocator__t_html_acf9ba831053285626fc8dda2c693db07"><div class="ttname"><a href="structmem__allocator__t.html#acf9ba831053285626fc8dda2c693db07">mem_allocator_t::arenas</a></div><div class="ttdeci">mem_arena_t * arenas</div><div class="ttdef"><b>Definition</b> libmemalloc.h:370</div></div>
+<div class="ttc" id="astructmem__allocator__t_html_ae831d3516bdc9ac76ed6af36c5756be7"><div class="ttname"><a href="structmem__allocator__t.html#ae831d3516bdc9ac76ed6af36c5756be7">mem_allocator_t::heap_start</a></div><div class="ttdeci">uint8_t * heap_start</div><div class="ttdef"><b>Definition</b> libmemalloc.h:358</div></div>
+<div class="ttc" id="astructmem__arena__t_html"><div class="ttname"><a href="structmem__arena__t.html">mem_arena_t</a></div><div class="ttdoc">Represents a memory arena with its own free lists.</div><div class="ttdef"><b>Definition</b> libmemalloc.h:268</div></div>
+<div class="ttc" id="astructmem__arena__t_html_a1c6fb33e6b7ce607a162d2b915390d15"><div class="ttname"><a href="structmem__arena__t.html#a1c6fb33e6b7ce607a162d2b915390d15">mem_arena_t::num_bins</a></div><div class="ttdeci">size_t num_bins</div><div class="ttdef"><b>Definition</b> libmemalloc.h:269</div></div>
+<div class="ttc" id="astructmem__arena__t_html_a777b6a59aa9d583320b3baa739a6496e"><div class="ttname"><a href="structmem__arena__t.html#a777b6a59aa9d583320b3baa739a6496e">mem_arena_t::top_chunk</a></div><div class="ttdeci">block_header_t * top_chunk</div><div class="ttdef"><b>Definition</b> libmemalloc.h:272</div></div>
+<div class="ttc" id="astructmem__arena__t_html_a95292ddb78cf299b50c5602dff22bf9e"><div class="ttname"><a href="structmem__arena__t.html#a95292ddb78cf299b50c5602dff22bf9e">mem_arena_t::bins</a></div><div class="ttdeci">block_header_t ** bins</div><div class="ttdef"><b>Definition</b> libmemalloc.h:271</div></div>
+<div class="ttc" id="astructmmap__t_html"><div class="ttname"><a href="structmmap__t.html">mmap_t</a></div><div class="ttdoc">Tracks memory-mapped regions for large allocations.</div><div class="ttdef"><b>Definition</b> libmemalloc.h:289</div></div>
+<div class="ttc" id="astructmmap__t_html_a4c2aaec284318d3af8746a9ff039effb"><div class="ttname"><a href="structmmap__t.html#a4c2aaec284318d3af8746a9ff039effb">mmap_t::addr</a></div><div class="ttdeci">void * addr</div><div class="ttdef"><b>Definition</b> libmemalloc.h:290</div></div>
+<div class="ttc" id="astructmmap__t_html_a6829cb09e7d351843d818f58552e17e2"><div class="ttname"><a href="structmmap__t.html#a6829cb09e7d351843d818f58552e17e2">mmap_t::size</a></div><div class="ttdeci">size_t size</div><div class="ttdef"><b>Definition</b> libmemalloc.h:291</div></div>
+<div class="ttc" id="astructmmap__t_html_ae9e8c0d75c25852e91494813342ec480"><div class="ttname"><a href="structmmap__t.html#ae9e8c0d75c25852e91494813342ec480">mmap_t::next</a></div><div class="ttdeci">struct MmapBlock * next</div><div class="ttdef"><b>Definition</b> libmemalloc.h:293</div></div>
+</div><!-- fragment --></div><!-- contents -->
+</div><!-- doc-content -->
+<!-- start footer part -->
+<div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
+  <ul>
+    <li class="navelem"><a class="el" href="dir_bfccd401955b95cf8c75461437045ac0.html">inc</a></li><li class="navelem"><a class="el" href="libmemalloc_8h.html">libmemalloc.h</a></li>
+    <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.8 </li>
+  </ul>
+</div>
+</body>
+</html>

@@ -1,0 +1,5 @@
+<map id="mem_arena_t" name="mem_arena_t">
+<area shape="rect" id="Node000001" title="Represents a memory arena with its own free lists." alt="" coords="10,368,114,433"/>
+<area shape="rect" id="Node000002" href="$structblock__header__t.html" title="Represents the header for a memory block." alt="" coords="5,5,119,291"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="65,291,65,351,59,351,59,291"/>
+</map>
