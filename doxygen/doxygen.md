@@ -2,7 +2,6 @@
 
 <div align="center">
 
-  [![Maintainability][maintainability-shield]][maintainability-url]
   [![Contributors][contributors-shield]][contributors-url]
   [![Forks][forks-shield]][forks-url]
   [![Stargazers][stars-shield]][stars-url]
