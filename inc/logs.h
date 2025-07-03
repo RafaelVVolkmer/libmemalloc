@@ -83,7 +83,7 @@ typedef enum LogLevel
  *              pthread mutex initializer.
  * ========================================================================== */
 #ifndef _POSIX_C_SOURCE
-  #define _POSIX_C_SOURCE 200'809UL
+  #define _POSIX_C_SOURCE 200809UL
 #endif
 
 /** ============================================================================
@@ -256,7 +256,7 @@ static inline int LOG_output(log_level_t level,
              ptm->tm_hour,
              ptm->tm_min,
              ptm->tm_sec,
-             ts.tv_nsec / 1'000'000u);
+             ts.tv_nsec / 1000000u);
 
   if (isatty(fileno(out)))
     LOG_PRINTF(out, "%s%s%s ", color, prefix, COLOR_RESET);

@@ -165,10 +165,9 @@ SpacesInParensOptions:                                  # customize
 # 9. Numeric Literals & Line Endings
 # =============================
 IntegerLiteralSeparator:                                # digit separator settings
-  Binary:                                   4           #   separate binary digits every 4 bits
-  Decimal:                                  3           #   separate decimal digits every 3 digits
-  DecimalMinDigits:                         5           #   only in decimal numbers with more than 5 digits
-  Hex:                                      2           #   separate hex digits every 2 digits
+  Binary:                                   -1          #   separate binary digits every 4 bits
+  Decimal:                                  -1          #   separate decimal digits every 3 digits
+  Hex:                                      -1          #   separate hex digits every 2 digits
 
 LineEnding:                                 LF          # use LF for line endings
 MaxEmptyLinesToKeep:                        1           # max empty lines to keep consecutively

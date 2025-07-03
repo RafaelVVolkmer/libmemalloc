@@ -128,7 +128,7 @@
  *  @details    This constant is used to verify the integrity of
  *              allocated memory blocks and detect corruption.
  * ========================================================================== */
-#define MAGIC_NUMBER     (uint32_t)(0xBE'EF'DE'ADU)
+#define MAGIC_NUMBER     (uint32_t)(0xBEEFDEADU)
 
 /** ============================================================================
  *  @def        CACHE_LINE_SIZE
@@ -149,7 +149,7 @@
  *  @details    This constant is placed at the boundaries of
  *              memory allocations to detect buffer overflows.
  * ========================================================================== */
-#define CANARY_VALUE     (uint32_t)(0xDE'AD'BE'EFULL)
+#define CANARY_VALUE     (uint32_t)(0xDEADBEEFULL)
 
 /** ============================================================================
  *  @def        PREFETCH_MULT
@@ -160,7 +160,7 @@
  *              single-byte value replication across full register
  *              width in vectorized operations.
  * ========================================================================== */
-#define PREFETCH_MULT    (uint64_t)(0x01'01'01'01'01'01'01'01ULL)
+#define PREFETCH_MULT    (uint64_t)(0x0101010101010101ULL)
 
 /** ============================================================================
  *  @def        BYTES_PER_CLASS
