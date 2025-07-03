@@ -13,52 +13,40 @@ jobs:
   build-docker:
     runs-on: ubuntu-latest
 
-    env:
-      DOCKER_BUILDKIT: 1
-
     strategy:
       matrix:
         include:
-          - mode: Release
-            tag: latest
-          - mode: Debug
-            tag: debug
+          - build_mode: Release
+          - build_mode: Debug
+
+    env:
+      DOCKER_BUILDKIT: 1
+      BUILD_TYPE: ${{ matrix.build_mode }}
 
     steps:
-      - name: Check out code
+      - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          submodules: recursive
 
-      - name: Build & tag image (${{ matrix.mode }})
+      - name: Make build script executable
+        run: chmod +x ./build.sh
+
+      - name: Build image (${{ env.BUILD_TYPE }})
         run: |
-          docker build \
-            --platform linux/amd64 \
-            --file Dockerfile \
-            --build-arg BUILD_MODE=${{ matrix.mode }} \
-            --target runtime \
-            -t libmemalloc:${{ matrix.tag }} \
-            .
+          sudo ./build.sh ${{ env.BUILD_TYPE }} --docker
 
       - name: List local images
-        run: docker images libmemalloc:${{ matrix.tag }}
+        run: docker images libmemalloc:${{ env.BUILD_TYPE }}
 
-      - name: Export libraries (.so / .a)
-        run: |
-          rm -rf artifacts/${{ matrix.mode }}
-          mkdir -p artifacts/${{ matrix.mode }}
-          docker build \
-            --platform linux/amd64 \
-            --file Dockerfile \
-            --build-arg BUILD_MODE=${{ matrix.mode }} \
-            --target export \
-            --output artifacts/${{ matrix.mode }} \
-            .
+      - name: Show extracted files
+        run: ls -l ./bin/${{ env.BUILD_TYPE }}
 
-      - name: Show exported files
-        run: ls -l artifacts/${{ matrix.mode }}
-
-      - name: Upload artifacts
+      - name: Upload libraries (.so / .a)
+        if: env.ACTIONS_RUNTIME_TOKEN
         uses: actions/upload-artifact@v4
         with:
-          name: libmemalloc-${{ matrix.mode }}
-          path: artifacts/${{ matrix.mode }}/*.so
-                artifacts/${{ matrix.mode }}/*.a
+          name: libmemalloc-${{ env.BUILD_TYPE }}
+          path: |
+            bin/${{ env.BUILD_TYPE }}/*.so
+            bin/${{ env.BUILD_TYPE }}/*.a

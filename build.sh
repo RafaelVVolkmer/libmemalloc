@@ -2,48 +2,116 @@
 
 set -euo pipefail
 
-BUILD_DIR="build"
+BUILD_DIR="./build"
+DOCS_DIR="./docs"
+DOXYGEN_DIR="./doxygen/doxygen-awesome"
 
-usage() {
-    echo "Uso: $0 [release|debug]"
-    echo "  release  → build Release (default)"
-    echo "  debug    → build Debug"
-    exit 1
+RED=$'\033[31m'
+GREEN=$'\033[32m'
+RESET=$'\033[0m'
+
+usage()
+{
+    echo "Use: $0 [release|debug] [--docker]"
+    echo "  release      → build Release (default)"
+    echo "  debug        → build Debug"
+    echo "  --docker     → instead of local build, generate Docker image"
+    exit 2
 }
+[ $# -gt 2 ] && usage
 
-if [ $# -eq 0 ]; then
-    MODE="release"
-elif [ $# -eq 1 ]; then
-    MODE="$1"
-else
-    usage
-fi
+MODE="release"
+DOCKER=false
 
-case "${MODE,,}" in
-    release)
-        BUILD_TYPE="Release"
-        ;;
-    debug)
-        BUILD_TYPE="Debug"
-        ;;
-    *)
-        usage
-        ;;
+for arg in "$@"; do
+    case "${arg,,}" in
+        release|debug)
+            MODE="${arg,,}"
+            ;;
+        --docker)
+            DOCKER=true
+            ;;
+        *)
+            usage
+            ;;
+    esac
+done
+
+case "${MODE}" in
+    release) BUILD_TYPE="Release" ;;
+    debug)   BUILD_TYPE="Debug"   ;;
+    *)       usage                ;;
 esac
 
-if [ ! -d "$BUILD_DIR" ]; then
-    mkdir "$BUILD_DIR"
+BIN_DIR="./bin/$BUILD_TYPE"
+
+if [ "$DOCKER" = true ]; then
+  command -v docker >/dev/null || {
+    echo "${RED}Docker not found!${RESET}"
+    exit 1
+  }
+elif [ "$DOCKER" = false ]; then
+  command -v cmake >/dev/null || {
+    echo "${RED}Cmake not found!${RESET}"
+    exit 1
+  }
+else
+  echo "${RED}Unexpected DOCKER value: $DOCKER${RESET}"
+  exit 1
 fi
 
-cd "$BUILD_DIR"
+cleanup()
+{
+    for dir in "$BUILD_DIR" "$DOCS_DIR" "$BIN_DIR" "$DOXYGEN_DIR"; do
+        if [ -d "$dir" ]; then
+            rm -rf "$dir"
+        fi
+    done
 
-cmake -DCMAKE_BUILD_TYPE="$BUILD_TYPE" ..
+    mkdir -p "$BUILD_DIR"
+}
 
-cmake --build . --config "$BUILD_TYPE"
+if [ "$DOCKER" = true ]; then
+    echo
+    echo "${GREEN}→  Build Docker - mode: $BUILD_TYPE.${RESET}"
+    echo
 
-ctest --output-on-failure "$BUILD_TYPE"
+    IMAGE_TAG="libmemalloc:${BUILD_TYPE,,}"
 
-cmake --build . --target doc > /dev/null 2>&1
+    docker build \
+      --build-arg BUILD_MODE="$BUILD_TYPE" \
+      --tag "$IMAGE_TAG" \
+      .
+
+    CONTAINER_ID=$(docker create "$IMAGE_TAG")
+
+    mkdir -p ./bin/"$BUILD_TYPE"
+    docker cp "$CONTAINER_ID":/out/. ./bin/"$BUILD_TYPE"/
+
+    docker rm "$CONTAINER_ID"
+    docker rmi "$IMAGE_TAG"
+else
+    echo
+    echo "${GREEN}→  Build local - mode: $BUILD_TYPE.${RESET}"
+    echo
+
+    cleanup
+
+    cd "$BUILD_DIR"
+
+    cmake -DCMAKE_BUILD_TYPE="$BUILD_TYPE" ..
+    cmake --build . --config "$BUILD_TYPE"
+    ctest --output-on-failure -C "$BUILD_TYPE"
+
+    if [ "$BUILD_TYPE" = "Release" ]; then
+        echo
+        echo "${GREEN}→ Generating Doxygen documentation…${RESET}"
+        cmake --build . --config "$BUILD_TYPE" --target doc \
+            > /dev/null 2>&1 || true
+    fi
+fi
 
 echo
-echo "Build and tests '$BUILD_TYPE' with success."
+echo "${GREEN}✓ Build and testing '$BUILD_TYPE' completed successfully.${RESET}"
+echo "${GREEN}→ Binaries (.a .so) are in ./bin/$BUILD_TYPE.${RESET}"
+echo
