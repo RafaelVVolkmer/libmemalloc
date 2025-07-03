@@ -128,7 +128,7 @@
  *  @details    This constant is used to verify the integrity of
  *              allocated memory blocks and detect corruption.
  * ========================================================================== */
-#define MAGIC_NUMBER     (uint32_t)(0xBEEFDEADU)
+#define MAGIC_NUMBER     (uint32_t)(0xBE'EF'DE'ADU)
 
 /** ============================================================================
  *  @def        CACHE_LINE_SIZE
@@ -149,7 +149,7 @@
  *  @details    This constant is placed at the boundaries of
  *              memory allocations to detect buffer overflows.
  * ========================================================================== */
-#define CANARY_VALUE     (uint32_t)(0xDEADBEEFULL)
+#define CANARY_VALUE     (uint32_t)(0xDE'AD'BE'EFULL)
 
 /** ============================================================================
  *  @def        PREFETCH_MULT
@@ -160,7 +160,7 @@
  *              single-byte value replication across full register
  *              width in vectorized operations.
  * ========================================================================== */
-#define PREFETCH_MULT    (uint64_t)(0x0101010101010101ULL)
+#define PREFETCH_MULT    (uint64_t)(0x01'01'01'01'01'01'01'01ULL)
 
 /** ============================================================================
  *  @def        BYTES_PER_CLASS
@@ -289,11 +289,12 @@ static int MEM_getSizeClass(mem_allocator_t *const allocator,
 /** ============================================================================
  *  @brief  Validates the integrity and boundaries of a memory block.
  *
- *  This function ensures that the specified @p block lies within the allocator’s
- *  heap or one of its mmap regions, that its header canary matches the expected
- *  magic value to detect metadata corruption, that its data canary is intact to
- *  catch buffer overruns, and that the block’s size does not extend past the
- *  heap’s end.  On any failure, an appropriate negative errno is returned.
+ *  This function ensures that the specified @p block lies within the
+ * allocator’s heap or one of its mmap regions, that its header canary matches
+ * the expected magic value to detect metadata corruption, that its data canary
+ * is intact to catch buffer overruns, and that the block’s size does not extend
+ * past the heap’s end.  On any failure, an appropriate negative errno is
+ * returned.
  *
  *  @param[in]  allocator Pointer to the allocator context.
  *  @param[in]  block     Pointer to the block header to validate.
@@ -333,11 +334,11 @@ static int MEM_insertFreeBlock(mem_allocator_t *const allocator,
 /** ============================================================================
  *  @brief  Removes a block from its free list.
  *
- *  This function unlinks the specified @p block from the free list corresponding
- *  to its size class within the allocator. It computes the size‐class index via
- *  MEM_getSizeClass(), validates parameters, then adjusts the neighboring blocks’
- *  fl_next and fl_prev pointers (or the list head) to remove @p block. The block’s
- *  own fl_next and fl_prev are then cleared.
+ *  This function unlinks the specified @p block from the free list
+ * corresponding to its size class within the allocator. It computes the
+ * size‐class index via MEM_getSizeClass(), validates parameters, then adjusts
+ * the neighboring blocks’ fl_next and fl_prev pointers (or the list head) to
+ * remove @p block. The block’s own fl_next and fl_prev are then cleared.
  *
  *  @param[in]  allocator Memory allocator context.
  *  @param[in]  block     Block header to remove.
@@ -352,17 +353,19 @@ static int MEM_removeFreeBlock(mem_allocator_t *const allocator,
                                block_header_t *const  block);
 
 /** ============================================================================
- *  @brief  Searches for the first suitable free memory block in size‐class lists.
+ *  @brief  Searches for the first suitable free memory block in size‐class
+ * lists.
  *
  *  This function computes the starting size class for the requested @p size via
- *  MEM_getSizeClass(), then scans each free‐list from that class upward.  For each
- *  candidate block, it calls MEM_validateBlock() to ensure integrity, and returns
- *  the first block that is marked free and large enough. The found block pointer
- *  is stored in @p fit_block.
+ *  MEM_getSizeClass(), then scans each free‐list from that class upward.  For
+ * each candidate block, it calls MEM_validateBlock() to ensure integrity, and
+ * returns the first block that is marked free and large enough. The found block
+ * pointer is stored in @p fit_block.
  *
  *  @param[in]  allocator Pointer to the allocator context.
  *  @param[in]  siz       Requested allocation size in bytes.
- *  @param[out] fit_block On success, set to the pointer of a suitable free block.
+ *  @param[out] fit_block On success, set to the pointer of a suitable free
+ * block.
  *
  *  @return Integer status code.
  *
@@ -470,10 +473,11 @@ static int MEM_splitBlock(mem_allocator_t *const allocator,
  *
  *  @return Integer status code.
  *
- *  @retval EXIT_SUCCESS: Blocks merged (or single block reinserted) successfully.
+ *  @retval EXIT_SUCCESS: Blocks merged (or single block reinserted)
+ * successfully.
  *  @retval -EINVAL:      @p allocator or @p block is NULL.
- *  @retval ret<0:        Returned by MEM_removeFreeBlock(), MEM_validateBlock(),
- *                        MEM_insertFreeBlock(), or munmap() in inner calls
+ *  @retval ret<0:        Returned by MEM_removeFreeBlock(),
+ * MEM_validateBlock(), MEM_insertFreeBlock(), or munmap() in inner calls
  *                        indicating the specific failure.
  * ========================================================================== */
 static int MEM_mergeBlocks(mem_allocator_t *const allocator,
@@ -554,7 +558,8 @@ static int MEM_mapFree(mem_allocator_t *const allocator, void *const addr);
  *  given @p strategy (FIRST_FIT, NEXT_FIT, BEST_FIT) to locate a free block,
  *  grows the heap if necessary, splits a larger block to fit exactly, and
  *  records debugging metadata (source file, line, variable name).  For mmap
- *  allocations it rounds up to page size and tracks the region in the allocator.
+ *  allocations it rounds up to page size and tracks the region in the
+ * allocator.
  *
  *  @param[in]  allocator Memory allocator context.
  *  @param[in]  size      Number of bytes requested.
@@ -654,7 +659,8 @@ static void *MEM_allocatorCalloc(mem_allocator_t *const      allocator,
  *
  *  This function frees a pointer previously returned by MEM_allocatorMalloc().
  *  It supports both heap‐based and mmap‐based allocations:
- *    - For mmap regions, it delegates to MEM_mapFree() to unmap and remove metadata.
+ *    - For mmap regions, it delegates to MEM_mapFree() to unmap and remove
+ metadata.
  *    - For heap blocks, it validates the block, checks for double frees,
  *      marks the block free, merges with adjacent free blocks, and reinserts
  *      the merged block into the free list.  If the freed block lies at the
@@ -749,11 +755,12 @@ __GC_HOT static void *MEM_gcThreadFunc(void *arg);
  *
  *  This function prepares for a new garbage-collection cycle by clearing the
  *  mark flag on every heap block and every mmap’d block payload.  It scans
- *  the heap from allocator->heap_start + metadata_size up to allocator->heap_end,
- *  resetting each valid block’s marked flag (and skipping malformed blocks to
- *  avoid infinite loops).  It then iterates allocator->mmap_list, clearing the
- *  mark on each payload block while preserving the metadata header’s mark so
- *  the allocator’s own bookkeeping regions are never freed.
+ *  the heap from allocator->heap_start + metadata_size up to
+ * allocator->heap_end, resetting each valid block’s marked flag (and skipping
+ * malformed blocks to avoid infinite loops).  It then iterates
+ * allocator->mmap_list, clearing the mark on each payload block while
+ * preserving the metadata header’s mark so the allocator’s own bookkeeping
+ * regions are never freed.
  *
  *  @param[in]  allocator Memory allocator context.
  *
@@ -802,7 +809,8 @@ __GC_HOT static int MEM_gcMark(mem_allocator_t *const allocator);
  *        • If an mmap’d block is unmarked and not already free, unlinks
  *          the mmap_t node, calls munmap() on the region, and frees its
  *          metadata header via MEM_allocatorFree().
- *        • Otherwise, clears the block’s marked flag and advances to the next node.
+ *        • Otherwise, clears the block’s marked flag and advances to the next
+ * node.
  *
  *  @param[in]  allocator Memory allocator context.
  *
@@ -847,7 +855,8 @@ __GC_COLD static int MEM_runGc(mem_allocator_t *const allocator);
  *
  *  @retval EXIT_SUCCESS: GC thread stopped and final collection done.
  *  @retval -EINVAL:      @p allocator is NULL.
- *  @retval ret<0:        Error code from pthread MEM_gcMark(), or MEM_gcSweep().
+ *  @retval ret<0:        Error code from pthread MEM_gcMark(), or
+ * MEM_gcSweep().
  * ========================================================================== */
 __GC_COLD static int MEM_stopGc(mem_allocator_t *const allocator);
 
@@ -1186,11 +1195,12 @@ function_output:
 /** ============================================================================
  *  @brief  Validates the integrity and boundaries of a memory block.
  *
- *  This function ensures that the specified @p block lies within the allocator’s
- *  heap or one of its mmap regions, that its header canary matches the expected
- *  magic value to detect metadata corruption, that its data canary is intact to
- *  catch buffer overruns, and that the block’s size does not extend past the
- *  heap’s end.  On any failure, an appropriate negative errno is returned.
+ *  This function ensures that the specified @p block lies within the
+ * allocator’s heap or one of its mmap regions, that its header canary matches
+ * the expected magic value to detect metadata corruption, that its data canary
+ * is intact to catch buffer overruns, and that the block’s size does not extend
+ * past the heap’s end.  On any failure, an appropriate negative errno is
+ * returned.
  *
  *  @param[in]  allocator Pointer to the allocator context.
  *  @param[in]  block     Pointer to the block header to validate.
@@ -1438,11 +1448,11 @@ function_output:
 /** ============================================================================
  *  @brief  Removes a block from its free list.
  *
- *  This function unlinks the specified @p block from the free list corresponding
- *  to its size class within the allocator. It computes the size‐class index via
- *  MEM_getSizeClass(), validates parameters, then adjusts the neighboring blocks’
- *  fl_next and fl_prev pointers (or the list head) to remove @p block. The block’s
- *  own fl_next and fl_prev are then cleared.
+ *  This function unlinks the specified @p block from the free list
+ * corresponding to its size class within the allocator. It computes the
+ * size‐class index via MEM_getSizeClass(), validates parameters, then adjusts
+ * the neighboring blocks’ fl_next and fl_prev pointers (or the list head) to
+ * remove @p block. The block’s own fl_next and fl_prev are then cleared.
  *
  *  @param[in]  allocator Memory allocator context.
  *  @param[in]  block     Block header to remove.
@@ -1890,17 +1900,19 @@ function_output:
 }
 
 /** ============================================================================
- *  @brief  Searches for the first suitable free memory block in size‐class lists.
+ *  @brief  Searches for the first suitable free memory block in size‐class
+ * lists.
  *
  *  This function computes the starting size class for the requested @p size via
- *  MEM_getSizeClass(), then scans each free‐list from that class upward.  For each
- *  candidate block, it calls MEM_validateBlock() to ensure integrity, and returns
- *  the first block that is marked free and large enough. The found block pointer
- *  is stored in @p fit_block.
+ *  MEM_getSizeClass(), then scans each free‐list from that class upward.  For
+ * each candidate block, it calls MEM_validateBlock() to ensure integrity, and
+ * returns the first block that is marked free and large enough. The found block
+ * pointer is stored in @p fit_block.
  *
  *  @param[in]  allocator Pointer to the allocator context.
  *  @param[in]  siz       Requested allocation size in bytes.
- *  @param[out] fit_block On success, set to the pointer of a suitable free block.
+ *  @param[out] fit_block On success, set to the pointer of a suitable free
+ * block.
  *
  *  @return Integer status code.
  *
@@ -2279,10 +2291,11 @@ function_output:
  *
  *  @return Integer status code.
  *
- *  @retval EXIT_SUCCESS: Blocks merged (or single block reinserted) successfully.
+ *  @retval EXIT_SUCCESS: Blocks merged (or single block reinserted)
+ * successfully.
  *  @retval -EINVAL:      @p allocator or @p block is NULL.
- *  @retval ret<0:        Returned by MEM_removeFreeBlock(), MEM_validateBlock(),
- *                        MEM_insertFreeBlock(), or munmap() in inner calls
+ *  @retval ret<0:        Returned by MEM_removeFreeBlock(),
+ * MEM_validateBlock(), MEM_insertFreeBlock(), or munmap() in inner calls
  *                        indicating the specific failure.
  * ========================================================================== */
 static int MEM_mergeBlocks(mem_allocator_t *const allocator,
@@ -2405,7 +2418,8 @@ function_output:
  *  given @p strategy (FIRST_FIT, NEXT_FIT, BEST_FIT) to locate a free block,
  *  grows the heap if necessary, splits a larger block to fit exactly, and
  *  records debugging metadata (source file, line, variable name).  For mmap
- *  allocations it rounds up to page size and tracks the region in the allocator.
+ *  allocations it rounds up to page size and tracks the region in the
+ * allocator.
  *
  *  @param[in]  allocator Memory allocator context.
  *  @param[in]  size      Number of bytes requested.
@@ -2754,7 +2768,8 @@ function_output:
  *
  *  This function frees a pointer previously returned by MEM_allocatorMalloc().
  *  It supports both heap‐based and mmap‐based allocations:
- *    - For mmap regions, it delegates to MEM_mapFree() to unmap and remove metadata.
+ *    - For mmap regions, it delegates to MEM_mapFree() to unmap and remove
+ metadata.
  *    - For heap blocks, it validates the block, checks for double frees,
  *      marks the block free, merges with adjacent free blocks, and reinserts
  *      the merged block into the free list.  If the freed block lies at the
@@ -2901,11 +2916,12 @@ function_output:
  *
  *  This function prepares for a new garbage-collection cycle by clearing the
  *  mark flag on every heap block and every mmap’d block payload.  It scans
- *  the heap from allocator->heap_start + metadata_size up to allocator->heap_end,
- *  resetting each valid block’s marked flag (and skipping malformed blocks to
- *  avoid infinite loops).  It then iterates allocator->mmap_list, clearing the
- *  mark on each payload block while preserving the metadata header’s mark so
- *  the allocator’s own bookkeeping regions are never freed.
+ *  the heap from allocator->heap_start + metadata_size up to
+ * allocator->heap_end, resetting each valid block’s marked flag (and skipping
+ * malformed blocks to avoid infinite loops).  It then iterates
+ * allocator->mmap_list, clearing the mark on each payload block while
+ * preserving the metadata header’s mark so the allocator’s own bookkeeping
+ * regions are never freed.
  *
  *  @param[in]  allocator Memory allocator context.
  *
@@ -3129,7 +3145,8 @@ function_output:
  *        • If an mmap’d block is unmarked and not already free, unlinks
  *          the mmap_t node, calls munmap() on the region, and frees its
  *          metadata header via MEM_allocatorFree().
- *        • Otherwise, clears the block’s marked flag and advances to the next node.
+ *        • Otherwise, clears the block’s marked flag and advances to the next
+ * node.
  *
  *  @param[in]  allocator Memory allocator context.
  *
@@ -3406,7 +3423,8 @@ function_output:
  *
  *  @retval EXIT_SUCCESS: GC thread stopped and final collection done.
  *  @retval -EINVAL:      @p allocator is NULL.
- *  @retval ret<0:        Error code from pthread MEM_gcMark(), or MEM_gcSweep().
+ *  @retval ret<0:        Error code from pthread MEM_gcMark(), or
+ * MEM_gcSweep().
  * ========================================================================== */
 static int MEM_stopGc(mem_allocator_t *const allocator)
 {
@@ -3626,8 +3644,8 @@ void *MEM_allocCalloc(mem_allocator_t *const      allocator,
  *  @param[in]  var       Variable name for debugging.
  *  @param[in]  strategy  Allocation strategy.
  *
- *  @return Pointer to the reallocated memory on success (may be same as @p ptr),
- *          or an error‐encoded pointer (via PTR_ERR()) on failure.
+ *  @return Pointer to the reallocated memory on success (may be same as @p
+ * ptr), or an error‐encoded pointer (via PTR_ERR()) on failure.
  * ========================================================================== */
 void *MEM_allocRealloc(mem_allocator_t *const      allocator,
                        void *const                 ptr,
