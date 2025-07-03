@@ -451,11 +451,11 @@ Functions</h2></td></tr>
 <p>Initializes the memory allocator and its internal structures. </p>
 <p>This function prepares the allocator’s heap by:</p><ul>
 <li>Reading and aligning the initial program break to ARCH_ALIGNMENT.</li>
-<li>Allocating the arena array and free‐list bins via MEM_growUserHeap().</li>
+<li>Allocating the arena array and free‐list bins via <a class="el" href="libmemalloc_8c.html#a429b6c3c4d5bc23814ec213f757471b5" title="Expands the user heap by a specified increment.">MEM_growUserHeap()</a>.</li>
 <li>Zeroing out the free‐list bins.</li>
 <li>Initializing the allocator fields (heap_start, heap_end, free_lists).</li>
 <li>Setting up the garbage‐collector thread state and its mutex/cond.</li>
-<li>Capturing the current thread’s stack bounds via MEM_stackBounds().</li>
+<li>Capturing the current thread’s stack bounds via <a class="el" href="libmemalloc_8c.html#a05ca3438779df1a875f5d8d55f112f2a" title="Query and record the bounding addresses of a thread’s stack.">MEM_stackBounds()</a>.</li>
 <li>(If under Valgrind) creating a mempool for the allocator.</li>
 </ul>
 <dl class="params"><dt>Parameters</dt><dd>
@@ -515,7 +515,7 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Allocates and zero‐initializes memory using the specified strategy. </p>
-<p>This function locks the GC mutex, invokes MEM_allocatorCalloc() with the given <code>strategy</code>, automatically supplying <b>FILE</b>, <b>LINE</b>, and variable name for debugging, then unlocks the mutex.</p>
+<p>This function locks the GC mutex, invokes <a class="el" href="libmemalloc_8c.html#a1a8d21bd0df49c0eabd6a2805e0fef67" title="Allocates and zero‐initializes memory.">MEM_allocatorCalloc()</a> with the given <code>strategy</code>, automatically supplying <b>FILE</b>, <b>LINE</b>, and variable name for debugging, then unlocks the mutex.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">allocator</td><td>Memory allocator context. </td></tr>
@@ -562,7 +562,7 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Releases allocated memory back to the heap. </p>
-<p>This function locks the GC mutex, invokes MEM_allocatorFree() with automatically supplied <b>FILE</b>, <b>LINE</b>, and variable name for debugging, then unlocks the mutex.</p>
+<p>This function locks the GC mutex, invokes <a class="el" href="libmemalloc_8c.html#ac8cbefcab3677881aba7483f23a7ce71" title="Releases allocated memory back to the heap.">MEM_allocatorFree()</a> with automatically supplied <b>FILE</b>, <b>LINE</b>, and variable name for debugging, then unlocks the mutex.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">allocator</td><td>Memory allocator context. </td></tr>
@@ -614,7 +614,7 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Allocates memory using the specified strategy. </p>
-<p>This function locks the GC mutex, invokes MEM_allocatorMalloc() with the given <code>strategy</code>, automatically supplying <b>FILE</b>, <b>LINE</b>, and variable name for debugging, then unlocks the mutex.</p>
+<p>This function locks the GC mutex, invokes <a class="el" href="libmemalloc_8c.html#aa8d6af31611fe153060acd3fd7ce0d79" title="Allocates memory using the specified strategy.">MEM_allocatorMalloc()</a> with the given <code>strategy</code>, automatically supplying <b>FILE</b>, <b>LINE</b>, and variable name for debugging, then unlocks the mutex.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">allocator</td><td>Memory allocator context. </td></tr>
@@ -661,7 +661,7 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Allocates memory using the BEST_FIT strategy. </p>
-<p>This function locks the GC mutex, invokes MEM_allocatorMalloc() with BEST_FIT strategy, automatically supplying <b>FILE</b>, <b>LINE</b>, and variable name for debugging, then unlocks the mutex.</p>
+<p>This function locks the GC mutex, invokes <a class="el" href="libmemalloc_8c.html#aa8d6af31611fe153060acd3fd7ce0d79" title="Allocates memory using the specified strategy.">MEM_allocatorMalloc()</a> with BEST_FIT strategy, automatically supplying <b>FILE</b>, <b>LINE</b>, and variable name for debugging, then unlocks the mutex.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">allocator</td><td>Memory allocator context. </td></tr>
@@ -707,7 +707,7 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Allocates memory using the FIRST_FIT strategy. </p>
-<p>This function locks the GC mutex, invokes MEM_allocatorMalloc() with FIRST_FIT strategy, automatically supplying <b>FILE</b>, <b>LINE</b>, and variable name for debugging, then unlocks the mutex.</p>
+<p>This function locks the GC mutex, invokes <a class="el" href="libmemalloc_8c.html#aa8d6af31611fe153060acd3fd7ce0d79" title="Allocates memory using the specified strategy.">MEM_allocatorMalloc()</a> with FIRST_FIT strategy, automatically supplying <b>FILE</b>, <b>LINE</b>, and variable name for debugging, then unlocks the mutex.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">allocator</td><td>Memory allocator context. </td></tr>
@@ -753,7 +753,7 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Allocates memory using the NEXT_FIT strategy. </p>
-<p>This function locks the GC mutex, invokes MEM_allocatorMalloc() with NEXT_FIT strategy, automatically supplying <b>FILE</b>, <b>LINE</b>, and variable name for debugging, then unlocks the mutex.</p>
+<p>This function locks the GC mutex, invokes <a class="el" href="libmemalloc_8c.html#aa8d6af31611fe153060acd3fd7ce0d79" title="Allocates memory using the specified strategy.">MEM_allocatorMalloc()</a> with NEXT_FIT strategy, automatically supplying <b>FILE</b>, <b>LINE</b>, and variable name for debugging, then unlocks the mutex.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">allocator</td><td>Memory allocator context. </td></tr>
@@ -811,7 +811,7 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Reallocates memory with safety checks using the specified strategy. </p>
-<p>This function locks the GC mutex, invokes MEM_allocatorRealloc() with the given <code>strategy</code>, automatically supplying <b>FILE</b>, <b>LINE</b>, and variable name for debugging, then unlocks the mutex.</p>
+<p>This function locks the GC mutex, invokes <a class="el" href="libmemalloc_8c.html#a783393b852fc04e08062e4c99c831a89" title="Reallocates memory with safety checks.">MEM_allocatorRealloc()</a> with the given <code>strategy</code>, automatically supplying <b>FILE</b>, <b>LINE</b>, and variable name for debugging, then unlocks the mutex.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">allocator</td><td>Memory allocator context. </td></tr>
@@ -843,7 +843,7 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Stop the garbage collector thread and perform a final collection. </p>
-<p>This function simply wraps MEM_stopGc(), signaling the GC thread to exit, joining it, and running a final mark-and-sweep cycle on the caller thread.</p>
+<p>This function simply wraps <a class="el" href="libmemalloc_8c.html#a4951f4c43d5f7288c0bbcf0001127d70" title="Stop the GC thread and perform a final collection.">MEM_stopGc()</a>, signaling the GC thread to exit, joining it, and running a final mark-and-sweep cycle on the caller thread.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">allocator</td><td>Memory allocator context</td></tr>
@@ -871,7 +871,7 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Start or signal the garbage collector thread. </p>
-<p>This function simply wraps MEM_runGc(), starting the GC thread if needed or signaling it to perform a collection cycle.</p>
+<p>This function simply wraps <a class="el" href="libmemalloc_8c.html#a364f1e68b8a8b15c4075de0d8412d887" title="Start or signal the GC thread to perform a collection cycle.">MEM_runGc()</a>, starting the GC thread if needed or signaling it to perform a collection cycle.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">allocator</td><td>Memory allocator context.</td></tr>

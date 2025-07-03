@@ -127,7 +127,9 @@ $(document).ready(function(){initNavTree('libmemalloc_8c.html',''); initResizabl
 
 <div class="header">
   <div class="summary">
-<a href="#define-members">Macros</a>  </div>
+<a href="#define-members">Macros</a> &#124;
+<a href="#typedef-members">Typedefs</a> &#124;
+<a href="#func-members">Functions</a>  </div>
   <div class="headertitle"><div class="title">libmemalloc.c File Reference<div class="ingroups"><a class="el" href="group___libmemalloc.html">Libmemalloc</a></div></div></div>
 </div><!--header-->
 <div class="contents">
@@ -164,9 +166,156 @@ Macros</h2></td></tr>
 <tr class="memitem:a8acceb8a32aeb665817bcac0ae976c3e" id="r_a8acceb8a32aeb665817bcac0ae976c3e"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="libmemalloc_8c.html#a8acceb8a32aeb665817bcac0ae976c3e">DEFAULT_NUM_BINS</a>&#160;&#160;&#160;(uint8_t)(10U)</td></tr>
 <tr class="memdesc:a8acceb8a32aeb665817bcac0ae976c3e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Default number of size classes (bins) for free lists.  <br /></td></tr>
 <tr class="separator:a8acceb8a32aeb665817bcac0ae976c3e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a54061e5993a5517320d425f44408cc86" id="r_a54061e5993a5517320d425f44408cc86"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="libmemalloc_8c.html#a54061e5993a5517320d425f44408cc86">MAGIC_NUMBER</a>&#160;&#160;&#160;(uint32_t)(0xBE'EF'DE'ADU)#define CACHE_LINE_SIZE  (uint8_t)(64U)#define CANARY_VALUE     (uint32_t)(0xDE'AD'BE'EFULL)</td></tr>
+<tr class="memitem:a54061e5993a5517320d425f44408cc86" id="r_a54061e5993a5517320d425f44408cc86"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="libmemalloc_8c.html#a54061e5993a5517320d425f44408cc86">MAGIC_NUMBER</a>&#160;&#160;&#160;(uint32_t)(0xBEEFDEADU)</td></tr>
 <tr class="memdesc:a54061e5993a5517320d425f44408cc86"><td class="mdescLeft">&#160;</td><td class="mdescRight">Magic number to validate memory blocks.  <br /></td></tr>
 <tr class="separator:a54061e5993a5517320d425f44408cc86"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af89f60b07247176687889ade776c8e10" id="r_af89f60b07247176687889ade776c8e10"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="libmemalloc_8c.html#af89f60b07247176687889ade776c8e10">CACHE_LINE_SIZE</a>&#160;&#160;&#160;(uint8_t)(64U)</td></tr>
+<tr class="memdesc:af89f60b07247176687889ade776c8e10"><td class="mdescLeft">&#160;</td><td class="mdescRight">Size of the CPU cache line in bytes.  <br /></td></tr>
+<tr class="separator:af89f60b07247176687889ade776c8e10"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae09915f592311e3a76ee2e935e6d6649" id="r_ae09915f592311e3a76ee2e935e6d6649"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="libmemalloc_8c.html#ae09915f592311e3a76ee2e935e6d6649">CANARY_VALUE</a>&#160;&#160;&#160;(uint32_t)(0xDEADBEEFULL)</td></tr>
+<tr class="memdesc:ae09915f592311e3a76ee2e935e6d6649"><td class="mdescLeft">&#160;</td><td class="mdescRight">Canary value to detect buffer overflows.  <br /></td></tr>
+<tr class="separator:ae09915f592311e3a76ee2e935e6d6649"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a01c316adddd425ace6ff7571a076526d" id="r_a01c316adddd425ace6ff7571a076526d"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="libmemalloc_8c.html#a01c316adddd425ace6ff7571a076526d">PREFETCH_MULT</a>&#160;&#160;&#160;(uint64_t)(0x0101010101010101ULL)</td></tr>
+<tr class="memdesc:a01c316adddd425ace6ff7571a076526d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Prefetch optimization multiplier constant.  <br /></td></tr>
+<tr class="separator:a01c316adddd425ace6ff7571a076526d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2ddd2aeacc155dcd57ad9f7ed7199d9f" id="r_a2ddd2aeacc155dcd57ad9f7ed7199d9f"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="libmemalloc_8c.html#a2ddd2aeacc155dcd57ad9f7ed7199d9f">BYTES_PER_CLASS</a>&#160;&#160;&#160;(uint8_t)(128U)</td></tr>
+<tr class="memdesc:a2ddd2aeacc155dcd57ad9f7ed7199d9f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Fixed byte allocation per classification unit.  <br /></td></tr>
+<tr class="separator:a2ddd2aeacc155dcd57ad9f7ed7199d9f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2911160c515036ceb8c7470a05583ae0" id="r_a2911160c515036ceb8c7470a05583ae0"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="libmemalloc_8c.html#a2911160c515036ceb8c7470a05583ae0">MMAP_THRESHOLD</a>&#160;&#160;&#160;(size_t)(128U * 1024U)</td></tr>
+<tr class="memdesc:a2911160c515036ceb8c7470a05583ae0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Threshold size for using mmap-based allocation.  <br /></td></tr>
+<tr class="separator:a2911160c515036ceb8c7470a05583ae0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac1f29ba54415975a2fa23e276fdf8a0f" id="r_ac1f29ba54415975a2fa23e276fdf8a0f"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="libmemalloc_8c.html#ac1f29ba54415975a2fa23e276fdf8a0f">MIN_BLOCK_SIZE</a>&#160;&#160;&#160;(size_t)(sizeof(<a class="el" href="structblock__header__t.html">block_header_t</a>) + <a class="el" href="group___libmemalloc.html#ga07ea769b5c72cdf928879e29e16edf82">ARCH_ALIGNMENT</a>)</td></tr>
+<tr class="memdesc:ac1f29ba54415975a2fa23e276fdf8a0f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Defines the minimum memory block size.  <br /></td></tr>
+<tr class="separator:ac1f29ba54415975a2fa23e276fdf8a0f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a52c92840d7afc957a6424b6dc3cc089c" id="r_a52c92840d7afc957a6424b6dc3cc089c"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="libmemalloc_8c.html#a52c92840d7afc957a6424b6dc3cc089c">NR_OBJS</a>&#160;&#160;&#160;(uint16_t)(1000U)</td></tr>
+<tr class="memdesc:a52c92840d7afc957a6424b6dc3cc089c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Number of iterations used to scale GC sleep duration.  <br /></td></tr>
+<tr class="separator:a52c92840d7afc957a6424b6dc3cc089c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:affde14445f49f65ff4f5b592e44ee71a" id="r_affde14445f49f65ff4f5b592e44ee71a"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="libmemalloc_8c.html#affde14445f49f65ff4f5b592e44ee71a">LIKELY</a>(x)&#160;&#160;&#160;(__builtin_expect(!!(x), 1))</td></tr>
+<tr class="memdesc:affde14445f49f65ff4f5b592e44ee71a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compiler hint for likely branch prediction.  <br /></td></tr>
+<tr class="separator:affde14445f49f65ff4f5b592e44ee71a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab10d0a221f4d7a706701b806c8135fd7" id="r_ab10d0a221f4d7a706701b806c8135fd7"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="libmemalloc_8c.html#ab10d0a221f4d7a706701b806c8135fd7">UNLIKELY</a>(x)&#160;&#160;&#160;(__builtin_expect(!!(x), 0))</td></tr>
+<tr class="memdesc:ab10d0a221f4d7a706701b806c8135fd7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compiler hint for unlikely branch prediction.  <br /></td></tr>
+<tr class="separator:ab10d0a221f4d7a706701b806c8135fd7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="typedef-members" name="typedef-members"></a>
+Typedefs</h2></td></tr>
+<tr class="memitem:a7d054d3a536794b662ab33075d4b9fc6" id="r_a7d054d3a536794b662ab33075d4b9fc6"><td class="memItemLeft" align="right" valign="top">typedef int(*&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="libmemalloc_8c.html#a7d054d3a536794b662ab33075d4b9fc6">find_fn_t</a>) (<a class="el" href="structmem__allocator__t.html">mem_allocator_t</a> *const, const size_t, <a class="el" href="structblock__header__t.html">block_header_t</a> **)</td></tr>
+<tr class="memdesc:a7d054d3a536794b662ab33075d4b9fc6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Type for functions that locate a suitable free block.  <br /></td></tr>
+<tr class="separator:a7d054d3a536794b662ab33075d4b9fc6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
+Functions</h2></td></tr>
+<tr class="memitem:ae5805f4c67ac5fe3b63f8e26041ee0aa" id="r_ae5805f4c67ac5fe3b63f8e26041ee0aa"><td class="memItemLeft" align="right" valign="top">void *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="libmemalloc_8c.html#ae5805f4c67ac5fe3b63f8e26041ee0aa">MEM_sbrk</a> (const intptr_t increment)</td></tr>
+<tr class="memdesc:ae5805f4c67ac5fe3b63f8e26041ee0aa"><td class="mdescLeft">&#160;</td><td class="mdescRight">Invokes sbrk-like behavior by moving the program break.  <br /></td></tr>
+<tr class="separator:ae5805f4c67ac5fe3b63f8e26041ee0aa"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afce3c776f36dbcd4df3f257d425d5c16" id="r_afce3c776f36dbcd4df3f257d425d5c16"><td class="memItemLeft" align="right" valign="top">static int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="libmemalloc_8c.html#afce3c776f36dbcd4df3f257d425d5c16">MEM_getSizeClass</a> (<a class="el" href="structmem__allocator__t.html">mem_allocator_t</a> *const allocator, const size_t size)</td></tr>
+<tr class="memdesc:afce3c776f36dbcd4df3f257d425d5c16"><td class="mdescLeft">&#160;</td><td class="mdescRight">Calculates the size class index for a requested memory size.  <br /></td></tr>
+<tr class="separator:afce3c776f36dbcd4df3f257d425d5c16"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac20a9b9d50b0108e6dc6571e30ad99c2" id="r_ac20a9b9d50b0108e6dc6571e30ad99c2"><td class="memItemLeft" align="right" valign="top">static int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="libmemalloc_8c.html#ac20a9b9d50b0108e6dc6571e30ad99c2">MEM_validateBlock</a> (<a class="el" href="structmem__allocator__t.html">mem_allocator_t</a> *const allocator, <a class="el" href="structblock__header__t.html">block_header_t</a> *const block)</td></tr>
+<tr class="memdesc:ac20a9b9d50b0108e6dc6571e30ad99c2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Validates the integrity and boundaries of a memory block.  <br /></td></tr>
+<tr class="separator:ac20a9b9d50b0108e6dc6571e30ad99c2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae5d23c9024583a7682a5857f59523d6e" id="r_ae5d23c9024583a7682a5857f59523d6e"><td class="memItemLeft" align="right" valign="top">static int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="libmemalloc_8c.html#ae5d23c9024583a7682a5857f59523d6e">MEM_insertFreeBlock</a> (<a class="el" href="structmem__allocator__t.html">mem_allocator_t</a> *const allocator, <a class="el" href="structblock__header__t.html">block_header_t</a> *const block)</td></tr>
+<tr class="memdesc:ae5d23c9024583a7682a5857f59523d6e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Inserts a block into the appropriate free list based on its size.  <br /></td></tr>
+<tr class="separator:ae5d23c9024583a7682a5857f59523d6e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a12ec011b3d73b77babe83930fa7200f0" id="r_a12ec011b3d73b77babe83930fa7200f0"><td class="memItemLeft" align="right" valign="top">static int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="libmemalloc_8c.html#a12ec011b3d73b77babe83930fa7200f0">MEM_removeFreeBlock</a> (<a class="el" href="structmem__allocator__t.html">mem_allocator_t</a> *const allocator, <a class="el" href="structblock__header__t.html">block_header_t</a> *const block)</td></tr>
+<tr class="memdesc:a12ec011b3d73b77babe83930fa7200f0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Removes a block from its free list.  <br /></td></tr>
+<tr class="separator:a12ec011b3d73b77babe83930fa7200f0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad1c21ef197030ad5077e1438229ecf7b" id="r_ad1c21ef197030ad5077e1438229ecf7b"><td class="memItemLeft" align="right" valign="top">static int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="libmemalloc_8c.html#ad1c21ef197030ad5077e1438229ecf7b">MEM_findFirstFit</a> (<a class="el" href="structmem__allocator__t.html">mem_allocator_t</a> *const allocator, const size_t size, <a class="el" href="structblock__header__t.html">block_header_t</a> **fit_block)</td></tr>
+<tr class="memdesc:ad1c21ef197030ad5077e1438229ecf7b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Searches for the first suitable free memory block in size‐class lists.  <br /></td></tr>
+<tr class="separator:ad1c21ef197030ad5077e1438229ecf7b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3d5a3d1efacb5148c598825eb0c69708" id="r_a3d5a3d1efacb5148c598825eb0c69708"><td class="memItemLeft" align="right" valign="top">static int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="libmemalloc_8c.html#a3d5a3d1efacb5148c598825eb0c69708">MEM_findNextFit</a> (<a class="el" href="structmem__allocator__t.html">mem_allocator_t</a> *const allocator, const size_t size, <a class="el" href="structblock__header__t.html">block_header_t</a> **fit_block)</td></tr>
+<tr class="memdesc:a3d5a3d1efacb5148c598825eb0c69708"><td class="mdescLeft">&#160;</td><td class="mdescRight">Searches for the next suitable free memory block using the NEXT_FIT strategy starting from the last allocated position.  <br /></td></tr>
+<tr class="separator:a3d5a3d1efacb5148c598825eb0c69708"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0ff4096f96a8b1fb66f4dc035f6e3373" id="r_a0ff4096f96a8b1fb66f4dc035f6e3373"><td class="memItemLeft" align="right" valign="top">static int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="libmemalloc_8c.html#a0ff4096f96a8b1fb66f4dc035f6e3373">MEM_findBestFit</a> (<a class="el" href="structmem__allocator__t.html">mem_allocator_t</a> *const allocator, const size_t size, <a class="el" href="structblock__header__t.html">block_header_t</a> **best_fit)</td></tr>
+<tr class="memdesc:a0ff4096f96a8b1fb66f4dc035f6e3373"><td class="mdescLeft">&#160;</td><td class="mdescRight">Searches for the smallest suitable free memory block in size‐class lists (BEST_FIT).  <br /></td></tr>
+<tr class="separator:a0ff4096f96a8b1fb66f4dc035f6e3373"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a09a027e298e9296c2bbbf6fc80a95afc" id="r_a09a027e298e9296c2bbbf6fc80a95afc"><td class="memItemLeft" align="right" valign="top">static int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="libmemalloc_8c.html#a09a027e298e9296c2bbbf6fc80a95afc">MEM_splitBlock</a> (<a class="el" href="structmem__allocator__t.html">mem_allocator_t</a> *const allocator, <a class="el" href="structblock__header__t.html">block_header_t</a> *const block, const size_t req_size)</td></tr>
+<tr class="memdesc:a09a027e298e9296c2bbbf6fc80a95afc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Splits a memory block into allocated and free portions.  <br /></td></tr>
+<tr class="separator:a09a027e298e9296c2bbbf6fc80a95afc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4b1829256c0f068782ccab6c9f95c826" id="r_a4b1829256c0f068782ccab6c9f95c826"><td class="memItemLeft" align="right" valign="top">static int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="libmemalloc_8c.html#a4b1829256c0f068782ccab6c9f95c826">MEM_mergeBlocks</a> (<a class="el" href="structmem__allocator__t.html">mem_allocator_t</a> *const allocator, <a class="el" href="structblock__header__t.html">block_header_t</a> *block)</td></tr>
+<tr class="memdesc:a4b1829256c0f068782ccab6c9f95c826"><td class="mdescLeft">&#160;</td><td class="mdescRight">Merges adjacent free memory blocks.  <br /></td></tr>
+<tr class="separator:a4b1829256c0f068782ccab6c9f95c826"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a429b6c3c4d5bc23814ec213f757471b5" id="r_a429b6c3c4d5bc23814ec213f757471b5"><td class="memItemLeft" align="right" valign="top">static void *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="libmemalloc_8c.html#a429b6c3c4d5bc23814ec213f757471b5">MEM_growUserHeap</a> (<a class="el" href="structmem__allocator__t.html">mem_allocator_t</a> *const allocator, const intptr_t inc)</td></tr>
+<tr class="memdesc:a429b6c3c4d5bc23814ec213f757471b5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Expands the user heap by a specified increment.  <br /></td></tr>
+<tr class="separator:a429b6c3c4d5bc23814ec213f757471b5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a459050cc1705eb2cf6a202bc83083cdf" id="r_a459050cc1705eb2cf6a202bc83083cdf"><td class="memItemLeft" align="right" valign="top">static int *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="libmemalloc_8c.html#a459050cc1705eb2cf6a202bc83083cdf">MEM_mapAlloc</a> (<a class="el" href="structmem__allocator__t.html">mem_allocator_t</a> *const allocator, const size_t total_size)</td></tr>
+<tr class="memdesc:a459050cc1705eb2cf6a202bc83083cdf"><td class="mdescLeft">&#160;</td><td class="mdescRight">Allocates a page-aligned memory region via mmap and registers it in the allocator’s mmap list for later freeing.  <br /></td></tr>
+<tr class="separator:a459050cc1705eb2cf6a202bc83083cdf"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af1b841111a1506abe32e887ca96b883c" id="r_af1b841111a1506abe32e887ca96b883c"><td class="memItemLeft" align="right" valign="top">static int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="libmemalloc_8c.html#af1b841111a1506abe32e887ca96b883c">MEM_mapFree</a> (<a class="el" href="structmem__allocator__t.html">mem_allocator_t</a> *const allocator, void *const addr)</td></tr>
+<tr class="memdesc:af1b841111a1506abe32e887ca96b883c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Unmaps a previously mapped memory region and removes its metadata entry from the allocator’s mmap list.  <br /></td></tr>
+<tr class="separator:af1b841111a1506abe32e887ca96b883c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa8d6af31611fe153060acd3fd7ce0d79" id="r_aa8d6af31611fe153060acd3fd7ce0d79"><td class="memItemLeft" align="right" valign="top">static void *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="libmemalloc_8c.html#aa8d6af31611fe153060acd3fd7ce0d79">MEM_allocatorMalloc</a> (<a class="el" href="structmem__allocator__t.html">mem_allocator_t</a> *const allocator, const size_t size, const char *const file, const int line, const char *const var_name, const <a class="el" href="group___libmemalloc.html#ga36d2f4c096864df4566ad4ccbf9f1cc8">allocation_strategy_t</a> strategy) <a class="el" href="group___libmemalloc.html#gaf415f4394a90cbf3b58ffb43c1d26122">__LIBMEMALLOC_MALLOC</a></td></tr>
+<tr class="memdesc:aa8d6af31611fe153060acd3fd7ce0d79"><td class="mdescLeft">&#160;</td><td class="mdescRight">Allocates memory using the specified strategy.  <br /></td></tr>
+<tr class="separator:aa8d6af31611fe153060acd3fd7ce0d79"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a783393b852fc04e08062e4c99c831a89" id="r_a783393b852fc04e08062e4c99c831a89"><td class="memItemLeft" align="right" valign="top">static void *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="libmemalloc_8c.html#a783393b852fc04e08062e4c99c831a89">MEM_allocatorRealloc</a> (<a class="el" href="structmem__allocator__t.html">mem_allocator_t</a> *const allocator, void *const ptr, const size_t new_size, const char *const file, const int line, const char *const var_name, const <a class="el" href="group___libmemalloc.html#ga36d2f4c096864df4566ad4ccbf9f1cc8">allocation_strategy_t</a> strategy) <a class="el" href="group___libmemalloc.html#gab2ea557d67d841f4f1a765a7ebb2ec4c">__LIBMEMALLOC_REALLOC</a></td></tr>
+<tr class="memdesc:a783393b852fc04e08062e4c99c831a89"><td class="mdescLeft">&#160;</td><td class="mdescRight">Reallocates memory with safety checks.  <br /></td></tr>
+<tr class="separator:a783393b852fc04e08062e4c99c831a89"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1a8d21bd0df49c0eabd6a2805e0fef67" id="r_a1a8d21bd0df49c0eabd6a2805e0fef67"><td class="memItemLeft" align="right" valign="top">static void *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="libmemalloc_8c.html#a1a8d21bd0df49c0eabd6a2805e0fef67">MEM_allocatorCalloc</a> (<a class="el" href="structmem__allocator__t.html">mem_allocator_t</a> *const allocator, const size_t size, const char *const file, const int line, const char *const var_name, const <a class="el" href="group___libmemalloc.html#ga36d2f4c096864df4566ad4ccbf9f1cc8">allocation_strategy_t</a> strategy) <a class="el" href="group___libmemalloc.html#gaf415f4394a90cbf3b58ffb43c1d26122">__LIBMEMALLOC_MALLOC</a></td></tr>
+<tr class="memdesc:a1a8d21bd0df49c0eabd6a2805e0fef67"><td class="mdescLeft">&#160;</td><td class="mdescRight">Allocates and zero‐initializes memory.  <br /></td></tr>
+<tr class="separator:a1a8d21bd0df49c0eabd6a2805e0fef67"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac8cbefcab3677881aba7483f23a7ce71" id="r_ac8cbefcab3677881aba7483f23a7ce71"><td class="memItemLeft" align="right" valign="top">static int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="libmemalloc_8c.html#ac8cbefcab3677881aba7483f23a7ce71">MEM_allocatorFree</a> (<a class="el" href="structmem__allocator__t.html">mem_allocator_t</a> *const allocator, void *const ptr, const char *const file, const int line, const char *const var_name)</td></tr>
+<tr class="memdesc:ac8cbefcab3677881aba7483f23a7ce71"><td class="mdescLeft">&#160;</td><td class="mdescRight">Releases allocated memory back to the heap.  <br /></td></tr>
+<tr class="separator:ac8cbefcab3677881aba7483f23a7ce71"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0dd55c30122e42f8dfb40e78861486be" id="r_a0dd55c30122e42f8dfb40e78861486be"><td class="memItemLeft" align="right" valign="top">static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="libmemalloc_8c.html#a0dd55c30122e42f8dfb40e78861486be">MEM_stackGrowsDown</a> (void)</td></tr>
+<tr class="memdesc:a0dd55c30122e42f8dfb40e78861486be"><td class="mdescLeft">&#160;</td><td class="mdescRight">Determine at runtime whether the stack grows downward.  <br /></td></tr>
+<tr class="separator:a0dd55c30122e42f8dfb40e78861486be"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a05ca3438779df1a875f5d8d55f112f2a" id="r_a05ca3438779df1a875f5d8d55f112f2a"><td class="memItemLeft" align="right" valign="top">static int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="libmemalloc_8c.html#a05ca3438779df1a875f5d8d55f112f2a">MEM_stackBounds</a> (const pthread_t id, <a class="el" href="structmem__allocator__t.html">mem_allocator_t</a> *const allocator)</td></tr>
+<tr class="memdesc:a05ca3438779df1a875f5d8d55f112f2a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Query and record the bounding addresses of a thread’s stack.  <br /></td></tr>
+<tr class="separator:a05ca3438779df1a875f5d8d55f112f2a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a666118886ff4f98939c2136d1605586d" id="r_a666118886ff4f98939c2136d1605586d"><td class="memItemLeft" align="right" valign="top">static void *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="libmemalloc_8c.html#a666118886ff4f98939c2136d1605586d">MEM_gcThreadFunc</a> (void *arg)</td></tr>
+<tr class="memdesc:a666118886ff4f98939c2136d1605586d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Dedicated thread loop driving mark-and-sweep iterations.  <br /></td></tr>
+<tr class="separator:a666118886ff4f98939c2136d1605586d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8ceaf66d4f7da5bd9c46c6ce3bd6fd22" id="r_a8ceaf66d4f7da5bd9c46c6ce3bd6fd22"><td class="memItemLeft" align="right" valign="top">static int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="libmemalloc_8c.html#a8ceaf66d4f7da5bd9c46c6ce3bd6fd22">MEM_setInitialMarks</a> (<a class="el" href="structmem__allocator__t.html">mem_allocator_t</a> *const allocator)</td></tr>
+<tr class="memdesc:a8ceaf66d4f7da5bd9c46c6ce3bd6fd22"><td class="mdescLeft">&#160;</td><td class="mdescRight">Reset “marked” flags across all allocated regions.  <br /></td></tr>
+<tr class="separator:a8ceaf66d4f7da5bd9c46c6ce3bd6fd22"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac5dd039930030077e907235b9ed2d166" id="r_ac5dd039930030077e907235b9ed2d166"><td class="memItemLeft" align="right" valign="top">static int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="libmemalloc_8c.html#ac5dd039930030077e907235b9ed2d166">MEM_gcMark</a> (<a class="el" href="structmem__allocator__t.html">mem_allocator_t</a> *const allocator)</td></tr>
+<tr class="memdesc:ac5dd039930030077e907235b9ed2d166"><td class="mdescLeft">&#160;</td><td class="mdescRight">Mark all live blocks reachable from the stack.  <br /></td></tr>
+<tr class="separator:ac5dd039930030077e907235b9ed2d166"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acfc00905af09fcca12432590daa01bee" id="r_acfc00905af09fcca12432590daa01bee"><td class="memItemLeft" align="right" valign="top">static int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="libmemalloc_8c.html#acfc00905af09fcca12432590daa01bee">MEM_gcSweep</a> (<a class="el" href="structmem__allocator__t.html">mem_allocator_t</a> *const allocator)</td></tr>
+<tr class="memdesc:acfc00905af09fcca12432590daa01bee"><td class="mdescLeft">&#160;</td><td class="mdescRight">Reclaim any unmarked blocks from heap and mmap regions.  <br /></td></tr>
+<tr class="separator:acfc00905af09fcca12432590daa01bee"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a364f1e68b8a8b15c4075de0d8412d887" id="r_a364f1e68b8a8b15c4075de0d8412d887"><td class="memItemLeft" align="right" valign="top">static int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="libmemalloc_8c.html#a364f1e68b8a8b15c4075de0d8412d887">MEM_runGc</a> (<a class="el" href="structmem__allocator__t.html">mem_allocator_t</a> *const allocator)</td></tr>
+<tr class="memdesc:a364f1e68b8a8b15c4075de0d8412d887"><td class="mdescLeft">&#160;</td><td class="mdescRight">Start or signal the GC thread to perform a collection cycle.  <br /></td></tr>
+<tr class="separator:a364f1e68b8a8b15c4075de0d8412d887"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4951f4c43d5f7288c0bbcf0001127d70" id="r_a4951f4c43d5f7288c0bbcf0001127d70"><td class="memItemLeft" align="right" valign="top">static int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="libmemalloc_8c.html#a4951f4c43d5f7288c0bbcf0001127d70">MEM_stopGc</a> (<a class="el" href="structmem__allocator__t.html">mem_allocator_t</a> *const allocator)</td></tr>
+<tr class="memdesc:a4951f4c43d5f7288c0bbcf0001127d70"><td class="mdescLeft">&#160;</td><td class="mdescRight">Stop the GC thread and perform a final collection.  <br /></td></tr>
+<tr class="separator:a4951f4c43d5f7288c0bbcf0001127d70"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gacfe1e6a057174df954033f59117b9cde" id="r_gacfe1e6a057174df954033f59117b9cde"><td class="memItemLeft" align="right" valign="top">void *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___libmemalloc.html#gacfe1e6a057174df954033f59117b9cde">MEM_memset</a> (void *const source, const int value, const size_t size)</td></tr>
+<tr class="memdesc:gacfe1e6a057174df954033f59117b9cde"><td class="mdescLeft">&#160;</td><td class="mdescRight">Fills a memory block with a specified byte value using optimized operations.  <br /></td></tr>
+<tr class="separator:gacfe1e6a057174df954033f59117b9cde"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaf0f38e83f3601cb880ea1feeb6deaf93" id="r_gaf0f38e83f3601cb880ea1feeb6deaf93"><td class="memItemLeft" align="right" valign="top">void *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___libmemalloc.html#gaf0f38e83f3601cb880ea1feeb6deaf93">MEM_memcpy</a> (void *const dest, const void *src, const size_t size)</td></tr>
+<tr class="memdesc:gaf0f38e83f3601cb880ea1feeb6deaf93"><td class="mdescLeft">&#160;</td><td class="mdescRight">Copies a memory block between buffers using optimized operations.  <br /></td></tr>
+<tr class="separator:gaf0f38e83f3601cb880ea1feeb6deaf93"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga29b089596d8875787349365defca54e3" id="r_ga29b089596d8875787349365defca54e3"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___libmemalloc.html#ga29b089596d8875787349365defca54e3">MEM_allocatorInit</a> (<a class="el" href="structmem__allocator__t.html">mem_allocator_t</a> *const allocator)</td></tr>
+<tr class="memdesc:ga29b089596d8875787349365defca54e3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initializes the memory allocator and its internal structures.  <br /></td></tr>
+<tr class="separator:ga29b089596d8875787349365defca54e3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga974e87377bc908b49153828daf968d7d" id="r_ga974e87377bc908b49153828daf968d7d"><td class="memItemLeft" align="right" valign="top">void *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___libmemalloc.html#ga974e87377bc908b49153828daf968d7d">MEM_allocMallocFirstFit</a> (<a class="el" href="structmem__allocator__t.html">mem_allocator_t</a> *const allocator, const size_t size, const char *const var)</td></tr>
+<tr class="memdesc:ga974e87377bc908b49153828daf968d7d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Allocates memory using the FIRST_FIT strategy.  <br /></td></tr>
+<tr class="separator:ga974e87377bc908b49153828daf968d7d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga8188c29f62d50e0ac2817c97a5725eb2" id="r_ga8188c29f62d50e0ac2817c97a5725eb2"><td class="memItemLeft" align="right" valign="top">void *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___libmemalloc.html#ga8188c29f62d50e0ac2817c97a5725eb2">MEM_allocMallocBestFit</a> (<a class="el" href="structmem__allocator__t.html">mem_allocator_t</a> *const allocator, const size_t size, const char *const var)</td></tr>
+<tr class="memdesc:ga8188c29f62d50e0ac2817c97a5725eb2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Allocates memory using the BEST_FIT strategy.  <br /></td></tr>
+<tr class="separator:ga8188c29f62d50e0ac2817c97a5725eb2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gab05eb289fbab89920c21abe7f8d9ff1b" id="r_gab05eb289fbab89920c21abe7f8d9ff1b"><td class="memItemLeft" align="right" valign="top">void *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___libmemalloc.html#gab05eb289fbab89920c21abe7f8d9ff1b">MEM_allocMallocNextFit</a> (<a class="el" href="structmem__allocator__t.html">mem_allocator_t</a> *const allocator, const size_t size, const char *const var)</td></tr>
+<tr class="memdesc:gab05eb289fbab89920c21abe7f8d9ff1b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Allocates memory using the NEXT_FIT strategy.  <br /></td></tr>
+<tr class="separator:gab05eb289fbab89920c21abe7f8d9ff1b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaf47b919f35d0b68fb150fa7bcfc26e09" id="r_gaf47b919f35d0b68fb150fa7bcfc26e09"><td class="memItemLeft" align="right" valign="top">void *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___libmemalloc.html#gaf47b919f35d0b68fb150fa7bcfc26e09">MEM_allocMalloc</a> (<a class="el" href="structmem__allocator__t.html">mem_allocator_t</a> *const allocator, const size_t size, const char *const var, const <a class="el" href="group___libmemalloc.html#ga36d2f4c096864df4566ad4ccbf9f1cc8">allocation_strategy_t</a> strategy)</td></tr>
+<tr class="memdesc:gaf47b919f35d0b68fb150fa7bcfc26e09"><td class="mdescLeft">&#160;</td><td class="mdescRight">Allocates memory using the specified strategy.  <br /></td></tr>
+<tr class="separator:gaf47b919f35d0b68fb150fa7bcfc26e09"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga7b69c79c27b1d2b7984b828b97ff5541" id="r_ga7b69c79c27b1d2b7984b828b97ff5541"><td class="memItemLeft" align="right" valign="top">void *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___libmemalloc.html#ga7b69c79c27b1d2b7984b828b97ff5541">MEM_allocCalloc</a> (<a class="el" href="structmem__allocator__t.html">mem_allocator_t</a> *const allocator, const size_t size, const char *const var, const <a class="el" href="group___libmemalloc.html#ga36d2f4c096864df4566ad4ccbf9f1cc8">allocation_strategy_t</a> strategy)</td></tr>
+<tr class="memdesc:ga7b69c79c27b1d2b7984b828b97ff5541"><td class="mdescLeft">&#160;</td><td class="mdescRight">Allocates and zero‐initializes memory using the specified strategy.  <br /></td></tr>
+<tr class="separator:ga7b69c79c27b1d2b7984b828b97ff5541"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaf8c7a8857b519e657735f716d4023b47" id="r_gaf8c7a8857b519e657735f716d4023b47"><td class="memItemLeft" align="right" valign="top">void *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___libmemalloc.html#gaf8c7a8857b519e657735f716d4023b47">MEM_allocRealloc</a> (<a class="el" href="structmem__allocator__t.html">mem_allocator_t</a> *const allocator, void *const ptr, const size_t new_size, const char *const var, const <a class="el" href="group___libmemalloc.html#ga36d2f4c096864df4566ad4ccbf9f1cc8">allocation_strategy_t</a> strategy)</td></tr>
+<tr class="memdesc:gaf8c7a8857b519e657735f716d4023b47"><td class="mdescLeft">&#160;</td><td class="mdescRight">Reallocates memory with safety checks using the specified strategy.  <br /></td></tr>
+<tr class="separator:gaf8c7a8857b519e657735f716d4023b47"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga3cab92042cc5e42c0b275df4628f604c" id="r_ga3cab92042cc5e42c0b275df4628f604c"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___libmemalloc.html#ga3cab92042cc5e42c0b275df4628f604c">MEM_allocFree</a> (<a class="el" href="structmem__allocator__t.html">mem_allocator_t</a> *const allocator, void *const ptr, const char *const var)</td></tr>
+<tr class="memdesc:ga3cab92042cc5e42c0b275df4628f604c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Releases allocated memory back to the heap.  <br /></td></tr>
+<tr class="separator:ga3cab92042cc5e42c0b275df4628f604c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gada7e498922ace7676e4b928e0c3fbfdd" id="r_gada7e498922ace7676e4b928e0c3fbfdd"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___libmemalloc.html#gada7e498922ace7676e4b928e0c3fbfdd">MEM_enableGc</a> (<a class="el" href="structmem__allocator__t.html">mem_allocator_t</a> *const allocator)</td></tr>
+<tr class="memdesc:gada7e498922ace7676e4b928e0c3fbfdd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Start or signal the garbage collector thread.  <br /></td></tr>
+<tr class="separator:gada7e498922ace7676e4b928e0c3fbfdd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gac52c90f06b2f9aee3f5350c46852dbaa" id="r_gac52c90f06b2f9aee3f5350c46852dbaa"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___libmemalloc.html#gac52c90f06b2f9aee3f5350c46852dbaa">MEM_disableGc</a> (<a class="el" href="structmem__allocator__t.html">mem_allocator_t</a> *const allocator)</td></tr>
+<tr class="memdesc:gac52c90f06b2f9aee3f5350c46852dbaa"><td class="mdescLeft">&#160;</td><td class="mdescRight">Stop the garbage collector thread and perform a final collection.  <br /></td></tr>
+<tr class="separator:gac52c90f06b2f9aee3f5350c46852dbaa"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Core memory management components for libmemalloc. </p>
@@ -232,6 +381,57 @@ Macros</h2></td></tr>
 
 </div>
 </div>
+<a id="a2ddd2aeacc155dcd57ad9f7ed7199d9f" name="a2ddd2aeacc155dcd57ad9f7ed7199d9f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2ddd2aeacc155dcd57ad9f7ed7199d9f">&#9670;&#160;</a></span>BYTES_PER_CLASS</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define BYTES_PER_CLASS&#160;&#160;&#160;(uint8_t)(128U)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Fixed byte allocation per classification unit. </p>
+<p>Defines the number of bytes assigned to each classification category. Ensures memory alignment and efficient block processing in data structures. </p>
+
+</div>
+</div>
+<a id="af89f60b07247176687889ade776c8e10" name="af89f60b07247176687889ade776c8e10"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af89f60b07247176687889ade776c8e10">&#9670;&#160;</a></span>CACHE_LINE_SIZE</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define CACHE_LINE_SIZE&#160;&#160;&#160;(uint8_t)(64U)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Size of the CPU cache line in bytes. </p>
+<p>This constant defines the cache-line size used for prefetching and alignment optimizations, ensuring memory accesses align to hardware cache boundaries for maximum performance and correctness on platforms with strict alignment requirements. </p>
+
+</div>
+</div>
+<a id="ae09915f592311e3a76ee2e935e6d6649" name="ae09915f592311e3a76ee2e935e6d6649"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae09915f592311e3a76ee2e935e6d6649">&#9670;&#160;</a></span>CANARY_VALUE</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define CANARY_VALUE&#160;&#160;&#160;(uint32_t)(0xDEADBEEFULL)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Canary value to detect buffer overflows. </p>
+<p>This constant is placed at the boundaries of memory allocations to detect buffer overflows. </p>
+
+</div>
+</div>
 <a id="a8acceb8a32aeb665817bcac0ae976c3e" name="a8acceb8a32aeb665817bcac0ae976c3e"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a8acceb8a32aeb665817bcac0ae976c3e">&#9670;&#160;</a></span>DEFAULT_NUM_BINS</h2>
 
@@ -246,6 +446,33 @@ Macros</h2></td></tr>
 
 <p>Default number of size classes (bins) for free lists. </p>
 <p>Defines how many size categories (bins) the allocator will maintain for managing free memory blocks. This value affects allocation speed and fragmentation behavior. </p>
+
+</div>
+</div>
+<a id="affde14445f49f65ff4f5b592e44ee71a" name="affde14445f49f65ff4f5b592e44ee71a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#affde14445f49f65ff4f5b592e44ee71a">&#9670;&#160;</a></span>LIKELY</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define LIKELY</td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">x</td><td>)</td>
+          <td>&#160;&#160;&#160;(__builtin_expect(!!(x), 1))</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Compiler hint for likely branch prediction. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">x</td><td>Condition that is likely to be true.</td></tr>
+  </table>
+  </dd>
+</dl>
+<p>Helps the compiler optimize branch prediction by indicating the condition is expected to be true. </p>
 
 </div>
 </div>
@@ -279,13 +506,1583 @@ Macros</h2></td></tr>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">#define MAGIC_NUMBER&#160;&#160;&#160;(uint32_t)(0xBE'EF'DE'ADU)#define CACHE_LINE_SIZE  (uint8_t)(64U)#define CANARY_VALUE     (uint32_t)(0xDE'AD'BE'EFULL)</td>
+          <td class="memname">#define MAGIC_NUMBER&#160;&#160;&#160;(uint32_t)(0xBEEFDEADU)</td>
         </tr>
       </table>
 </div><div class="memdoc">
 
 <p>Magic number to validate memory blocks. </p>
 <p>This constant is used to verify the integrity of allocated memory blocks and detect corruption. </p>
+
+</div>
+</div>
+<a id="ac1f29ba54415975a2fa23e276fdf8a0f" name="ac1f29ba54415975a2fa23e276fdf8a0f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac1f29ba54415975a2fa23e276fdf8a0f">&#9670;&#160;</a></span>MIN_BLOCK_SIZE</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define MIN_BLOCK_SIZE&#160;&#160;&#160;(size_t)(sizeof(<a class="el" href="structblock__header__t.html">block_header_t</a>) + <a class="el" href="group___libmemalloc.html#ga07ea769b5c72cdf928879e29e16edf82">ARCH_ALIGNMENT</a>)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Defines the minimum memory block size. </p>
+<p>Ensures each memory block is large enough to hold a block header and alignment padding. </p>
+
+</div>
+</div>
+<a id="a2911160c515036ceb8c7470a05583ae0" name="a2911160c515036ceb8c7470a05583ae0"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2911160c515036ceb8c7470a05583ae0">&#9670;&#160;</a></span>MMAP_THRESHOLD</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define MMAP_THRESHOLD&#160;&#160;&#160;(size_t)(128U * 1024U)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Threshold size for using mmap-based allocation. </p>
+<p>When a requested allocation size meets or exceeds this value (128 KiB), the allocator will switch from using the heap (brk/sbrk) to using mmap for more efficient large-block handling and to reduce heap fragmentation. </p>
+
+</div>
+</div>
+<a id="a52c92840d7afc957a6424b6dc3cc089c" name="a52c92840d7afc957a6424b6dc3cc089c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a52c92840d7afc957a6424b6dc3cc089c">&#9670;&#160;</a></span>NR_OBJS</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define NR_OBJS&#160;&#160;&#160;(uint16_t)(1000U)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Number of iterations used to scale GC sleep duration. </p>
+<p>Specifies the multiplier applied to the base GC interval (in milliseconds) to compute the actual sleep time between successive garbage-collection cycles: sleep_time = gc_interval_ms * NR_OBJS </p>
+
+</div>
+</div>
+<a id="a01c316adddd425ace6ff7571a076526d" name="a01c316adddd425ace6ff7571a076526d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a01c316adddd425ace6ff7571a076526d">&#9670;&#160;</a></span>PREFETCH_MULT</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define PREFETCH_MULT&#160;&#160;&#160;(uint64_t)(0x0101010101010101ULL)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Prefetch optimization multiplier constant. </p>
+<p>64-bit repeating byte pattern (0x01 per byte) used for efficient memory block operations. Enables single-byte value replication across full register width in vectorized operations. </p>
+
+</div>
+</div>
+<a id="ab10d0a221f4d7a706701b806c8135fd7" name="ab10d0a221f4d7a706701b806c8135fd7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab10d0a221f4d7a706701b806c8135fd7">&#9670;&#160;</a></span>UNLIKELY</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define UNLIKELY</td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">x</td><td>)</td>
+          <td>&#160;&#160;&#160;(__builtin_expect(!!(x), 0))</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Compiler hint for unlikely branch prediction. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">x</td><td>Condition that is unlikely to be true.</td></tr>
+  </table>
+  </dd>
+</dl>
+<p>Helps the compiler optimize branch prediction by indicating the condition is expected to be false. </p>
+
+</div>
+</div>
+<h2 class="groupheader">Typedef Documentation</h2>
+<a id="a7d054d3a536794b662ab33075d4b9fc6" name="a7d054d3a536794b662ab33075d4b9fc6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7d054d3a536794b662ab33075d4b9fc6">&#9670;&#160;</a></span>find_fn_t</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">find_fn_t</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Type for functions that locate a suitable free block. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">allocator</td><td>Memory allocator context in which to search. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">size</td><td>Total size requested (including header and canary). </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">block</td><td>Address of pointer to store the found block header.</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Integer </dd></dl>
+
+</div>
+</div>
+<h2 class="groupheader">Function Documentation</h2>
+<a id="a1a8d21bd0df49c0eabd6a2805e0fef67" name="a1a8d21bd0df49c0eabd6a2805e0fef67"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1a8d21bd0df49c0eabd6a2805e0fef67">&#9670;&#160;</a></span>MEM_allocatorCalloc()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static void * MEM_allocatorCalloc </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structmem__allocator__t.html">mem_allocator_t</a> *const&#160;</td>
+          <td class="paramname"><em>allocator</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const size_t&#160;</td>
+          <td class="paramname"><em>size</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *const&#160;</td>
+          <td class="paramname"><em>file</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const int&#160;</td>
+          <td class="paramname"><em>line</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *const&#160;</td>
+          <td class="paramname"><em>var_name</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="group___libmemalloc.html#ga36d2f4c096864df4566ad4ccbf9f1cc8">allocation_strategy_t</a>&#160;</td>
+          <td class="paramname"><em>strategy</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Allocates and zero‐initializes memory. </p>
+<p>This function behaves like calloc(), allocating at least <code>size</code> bytes of zeroed memory via <a class="el" href="libmemalloc_8c.html#aa8d6af31611fe153060acd3fd7ce0d79" title="Allocates memory using the specified strategy.">MEM_allocatorMalloc()</a> and then setting all bytes to zero. It records debugging metadata (source file, line, variable name) and uses the given <code>strategy</code> for allocation.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">allocator</td><td>Pointer to the <a class="el" href="structmem__allocator__t.html" title="Manages dynamic memory allocation.">mem_allocator_t</a> context. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">size</td><td>Number of bytes to allocate. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">file</td><td>Source file name for debugging metadata. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">line</td><td>Source line number for debugging metadata. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">var_name</td><td>Variable name for tracking. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">strategy</td><td>Allocation strategy to use.</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Pointer to the start of the allocated zeroed region; an error‐encoded pointer via <a class="el" href="group___libmemalloc.html#gad279cb341b8fafacaef5650243902eee" title="Encodes a negative error code as an error pointer.">PTR_ERR()</a> on failure.</dd></dl>
+<dl class="retval"><dt>Return values</dt><dd>
+  <table class="retval">
+    <tr><td class="paramname">ptr</td><td>Valid pointer to <code>size</code> bytes of zeroed memory. </td></tr>
+    <tr><td class="paramname">-EINVAL</td><td><code>allocator</code> is NULL or <code>size</code> is zero. </td></tr>
+    <tr><td class="paramname">-ENOMEM</td><td>Out of memory: allocation failed. </td></tr>
+    <tr><td class="paramname">-EIO</td><td>I/O error for large mmap‐based allocations. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="ac8cbefcab3677881aba7483f23a7ce71" name="ac8cbefcab3677881aba7483f23a7ce71"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac8cbefcab3677881aba7483f23a7ce71">&#9670;&#160;</a></span>MEM_allocatorFree()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static int MEM_allocatorFree </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structmem__allocator__t.html">mem_allocator_t</a> *const&#160;</td>
+          <td class="paramname"><em>allocator</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">void *const&#160;</td>
+          <td class="paramname"><em>ptr</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *const&#160;</td>
+          <td class="paramname"><em>file</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const int&#160;</td>
+          <td class="paramname"><em>line</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *const&#160;</td>
+          <td class="paramname"><em>var_name</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Releases allocated memory back to the heap. </p>
+<p>This function frees a pointer previously returned by <a class="el" href="libmemalloc_8c.html#aa8d6af31611fe153060acd3fd7ce0d79" title="Allocates memory using the specified strategy.">MEM_allocatorMalloc()</a>. It supports both heap‐based and mmap‐based allocations:</p><ul>
+<li>For mmap regions, it delegates to <a class="el" href="libmemalloc_8c.html#af1b841111a1506abe32e887ca96b883c" title="Unmaps a previously mapped memory region and removes its metadata entry from the allocator’s mmap lis...">MEM_mapFree()</a> to unmap and remove metadata.</li>
+<li>For heap blocks, it validates the block, checks for double frees, marks the block free, merges with adjacent free blocks, and reinserts the merged block into the free list. If the freed block lies at the current heap end, it shrinks the heap via <a class="el" href="libmemalloc_8c.html#ae5805f4c67ac5fe3b63f8e26041ee0aa" title="Invokes sbrk-like behavior by moving the program break.">MEM_sbrk()</a>.</li>
+</ul>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">allocator</td><td>Memory allocator context. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">ptr</td><td>Pointer to memory to free. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">file</td><td>Source file name for debugging metadata. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">line</td><td>Source line number for debugging metadata. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">var_name</td><td>Variable name for tracking.</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Integer status code.</dd></dl>
+<dl class="retval"><dt>Return values</dt><dd>
+  <table class="retval">
+    <tr><td class="paramname">EXIT_SUCCESS</td><td>Memory freed (and heap possibly shrunk) successfully. </td></tr>
+    <tr><td class="paramname">-EINVAL</td><td><code>allocator</code> or <code>ptr</code> is NULL, <code>ptr</code> not found in <code>allocator</code>, or double free detected. </td></tr>
+    <tr><td class="paramname">-ENOMEM</td><td>munmap() failed when freeing an mmap region. </td></tr>
+    <tr><td class="paramname">-EFAULT</td><td>Block lies outside heap and mmap regions. </td></tr>
+    <tr><td class="paramname">-EPROTO</td><td>Header canary mismatch (block corrupted). </td></tr>
+    <tr><td class="paramname">-EOVERFLOW</td><td>Data canary mismatch (buffer overrun detected). </td></tr>
+    <tr><td class="paramname">-EFBIG</td><td>Block size extends past heap end. </td></tr>
+    <tr><td class="paramname">rer&lt;0</td><td>Errors returned by <a class="el" href="libmemalloc_8c.html#ac20a9b9d50b0108e6dc6571e30ad99c2" title="Validates the integrity and boundaries of a memory block.">MEM_validateBlock()</a>, <a class="el" href="libmemalloc_8c.html#a12ec011b3d73b77babe83930fa7200f0" title="Removes a block from its free list.">MEM_removeFreeBlock()</a>, <a class="el" href="libmemalloc_8c.html#a4b1829256c0f068782ccab6c9f95c826" title="Merges adjacent free memory blocks.">MEM_mergeBlocks()</a>, or <a class="el" href="libmemalloc_8c.html#ae5d23c9024583a7682a5857f59523d6e" title="Inserts a block into the appropriate free list based on its size.">MEM_insertFreeBlock()</a>. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="aa8d6af31611fe153060acd3fd7ce0d79" name="aa8d6af31611fe153060acd3fd7ce0d79"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa8d6af31611fe153060acd3fd7ce0d79">&#9670;&#160;</a></span>MEM_allocatorMalloc()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static void * MEM_allocatorMalloc </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structmem__allocator__t.html">mem_allocator_t</a> *const&#160;</td>
+          <td class="paramname"><em>allocator</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const size_t&#160;</td>
+          <td class="paramname"><em>size</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *const&#160;</td>
+          <td class="paramname"><em>file</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const int&#160;</td>
+          <td class="paramname"><em>line</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *const&#160;</td>
+          <td class="paramname"><em>var_name</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="group___libmemalloc.html#ga36d2f4c096864df4566ad4ccbf9f1cc8">allocation_strategy_t</a>&#160;</td>
+          <td class="paramname"><em>strategy</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Allocates memory using the specified strategy. </p>
+<p>This function attempts to allocate at least <code>size</code> bytes of user data by choosing between heap‐based allocation (via free‐lists and optional heap growth) or mmap (for large requests &gt; MMAP_THRESHOLD). It uses the given <code>strategy</code> (FIRST_FIT, NEXT_FIT, BEST_FIT) to locate a free block, grows the heap if necessary, splits a larger block to fit exactly, and records debugging metadata (source file, line, variable name). For mmap allocations it rounds up to page size and tracks the region in the allocator.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">allocator</td><td>Memory allocator context. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">size</td><td>Number of bytes requested. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">file</td><td>Source file name for debugging metadata. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">line</td><td>Source line number for debugging metadata. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">var_name</td><td>Variable name for tracking. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">strategy</td><td>Allocation strategy.</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Pointer to the start of the allocated user region (just past the internal header) on success; an error‐encoded pointer (via <a class="el" href="group___libmemalloc.html#gad279cb341b8fafacaef5650243902eee" title="Encodes a negative error code as an error pointer.">PTR_ERR()</a>) on failure.</dd></dl>
+<dl class="retval"><dt>Return values</dt><dd>
+  <table class="retval">
+    <tr><td class="paramname">ptr</td><td>Valid user pointer on success. </td></tr>
+    <tr><td class="paramname">-EINVAL</td><td><code>allocator</code> is NULL or <code>size</code> is zero. </td></tr>
+    <tr><td class="paramname">-ENOMEM</td><td>Out of memory: heap grow failed, no free block found, or internal metadata allocation (e.g. <a class="el" href="structmmap__t.html" title="Tracks memory-mapped regions for large allocations.">mmap_t</a> node) failed. </td></tr>
+    <tr><td class="paramname">-EIO</td><td>mmap() I/O error for large allocations. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="a783393b852fc04e08062e4c99c831a89" name="a783393b852fc04e08062e4c99c831a89"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a783393b852fc04e08062e4c99c831a89">&#9670;&#160;</a></span>MEM_allocatorRealloc()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static void * MEM_allocatorRealloc </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structmem__allocator__t.html">mem_allocator_t</a> *const&#160;</td>
+          <td class="paramname"><em>allocator</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">void *const&#160;</td>
+          <td class="paramname"><em>ptr</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const size_t&#160;</td>
+          <td class="paramname"><em>new_size</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *const&#160;</td>
+          <td class="paramname"><em>file</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const int&#160;</td>
+          <td class="paramname"><em>line</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *const&#160;</td>
+          <td class="paramname"><em>var_name</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="group___libmemalloc.html#ga36d2f4c096864df4566ad4ccbf9f1cc8">allocation_strategy_t</a>&#160;</td>
+          <td class="paramname"><em>strategy</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Reallocates memory with safety checks. </p>
+<p>This function resizes an existing allocation to <code>new_size</code> bytes:</p><ul>
+<li>If <code>ptr</code> is NULL, behaves like malloc().</li>
+<li>If the existing block is already large enough, returns the same pointer.</li>
+<li>Otherwise, allocates a new block with the specified <code>strategy</code>, copies the lesser of old and new sizes, frees the old block, and returns the new pointer.</li>
+</ul>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">allocator</td><td>Memory allocator context. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">ptr</td><td>Pointer to the block to resize, or NULL to allocate. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">new_size</td><td>New requested size in bytes. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">file</td><td>Source file name for debugging metadata. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">line</td><td>Source line number for debugging metadata. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">var_name</td><td>Variable name for tracking. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">strategy</td><td>Allocation strategy to use.</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Pointer to the reallocated memory region (which may be the same as <code>ptr</code>) on success; an error-encoded pointer (via <a class="el" href="group___libmemalloc.html#gad279cb341b8fafacaef5650243902eee" title="Encodes a negative error code as an error pointer.">PTR_ERR()</a>) on failure.</dd></dl>
+<dl class="retval"><dt>Return values</dt><dd>
+  <table class="retval">
+    <tr><td class="paramname">ptr</td><td>Valid pointer to a block of at least <code>new_size</code> bytes. </td></tr>
+    <tr><td class="paramname">-EINVAL</td><td><code>allocator</code> is NULL, <code>new_size</code> is zero. </td></tr>
+    <tr><td class="paramname">-ENOMEM</td><td>Out of memory (allocation or free failure). </td></tr>
+    <tr><td class="paramname">-EIO</td><td>I/O error for large mmap-based allocations. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="a0ff4096f96a8b1fb66f4dc035f6e3373" name="a0ff4096f96a8b1fb66f4dc035f6e3373"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0ff4096f96a8b1fb66f4dc035f6e3373">&#9670;&#160;</a></span>MEM_findBestFit()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static int MEM_findBestFit </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structmem__allocator__t.html">mem_allocator_t</a> *const&#160;</td>
+          <td class="paramname"><em>allocator</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const size_t&#160;</td>
+          <td class="paramname"><em>size</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="structblock__header__t.html">block_header_t</a> **&#160;</td>
+          <td class="paramname"><em>best_fit</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Searches for the smallest suitable free memory block in size‐class lists (BEST_FIT). </p>
+<p>This function computes the starting size class for the requested <code>size</code> via <a class="el" href="libmemalloc_8c.html#afce3c776f36dbcd4df3f257d425d5c16" title="Calculates the size class index for a requested memory size.">MEM_getSizeClass()</a>, then scans each free‐list from that class upward. It validates each candidate with <a class="el" href="libmemalloc_8c.html#ac20a9b9d50b0108e6dc6571e30ad99c2" title="Validates the integrity and boundaries of a memory block.">MEM_validateBlock()</a> and tracks the smallest free block that is large enough. Once a block in any class is chosen, the search stops.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">allocator</td><td>Pointer to the allocator context. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">size</td><td>Requested allocation size in bytes. </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">best_fit</td><td>On success, set to the pointer of the free block.</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Integer status code.</dd></dl>
+<dl class="retval"><dt>Return values</dt><dd>
+  <table class="retval">
+    <tr><td class="paramname">EXIT_SUCCESS</td><td>Suitable block found successfully. </td></tr>
+    <tr><td class="paramname">-EINVAL</td><td><code>allocator</code> or <code>best_fit</code> is NULL. </td></tr>
+    <tr><td class="paramname">-ENOMEM</td><td>Size calculation failed or no suitable block found. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="ad1c21ef197030ad5077e1438229ecf7b" name="ad1c21ef197030ad5077e1438229ecf7b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad1c21ef197030ad5077e1438229ecf7b">&#9670;&#160;</a></span>MEM_findFirstFit()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static int MEM_findFirstFit </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structmem__allocator__t.html">mem_allocator_t</a> *const&#160;</td>
+          <td class="paramname"><em>allocator</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const size_t&#160;</td>
+          <td class="paramname"><em>size</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="structblock__header__t.html">block_header_t</a> **&#160;</td>
+          <td class="paramname"><em>fit_block</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Searches for the first suitable free memory block in size‐class lists. </p>
+<p>This function computes the starting size class for the requested <code>size</code> via <a class="el" href="libmemalloc_8c.html#afce3c776f36dbcd4df3f257d425d5c16" title="Calculates the size class index for a requested memory size.">MEM_getSizeClass()</a>, then scans each free‐list from that class upward. For each candidate block, it calls <a class="el" href="libmemalloc_8c.html#ac20a9b9d50b0108e6dc6571e30ad99c2" title="Validates the integrity and boundaries of a memory block.">MEM_validateBlock()</a> to ensure integrity, and returns the first block that is marked free and large enough. The found block pointer is stored in <code>fit_block</code>.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">allocator</td><td>Pointer to the allocator context. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">siz</td><td>Requested allocation size in bytes. </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">fit_block</td><td>On success, set to the pointer of a suitable free block.</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Integer status code.</dd></dl>
+<dl class="retval"><dt>Return values</dt><dd>
+  <table class="retval">
+    <tr><td class="paramname">EXIT_SUCCESS</td><td>Suitable block found successfully. </td></tr>
+    <tr><td class="paramname">-EINVAL</td><td><code>allocator</code> or <code>fit_block</code> are NULL; </td></tr>
+    <tr><td class="paramname">-ENOMEM</td><td>Siz calculation failed or no suitable block found. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="a3d5a3d1efacb5148c598825eb0c69708" name="a3d5a3d1efacb5148c598825eb0c69708"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3d5a3d1efacb5148c598825eb0c69708">&#9670;&#160;</a></span>MEM_findNextFit()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static int MEM_findNextFit </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structmem__allocator__t.html">mem_allocator_t</a> *const&#160;</td>
+          <td class="paramname"><em>allocator</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const size_t&#160;</td>
+          <td class="paramname"><em>size</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="structblock__header__t.html">block_header_t</a> **&#160;</td>
+          <td class="paramname"><em>fit_block</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Searches for the next suitable free memory block using the NEXT_FIT strategy starting from the last allocated position. </p>
+<p>This function attempts to find a free block of at least <code>size</code> bytes by scanning the heap starting at allocator-&gt;last_allocated. If last_allocated is NULL, not free, or corrupted, it falls back to First-Fit. It wraps around to the heap start if needed, stopping once it returns to the start.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">allocator</td><td>Pointer to the allocator context. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">size</td><td>Requested allocation size in bytes. </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">fit_block</td><td>Pointer to store the address of the found block.</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Integer status code.</dd></dl>
+<dl class="retval"><dt>Return values</dt><dd>
+  <table class="retval">
+    <tr><td class="paramname">EXIT_SUCCESS</td><td>Suitable block found and fit_block set. </td></tr>
+    <tr><td class="paramname">-EINVAL</td><td><code>allocator</code> or <code>fit_block</code> is NULL. </td></tr>
+    <tr><td class="paramname">-ENOMEM</td><td>No suitable block found in heap. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="ac5dd039930030077e907235b9ed2d166" name="ac5dd039930030077e907235b9ed2d166"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac5dd039930030077e907235b9ed2d166">&#9670;&#160;</a></span>MEM_gcMark()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static int MEM_gcMark </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structmem__allocator__t.html">mem_allocator_t</a> *const&#160;</td>
+          <td class="paramname"><em>allocator</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Mark all live blocks reachable from the stack. </p>
+<p>This function performs the marking phase of garbage collection by:</p><ul>
+<li>Calling <a class="el" href="libmemalloc_8c.html#a8ceaf66d4f7da5bd9c46c6ce3bd6fd22" title="Reset “marked” flags across all allocated regions.">MEM_setInitialMarks()</a> to clear previous marks.</li>
+<li>Capturing stack bounds via <a class="el" href="libmemalloc_8c.html#a05ca3438779df1a875f5d8d55f112f2a" title="Query and record the bounding addresses of a thread’s stack.">MEM_stackBounds()</a> for the current thread.</li>
+<li>Optionally informing Valgrind to treat the stack region as defined.</li>
+<li>Scanning each word between stack_bottom and stack_top: • If the word’s value lies within the heap bounds, validating the corresponding block header and marking the block if it is live.</li>
+<li>Iterating the allocator’s mmap_list and marking any mmap’d block whose payload contains a stack reference.</li>
+</ul>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">allocator</td><td>Memory allocator context.</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Integer status code.</dd></dl>
+<dl class="retval"><dt>Return values</dt><dd>
+  <table class="retval">
+    <tr><td class="paramname">EXIT_SUCCESS</td><td>All reachable blocks marked successfully. </td></tr>
+    <tr><td class="paramname">-EINVAL</td><td><code>allocator</code> is NULL. </td></tr>
+    <tr><td class="paramname">ret&lt;0</td><td>Error code returned by <a class="el" href="libmemalloc_8c.html#a05ca3438779df1a875f5d8d55f112f2a" title="Query and record the bounding addresses of a thread’s stack.">MEM_stackBounds()</a>, <a class="el" href="libmemalloc_8c.html#ac20a9b9d50b0108e6dc6571e30ad99c2" title="Validates the integrity and boundaries of a memory block.">MEM_validateBlock()</a>, or other internal calls. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="acfc00905af09fcca12432590daa01bee" name="acfc00905af09fcca12432590daa01bee"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#acfc00905af09fcca12432590daa01bee">&#9670;&#160;</a></span>MEM_gcSweep()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static int MEM_gcSweep </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structmem__allocator__t.html">mem_allocator_t</a> *const&#160;</td>
+          <td class="paramname"><em>allocator</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Reclaim any unmarked blocks from heap and mmap regions. </p>
+<p>This function performs the “sweep” phase of garbage collection:</p><ul>
+<li>It iterates over every block in the heap: • Logs each block’s free and marked status. • If a block is allocated (free0) but unmarked, calls <a class="el" href="libmemalloc_8c.html#ac8cbefcab3677881aba7483f23a7ce71" title="Releases allocated memory back to the heap.">MEM_allocatorFree()</a> on its payload pointer to reclaim it. • Clears each block’s marked flag.</li>
+<li>It then traverses allocator-&gt;mmap_list via a pointer-to-pointer scan: • Logs each mmap’d region’s status. • If an mmap’d block is unmarked and not already free, unlinks the <a class="el" href="structmmap__t.html" title="Tracks memory-mapped regions for large allocations.">mmap_t</a> node, calls munmap() on the region, and frees its metadata header via <a class="el" href="libmemalloc_8c.html#ac8cbefcab3677881aba7483f23a7ce71" title="Releases allocated memory back to the heap.">MEM_allocatorFree()</a>. • Otherwise, clears the block’s marked flag and advances to the next node.</li>
+</ul>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">allocator</td><td>Memory allocator context.</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Integer status code.</dd></dl>
+<dl class="retval"><dt>Return values</dt><dd>
+  <table class="retval">
+    <tr><td class="paramname">EXIT_SUCCESS</td><td>All unreachable blocks reclaimed successfully. </td></tr>
+    <tr><td class="paramname">-EINVAL</td><td><code>allocator</code> is NULL. </td></tr>
+    <tr><td class="paramname">ret&lt;0</td><td>Errors returned by <a class="el" href="libmemalloc_8c.html#ac8cbefcab3677881aba7483f23a7ce71" title="Releases allocated memory back to the heap.">MEM_allocatorFree()</a>, munmap(), or internal validation functions. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="a666118886ff4f98939c2136d1605586d" name="a666118886ff4f98939c2136d1605586d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a666118886ff4f98939c2136d1605586d">&#9670;&#160;</a></span>MEM_gcThreadFunc()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static void * MEM_gcThreadFunc </td>
+          <td>(</td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>arg</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Dedicated thread loop driving mark-and-sweep iterations. </p>
+<p>This function runs as the GC worker thread. It locks gc_lock and waits on gc_cond until either gc_running or gc_exit is set. On wakeup, if gc_exit is true, it breaks and exits the loop; otherwise it unlocks and performs one full GC cycle by calling <a class="el" href="libmemalloc_8c.html#ac5dd039930030077e907235b9ed2d166" title="Mark all live blocks reachable from the stack.">MEM_gcMark()</a> and <a class="el" href="libmemalloc_8c.html#acfc00905af09fcca12432590daa01bee" title="Reclaim any unmarked blocks from heap and mmap regions.">MEM_gcSweep()</a>, then sleeps for gc_interval_ms before re-acquiring the lock and waiting again. On exit it ensures gc_lock is released.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">arg</td><td>Pointer to the <a class="el" href="structmem__allocator__t.html" title="Manages dynamic memory allocation.">mem_allocator_t</a> context.</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>NULL on clean exit; an error-encoded pointer (via <a class="el" href="group___libmemalloc.html#gad279cb341b8fafacaef5650243902eee" title="Encodes a negative error code as an error pointer.">PTR_ERR()</a>) if any initialization or GC step fails.</dd></dl>
+<dl class="retval"><dt>Return values</dt><dd>
+  <table class="retval">
+    <tr><td class="paramname">NULL</td><td>Clean exit after gc_exit. </td></tr>
+    <tr><td class="paramname">-EINVAL</td><td><code>arg</code> is NULL. </td></tr>
+    <tr><td class="paramname">ret&lt;0</td><td>cond errors, or <a class="el" href="libmemalloc_8c.html#ac5dd039930030077e907235b9ed2d166" title="Mark all live blocks reachable from the stack.">MEM_gcMark()</a> / <a class="el" href="libmemalloc_8c.html#acfc00905af09fcca12432590daa01bee" title="Reclaim any unmarked blocks from heap and mmap regions.">MEM_gcSweep()</a> failures. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="afce3c776f36dbcd4df3f257d425d5c16" name="afce3c776f36dbcd4df3f257d425d5c16"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#afce3c776f36dbcd4df3f257d425d5c16">&#9670;&#160;</a></span>MEM_getSizeClass()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static int MEM_getSizeClass </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structmem__allocator__t.html">mem_allocator_t</a> *const&#160;</td>
+          <td class="paramname"><em>allocator</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const size_t&#160;</td>
+          <td class="paramname"><em>size</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Calculates the size class index for a requested memory size. </p>
+<p>This function determines which size class the given allocation request belongs to by dividing the requested <code>size</code> by BYTES_PER_CLASS (rounding up). If the computed index exceeds the maximum available class, it will be clamped to the highest class and a warning emitted.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">allocator</td><td>Pointer to the allocator context. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">size</td><td>Requested memory size in bytes (must be &gt; 0).</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>On success, returns a non-negative integer size class index; on failure, returns a negative error code.</dd></dl>
+<dl class="retval"><dt>Return values</dt><dd>
+  <table class="retval">
+    <tr><td class="paramname">ret&gt;0</td><td>Valid size class index. </td></tr>
+    <tr><td class="paramname">-EINVAL</td><td><code>allocator</code> is NULL, or <code>size</code> is zero. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="a429b6c3c4d5bc23814ec213f757471b5" name="a429b6c3c4d5bc23814ec213f757471b5"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a429b6c3c4d5bc23814ec213f757471b5">&#9670;&#160;</a></span>MEM_growUserHeap()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static void * MEM_growUserHeap </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structmem__allocator__t.html">mem_allocator_t</a> *const&#160;</td>
+          <td class="paramname"><em>allocator</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const intptr_t&#160;</td>
+          <td class="paramname"><em>inc</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Expands the user heap by a specified increment. </p>
+<p>This function moves the program break by <code>inc</code> bytes via <a class="el" href="libmemalloc_8c.html#ae5805f4c67ac5fe3b63f8e26041ee0aa" title="Invokes sbrk-like behavior by moving the program break.">MEM_sbrk()</a>, zeroes the newly allocated region, updates the allocator’s heap_end, and initializes a <a class="el" href="structblock__header__t.html" title="Represents the header for a memory block.">block_header_t</a> at the start of the new region to record its size, mark it as allocated, and set its free flag to false.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">allocator</td><td>Pointer to the allocator context. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">inc</td><td>Signed number of bytes to grow (or shrink) the heap.</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Pointer to the previous program break (start of new region) on success; an error-encoded pointer (via <a class="el" href="group___libmemalloc.html#gad279cb341b8fafacaef5650243902eee" title="Encodes a negative error code as an error pointer.">PTR_ERR()</a>) on failure.</dd></dl>
+<dl class="retval"><dt>Return values</dt><dd>
+  <table class="retval">
+    <tr><td class="paramname">(ret&gt;=0)</td><td>Previous heap end address (new region start). </td></tr>
+    <tr><td class="paramname">-EINVAL</td><td><code>allocator</code> is NULL. </td></tr>
+    <tr><td class="paramname">-ENOMEM</td><td>Heap expansion failed (out of memory). </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="ae5d23c9024583a7682a5857f59523d6e" name="ae5d23c9024583a7682a5857f59523d6e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae5d23c9024583a7682a5857f59523d6e">&#9670;&#160;</a></span>MEM_insertFreeBlock()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static int MEM_insertFreeBlock </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structmem__allocator__t.html">mem_allocator_t</a> *const&#160;</td>
+          <td class="paramname"><em>allocator</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="structblock__header__t.html">block_header_t</a> *const&#160;</td>
+          <td class="paramname"><em>block</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Inserts a block into the appropriate free list based on its size. </p>
+<p>This function computes the size class index for the given <code>block</code> by calling <a class="el" href="libmemalloc_8c.html#afce3c776f36dbcd4df3f257d425d5c16" title="Calculates the size class index for a requested memory size.">MEM_getSizeClass()</a>, then pushes the block onto the head of that free list within the allocator. It updates both forward and backward links to maintain the doubly‐linked list of free blocks.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">allocator</td><td>Pointer to the allocator context. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">block</td><td>Pointer to the block header to insert.</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Integer status code.</dd></dl>
+<dl class="retval"><dt>Return values</dt><dd>
+  <table class="retval">
+    <tr><td class="paramname">EXIT_SUCCESS</td><td><code>block</code> successfully inserted. </td></tr>
+    <tr><td class="paramname">-EINVAL</td><td><code>allocator</code> or <code>block</code> is NULL. </td></tr>
+    <tr><td class="paramname">-ENOMEM</td><td>Size class calculation failed (request too large). </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="a459050cc1705eb2cf6a202bc83083cdf" name="a459050cc1705eb2cf6a202bc83083cdf"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a459050cc1705eb2cf6a202bc83083cdf">&#9670;&#160;</a></span>MEM_mapAlloc()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static int * MEM_mapAlloc </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structmem__allocator__t.html">mem_allocator_t</a> *const&#160;</td>
+          <td class="paramname"><em>allocator</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const size_t&#160;</td>
+          <td class="paramname"><em>total_size</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Allocates a page-aligned memory region via mmap and registers it in the allocator’s mmap list for later freeing. </p>
+<p>This function rounds up <code>total_size</code> to a multiple of the system page size, invokes mmap() to obtain an anonymous read/write region, then allocates an <a class="el" href="structmmap__t.html" title="Tracks memory-mapped regions for large allocations.">mmap_t</a> metadata node via <a class="el" href="libmemalloc_8c.html#aa8d6af31611fe153060acd3fd7ce0d79" title="Allocates memory using the specified strategy.">MEM_allocatorMalloc()</a> and links it into allocator-&gt;mmap_list. It initializes a <a class="el" href="structblock__header__t.html" title="Represents the header for a memory block.">block_header_t</a> and trailing canary in the mapped region to integrate with the allocator’s debugging and GC.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">allocator</td><td>Pointer to the memory allocator context. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">total_size</td><td>Number of bytes requested.</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>On success, returns the address of the mapped region. On failure, returns an error-encoded pointer (via <a class="el" href="group___libmemalloc.html#gad279cb341b8fafacaef5650243902eee" title="Encodes a negative error code as an error pointer.">PTR_ERR()</a>).</dd></dl>
+<dl class="retval"><dt>Return values</dt><dd>
+  <table class="retval">
+    <tr><td class="paramname">ret!=MAP_FAILED</td><td>Address of the mapped region. </td></tr>
+    <tr><td class="paramname">-EINVAL</td><td><code>allocator</code> is NULL. </td></tr>
+    <tr><td class="paramname">-EIO</td><td>mmap() failed. </td></tr>
+    <tr><td class="paramname">-ENOMEM</td><td>Allocation of <a class="el" href="structmmap__t.html" title="Tracks memory-mapped regions for large allocations.">mmap_t</a> metadata failed. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="af1b841111a1506abe32e887ca96b883c" name="af1b841111a1506abe32e887ca96b883c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af1b841111a1506abe32e887ca96b883c">&#9670;&#160;</a></span>MEM_mapFree()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static int MEM_mapFree </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structmem__allocator__t.html">mem_allocator_t</a> *const&#160;</td>
+          <td class="paramname"><em>allocator</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">void *const&#160;</td>
+          <td class="paramname"><em>addr</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Unmaps a previously mapped memory region and removes its metadata entry from the allocator’s mmap list. </p>
+<p>This function searches the allocator’s mmap_list for an entry matching <code>addr</code>, calls munmap() to unmap the region, unlinks the corresponding <a class="el" href="structmmap__t.html" title="Tracks memory-mapped regions for large allocations.">mmap_t</a> metadata node, and frees it via <a class="el" href="libmemalloc_8c.html#ac8cbefcab3677881aba7483f23a7ce71" title="Releases allocated memory back to the heap.">MEM_allocatorFree()</a>. Errors during munmap are returned; if metadata freeing fails, an error is logged but success is returned.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">allocator</td><td>Memory allocator context. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">addr</td><td>Address of the memory region to unmap.</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Integer status code.</dd></dl>
+<dl class="retval"><dt>Return values</dt><dd>
+  <table class="retval">
+    <tr><td class="paramname">EXIT_SUCCESS</td><td>Region unmapped and metadata entry removed. </td></tr>
+    <tr><td class="paramname">-EINVAL</td><td><code>allocator</code> / <code>addr</code> is NULL, or not found in list. </td></tr>
+    <tr><td class="paramname">-ENOMEM</td><td>munmap() failed to unmap the region. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="a4b1829256c0f068782ccab6c9f95c826" name="a4b1829256c0f068782ccab6c9f95c826"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4b1829256c0f068782ccab6c9f95c826">&#9670;&#160;</a></span>MEM_mergeBlocks()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static int MEM_mergeBlocks </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structmem__allocator__t.html">mem_allocator_t</a> *const&#160;</td>
+          <td class="paramname"><em>allocator</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="structblock__header__t.html">block_header_t</a> *&#160;</td>
+          <td class="paramname"><em>block</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Merges adjacent free memory blocks. </p>
+<p>This function removes the specified <code>block</code> from its free list, then checks its immediate neighbor blocks in memory. If the next block is free and valid, it unlinks and combines it with <code>block</code>, updating size, links, and trailing canary. It then checks the previous block; if it is also free and valid, it merges <code>block</code> into the previous block. Finally, the resulting merged block is reinserted into the appropriate free list.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">allocator</td><td>Pointer to the allocator context. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">block</td><td>Pointer to the free block header to merge.</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Integer status code.</dd></dl>
+<dl class="retval"><dt>Return values</dt><dd>
+  <table class="retval">
+    <tr><td class="paramname">EXIT_SUCCESS</td><td>Blocks merged (or single block reinserted) successfully. </td></tr>
+    <tr><td class="paramname">-EINVAL</td><td><code>allocator</code> or <code>block</code> is NULL. </td></tr>
+    <tr><td class="paramname">ret&lt;0</td><td>Returned by <a class="el" href="libmemalloc_8c.html#a12ec011b3d73b77babe83930fa7200f0" title="Removes a block from its free list.">MEM_removeFreeBlock()</a>, <a class="el" href="libmemalloc_8c.html#ac20a9b9d50b0108e6dc6571e30ad99c2" title="Validates the integrity and boundaries of a memory block.">MEM_validateBlock()</a>, <a class="el" href="libmemalloc_8c.html#ae5d23c9024583a7682a5857f59523d6e" title="Inserts a block into the appropriate free list based on its size.">MEM_insertFreeBlock()</a>, or munmap() in inner calls indicating the specific failure. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="a12ec011b3d73b77babe83930fa7200f0" name="a12ec011b3d73b77babe83930fa7200f0"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a12ec011b3d73b77babe83930fa7200f0">&#9670;&#160;</a></span>MEM_removeFreeBlock()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static int MEM_removeFreeBlock </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structmem__allocator__t.html">mem_allocator_t</a> *const&#160;</td>
+          <td class="paramname"><em>allocator</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="structblock__header__t.html">block_header_t</a> *const&#160;</td>
+          <td class="paramname"><em>block</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Removes a block from its free list. </p>
+<p>This function unlinks the specified <code>block</code> from the free list corresponding to its size class within the allocator. It computes the size‐class index via <a class="el" href="libmemalloc_8c.html#afce3c776f36dbcd4df3f257d425d5c16" title="Calculates the size class index for a requested memory size.">MEM_getSizeClass()</a>, validates parameters, then adjusts the neighboring blocks’ fl_next and fl_prev pointers (or the list head) to remove <code>block</code>. The block’s own fl_next and fl_prev are then cleared.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">allocator</td><td>Memory allocator context. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">block</td><td>Block header to remove.</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Integer status code.</dd></dl>
+<dl class="retval"><dt>Return values</dt><dd>
+  <table class="retval">
+    <tr><td class="paramname">EXIT_SUCCESS</td><td>Block removed successfully. </td></tr>
+    <tr><td class="paramname">-EINVAL</td><td><code>allocator</code> or <code>block</code> is NULL. </td></tr>
+    <tr><td class="paramname">-ENOMEM</td><td>Size‐class calculation failed. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="a364f1e68b8a8b15c4075de0d8412d887" name="a364f1e68b8a8b15c4075de0d8412d887"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a364f1e68b8a8b15c4075de0d8412d887">&#9670;&#160;</a></span>MEM_runGc()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static int MEM_runGc </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structmem__allocator__t.html">mem_allocator_t</a> *const&#160;</td>
+          <td class="paramname"><em>allocator</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Start or signal the GC thread to perform a collection cycle. </p>
+<p>This function saves the caller’s thread ID as main_thread, locks gc_lock, and if the GC thread has not been started, sets gc_running and gc_exit flags and spawns <a class="el" href="libmemalloc_8c.html#a666118886ff4f98939c2136d1605586d" title="Dedicated thread loop driving mark-and-sweep iterations.">MEM_gcThreadFunc()</a>; otherwise it sets gc_running and signals gc_cond to wake the existing thread. Finally it unlocks gc_lock.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">allocator</td><td>Pointer to the <a class="el" href="structmem__allocator__t.html" title="Manages dynamic memory allocation.">mem_allocator_t</a> context.</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Integer status code.</dd></dl>
+<dl class="retval"><dt>Return values</dt><dd>
+  <table class="retval">
+    <tr><td class="paramname">EXIT_SUCCESS</td><td>GC thread started or signaled successfully. </td></tr>
+    <tr><td class="paramname">-EINVAL</td><td><code>allocator</code> is NULL. </td></tr>
+    <tr><td class="paramname">ret&lt;0</td><td>Error code returned by pthread_create(). </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="ae5805f4c67ac5fe3b63f8e26041ee0aa" name="ae5805f4c67ac5fe3b63f8e26041ee0aa"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae5805f4c67ac5fe3b63f8e26041ee0aa">&#9670;&#160;</a></span>MEM_sbrk()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void * MEM_sbrk </td>
+          <td>(</td>
+          <td class="paramtype">const intptr_t&#160;</td>
+          <td class="paramname"><em>increment</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Invokes sbrk-like behavior by moving the program break. </p>
+<p>This function reads the current program break, attempts to move it by the signed offset <code>increment</code> via sbrk(), and returns the original break on success. If any call to sbrk() or reading the break fails, it encodes the negative errno into a pointer via PTR_ERR.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">increment</td><td>Signed offset in bytes to move the program break: positive to grow, negative to shrink.</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Original program break address on success; an error-encoded pointer (via <a class="el" href="group___libmemalloc.html#gad279cb341b8fafacaef5650243902eee" title="Encodes a negative error code as an error pointer.">PTR_ERR()</a>) on failure.</dd></dl>
+<dl class="retval"><dt>Return values</dt><dd>
+  <table class="retval">
+    <tr><td class="paramname">ret&gt;-1</td><td>Previous break on success. </td></tr>
+    <tr><td class="paramname">-ENOMEM</td><td>Failed to read or adjust the break. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="a8ceaf66d4f7da5bd9c46c6ce3bd6fd22" name="a8ceaf66d4f7da5bd9c46c6ce3bd6fd22"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8ceaf66d4f7da5bd9c46c6ce3bd6fd22">&#9670;&#160;</a></span>MEM_setInitialMarks()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static int MEM_setInitialMarks </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structmem__allocator__t.html">mem_allocator_t</a> *const&#160;</td>
+          <td class="paramname"><em>allocator</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Reset “marked” flags across all allocated regions. </p>
+<p>This function prepares for a new garbage-collection cycle by clearing the mark flag on every heap block and every mmap’d block payload. It scans the heap from allocator-&gt;heap_start + metadata_size up to allocator-&gt;heap_end, resetting each valid block’s marked flag (and skipping malformed blocks to avoid infinite loops). It then iterates allocator-&gt;mmap_list, clearing the mark on each payload block while preserving the metadata header’s mark so the allocator’s own bookkeeping regions are never freed.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">allocator</td><td>Memory allocator context.</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Integer status code.</dd></dl>
+<dl class="retval"><dt>Return values</dt><dd>
+  <table class="retval">
+    <tr><td class="paramname">EXIT_SUCCESS</td><td>All marks cleared and metadata marks preserved. </td></tr>
+    <tr><td class="paramname">-EINVAL</td><td><code>allocator</code> is NULL. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="a09a027e298e9296c2bbbf6fc80a95afc" name="a09a027e298e9296c2bbbf6fc80a95afc"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a09a027e298e9296c2bbbf6fc80a95afc">&#9670;&#160;</a></span>MEM_splitBlock()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static int MEM_splitBlock </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structmem__allocator__t.html">mem_allocator_t</a> *const&#160;</td>
+          <td class="paramname"><em>allocator</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="structblock__header__t.html">block_header_t</a> *const&#160;</td>
+          <td class="paramname"><em>block</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const size_t&#160;</td>
+          <td class="paramname"><em>req_size</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Splits a memory block into allocated and free portions. </p>
+<p>This function takes an existing free <code>block</code> and a requested allocation size <code>req_size</code>, and divides the block into:</p><ul>
+<li>an allocated portion of size aligned up to <a class="el" href="group___libmemalloc.html#gabe7f8cd9a0ce69b71567a3870415be66" title="Aligns a given value to the nearest memory boundary.">ALIGN(req_size)</a> plus header and canary, marked as used;</li>
+<li>a remaining free portion (if its size ≥ MIN_BLOCK_SIZE) inserted back into the appropriate free list. If the leftover space would be too small (&lt; MIN_BLOCK_SIZE), the entire block is allocated without splitting.</li>
+</ul>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">allocator</td><td>Pointer to the <a class="el" href="structmem__allocator__t.html" title="Manages dynamic memory allocation.">mem_allocator_t</a> context. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">block</td><td>Pointer to the <a class="el" href="structblock__header__t.html" title="Represents the header for a memory block.">block_header_t</a> to split. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">req_size</td><td>Requested allocation size in bytes.</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Integer status code.</dd></dl>
+<dl class="retval"><dt>Return values</dt><dd>
+  <table class="retval">
+    <tr><td class="paramname">EXIT_SUCCESS</td><td>Block split (or fully allocated) successfully. </td></tr>
+    <tr><td class="paramname">-EINVAL</td><td>nvalid <code>allocator</code> or <code>block</code> pointer. </td></tr>
+    <tr><td class="paramname">-EPROTO</td><td>Header canary mismatch (block corrupted). </td></tr>
+    <tr><td class="paramname">-EOVERFLOW</td><td>Data canary mismatch (buffer overflow detected). </td></tr>
+    <tr><td class="paramname">-EFBIG</td><td>Block’s size would extend past heap end. </td></tr>
+    <tr><td class="paramname">-EFAULT</td><td>Block lies outside heap or mmap regions. </td></tr>
+    <tr><td class="paramname">-ENOMEM</td><td>Failed to insert the new free remainder block.</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section note"><dt>Note</dt><dd>If the remaining space after splitting would be less than MIN_BLOCK_SIZE, this function allocates the entire block no split) and removes it from its free list. </dd></dl>
+
+</div>
+</div>
+<a id="a05ca3438779df1a875f5d8d55f112f2a" name="a05ca3438779df1a875f5d8d55f112f2a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a05ca3438779df1a875f5d8d55f112f2a">&#9670;&#160;</a></span>MEM_stackBounds()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static int MEM_stackBounds </td>
+          <td>(</td>
+          <td class="paramtype">const pthread_t&#160;</td>
+          <td class="paramname"><em>id</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="structmem__allocator__t.html">mem_allocator_t</a> *const&#160;</td>
+          <td class="paramname"><em>allocator</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Query and record the bounding addresses of a thread’s stack. </p>
+<p>This function retrieves the stack base address, total stack size, and guard size for the specified thread, then computes the usable stack bounds within the allocator object, taking into account whether the stack grows up or down in memory.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">id</td><td>The thread identifier whose stack to inspect. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">allocator</td><td>Pointer to the allocator object where stack_bottom and stack_top will be stored.</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Integer status code.</dd></dl>
+<dl class="retval"><dt>Return values</dt><dd>
+  <table class="retval">
+    <tr><td class="paramname">EXIT_SUCCESS</td><td>Stack bounds successfully recorded. </td></tr>
+    <tr><td class="paramname">-EINVAL</td><td><code>allocator</code> was NULL. </td></tr>
+    <tr><td class="paramname">ret&gt;0</td><td>Error code from one of the pthread or system calls </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="a0dd55c30122e42f8dfb40e78861486be" name="a0dd55c30122e42f8dfb40e78861486be"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0dd55c30122e42f8dfb40e78861486be">&#9670;&#160;</a></span>MEM_stackGrowsDown()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static bool MEM_stackGrowsDown </td>
+          <td>(</td>
+          <td class="paramtype">void&#160;</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Determine at runtime whether the stack grows downward. </p>
+<p>This function places two volatile local variables on the stack and compares their addresses to infer the growth direction:</p><ul>
+<li>If &amp;addr_1 &lt; &amp;addr_0, the stack grows toward lower addresses.</li>
+<li>Otherwise, it grows toward higher addresses.</li>
+</ul>
+<dl class="section return"><dt>Returns</dt><dd>true if stack grows down (higher addresses → lower), false if it grows up (lower addresses → higher)</dd></dl>
+<dl class="retval"><dt>Return values</dt><dd>
+  <table class="retval">
+    <tr><td class="paramname">true</td><td>Stack grows downward (newer frames at lower addresses) </td></tr>
+    <tr><td class="paramname">false</td><td>Stack grows upward (newer frames at higher addresses) </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="a4951f4c43d5f7288c0bbcf0001127d70" name="a4951f4c43d5f7288c0bbcf0001127d70"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4951f4c43d5f7288c0bbcf0001127d70">&#9670;&#160;</a></span>MEM_stopGc()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static int MEM_stopGc </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structmem__allocator__t.html">mem_allocator_t</a> *const&#160;</td>
+          <td class="paramname"><em>allocator</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Stop the GC thread and perform a final collection. </p>
+<p>This function clears gc_running and sets gc_exit, signals gc_cond to wake the GC thread if it’s running, then joins it. After the thread exits, it runs one final <a class="el" href="libmemalloc_8c.html#ac5dd039930030077e907235b9ed2d166" title="Mark all live blocks reachable from the stack.">MEM_gcMark()</a> + <a class="el" href="libmemalloc_8c.html#acfc00905af09fcca12432590daa01bee" title="Reclaim any unmarked blocks from heap and mmap regions.">MEM_gcSweep()</a> on the caller thread to reclaim any remaining garbage, then clears gc_thread_started.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">allocator</td><td>Pointer to the <a class="el" href="structmem__allocator__t.html" title="Manages dynamic memory allocation.">mem_allocator_t</a> context.</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Integer status code.</dd></dl>
+<dl class="retval"><dt>Return values</dt><dd>
+  <table class="retval">
+    <tr><td class="paramname">EXIT_SUCCESS</td><td>GC thread stopped and final collection done. </td></tr>
+    <tr><td class="paramname">-EINVAL</td><td><code>allocator</code> is NULL. </td></tr>
+    <tr><td class="paramname">ret&lt;0</td><td>Error code from pthread <a class="el" href="libmemalloc_8c.html#ac5dd039930030077e907235b9ed2d166" title="Mark all live blocks reachable from the stack.">MEM_gcMark()</a>, or <a class="el" href="libmemalloc_8c.html#acfc00905af09fcca12432590daa01bee" title="Reclaim any unmarked blocks from heap and mmap regions.">MEM_gcSweep()</a>. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="ac20a9b9d50b0108e6dc6571e30ad99c2" name="ac20a9b9d50b0108e6dc6571e30ad99c2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac20a9b9d50b0108e6dc6571e30ad99c2">&#9670;&#160;</a></span>MEM_validateBlock()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static int MEM_validateBlock </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structmem__allocator__t.html">mem_allocator_t</a> *const&#160;</td>
+          <td class="paramname"><em>allocator</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="structblock__header__t.html">block_header_t</a> *const&#160;</td>
+          <td class="paramname"><em>block</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Validates the integrity and boundaries of a memory block. </p>
+<p>This function ensures that the specified <code>block</code> lies within the allocator’s heap or one of its mmap regions, that its header canary matches the expected magic value to detect metadata corruption, that its data canary is intact to catch buffer overruns, and that the block’s size does not extend past the heap’s end. On any failure, an appropriate negative errno is returned.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">allocator</td><td>Pointer to the allocator context. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">block</td><td>Pointer to the block header to validate.</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Integer status code.</dd></dl>
+<dl class="retval"><dt>Return values</dt><dd>
+  <table class="retval">
+    <tr><td class="paramname">EXIT_SUCCESS</td><td><code>block</code> is valid. </td></tr>
+    <tr><td class="paramname">-EINVAL</td><td><code>allocator</code> or <code>block</code> pointer is NULL. </td></tr>
+    <tr><td class="paramname">-EFAULT</td><td><code>block</code> lies outside heap and mmap regions. </td></tr>
+    <tr><td class="paramname">-EPROTO</td><td><code>block</code> canary does not match expected value. </td></tr>
+    <tr><td class="paramname">-EFBIG</td><td><code>block</code> size causes it to extend past heap end. </td></tr>
+    <tr><td class="paramname">-EOVERFLOW</td><td><code>block</code> canary indicates buffer overflow. </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>

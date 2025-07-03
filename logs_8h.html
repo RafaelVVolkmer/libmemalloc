@@ -128,7 +128,8 @@ $(document).ready(function(){initNavTree('logs_8h.html',''); initResizable(); })
 <div class="header">
   <div class="summary">
 <a href="#define-members">Macros</a> &#124;
-<a href="#enum-members">Enumerations</a>  </div>
+<a href="#enum-members">Enumerations</a> &#124;
+<a href="#func-members">Functions</a>  </div>
   <div class="headertitle"><div class="title">logs.h File Reference<div class="ingroups"><a class="el" href="group___logs.html">Logs</a></div></div></div>
 </div><!--header-->
 <div class="contents">
@@ -162,6 +163,48 @@ Macros</h2></td></tr>
 <tr class="memitem:ga0b87e0d3bf5853bcbb0b66a7c48fdc05" id="r_ga0b87e0d3bf5853bcbb0b66a7c48fdc05"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___logs.html#ga0b87e0d3bf5853bcbb0b66a7c48fdc05">LOG_LEVEL</a>&#160;&#160;&#160;<a class="el" href="group___logs.html#gga98121d38a8cf3daf5246a349f912ca1da538b2b6e011479d408ecd2be0f6d6177">LOG_LEVEL_DEBUG</a></td></tr>
 <tr class="memdesc:ga0b87e0d3bf5853bcbb0b66a7c48fdc05"><td class="mdescLeft">&#160;</td><td class="mdescRight">Default log level if not defined.  <br /></td></tr>
 <tr class="separator:ga0b87e0d3bf5853bcbb0b66a7c48fdc05"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga3024ccd4a9af5109d24e6c57565d74a1" id="r_ga3024ccd4a9af5109d24e6c57565d74a1"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___logs.html#ga3024ccd4a9af5109d24e6c57565d74a1">_POSIX_C_SOURCE</a>&#160;&#160;&#160;200809UL</td></tr>
+<tr class="memdesc:ga3024ccd4a9af5109d24e6c57565d74a1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Expose POSIX extensions for clock_gettime and pthread mutex initializer.  <br /></td></tr>
+<tr class="separator:ga3024ccd4a9af5109d24e6c57565d74a1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gab8a4b84aac717ad2a4f709618e472578" id="r_gab8a4b84aac717ad2a4f709618e472578"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___logs.html#gab8a4b84aac717ad2a4f709618e472578">LOG_PRINTF</a>(file, ...)&#160;&#160;&#160;fprintf(file, __VA_ARGS__)</td></tr>
+<tr class="memdesc:gab8a4b84aac717ad2a4f709618e472578"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compiler-specific printf abstraction.  <br /></td></tr>
+<tr class="separator:gab8a4b84aac717ad2a4f709618e472578"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga4b06fcce8e4ed7ef2ff200ed77fd029b" id="r_ga4b06fcce8e4ed7ef2ff200ed77fd029b"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___logs.html#ga4b06fcce8e4ed7ef2ff200ed77fd029b">LOG_VPRINTF</a>(file,  fmt,  args)&#160;&#160;&#160;vfprintf(file, fmt, args)</td></tr>
+<tr class="memdesc:ga4b06fcce8e4ed7ef2ff200ed77fd029b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compiler-specific vprintf abstraction.  <br /></td></tr>
+<tr class="separator:ga4b06fcce8e4ed7ef2ff200ed77fd029b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga6f184204e09bbd4969858ada1e45d3ff" id="r_ga6f184204e09bbd4969858ada1e45d3ff"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___logs.html#ga6f184204e09bbd4969858ada1e45d3ff">PREFIX_ERROR</a>&#160;&#160;&#160;&quot;[ERROR]&quot;</td></tr>
+<tr class="separator:ga6f184204e09bbd4969858ada1e45d3ff"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaa24bbed6b4248ab887cb19d3e99ccbc6" id="r_gaa24bbed6b4248ab887cb19d3e99ccbc6"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___logs.html#gaa24bbed6b4248ab887cb19d3e99ccbc6">PREFIX_WARNING</a>&#160;&#160;&#160;&quot;[WARNING]&quot;</td></tr>
+<tr class="separator:gaa24bbed6b4248ab887cb19d3e99ccbc6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga02530f5c05fcd35c2d1d6f42ba5f10e4" id="r_ga02530f5c05fcd35c2d1d6f42ba5f10e4"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___logs.html#ga02530f5c05fcd35c2d1d6f42ba5f10e4">PREFIX_INFO</a>&#160;&#160;&#160;&quot;[INFO]&quot;</td></tr>
+<tr class="separator:ga02530f5c05fcd35c2d1d6f42ba5f10e4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga3526aa23d5fc21b8ef58b438612b678a" id="r_ga3526aa23d5fc21b8ef58b438612b678a"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___logs.html#ga3526aa23d5fc21b8ef58b438612b678a">PREFIX_DEBUG</a>&#160;&#160;&#160;&quot;[DEBUG]&quot;</td></tr>
+<tr class="separator:ga3526aa23d5fc21b8ef58b438612b678a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gad86358bf19927183dd7b4ae215a29731" id="r_gad86358bf19927183dd7b4ae215a29731"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___logs.html#gad86358bf19927183dd7b4ae215a29731">COLOR_RED</a>&#160;&#160;&#160;&quot;\033[0;31m&quot;</td></tr>
+<tr class="separator:gad86358bf19927183dd7b4ae215a29731"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga4534b577b74a58b0f4b7be027af664e0" id="r_ga4534b577b74a58b0f4b7be027af664e0"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___logs.html#ga4534b577b74a58b0f4b7be027af664e0">COLOR_YELLOW</a>&#160;&#160;&#160;&quot;\033[0;33m&quot;</td></tr>
+<tr class="separator:ga4534b577b74a58b0f4b7be027af664e0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga23c70d699a5a775bc2e1ebeb8603f630" id="r_ga23c70d699a5a775bc2e1ebeb8603f630"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___logs.html#ga23c70d699a5a775bc2e1ebeb8603f630">COLOR_BLUE</a>&#160;&#160;&#160;&quot;\033[0;34m&quot;</td></tr>
+<tr class="separator:ga23c70d699a5a775bc2e1ebeb8603f630"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gafc9149f5de51bd9ac4f5ebbfa153f018" id="r_gafc9149f5de51bd9ac4f5ebbfa153f018"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___logs.html#gafc9149f5de51bd9ac4f5ebbfa153f018">COLOR_GREEN</a>&#160;&#160;&#160;&quot;\033[0;32m&quot;</td></tr>
+<tr class="separator:gafc9149f5de51bd9ac4f5ebbfa153f018"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga17f760256046df23dd0ab46602f04d02" id="r_ga17f760256046df23dd0ab46602f04d02"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___logs.html#ga17f760256046df23dd0ab46602f04d02">COLOR_RESET</a>&#160;&#160;&#160;&quot;\033[0m&quot;</td></tr>
+<tr class="separator:ga17f760256046df23dd0ab46602f04d02"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga51406614a2e1af065a0d938952ed91c4" id="r_ga51406614a2e1af065a0d938952ed91c4"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___logs.html#ga51406614a2e1af065a0d938952ed91c4">ATTR_PRINTF</a>(fmt_idx,  var_idx)&#160;&#160;&#160;    __attribute__((format(printf, fmt_idx, var_idx)))</td></tr>
+<tr class="memdesc:ga51406614a2e1af065a0d938952ed91c4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Macro to apply GCC printf-style format checking on custom functions.  <br /></td></tr>
+<tr class="separator:ga51406614a2e1af065a0d938952ed91c4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gae6fc70e87e424e7083c63696b8fb9e78" id="r_gae6fc70e87e424e7083c63696b8fb9e78"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___logs.html#gae6fc70e87e424e7083c63696b8fb9e78">LOG_ERROR</a>(fmt, ...)</td></tr>
+<tr class="memdesc:gae6fc70e87e424e7083c63696b8fb9e78"><td class="mdescLeft">&#160;</td><td class="mdescRight">Logs an error message (red).  <br /></td></tr>
+<tr class="separator:gae6fc70e87e424e7083c63696b8fb9e78"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gafde44945335adc0c0ae2986fea13438f" id="r_gafde44945335adc0c0ae2986fea13438f"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___logs.html#gafde44945335adc0c0ae2986fea13438f">LOG_WARNING</a>(fmt, ...)</td></tr>
+<tr class="memdesc:gafde44945335adc0c0ae2986fea13438f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Logs a warning message (yellow).  <br /></td></tr>
+<tr class="separator:gafde44945335adc0c0ae2986fea13438f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gae69d735f8291bd2aff230fe6ffb4d4b3" id="r_gae69d735f8291bd2aff230fe6ffb4d4b3"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___logs.html#gae69d735f8291bd2aff230fe6ffb4d4b3">LOG_INFO</a>(fmt, ...)</td></tr>
+<tr class="memdesc:gae69d735f8291bd2aff230fe6ffb4d4b3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Logs an info message (blue).  <br /></td></tr>
+<tr class="separator:gae69d735f8291bd2aff230fe6ffb4d4b3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gac06cfc686322558f590c50eab8622ebd" id="r_gac06cfc686322558f590c50eab8622ebd"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___logs.html#gac06cfc686322558f590c50eab8622ebd">LOG_DEBUG</a>(fmt, ...)</td></tr>
+<tr class="memdesc:gac06cfc686322558f590c50eab8622ebd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Logs a debug message (green).  <br /></td></tr>
+<tr class="separator:gac06cfc686322558f590c50eab8622ebd"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="enum-members" name="enum-members"></a>
 Enumerations</h2></td></tr>
@@ -176,6 +219,12 @@ Enumerations</h2></td></tr>
  }</td></tr>
 <tr class="memdesc:ga98121d38a8cf3daf5246a349f912ca1d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Defines log levels for the logging system.  <a href="group___logs.html#ga98121d38a8cf3daf5246a349f912ca1d">More...</a><br /></td></tr>
 <tr class="separator:ga98121d38a8cf3daf5246a349f912ca1d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
+Functions</h2></td></tr>
+<tr class="memitem:ga0fb4817827dfe796a4f0a28045063195" id="r_ga0fb4817827dfe796a4f0a28045063195"><td class="memItemLeft" align="right" valign="top">static int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___logs.html#ga0fb4817827dfe796a4f0a28045063195">LOG_output</a> (<a class="el" href="group___logs.html#ga98121d38a8cf3daf5246a349f912ca1d">log_level_t</a> level, const char *color, const char *prefix, const char *file, const char *func, int line, const char *fmt,...) __attribute__((format(printf</td></tr>
+<tr class="memdesc:ga0fb4817827dfe796a4f0a28045063195"><td class="mdescLeft">&#160;</td><td class="mdescRight">Internal logging implementation: thread‐safe, prints timestamp, optional ANSI color, severity prefix, formatted message, and source location.  <br /></td></tr>
+<tr class="separator:ga0fb4817827dfe796a4f0a28045063195"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Logging macros and configuration for libmemalloc. </p>

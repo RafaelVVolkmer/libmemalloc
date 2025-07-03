@@ -168,30 +168,30 @@ $(document).ready(function(){initNavTree('logs_8h_source.html',''); initResizabl
 <div class="line"><a id="l00078" name="l00078"></a><span class="lineno">   78</span><span class="preprocessor">#endif</span></div>
 <div class="line"><a id="l00079" name="l00079"></a><span class="lineno">   79</span> </div>
 <div class="line"><a id="l00085" name="l00085"></a><span class="lineno">   85</span><span class="preprocessor">#ifndef _POSIX_C_SOURCE</span></div>
-<div class="line"><a id="l00086" name="l00086"></a><span class="lineno">   86</span><span class="preprocessor">  #define _POSIX_C_SOURCE 200&#39;809UL</span></div>
+<div class="line"><a id="l00086" name="l00086"></a><span class="lineno">   86</span><span class="preprocessor">  #define _POSIX_C_SOURCE 200809UL</span></div>
 <div class="line"><a id="l00087" name="l00087"></a><span class="lineno">   87</span><span class="preprocessor">#endif</span></div>
 <div class="line"><a id="l00088" name="l00088"></a><span class="lineno">   88</span> </div>
 <div class="line"><a id="l00093" name="l00093"></a><span class="lineno">   93</span><span class="preprocessor">#if defined(__GNUC__)</span></div>
-<div class="line"><a id="l00094" name="l00094"></a><span class="lineno">   94</span><span class="preprocessor">  #define LOG_PRINTF(file, format, ...) \</span></div>
+<div class="line"><a id="l00094" name="l00094"></a><span class="lineno"><a class="line" href="group___logs.html#gab8a4b84aac717ad2a4f709618e472578">   94</a></span><span class="preprocessor">  #define LOG_PRINTF(file, format, ...) \</span></div>
 <div class="line"><a id="l00095" name="l00095"></a><span class="lineno">   95</span><span class="preprocessor">    __builtin_fprintf((FILE *)(file), (format), ##__VA_ARGS__)</span></div>
 <div class="line"><a id="l00096" name="l00096"></a><span class="lineno">   96</span><span class="preprocessor">#else</span></div>
 <div class="line"><a id="l00097" name="l00097"></a><span class="lineno">   97</span><span class="preprocessor">  #define LOG_PRINTF(file, ...) fprintf(file, __VA_ARGS__)</span></div>
 <div class="line"><a id="l00098" name="l00098"></a><span class="lineno">   98</span><span class="preprocessor">#endif</span></div>
 <div class="line"><a id="l00099" name="l00099"></a><span class="lineno">   99</span> </div>
 <div class="line"><a id="l00104" name="l00104"></a><span class="lineno">  104</span><span class="preprocessor">#if defined(__GNUC__)</span></div>
-<div class="line"><a id="l00105" name="l00105"></a><span class="lineno">  105</span><span class="preprocessor">  #define LOG_VPRINTF(file, format, args) \</span></div>
+<div class="line"><a id="l00105" name="l00105"></a><span class="lineno"><a class="line" href="group___logs.html#ga4b06fcce8e4ed7ef2ff200ed77fd029b">  105</a></span><span class="preprocessor">  #define LOG_VPRINTF(file, format, args) \</span></div>
 <div class="line"><a id="l00106" name="l00106"></a><span class="lineno">  106</span><span class="preprocessor">    __builtin_vfprintf((FILE *)(file), (format), (args))</span></div>
 <div class="line"><a id="l00107" name="l00107"></a><span class="lineno">  107</span><span class="preprocessor">#else</span></div>
 <div class="line"><a id="l00108" name="l00108"></a><span class="lineno">  108</span><span class="preprocessor">  #define LOG_VPRINTF(file, fmt, args) vfprintf(file, fmt, args)</span></div>
 <div class="line"><a id="l00109" name="l00109"></a><span class="lineno">  109</span><span class="preprocessor">#endif</span></div>
 <div class="line"><a id="l00110" name="l00110"></a><span class="lineno">  110</span> </div>
-<div class="line"><a id="l00115" name="l00115"></a><span class="lineno">  115</span><span class="preprocessor">#define PREFIX_ERROR   &quot;[ERROR]&quot;</span></div>
+<div class="line"><a id="l00115" name="l00115"></a><span class="lineno"><a class="line" href="group___logs.html#ga3526aa23d5fc21b8ef58b438612b678a">  115</a></span><span class="preprocessor">#define PREFIX_ERROR   &quot;[ERROR]&quot;</span></div>
 <div class="line"><a id="l00116" name="l00116"></a><span class="lineno">  116</span><span class="preprocessor">#define PREFIX_WARNING &quot;[WARNING]&quot;</span></div>
 <div class="line"><a id="l00117" name="l00117"></a><span class="lineno">  117</span><span class="preprocessor">#define PREFIX_INFO    &quot;[INFO]&quot;</span></div>
 <div class="line"><a id="l00118" name="l00118"></a><span class="lineno">  118</span><span class="preprocessor">#define PREFIX_DEBUG   &quot;[DEBUG]&quot;</span></div>
 <div class="line"><a id="l00119" name="l00119"></a><span class="lineno">  119</span> </div>
-<div class="line"><a id="l00125" name="l00125"></a><span class="lineno">  125</span><span class="preprocessor">#define COLOR_RED      &quot;\033[0;31m&quot;</span></div>
-<div class="line"><a id="l00126" name="l00126"></a><span class="lineno">  126</span><span class="preprocessor">#define COLOR_YELLOW   &quot;\033[0;33m&quot;</span></div>
+<div class="line"><a id="l00125" name="l00125"></a><span class="lineno"><a class="line" href="group___logs.html#gafc9149f5de51bd9ac4f5ebbfa153f018">  125</a></span><span class="preprocessor">#define COLOR_RED      &quot;\033[0;31m&quot;</span></div>
+<div class="line"><a id="l00126" name="l00126"></a><span class="lineno"><a class="line" href="group___logs.html#ga17f760256046df23dd0ab46602f04d02">  126</a></span><span class="preprocessor">#define COLOR_YELLOW   &quot;\033[0;33m&quot;</span></div>
 <div class="line"><a id="l00127" name="l00127"></a><span class="lineno">  127</span><span class="preprocessor">#define COLOR_BLUE     &quot;\033[0;34m&quot;</span></div>
 <div class="line"><a id="l00128" name="l00128"></a><span class="lineno">  128</span><span class="preprocessor">#define COLOR_GREEN    &quot;\033[0;32m&quot;</span></div>
 <div class="line"><a id="l00129" name="l00129"></a><span class="lineno">  129</span><span class="preprocessor">#define COLOR_RESET    &quot;\033[0m&quot;</span></div>
@@ -201,16 +201,16 @@ $(document).ready(function(){initNavTree('logs_8h_source.html',''); initResizabl
 <div class="line"><a id="l00138" name="l00138"></a><span class="lineno">  138</span><span class="preprocessor">    __attribute__((format(printf, fmt_idx, var_idx)))</span></div>
 <div class="line"><a id="l00139" name="l00139"></a><span class="lineno">  139</span><span class="preprocessor">#endif</span></div>
 <div class="line"><a id="l00140" name="l00140"></a><span class="lineno">  140</span> </div>
-<div class="line"><a id="l00177" name="l00177"></a><span class="lineno">  177</span><span class="keyword">static</span> <span class="keyword">inline</span> <span class="keywordtype">int</span> LOG_output(<a class="code hl_enumeration" href="group___logs.html#ga98121d38a8cf3daf5246a349f912ca1d">log_level_t</a> level,</div>
+<div class="line"><a id="l00177" name="l00177"></a><span class="lineno">  177</span><span class="keyword">static</span> <span class="keyword">inline</span> <span class="keywordtype">int</span> <a class="code hl_function" href="group___logs.html#ga0fb4817827dfe796a4f0a28045063195">LOG_output</a>(<a class="code hl_enumeration" href="group___logs.html#ga98121d38a8cf3daf5246a349f912ca1d">log_level_t</a> level,</div>
 <div class="line"><a id="l00178" name="l00178"></a><span class="lineno">  178</span>                             <span class="keyword">const</span> <span class="keywordtype">char</span> *color,</div>
 <div class="line"><a id="l00179" name="l00179"></a><span class="lineno">  179</span>                             <span class="keyword">const</span> <span class="keywordtype">char</span> *prefix,</div>
 <div class="line"><a id="l00180" name="l00180"></a><span class="lineno">  180</span>                             <span class="keyword">const</span> <span class="keywordtype">char</span> *file,</div>
 <div class="line"><a id="l00181" name="l00181"></a><span class="lineno">  181</span>                             <span class="keyword">const</span> <span class="keywordtype">char</span> *func,</div>
 <div class="line"><a id="l00182" name="l00182"></a><span class="lineno">  182</span>                             <span class="keywordtype">int</span>         line,</div>
 <div class="line"><a id="l00183" name="l00183"></a><span class="lineno">  183</span>                             <span class="keyword">const</span> <span class="keywordtype">char</span> *fmt,</div>
-<div class="line"><a id="l00184" name="l00184"></a><span class="lineno">  184</span>                             ...) ATTR_PRINTF(7, 8);</div>
+<div class="line"><a id="l00184" name="l00184"></a><span class="lineno">  184</span>                             ...) <a class="code hl_define" href="group___logs.html#ga51406614a2e1af065a0d938952ed91c4">ATTR_PRINTF</a>(7, 8);</div>
 <div class="line"><a id="l00185" name="l00185"></a><span class="lineno">  185</span> </div>
-<div class="line"><a id="l00218" name="l00218"></a><span class="lineno">  218</span>static inline <span class="keywordtype">int</span> LOG_output(<a class="code hl_enumeration" href="group___logs.html#ga98121d38a8cf3daf5246a349f912ca1d">log_level_t</a> level,</div>
+<div class="line"><a id="l00218" name="l00218"></a><span class="lineno">  218</span>static inline <span class="keywordtype">int</span> <a class="code hl_function" href="group___logs.html#ga0fb4817827dfe796a4f0a28045063195">LOG_output</a>(<a class="code hl_enumeration" href="group___logs.html#ga98121d38a8cf3daf5246a349f912ca1d">log_level_t</a> level,</div>
 <div class="line"><a id="l00219" name="l00219"></a><span class="lineno">  219</span>                             const <span class="keywordtype">char</span> *color,</div>
 <div class="line"><a id="l00220" name="l00220"></a><span class="lineno">  220</span>                             const <span class="keywordtype">char</span> *prefix,</div>
 <div class="line"><a id="l00221" name="l00221"></a><span class="lineno">  221</span>                             const <span class="keywordtype">char</span> *file,</div>
@@ -246,24 +246,24 @@ $(document).ready(function(){initNavTree('logs_8h_source.html',''); initResizabl
 <div class="line"><a id="l00251" name="l00251"></a><span class="lineno">  251</span>  ptm = localtime(&amp;now);</div>
 <div class="line"><a id="l00252" name="l00252"></a><span class="lineno">  252</span> </div>
 <div class="line"><a id="l00253" name="l00253"></a><span class="lineno">  253</span>  out = (level &lt;= <a class="code hl_enumvalue" href="group___logs.html#gga98121d38a8cf3daf5246a349f912ca1da5b4dd81b4dc7eefbc55ba03415c627ef">LOG_LEVEL_WARNING</a>) ? stderr : stdout;</div>
-<div class="line"><a id="l00254" name="l00254"></a><span class="lineno">  254</span>  LOG_PRINTF(out,</div>
+<div class="line"><a id="l00254" name="l00254"></a><span class="lineno">  254</span>  <a class="code hl_define" href="group___logs.html#gab8a4b84aac717ad2a4f709618e472578">LOG_PRINTF</a>(out,</div>
 <div class="line"><a id="l00255" name="l00255"></a><span class="lineno">  255</span>             <span class="stringliteral">&quot;[%02d:%02d:%02d.%03ld] &quot;</span>,</div>
 <div class="line"><a id="l00256" name="l00256"></a><span class="lineno">  256</span>             ptm-&gt;tm_hour,</div>
 <div class="line"><a id="l00257" name="l00257"></a><span class="lineno">  257</span>             ptm-&gt;tm_min,</div>
 <div class="line"><a id="l00258" name="l00258"></a><span class="lineno">  258</span>             ptm-&gt;tm_sec,</div>
-<div class="line"><a id="l00259" name="l00259"></a><span class="lineno">  259</span>             ts.tv_nsec / 1&#39;000&#39;000u);</div>
+<div class="line"><a id="l00259" name="l00259"></a><span class="lineno">  259</span>             ts.tv_nsec / 1000000u);</div>
 <div class="line"><a id="l00260" name="l00260"></a><span class="lineno">  260</span> </div>
 <div class="line"><a id="l00261" name="l00261"></a><span class="lineno">  261</span>  <span class="keywordflow">if</span> (isatty(fileno(out)))</div>
-<div class="line"><a id="l00262" name="l00262"></a><span class="lineno">  262</span>    LOG_PRINTF(out, <span class="stringliteral">&quot;%s%s%s &quot;</span>, color, prefix, COLOR_RESET);</div>
+<div class="line"><a id="l00262" name="l00262"></a><span class="lineno">  262</span>    <a class="code hl_define" href="group___logs.html#gab8a4b84aac717ad2a4f709618e472578">LOG_PRINTF</a>(out, <span class="stringliteral">&quot;%s%s%s &quot;</span>, color, prefix, <a class="code hl_define" href="group___logs.html#ga17f760256046df23dd0ab46602f04d02">COLOR_RESET</a>);</div>
 <div class="line"><a id="l00263" name="l00263"></a><span class="lineno">  263</span>  <span class="keywordflow">else</span></div>
-<div class="line"><a id="l00264" name="l00264"></a><span class="lineno">  264</span>    LOG_PRINTF(out, <span class="stringliteral">&quot;%s &quot;</span>, prefix);</div>
+<div class="line"><a id="l00264" name="l00264"></a><span class="lineno">  264</span>    <a class="code hl_define" href="group___logs.html#gab8a4b84aac717ad2a4f709618e472578">LOG_PRINTF</a>(out, <span class="stringliteral">&quot;%s &quot;</span>, prefix);</div>
 <div class="line"><a id="l00265" name="l00265"></a><span class="lineno">  265</span> </div>
 <div class="line"><a id="l00266" name="l00266"></a><span class="lineno">  266</span>  va_list args;</div>
 <div class="line"><a id="l00267" name="l00267"></a><span class="lineno">  267</span>  va_start(args, fmt);</div>
-<div class="line"><a id="l00268" name="l00268"></a><span class="lineno">  268</span>  LOG_VPRINTF(out, fmt, args);</div>
+<div class="line"><a id="l00268" name="l00268"></a><span class="lineno">  268</span>  <a class="code hl_define" href="group___logs.html#ga4b06fcce8e4ed7ef2ff200ed77fd029b">LOG_VPRINTF</a>(out, fmt, args);</div>
 <div class="line"><a id="l00269" name="l00269"></a><span class="lineno">  269</span>  va_end(args);</div>
 <div class="line"><a id="l00270" name="l00270"></a><span class="lineno">  270</span> </div>
-<div class="line"><a id="l00271" name="l00271"></a><span class="lineno">  271</span>  LOG_PRINTF(out, <span class="stringliteral">&quot; (at %s:%d:%s())\n&quot;</span>, file, line, func);</div>
+<div class="line"><a id="l00271" name="l00271"></a><span class="lineno">  271</span>  <a class="code hl_define" href="group___logs.html#gab8a4b84aac717ad2a4f709618e472578">LOG_PRINTF</a>(out, <span class="stringliteral">&quot; (at %s:%d:%s())\n&quot;</span>, file, line, func);</div>
 <div class="line"><a id="l00272" name="l00272"></a><span class="lineno">  272</span>  pthread_mutex_unlock(&amp;log_mutex);</div>
 <div class="line"><a id="l00273" name="l00273"></a><span class="lineno">  273</span> </div>
 <div class="line"><a id="l00274" name="l00274"></a><span class="lineno">  274</span>function_output:</div>
@@ -317,7 +317,12 @@ $(document).ready(function(){initNavTree('logs_8h_source.html',''); initResizabl
 <div class="line"><a id="l00338" name="l00338"></a><span class="lineno">  338</span> </div>
 <div class="line"><a id="l00340" name="l00340"></a><span class="lineno">  340</span><span class="comment">/* &lt; End of header file &gt; */</span></div>
 <div class="ttc" id="agroup___logs_html_ga0b87e0d3bf5853bcbb0b66a7c48fdc05"><div class="ttname"><a href="group___logs.html#ga0b87e0d3bf5853bcbb0b66a7c48fdc05">LOG_LEVEL</a></div><div class="ttdeci">#define LOG_LEVEL</div><div class="ttdoc">Default log level if not defined.</div><div class="ttdef"><b>Definition</b> logs.h:74</div></div>
+<div class="ttc" id="agroup___logs_html_ga0fb4817827dfe796a4f0a28045063195"><div class="ttname"><a href="group___logs.html#ga0fb4817827dfe796a4f0a28045063195">LOG_output</a></div><div class="ttdeci">static int LOG_output(log_level_t level, const char *color, const char *prefix, const char *file, const char *func, int line, const char *fmt,...) __attribute__((format(printf</div><div class="ttdoc">Internal logging implementation: thread‐safe, prints timestamp, optional ANSI color,...</div><div class="ttdef"><b>Definition</b> logs.h:214</div></div>
+<div class="ttc" id="agroup___logs_html_ga17f760256046df23dd0ab46602f04d02"><div class="ttname"><a href="group___logs.html#ga17f760256046df23dd0ab46602f04d02">COLOR_RESET</a></div><div class="ttdeci">#define COLOR_RESET</div><div class="ttdef"><b>Definition</b> logs.h:126</div></div>
+<div class="ttc" id="agroup___logs_html_ga4b06fcce8e4ed7ef2ff200ed77fd029b"><div class="ttname"><a href="group___logs.html#ga4b06fcce8e4ed7ef2ff200ed77fd029b">LOG_VPRINTF</a></div><div class="ttdeci">#define LOG_VPRINTF(file, fmt, args)</div><div class="ttdoc">Compiler-specific vprintf abstraction.</div><div class="ttdef"><b>Definition</b> logs.h:105</div></div>
+<div class="ttc" id="agroup___logs_html_ga51406614a2e1af065a0d938952ed91c4"><div class="ttname"><a href="group___logs.html#ga51406614a2e1af065a0d938952ed91c4">ATTR_PRINTF</a></div><div class="ttdeci">#define ATTR_PRINTF(fmt_idx, var_idx)</div><div class="ttdoc">Macro to apply GCC printf-style format checking on custom functions.</div><div class="ttdef"><b>Definition</b> logs.h:134</div></div>
 <div class="ttc" id="agroup___logs_html_ga98121d38a8cf3daf5246a349f912ca1d"><div class="ttname"><a href="group___logs.html#ga98121d38a8cf3daf5246a349f912ca1d">log_level_t</a></div><div class="ttdeci">log_level_t</div><div class="ttdoc">Defines log levels for the logging system.</div><div class="ttdef"><b>Definition</b> logs.h:58</div></div>
+<div class="ttc" id="agroup___logs_html_gab8a4b84aac717ad2a4f709618e472578"><div class="ttname"><a href="group___logs.html#gab8a4b84aac717ad2a4f709618e472578">LOG_PRINTF</a></div><div class="ttdeci">#define LOG_PRINTF(file,...)</div><div class="ttdoc">Compiler-specific printf abstraction.</div><div class="ttdef"><b>Definition</b> logs.h:94</div></div>
 <div class="ttc" id="agroup___logs_html_gga98121d38a8cf3daf5246a349f912ca1da538b2b6e011479d408ecd2be0f6d6177"><div class="ttname"><a href="group___logs.html#gga98121d38a8cf3daf5246a349f912ca1da538b2b6e011479d408ecd2be0f6d6177">LOG_LEVEL_DEBUG</a></div><div class="ttdeci">@ LOG_LEVEL_DEBUG</div><div class="ttdef"><b>Definition</b> logs.h:63</div></div>
 <div class="ttc" id="agroup___logs_html_gga98121d38a8cf3daf5246a349f912ca1da5b40f003febbc3b535649d63f4b8a44f"><div class="ttname"><a href="group___logs.html#gga98121d38a8cf3daf5246a349f912ca1da5b40f003febbc3b535649d63f4b8a44f">LOG_LEVEL_ERROR</a></div><div class="ttdeci">@ LOG_LEVEL_ERROR</div><div class="ttdef"><b>Definition</b> logs.h:60</div></div>
 <div class="ttc" id="agroup___logs_html_gga98121d38a8cf3daf5246a349f912ca1da5b4dd81b4dc7eefbc55ba03415c627ef"><div class="ttname"><a href="group___logs.html#gga98121d38a8cf3daf5246a349f912ca1da5b4dd81b4dc7eefbc55ba03415c627ef">LOG_LEVEL_WARNING</a></div><div class="ttdeci">@ LOG_LEVEL_WARNING</div><div class="ttdef"><b>Definition</b> logs.h:61</div></div>
