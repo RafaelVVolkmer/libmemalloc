@@ -11,42 +11,69 @@ on:
 
 jobs:
   build-docker:
-    runs-on: ubuntu-latest
-
+  
     strategy:
+      fail-fast: false
       matrix:
-        include:
-          - build_mode: Release
-          - build_mode: Debug
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        build_mode: [Debug, Release]
+
+    runs-on: ${{ matrix.os }}
+
+    concurrency:
+      group: docker-build-${{ github.ref }}-${{ matrix.os }}-${{ matrix.build_mode }}
+      cancel-in-progress: true
 
     env:
-      DOCKER_BUILDKIT: 1
       BUILD_TYPE: ${{ matrix.build_mode }}
-
+      DOCKER_BUILDKIT: 1
+  
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           submodules: recursive
 
-      - name: Make build script executable
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+        
+      - name: Log in to Docker Hub (if you need to push)
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Prepare build script
+        if: runner.os != 'Windows'
         run: chmod +x ./build.sh
 
-      - name: Build image (${{ env.BUILD_TYPE }})
-        run: |
-          sudo ./build.sh ${{ env.BUILD_TYPE }} --docker
+      - name: Build image (${{ matrix.build_mode }} on ${{ matrix.os }})
+        shell: bash -l {0}
+        run: ./build.sh ${{ matrix.build_mode }} --docker
 
-      - name: List local images
-        run: docker images libmemalloc:${{ env.BUILD_TYPE }}
+      - name: List built image
+        shell: bash -l {0}
+        run: docker images libmemalloc:${{ matrix.build_mode }}
 
-      - name: Show extracted files
-        run: ls -l ./bin/${{ env.BUILD_TYPE }}
+      - name: Show binaries
+        shell: bash -l {0}
+        run: ls -l bin/${{ matrix.build_mode }}
+
+      - name: Show docs
+        if: matrix.build_mode == 'Release'
+        shell: bash -l {0}
+        run: ls docs
 
       - name: Upload libraries (.so / .a)
-        if: env.ACTIONS_RUNTIME_TOKEN
+        if: success() && env.ACT != 'true'
         uses: actions/upload-artifact@v4
         with:
-          name: libmemalloc-${{ env.BUILD_TYPE }}
-          path: |
-            bin/${{ env.BUILD_TYPE }}/*.so
-            bin/${{ env.BUILD_TYPE }}/*.a
+          name: libmemalloc-${{ matrix.os }}-${{ matrix.build_mode }}
+          path: bin/${{ matrix.build_mode }}/*.{so,a}
+
+      - name: Upload Doxygen site
+        if: success() && matrix.build_mode == 'Release' && env.ACT != 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: docs-${{ matrix.os }}-release
+          path: docs/
