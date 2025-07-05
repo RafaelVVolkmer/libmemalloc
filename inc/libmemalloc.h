@@ -45,27 +45,27 @@ extern "C"
  *              on the current target architecture.
  * ========================================================================== */
 #if defined(__x86_64__) || defined(_M_X64)
-  #define ARCH_ALIGNMENT ((uint8_t)8U) /**< x86_64 (CISC 64 bits) */
+  #define ARCH_ALIGNMENT (8U) /**< x86_64 (CISC 64 bits) */
 #elif defined(__i386__) || defined(_M_IX86)
-  #define ARCH_ALIGNMENT ((uint8_t)4U) /**< x86 (CISC 32 bits) */
+  #define ARCH_ALIGNMENT (4U) /**< x86 (CISC 32 bits) */
 #elif defined(__aarch64__) || defined(_M_ARM64)
-  #define ARCH_ALIGNMENT ((uint8_t)8U) /**< ARM (64 bits) */
+  #define ARCH_ALIGNMENT (8U) /**< ARM (64 bits) */
 #elif defined(__arm__) || defined(_M_ARM)
-  #define ARCH_ALIGNMENT ((uint8_t)4U) /**< ARM (32 bits) */
+  #define ARCH_ALIGNMENT (4U) /**< ARM (32 bits) */
 #elif defined(__riscv) && (__riscv_xlen == 64)
-  #define ARCH_ALIGNMENT ((uint8_t)8U) /**< RISC-V (64 bits) */
+  #define ARCH_ALIGNMENT (8U) /**< RISC-V (64 bits) */
 #elif defined(__riscv) && (__riscv_xlen == 32)
-  #define ARCH_ALIGNMENT ((uint8_t)4U) /**< RISC-V (32 bits) */
+  #define ARCH_ALIGNMENT (4U) /**< RISC-V (32 bits) */
 #elif defined(__powerpc64__)
-  #define ARCH_ALIGNMENT ((uint8_t)8U) /**< PowerPC (64 bits) */
+  #define ARCH_ALIGNMENT (8U) /**< PowerPC (64 bits) */
 #elif defined(__powerpc__)
-  #define ARCH_ALIGNMENT ((uint8_t)4U) /**< PowerPC (32 bits) */
+  #define ARCH_ALIGNMENT (4U) /**< PowerPC (32 bits) */
 #elif defined(__TI_PRU__) || defined(__PRU__)
-  #define ARCH_ALIGNMENT ((uint8_t)4U) /**< TI PRU (32 bits) */
+  #define ARCH_ALIGNMENT (4U) /**< TI PRU (32 bits) */
 #elif defined(__AVR__)
-  #define ARCH_ALIGNMENT ((uint8_t)2U) /**< AVR (8 bits) */
+  #define ARCH_ALIGNMENT (2U) /**< AVR (8 bits) */
 #else
-  #define ARCH_ALIGNMENT ((uint8_t)4U)
+  #define ARCH_ALIGNMENT (4U)
 #endif
 
 /** ============================================================================

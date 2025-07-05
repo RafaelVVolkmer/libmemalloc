@@ -79,6 +79,20 @@
  *               P R I V A T E  D E F I N E S  &  M A C R O S
  * ========================================================================== */
 
+/** ===========================================================================
+ *  @def        ATTRIBUTE_UNUSED
+ *  @brief      Marks a symbol as potentially unused.
+ *
+ *  @details    When supported by the compiler (GCC/Clang), expands to
+ *              __attribute__((unused)), suppressing “unused variable”
+ *              warnings. On other compilers it expands to nothing.
+ * ========================================================================== */
+#if defined(__GNUC__) || defined(__clang__)
+  #define __UNUSED __attribute__((unused))
+#else
+  #define __UNUSED
+#endif
+
 /** ============================================================================
  *  @def        __GC_HOT
  *  @brief      Marks garbage-collector functions as “hot” (performance
@@ -151,16 +165,24 @@
  * ========================================================================== */
 #define CANARY_VALUE     (uint32_t)(0xDEADBEEFULL)
 
-/** ============================================================================
+/** ============================================================================ 
  *  @def        PREFETCH_MULT
  *  @brief      Prefetch optimization multiplier constant
  *
- *  @details    64-bit repeating byte pattern (0x01 per byte) used
- *              for efficient  memory block operations. Enables
- *              single-byte value replication across full register
- *              width in vectorized operations.
+ *  @details    Repeating-byte pattern used for efficient memory block
+ *              operations. Faz stores de largura igual a ARCH_ALIGNMENT.
  * ========================================================================== */
-#define PREFETCH_MULT    (uint64_t)(0x0101010101010101ULL)
+#if ARCH_ALIGNMENT == 8
+  #define PREFETCH_MULT (uint64_t)(0x0101010101010101ULL)
+#elif ARCH_ALIGNMENT == 4
+  #define PREFETCH_MULT (uint32_t)(0x01010101U)
+#endif
+
+#if ARCH_ALIGNMENT == 8
+  #define COPY_WORD uint64_t
+#elif ARCH_ALIGNMENT == 4
+  #define COPY_WORD uint32_t
+#endif
 
 /** ============================================================================
  *  @def        BYTES_PER_CLASS
@@ -1032,8 +1054,8 @@ void *MEM_memset(void *const source, const int value, const size_t size)
   for (; (size_t)(iterator + ARCH_ALIGNMENT) <= size;
        iterator += (size_t)ARCH_ALIGNMENT)
   {
-    *(uint64_t *)(ptr + iterator)
-      = ((uint64_t)(unsigned char)value) * PREFETCH_MULT;
+    *(COPY_WORD *)(ptr + iterator)
+      = ((COPY_WORD)(unsigned char)value) * PREFETCH_MULT;
     __builtin_prefetch(((ptr + iterator) + CACHE_LINE_SIZE), 1u, 1u);
   }
 
@@ -1112,7 +1134,7 @@ void *MEM_memcpy(void *const dest, const void *src, const size_t size)
   for (; (size_t)(iterator + ARCH_ALIGNMENT) <= size;
        iterator += (size_t)ARCH_ALIGNMENT)
   {
-    *(uint64_t *)(destine + iterator) = *(const uint64_t *)(source + iterator);
+    *(COPY_WORD *)(destine + iterator) = *(const COPY_WORD *)(source + iterator);
     __builtin_prefetch((source + iterator) + CACHE_LINE_SIZE, 0u, 1u);
     __builtin_prefetch((destine + iterator) + CACHE_LINE_SIZE, 1u, 1u);
   }
@@ -1532,7 +1554,7 @@ int MEM_allocatorInit(mem_allocator_t *const allocator)
 {
   int ret = EXIT_SUCCESS;
 
-  static bool mempool_created = false;
+  __UNUSED static bool mempool_created = false;
 
   mem_arena_t *arena     = NULL;
   gc_thread_t *gc_thread = NULL;
@@ -1579,7 +1601,7 @@ int MEM_allocatorInit(mem_allocator_t *const allocator)
 
   allocator->num_arenas = 1u;
 
-  allocator->arenas = MEM_growUserHeap(allocator, sizeof(mem_arena_t));
+  allocator->arenas = (mem_arena_t *)MEM_growUserHeap(allocator, sizeof(mem_arena_t));
   if (allocator->arenas == PTR_ERR(-ENOMEM))
   {
     ret = -ENOMEM;
@@ -3289,14 +3311,14 @@ function_output:
  * ========================================================================== */
 static void *MEM_gcThreadFunc(void *arg)
 {
-  void *ret = NULL;
+  int ret = EXIT_SUCCESS;
 
   mem_allocator_t *allocator = NULL;
   gc_thread_t     *gc_thread = NULL;
 
   if (UNLIKELY(arg == NULL))
   {
-    ret = PTR_ERR(-EINVAL);
+    ret = -EINVAL;
     LOG_ERROR("Invalid parameters: arg: %p. "
               "Error code: %d.\n",
               (void *)arg,
@@ -3321,12 +3343,12 @@ static void *MEM_gcThreadFunc(void *arg)
 
     pthread_mutex_unlock(&gc_thread->gc_lock);
 
-    ret = PTR_ERR(MEM_gcMark(allocator));
-    if (ret != PTR_ERR(EXIT_SUCCESS))
+    ret = MEM_gcMark(allocator);
+    if (ret != EXIT_SUCCESS)
       goto mutex_unlock;
 
-    ret = PTR_ERR(MEM_gcSweep(allocator));
-    if (ret != PTR_ERR(EXIT_SUCCESS))
+    ret = MEM_gcSweep(allocator);
+    if (ret != EXIT_SUCCESS)
       goto mutex_unlock;
 
     usleep(gc_thread->gc_interval_ms * NR_OBJS);
@@ -3337,7 +3359,7 @@ static void *MEM_gcThreadFunc(void *arg)
 mutex_unlock:
   pthread_mutex_unlock(&gc_thread->gc_lock);
 function_output:
-  return ret;
+  return PTR_ERR(ret);
 }
 
 /** ============================================================================
