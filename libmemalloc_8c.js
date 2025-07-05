@@ -2,6 +2,7 @@ var libmemalloc_8c =
 [
     [ "__GC_COLD", "libmemalloc_8c.html#ab9da8f4b500180e347293fb86ac4dd3a", null ],
     [ "__GC_HOT", "libmemalloc_8c.html#a0f87f19f941b9a5843c969926ff03174", null ],
+    [ "__UNUSED", "libmemalloc_8c.html#a6c30d490cd2302ff05d355f3ec844c1f", null ],
     [ "_GNU_SOURCE", "libmemalloc_8c.html#a369266c24eacffb87046522897a570d5", null ],
     [ "BYTES_PER_CLASS", "libmemalloc_8c.html#a2ddd2aeacc155dcd57ad9f7ed7199d9f", null ],
     [ "CACHE_LINE_SIZE", "libmemalloc_8c.html#af89f60b07247176687889ade776c8e10", null ],
@@ -13,7 +14,6 @@ var libmemalloc_8c =
     [ "MIN_BLOCK_SIZE", "libmemalloc_8c.html#ac1f29ba54415975a2fa23e276fdf8a0f", null ],
     [ "MMAP_THRESHOLD", "libmemalloc_8c.html#a2911160c515036ceb8c7470a05583ae0", null ],
     [ "NR_OBJS", "libmemalloc_8c.html#a52c92840d7afc957a6424b6dc3cc089c", null ],
-    [ "PREFETCH_MULT", "libmemalloc_8c.html#a01c316adddd425ace6ff7571a076526d", null ],
     [ "UNLIKELY", "libmemalloc_8c.html#ab10d0a221f4d7a706701b806c8135fd7", null ],
     [ "find_fn_t", "libmemalloc_8c.html#a7d054d3a536794b662ab33075d4b9fc6", null ],
     [ "MEM_allocatorCalloc", "libmemalloc_8c.html#a1a8d21bd0df49c0eabd6a2805e0fef67", null ],

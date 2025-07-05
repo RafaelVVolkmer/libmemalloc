@@ -6,6 +6,7 @@ var searchData=
   ['_5f_5flibmemalloc_5fmalloc_3',['__LIBMEMALLOC_MALLOC',['../group___libmemalloc.html#gaf415f4394a90cbf3b58ffb43c1d26122',1,'libmemalloc.h']]],
   ['_5f_5flibmemalloc_5frealloc_4',['__LIBMEMALLOC_REALLOC',['../group___libmemalloc.html#gab2ea557d67d841f4f1a765a7ebb2ec4c',1,'libmemalloc.h']]],
   ['_5f_5fpacked_5',['__PACKED',['../group___libmemalloc.html#gabe8996d3d985ee1529475443cc635bf1',1,'libmemalloc.h']]],
-  ['_5fgnu_5fsource_6',['_GNU_SOURCE',['../libmemalloc_8c.html#a369266c24eacffb87046522897a570d5',1,'libmemalloc.c']]],
-  ['_5fposix_5fc_5fsource_7',['_POSIX_C_SOURCE',['../group___logs.html#ga3024ccd4a9af5109d24e6c57565d74a1',1,'logs.h']]]
+  ['_5f_5funused_6',['__UNUSED',['../libmemalloc_8c.html#a6c30d490cd2302ff05d355f3ec844c1f',1,'libmemalloc.c']]],
+  ['_5fgnu_5fsource_7',['_GNU_SOURCE',['../libmemalloc_8c.html#a369266c24eacffb87046522897a570d5',1,'libmemalloc.c']]],
+  ['_5fposix_5fc_5fsource_8',['_POSIX_C_SOURCE',['../group___logs.html#ga3024ccd4a9af5109d24e6c57565d74a1',1,'logs.h']]]
 ];

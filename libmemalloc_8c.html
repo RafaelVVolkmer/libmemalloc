@@ -157,6 +157,8 @@ Macros</h2></td></tr>
 <tr class="memitem:a0b87e0d3bf5853bcbb0b66a7c48fdc05" id="r_a0b87e0d3bf5853bcbb0b66a7c48fdc05"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="libmemalloc_8c.html#a0b87e0d3bf5853bcbb0b66a7c48fdc05">LOG_LEVEL</a>&#160;&#160;&#160;<a class="el" href="group___logs.html#gga98121d38a8cf3daf5246a349f912ca1da69dacb1837e1e37c6ed34cc2ee1d8848">LOG_LEVEL_NONE</a></td></tr>
 <tr class="memdesc:a0b87e0d3bf5853bcbb0b66a7c48fdc05"><td class="mdescLeft">&#160;</td><td class="mdescRight">Logging verbosity threshold for this module.  <br /></td></tr>
 <tr class="separator:a0b87e0d3bf5853bcbb0b66a7c48fdc05"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6c30d490cd2302ff05d355f3ec844c1f" id="r_a6c30d490cd2302ff05d355f3ec844c1f"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="libmemalloc_8c.html#a6c30d490cd2302ff05d355f3ec844c1f">__UNUSED</a></td></tr>
+<tr class="separator:a6c30d490cd2302ff05d355f3ec844c1f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0f87f19f941b9a5843c969926ff03174" id="r_a0f87f19f941b9a5843c969926ff03174"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="libmemalloc_8c.html#a0f87f19f941b9a5843c969926ff03174">__GC_HOT</a></td></tr>
 <tr class="memdesc:a0f87f19f941b9a5843c969926ff03174"><td class="mdescLeft">&#160;</td><td class="mdescRight">Marks garbage-collector functions as “hot” (performance critical).  <br /></td></tr>
 <tr class="separator:a0f87f19f941b9a5843c969926ff03174"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -175,9 +177,6 @@ Macros</h2></td></tr>
 <tr class="memitem:ae09915f592311e3a76ee2e935e6d6649" id="r_ae09915f592311e3a76ee2e935e6d6649"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="libmemalloc_8c.html#ae09915f592311e3a76ee2e935e6d6649">CANARY_VALUE</a>&#160;&#160;&#160;(uint32_t)(0xDEADBEEFULL)</td></tr>
 <tr class="memdesc:ae09915f592311e3a76ee2e935e6d6649"><td class="mdescLeft">&#160;</td><td class="mdescRight">Canary value to detect buffer overflows.  <br /></td></tr>
 <tr class="separator:ae09915f592311e3a76ee2e935e6d6649"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a01c316adddd425ace6ff7571a076526d" id="r_a01c316adddd425ace6ff7571a076526d"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="libmemalloc_8c.html#a01c316adddd425ace6ff7571a076526d">PREFETCH_MULT</a>&#160;&#160;&#160;(uint64_t)(0x0101010101010101ULL)</td></tr>
-<tr class="memdesc:a01c316adddd425ace6ff7571a076526d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Prefetch optimization multiplier constant.  <br /></td></tr>
-<tr class="separator:a01c316adddd425ace6ff7571a076526d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2ddd2aeacc155dcd57ad9f7ed7199d9f" id="r_a2ddd2aeacc155dcd57ad9f7ed7199d9f"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="libmemalloc_8c.html#a2ddd2aeacc155dcd57ad9f7ed7199d9f">BYTES_PER_CLASS</a>&#160;&#160;&#160;(uint8_t)(128U)</td></tr>
 <tr class="memdesc:a2ddd2aeacc155dcd57ad9f7ed7199d9f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Fixed byte allocation per classification unit.  <br /></td></tr>
 <tr class="separator:a2ddd2aeacc155dcd57ad9f7ed7199d9f"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -360,6 +359,20 @@ Functions</h2></td></tr>
 
 <p>Marks garbage-collector functions as “hot” (performance critical). </p>
 <p>When supported by the compiler (GCC/Clang), expands to <b>attribute</b>((hot)), informing the optimizer that the annotated function is on a performance-critical path and should be optimized accordingly. Otherwise, expands to nothing. </p>
+
+</div>
+</div>
+<a id="a6c30d490cd2302ff05d355f3ec844c1f" name="a6c30d490cd2302ff05d355f3ec844c1f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6c30d490cd2302ff05d355f3ec844c1f">&#9670;&#160;</a></span>__UNUSED</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define __UNUSED</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
 
 </div>
 </div>
@@ -564,23 +577,6 @@ Functions</h2></td></tr>
 
 <p>Number of iterations used to scale GC sleep duration. </p>
 <p>Specifies the multiplier applied to the base GC interval (in milliseconds) to compute the actual sleep time between successive garbage-collection cycles: sleep_time = gc_interval_ms * NR_OBJS </p>
-
-</div>
-</div>
-<a id="a01c316adddd425ace6ff7571a076526d" name="a01c316adddd425ace6ff7571a076526d"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a01c316adddd425ace6ff7571a076526d">&#9670;&#160;</a></span>PREFETCH_MULT</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define PREFETCH_MULT&#160;&#160;&#160;(uint64_t)(0x0101010101010101ULL)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Prefetch optimization multiplier constant. </p>
-<p>64-bit repeating byte pattern (0x01 per byte) used for efficient memory block operations. Enables single-byte value replication across full register width in vectorized operations. </p>
 
 </div>
 </div>
