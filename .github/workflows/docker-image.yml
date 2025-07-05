@@ -44,13 +44,17 @@ jobs:
       BUILD_TYPE: ${{ matrix.build_mode }}
       DOCKER_CLI_EXPERIMENTAL: enabled
       DOCKER_BUILDKIT: 1
-      SANITIZED_PLATFORM: ${{ matrix.platform//\//- }}
   
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
         with:
           submodules: recursive
+
+      - name: Compute SANITIZED_PLATFORM
+        run: |
+          SANITIZED="${{ matrix.platform//\//- }}"
+          echo "SANITIZED_PLATFORM=$SANITIZED" >> $GITHUB_ENV
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
