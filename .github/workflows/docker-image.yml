@@ -44,6 +44,7 @@ jobs:
       BUILD_TYPE: ${{ matrix.build_mode }}
       DOCKER_CLI_EXPERIMENTAL: enabled
       DOCKER_BUILDKIT: 1
+      SANITIZED_PLATFORM: ${{ matrix.platform//\//- }}
   
     steps:
       - name: Checkout repo
@@ -76,12 +77,12 @@ jobs:
         if: success() && env.ACT != 'true'
         uses: actions/upload-artifact@v4
         with:
-          name: libmemalloc-${{ matrix.platform }}-${{ matrix.build_mode }}
+          name: libmemalloc-${{ env.SANITIZED_PLATFORM }}-${{ matrix.build_mode }}
           path: bin/${{ matrix.build_mode }}/*.{so,a}
 
       - name: Upload docs
         if: success() && matrix.build_mode == 'Release' && env.ACT != 'true'
         uses: actions/upload-artifact@v4
         with:
-          name: docs-${{ matrix.platform }}-release
+          name: docs-${{ env.SANITIZED_PLATFORM }}-release
           path: docs/
