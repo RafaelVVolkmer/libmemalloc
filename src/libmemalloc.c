@@ -165,7 +165,7 @@
  * ========================================================================== */
 #define CANARY_VALUE     (uint32_t)(0xDEADBEEFULL)
 
-/** ============================================================================ 
+/** ============================================================================
  *  @def        PREFETCH_MULT
  *  @brief      Prefetch optimization multiplier constant
  *
@@ -192,7 +192,7 @@
  *              classification category. Ensures memory alignment
  *              and efficient block processing in data structures.
  * ========================================================================== */
-#define BYTES_PER_CLASS  (uint8_t)(128U)
+#define BYTES_PER_CLASS (uint8_t)(128U)
 
 /** ============================================================================
  *  @def        MMAP_THRESHOLD
@@ -203,7 +203,7 @@
  *              (brk/sbrk) to using mmap for more efficient large-block
  *              handling and to reduce heap fragmentation.
  * ========================================================================== */
-#define MMAP_THRESHOLD   (size_t)(128U * 1024U)
+#define MMAP_THRESHOLD  (size_t)(128U * 1024U)
 
 /** ============================================================================
  *  @def        MIN_BLOCK_SIZE
@@ -212,7 +212,7 @@
  *  @details    Ensures each memory block is large enough to hold
  *              a block header and alignment padding.
  * ========================================================================== */
-#define MIN_BLOCK_SIZE   (size_t)(sizeof(block_header_t) + ARCH_ALIGNMENT)
+#define MIN_BLOCK_SIZE  (size_t)(sizeof(block_header_t) + ARCH_ALIGNMENT)
 
 /** ============================================================================
  *  @def        NR_OBJS
@@ -223,7 +223,7 @@
  *              successive garbage-collection cycles:
  *                  sleep_time = gc_interval_ms * NR_OBJS
  * ========================================================================== */
-#define NR_OBJS          (uint16_t)(1000U)
+#define NR_OBJS         (uint16_t)(1000U)
 
 /** ============================================================================
  *  @def        LIKELY(x)
@@ -234,7 +234,7 @@
  *  @details    Helps the compiler optimize branch prediction by
  *              indicating the condition is expected to be true.
  * ========================================================================== */
-#define LIKELY(x)        (__builtin_expect(!!(x), 1))
+#define LIKELY(x)       (__builtin_expect(!!(x), 1))
 
 /** ============================================================================
  *  @def        UNLIKELY(x)
@@ -245,7 +245,7 @@
  *  @details    Helps the compiler optimize branch prediction by
  *              indicating the condition is expected to be false.
  * ========================================================================== */
-#define UNLIKELY(x)      (__builtin_expect(!!(x), 0))
+#define UNLIKELY(x)     (__builtin_expect(!!(x), 0))
 
 /** ============================================================================
  *              P R I V A T E  T Y P E S  D E F I N I T I O N
@@ -1134,7 +1134,8 @@ void *MEM_memcpy(void *const dest, const void *src, const size_t size)
   for (; (size_t)(iterator + ARCH_ALIGNMENT) <= size;
        iterator += (size_t)ARCH_ALIGNMENT)
   {
-    *(COPY_WORD *)(destine + iterator) = *(const COPY_WORD *)(source + iterator);
+    *(COPY_WORD *)(destine + iterator)
+      = *(const COPY_WORD *)(source + iterator);
     __builtin_prefetch((source + iterator) + CACHE_LINE_SIZE, 0u, 1u);
     __builtin_prefetch((destine + iterator) + CACHE_LINE_SIZE, 1u, 1u);
   }
@@ -1601,7 +1602,8 @@ int MEM_allocatorInit(mem_allocator_t *const allocator)
 
   allocator->num_arenas = 1u;
 
-  allocator->arenas = (mem_arena_t *)MEM_growUserHeap(allocator, sizeof(mem_arena_t));
+  allocator->arenas
+    = (mem_arena_t *)MEM_growUserHeap(allocator, sizeof(mem_arena_t));
   if (allocator->arenas == PTR_ERR(-ENOMEM))
   {
     ret = -ENOMEM;
