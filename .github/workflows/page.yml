@@ -1,52 +1,52 @@
-name: Docker Image CI
+name: Web Page
 
 permissions:
-  contents: read
+  contents: write
+  pages:   write
+  id-token: write
+  actions: write
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ main ]
   pull_request:
-    branches: [ "main" ]
-
+    branches: [ main ]
 jobs:
-  build-docker:
+  build:
     runs-on: ubuntu-latest
 
     strategy:
       matrix:
-        include:
-          - build_mode: Release
-          - build_mode: Debug
+        build_type: [Release]
 
     env:
-      DOCKER_BUILDKIT: 1
-      BUILD_TYPE: ${{ matrix.build_mode }}
+      BUILD_TYPE: ${{ matrix.build_type }}
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-        with:
-          submodules: recursive
+
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y software-properties-common
+          sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
+          sudo apt-get update
+          sudo apt-get install -y \
+          gcc-13 g++-13 cmake make valgrind doxygen graphviz
+          sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-13 100
+          sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-13 100
+          gcc --version
+          g++ --version
 
       - name: Make build script executable
         run: chmod +x ./build.sh
 
-      - name: Build image (${{ env.BUILD_TYPE }})
-        run: |
-          sudo ./build.sh ${{ env.BUILD_TYPE }} --docker
+      - name: Build (${{ env.BUILD_TYPE }})
+        run: ./build.sh ${{ env.BUILD_TYPE }}
 
-      - name: List local images
-        run: docker images libmemalloc:${{ env.BUILD_TYPE }}
-
-      - name: Show extracted files
-        run: ls -l ./bin/${{ env.BUILD_TYPE }}
-
-      - name: Upload libraries (.so / .a)
-        if: env.ACTIONS_RUNTIME_TOKEN
-        uses: actions/upload-artifact@v4
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
         with:
-          name: libmemalloc-${{ env.BUILD_TYPE }}
-          path: |
-            bin/${{ env.BUILD_TYPE }}/*.so
-            bin/${{ env.BUILD_TYPE }}/*.a
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./docs/html
