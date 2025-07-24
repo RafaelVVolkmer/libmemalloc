@@ -136,17 +136,18 @@ $(document).ready(function(){initNavTree('libmemalloc_8h.html',''); initResizabl
 <div class="contents">
 <div class="textblock"><code>#include &lt;pthread.h&gt;</code><br />
 <code>#include &lt;stdatomic.h&gt;</code><br />
+<code>#include &lt;stdbool.h&gt;</code><br />
 <code>#include &lt;stdint.h&gt;</code><br />
 <code>#include &lt;string.h&gt;</code><br />
 </div><div class="textblock"><div class="dynheader">
 Include dependency graph for libmemalloc.h:</div>
 <div class="dyncontent">
-<div class="center"><iframe scrolling="no" frameborder="0" src="libmemalloc_8h__incl.svg" width="408" height="124"><p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p></iframe></div>
+<div class="center"><!-- SVG 0 --></div>
 </div>
 </div><div class="textblock"><div class="dynheader">
 This graph shows which files directly or indirectly include this file:</div>
 <div class="dyncontent">
-<div class="center"><iframe scrolling="no" frameborder="0" src="libmemalloc_8h__dep__incl.svg" width="242" height="139"><p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p></iframe></div>
+<div class="center"><!-- SVG 1 --></div>
 </div>
 </div>
 <p><a href="libmemalloc_8h_source.html">Go to the source code of this file.</a></p>
@@ -171,9 +172,9 @@ Classes</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="define-members" name="define-members"></a>
 Macros</h2></td></tr>
-<tr class="memitem:ga07ea769b5c72cdf928879e29e16edf82" id="r_ga07ea769b5c72cdf928879e29e16edf82"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___libmemalloc.html#ga07ea769b5c72cdf928879e29e16edf82">ARCH_ALIGNMENT</a>&#160;&#160;&#160;(4U)</td></tr>
-<tr class="memdesc:ga07ea769b5c72cdf928879e29e16edf82"><td class="mdescLeft">&#160;</td><td class="mdescRight">Defines architecture-specific memory alignment.  <br /></td></tr>
-<tr class="separator:ga07ea769b5c72cdf928879e29e16edf82"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaabc39bf362e54cf3bb45d3dfe4933ccb" id="r_gaabc39bf362e54cf3bb45d3dfe4933ccb"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___libmemalloc.html#gaabc39bf362e54cf3bb45d3dfe4933ccb">__ALIGN</a></td></tr>
+<tr class="memdesc:gaabc39bf362e54cf3bb45d3dfe4933ccb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Defines structure alignment and enforces the target byte order.  <br /></td></tr>
+<tr class="separator:gaabc39bf362e54cf3bb45d3dfe4933ccb"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gab530abfacb1e55f2317fe51a1dfc9f61" id="r_gab530abfacb1e55f2317fe51a1dfc9f61"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___libmemalloc.html#gab530abfacb1e55f2317fe51a1dfc9f61">__LIBMEMALLOC_API</a></td></tr>
 <tr class="memdesc:gab530abfacb1e55f2317fe51a1dfc9f61"><td class="mdescLeft">&#160;</td><td class="mdescRight">Defines the default visibility attribute for exported symbols.  <br /></td></tr>
 <tr class="separator:gab530abfacb1e55f2317fe51a1dfc9f61"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -183,13 +184,10 @@ Macros</h2></td></tr>
 <tr class="memitem:gab2ea557d67d841f4f1a765a7ebb2ec4c" id="r_gab2ea557d67d841f4f1a765a7ebb2ec4c"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___libmemalloc.html#gab2ea557d67d841f4f1a765a7ebb2ec4c">__LIBMEMALLOC_REALLOC</a></td></tr>
 <tr class="memdesc:gab2ea557d67d841f4f1a765a7ebb2ec4c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Annotates reallocator functions that may return a pointer to resized memory.  <br /></td></tr>
 <tr class="separator:gab2ea557d67d841f4f1a765a7ebb2ec4c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gabe8996d3d985ee1529475443cc635bf1" id="r_gabe8996d3d985ee1529475443cc635bf1"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___libmemalloc.html#gabe8996d3d985ee1529475443cc635bf1">__PACKED</a></td></tr>
-<tr class="memdesc:gabe8996d3d985ee1529475443cc635bf1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Defines packed structure attribute with alignment.  <br /></td></tr>
-<tr class="separator:gabe8996d3d985ee1529475443cc635bf1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gad279cb341b8fafacaef5650243902eee" id="r_gad279cb341b8fafacaef5650243902eee"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___libmemalloc.html#gad279cb341b8fafacaef5650243902eee">PTR_ERR</a>(x)&#160;&#160;&#160;((void *)((intptr_t)(x)))</td></tr>
 <tr class="memdesc:gad279cb341b8fafacaef5650243902eee"><td class="mdescLeft">&#160;</td><td class="mdescRight">Encodes a negative error code as an error pointer.  <br /></td></tr>
 <tr class="separator:gad279cb341b8fafacaef5650243902eee"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gabe7f8cd9a0ce69b71567a3870415be66" id="r_gabe7f8cd9a0ce69b71567a3870415be66"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___libmemalloc.html#gabe7f8cd9a0ce69b71567a3870415be66">ALIGN</a>(x)&#160;&#160;&#160;(((x) + (<a class="el" href="group___libmemalloc.html#ga07ea769b5c72cdf928879e29e16edf82">ARCH_ALIGNMENT</a> - 1U)) &amp; ~(<a class="el" href="group___libmemalloc.html#ga07ea769b5c72cdf928879e29e16edf82">ARCH_ALIGNMENT</a> - 1U))</td></tr>
+<tr class="memitem:gabe7f8cd9a0ce69b71567a3870415be66" id="r_gabe7f8cd9a0ce69b71567a3870415be66"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___libmemalloc.html#gabe7f8cd9a0ce69b71567a3870415be66">ALIGN</a>(x)&#160;&#160;&#160;(((x) + (ARCH_ALIGNMENT - 1U)) &amp; ~(ARCH_ALIGNMENT - 1U))</td></tr>
 <tr class="memdesc:gabe7f8cd9a0ce69b71567a3870415be66"><td class="mdescLeft">&#160;</td><td class="mdescRight">Aligns a given value to the nearest memory boundary.  <br /></td></tr>
 <tr class="separator:gabe7f8cd9a0ce69b71567a3870415be66"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga78fc3a47b5647490189daf6d222121cc" id="r_ga78fc3a47b5647490189daf6d222121cc"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___libmemalloc.html#ga78fc3a47b5647490189daf6d222121cc">GC_INTERVAL_MS</a>&#160;&#160;&#160;(uint16_t)(100U)</td></tr>

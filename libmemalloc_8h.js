@@ -1,11 +1,10 @@
 var libmemalloc_8h =
 [
+    [ "__ALIGN", "group___libmemalloc.html#gaabc39bf362e54cf3bb45d3dfe4933ccb", null ],
     [ "__LIBMEMALLOC_API", "group___libmemalloc.html#gab530abfacb1e55f2317fe51a1dfc9f61", null ],
     [ "__LIBMEMALLOC_MALLOC", "group___libmemalloc.html#gaf415f4394a90cbf3b58ffb43c1d26122", null ],
     [ "__LIBMEMALLOC_REALLOC", "group___libmemalloc.html#gab2ea557d67d841f4f1a765a7ebb2ec4c", null ],
-    [ "__PACKED", "group___libmemalloc.html#gabe8996d3d985ee1529475443cc635bf1", null ],
     [ "ALIGN", "group___libmemalloc.html#gabe7f8cd9a0ce69b71567a3870415be66", null ],
-    [ "ARCH_ALIGNMENT", "group___libmemalloc.html#ga07ea769b5c72cdf928879e29e16edf82", null ],
     [ "GC_INTERVAL_MS", "group___libmemalloc.html#ga78fc3a47b5647490189daf6d222121cc", null ],
     [ "PTR_ERR", "group___libmemalloc.html#gad279cb341b8fafacaef5650243902eee", null ],
     [ "allocation_strategy_t", "group___libmemalloc.html#ga36d2f4c096864df4566ad4ccbf9f1cc8", [

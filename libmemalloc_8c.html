@@ -146,7 +146,7 @@ $(document).ready(function(){initNavTree('libmemalloc_8c.html',''); initResizabl
 </div><div class="textblock"><div class="dynheader">
 Include dependency graph for libmemalloc.c:</div>
 <div class="dyncontent">
-<div class="center"><iframe scrolling="no" frameborder="0" src="libmemalloc_8c__incl.svg" width="1348" height="198"><p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p></iframe></div>
+<div class="center"><!-- SVG 0 --></div>
 </div>
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="define-members" name="define-members"></a>
@@ -168,22 +168,16 @@ Macros</h2></td></tr>
 <tr class="memitem:a8acceb8a32aeb665817bcac0ae976c3e" id="r_a8acceb8a32aeb665817bcac0ae976c3e"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="libmemalloc_8c.html#a8acceb8a32aeb665817bcac0ae976c3e">DEFAULT_NUM_BINS</a>&#160;&#160;&#160;(uint8_t)(10U)</td></tr>
 <tr class="memdesc:a8acceb8a32aeb665817bcac0ae976c3e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Default number of size classes (bins) for free lists.  <br /></td></tr>
 <tr class="separator:a8acceb8a32aeb665817bcac0ae976c3e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a54061e5993a5517320d425f44408cc86" id="r_a54061e5993a5517320d425f44408cc86"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="libmemalloc_8c.html#a54061e5993a5517320d425f44408cc86">MAGIC_NUMBER</a>&#160;&#160;&#160;(uint32_t)(0xBEEFDEADU)</td></tr>
-<tr class="memdesc:a54061e5993a5517320d425f44408cc86"><td class="mdescLeft">&#160;</td><td class="mdescRight">Magic number to validate memory blocks.  <br /></td></tr>
-<tr class="separator:a54061e5993a5517320d425f44408cc86"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af89f60b07247176687889ade776c8e10" id="r_af89f60b07247176687889ade776c8e10"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="libmemalloc_8c.html#af89f60b07247176687889ade776c8e10">CACHE_LINE_SIZE</a>&#160;&#160;&#160;(uint8_t)(64U)</td></tr>
 <tr class="memdesc:af89f60b07247176687889ade776c8e10"><td class="mdescLeft">&#160;</td><td class="mdescRight">Size of the CPU cache line in bytes.  <br /></td></tr>
 <tr class="separator:af89f60b07247176687889ade776c8e10"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae09915f592311e3a76ee2e935e6d6649" id="r_ae09915f592311e3a76ee2e935e6d6649"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="libmemalloc_8c.html#ae09915f592311e3a76ee2e935e6d6649">CANARY_VALUE</a>&#160;&#160;&#160;(uint32_t)(0xDEADBEEFULL)</td></tr>
-<tr class="memdesc:ae09915f592311e3a76ee2e935e6d6649"><td class="mdescLeft">&#160;</td><td class="mdescRight">Canary value to detect buffer overflows.  <br /></td></tr>
-<tr class="separator:ae09915f592311e3a76ee2e935e6d6649"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2ddd2aeacc155dcd57ad9f7ed7199d9f" id="r_a2ddd2aeacc155dcd57ad9f7ed7199d9f"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="libmemalloc_8c.html#a2ddd2aeacc155dcd57ad9f7ed7199d9f">BYTES_PER_CLASS</a>&#160;&#160;&#160;(uint8_t)(128U)</td></tr>
 <tr class="memdesc:a2ddd2aeacc155dcd57ad9f7ed7199d9f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Fixed byte allocation per classification unit.  <br /></td></tr>
 <tr class="separator:a2ddd2aeacc155dcd57ad9f7ed7199d9f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2911160c515036ceb8c7470a05583ae0" id="r_a2911160c515036ceb8c7470a05583ae0"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="libmemalloc_8c.html#a2911160c515036ceb8c7470a05583ae0">MMAP_THRESHOLD</a>&#160;&#160;&#160;(size_t)(128U * 1024U)</td></tr>
 <tr class="memdesc:a2911160c515036ceb8c7470a05583ae0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Threshold size for using mmap-based allocation.  <br /></td></tr>
 <tr class="separator:a2911160c515036ceb8c7470a05583ae0"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac1f29ba54415975a2fa23e276fdf8a0f" id="r_ac1f29ba54415975a2fa23e276fdf8a0f"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="libmemalloc_8c.html#ac1f29ba54415975a2fa23e276fdf8a0f">MIN_BLOCK_SIZE</a>&#160;&#160;&#160;(size_t)(sizeof(<a class="el" href="structblock__header__t.html">block_header_t</a>) + <a class="el" href="group___libmemalloc.html#ga07ea769b5c72cdf928879e29e16edf82">ARCH_ALIGNMENT</a>)</td></tr>
+<tr class="memitem:ac1f29ba54415975a2fa23e276fdf8a0f" id="r_ac1f29ba54415975a2fa23e276fdf8a0f"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="libmemalloc_8c.html#ac1f29ba54415975a2fa23e276fdf8a0f">MIN_BLOCK_SIZE</a>&#160;&#160;&#160;(size_t)(sizeof(<a class="el" href="structblock__header__t.html">block_header_t</a>) + ARCH_ALIGNMENT)</td></tr>
 <tr class="memdesc:ac1f29ba54415975a2fa23e276fdf8a0f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Defines the minimum memory block size.  <br /></td></tr>
 <tr class="separator:ac1f29ba54415975a2fa23e276fdf8a0f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a52c92840d7afc957a6424b6dc3cc089c" id="r_a52c92840d7afc957a6424b6dc3cc089c"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="libmemalloc_8c.html#a52c92840d7afc957a6424b6dc3cc089c">NR_OBJS</a>&#160;&#160;&#160;(uint16_t)(1000U)</td></tr>
@@ -428,23 +422,6 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="ae09915f592311e3a76ee2e935e6d6649" name="ae09915f592311e3a76ee2e935e6d6649"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ae09915f592311e3a76ee2e935e6d6649">&#9670;&#160;</a></span>CANARY_VALUE</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define CANARY_VALUE&#160;&#160;&#160;(uint32_t)(0xDEADBEEFULL)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Canary value to detect buffer overflows. </p>
-<p>This constant is placed at the boundaries of memory allocations to detect buffer overflows. </p>
-
-</div>
-</div>
 <a id="a8acceb8a32aeb665817bcac0ae976c3e" name="a8acceb8a32aeb665817bcac0ae976c3e"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a8acceb8a32aeb665817bcac0ae976c3e">&#9670;&#160;</a></span>DEFAULT_NUM_BINS</h2>
 
@@ -512,23 +489,6 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="a54061e5993a5517320d425f44408cc86" name="a54061e5993a5517320d425f44408cc86"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a54061e5993a5517320d425f44408cc86">&#9670;&#160;</a></span>MAGIC_NUMBER</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define MAGIC_NUMBER&#160;&#160;&#160;(uint32_t)(0xBEEFDEADU)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Magic number to validate memory blocks. </p>
-<p>This constant is used to verify the integrity of allocated memory blocks and detect corruption. </p>
-
-</div>
-</div>
 <a id="ac1f29ba54415975a2fa23e276fdf8a0f" name="ac1f29ba54415975a2fa23e276fdf8a0f"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ac1f29ba54415975a2fa23e276fdf8a0f">&#9670;&#160;</a></span>MIN_BLOCK_SIZE</h2>
 
@@ -536,7 +496,7 @@ Functions</h2></td></tr>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">#define MIN_BLOCK_SIZE&#160;&#160;&#160;(size_t)(sizeof(<a class="el" href="structblock__header__t.html">block_header_t</a>) + <a class="el" href="group___libmemalloc.html#ga07ea769b5c72cdf928879e29e16edf82">ARCH_ALIGNMENT</a>)</td>
+          <td class="memname">#define MIN_BLOCK_SIZE&#160;&#160;&#160;(size_t)(sizeof(<a class="el" href="structblock__header__t.html">block_header_t</a>) + ARCH_ALIGNMENT)</td>
         </tr>
       </table>
 </div><div class="memdoc">
