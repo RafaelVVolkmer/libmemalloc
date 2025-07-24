@@ -29,14 +29,14 @@
  * ========================================================================== */
 
 /** ============================================================================
- *                      P R I V A T E  I N C L U D E S                          
+ *                      P R I V A T E  I N C L U D E S
  * ========================================================================== */
 
 /*< Dependencies >*/
 #include <assert.h>
 #include <errno.h>
-#include <stdio.h>
 #include <stdint.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -45,7 +45,7 @@
 #include "logs.h"
 
 /** ============================================================================
- *               P R I V A T E  D E F I N E S  &  M A C R O S                   
+ *               P R I V A T E  D E F I N E S  &  M A C R O S
  * ========================================================================== */
 
 /** ============================================================================
@@ -56,7 +56,7 @@
  *              functions to indicate failure when a CHECK() macro
  *              assertion fails.
  * ========================================================================== */
-#define EXIT_ERRROR     (uint8_t)(1U)
+#define EXIT_ERRROR (uint8_t)(1U)
 
 /** ============================================================================
  *  @def        BLOCK_SIZE
@@ -66,7 +66,7 @@
  *              for memory blocks used during testing. Set to 10UL
  *              as a uint64_t constant to avoid implicit type conversions.
  * ========================================================================== */
-#define BLOCK_SIZE      (uint64_t)(10UL)
+#define BLOCK_SIZE  (uint64_t)(10UL)
 
 /** ============================================================================
  *  @def        MAX_BLOCKS
@@ -76,7 +76,7 @@
  *  @details    Provides semantic clarity when using BLOCK_SIZE
  *              as a block count limit instead of a byte size.
  * ========================================================================== */
-#define MAX_BLOCKS      BLOCK_SIZE
+#define MAX_BLOCKS  BLOCK_SIZE
 
 /** ============================================================================
  *  @def        CHECK(expr)
@@ -89,55 +89,56 @@
  *              EXIT_ERRROR from the current function. Prevents further
  *              execution of failing tests.
  * ========================================================================== */
-#define CHECK(expr)                                     \
-    do {                                                \
-        if (!(expr))                                    \
-        {                                               \
-            LOG_ERROR("Assertion failed at %s:%d: %s",  \
-                      __FILE__, __LINE__, #expr);       \
-            return EXIT_ERRROR;                         \
-        }                                               \
-    } while (0)
+#define CHECK(expr)                                                          \
+  do                                                                         \
+  {                                                                          \
+    if (!(expr))                                                             \
+    {                                                                        \
+      LOG_ERROR("Assertion failed at %s:%d: %s", __FILE__, __LINE__, #expr); \
+      return EXIT_ERRROR;                                                    \
+    }                                                                        \
+  } while (0)
 
 /** ============================================================================
- *                          M A I N  F U N C T I O N                            
+ *                          M A I N  F U N C T I O N
  * ========================================================================== */
 
-int main(void) 
+int main(void)
 {
-    int ret = EXIT_SUCCESS;
+  int ret = EXIT_SUCCESS;
 
-    void *ptr = NULL;
+  void *ptr = NULL;
 
-    void *ptrs[MAX_BLOCKS];
+  void *ptrs[MAX_BLOCKS];
 
-    mem_allocator_t allocator;
+  mem_allocator_t allocator;
 
-    size_t count = 0u;
-    size_t iterator = 0u;
+  size_t count    = 0u;
+  size_t iterator = 0u;
 
-    ret = MEM_allocatorInit(&allocator);
+  ret = MEM_allocatorInit(&allocator);
+  CHECK(ret == EXIT_SUCCESS);
+
+  while (count < MAX_BLOCKS)
+  {
+    ptr = MEM_allocMallocFirstFit(&allocator, BLOCK_SIZE, "ptr");
+    if (ptr == NULL)
+      break;
+
+    ptrs[count++] = ptr;
+  }
+
+  LOG_INFO("Allocated %zu blocks of %lu bytes until heap exhaustion",
+           count,
+           (unsigned long)BLOCK_SIZE);
+
+  for (iterator = 0; iterator < count; ++iterator)
+  {
+    ret = MEM_allocFree(&allocator, ptrs[iterator], "ptr");
     CHECK(ret == EXIT_SUCCESS);
+  }
 
-    while (count < MAX_BLOCKS)
-    {
-        ptr = MEM_allocMallocFirstFit(&allocator, BLOCK_SIZE, "ptr");
-        if (ptr == NULL)
-            break;
-
-        ptrs[count++] = ptr;
-    }
-
-    LOG_INFO("Allocated %zu blocks of %lud bytes until heap exhaustion",
-             count, BLOCK_SIZE);
-
-    for (iterator = 0; iterator < count; ++iterator)
-    {
-        ret = MEM_allocFree(&allocator, ptrs[iterator], "ptr");
-        CHECK(ret == EXIT_SUCCESS);
-    }
-
-    return ret;
+  return ret;
 }
 
 /*< end of file >*/

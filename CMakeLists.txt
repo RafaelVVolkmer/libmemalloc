@@ -125,11 +125,14 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
             -fsanitize=address
             -fsanitize=undefined
             -fsanitize=leak
+            -fsanitize=alignment
         )
 
         add_compile_options(${SANITIZE_FLAGS})
         add_link_options(${SANITIZE_FLAGS})
     endif()
+
+
 
     set(CMAKE_EXE_LINKER_FLAGS    "${CMAKE_EXE_LINKER_FLAGS} -Wl,--gc-sections -flto")
     set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,--gc-sections -flto")
@@ -167,9 +170,6 @@ elseif(CMAKE_BUILD_TYPE STREQUAL "Release")
         # --- Memory Hardening ---
         -D_FORTIFY_SOURCE=2
         -fstack-clash-protection
-
-        # --- Architecture-specific ---
-        -march=native
 
         # --- Debug Info Removal ---
         -g0
@@ -327,21 +327,57 @@ add_subdirectory(tests)
 # ----------------------------------------------------------------------------
 get_filename_component(COMPILER_NAME ${CMAKE_C_COMPILER} NAME)
 
-message(STATUS " ")
-message(STATUS "=====================================================================")
-message(STATUS "Compiler        ${CMAKE_C_COMPILER_ID} ${COMPILER_NAME} V${CMAKE_C_COMPILER_VERSION}")
-message(STATUS "Build type:     ${CMAKE_BUILD_TYPE}")
-message(STATUS "Binary in:      ${OUTPUT_BIN_DIR}")
-message(STATUS "=====================================================================")
+include(ProcessorCount)
+ProcessorCount(NPROC)
+
+if (NOT WIN32)
+  string(ASCII 27 ESC)
+
+  set(ANSI_RESET   "${ESC}[0m")
+  set(ANSI_RED     "${ESC}[31m")
+  set(ANSI_GREEN   "${ESC}[32m")
+  set(ANSI_BLUE    "${ESC}[34m")
+  set(ANSI_MAGENTA "${ESC}[35m")
+endif()
+
+message(STATUS "")
+message(STATUS "${ANSI_BLUE}=====================================================================${ANSI_RESET}")
+message(STATUS "${ANSI_RESET}  Project:        ${ANSI_MAGENTA}${PROJECT_NAME}${ANSI_RESET}")
+message(STATUS "${ANSI_RESET}  Build type:     ${ANSI_GREEN}${CMAKE_BUILD_TYPE}${ANSI_RESET}")
+message(STATUS "${ANSI_BLUE}=====================================================================${ANSI_RESET}")
+message(STATUS "${ANSI_RESET}  Compiler:       ${ANSI_GREEN}${CMAKE_C_COMPILER_ID} ${COMPILER_NAME} V${CMAKE_C_COMPILER_VERSION}${ANSI_RESET}")
+message(STATUS "${ANSI_RESET}  C Standard:     ${ANSI_GREEN}C${CMAKE_C_STANDARD}${ANSI_RESET}")
+message(STATUS "${ANSI_RESET}  CMake Version:  ${ANSI_GREEN}${CMAKE_VERSION}${ANSI_RESET}")
+message(STATUS "${ANSI_RESET}  Generator:      ${ANSI_GREEN}${CMAKE_GENERATOR}${ANSI_RESET}")
+message(STATUS "${ANSI_BLUE}=====================================================================${ANSI_RESET}")
+message(STATUS "${ANSI_RESET}  System arch:    ${ANSI_GREEN}${CMAKE_SYSTEM_PROCESSOR}${ANSI_RESET}")
+message(STATUS "${ANSI_RESET}  Host arch:      ${ANSI_GREEN}${CMAKE_HOST_SYSTEM_PROCESSOR}${ANSI_RESET}")
+
+if (CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
+  execute_process(
+    COMMAND ${CMAKE_C_COMPILER} -dumpmachine
+    OUTPUT_VARIABLE _TARGET_TRIPLE
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+  )
+  message(STATUS "${ANSI_RESET}  Target triple:  ${ANSI_GREEN}${_TARGET_TRIPLE}${ANSI_RESET}")
+endif()
+
+message(STATUS "${ANSI_RESET}  OS:             ${ANSI_GREEN}${CMAKE_SYSTEM_NAME} (${CMAKE_SYSTEM_VERSION})${ANSI_RESET}")
+message(STATUS "${ANSI_BLUE}=====================================================================${ANSI_RESET}")
+
 if (VALGRIND_EXECUTABLE)
-    message(STATUS "Valgrind:       ${VALGRIND_EXECUTABLE}")
+    message(STATUS "${ANSI_RESET}  Valgrind:       ${ANSI_GREEN}${VALGRIND_EXECUTABLE}${ANSI_RESET}")
 else()
-    message(STATUS "Valgrind not found. Fallback without memcheck")
+    message(STATUS "${ANSI_RESET}  Valgrind:       ${ANSI_RED}<not found>  (running tests without memcheck)${ANSI_RESET}")
 endif()
 if (DOXYGEN_EXECUTABLE)
-    message(STATUS "Doxygen:        ${DOXYGEN_EXECUTABLE}")
+    message(STATUS "${ANSI_RESET}  Doxygen:        ${ANSI_GREEN}${DOXYGEN_EXECUTABLE}${ANSI_RESET}")
 else()
-    message(STATUS "Doxygen not found. Fallback without documentation")
+    message(STATUS "${ANSI_RESET}  Doxygen:        ${ANSI_RED}<not found>  (skip docs)${ANSI_RESET}")
 endif()
-message(STATUS "=====================================================================")
-message(STATUS " ")
+
+message(STATUS "${ANSI_BLUE}=====================================================================${ANSI_RESET}")
+message(STATUS "${ANSI_RESET}  Parallel Jobs:  ${ANSI_GREEN}${NPROC}${ANSI_RESET}")
+message(STATUS "${ANSI_RESET}  Binaries in:    ${ANSI_GREEN}${OUTPUT_BIN_DIR}${ANSI_RESET}")
+message(STATUS "${ANSI_BLUE}=====================================================================${ANSI_RESET}")
+message(STATUS "")

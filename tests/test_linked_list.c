@@ -27,14 +27,14 @@
  * ========================================================================== */
 
 /** ============================================================================
- *                      P R I V A T E  I N C L U D E S                          
+ *                      P R I V A T E  I N C L U D E S
  * ========================================================================== */
 
 /*< Dependencies >*/
 #include <assert.h>
 #include <errno.h>
-#include <stdio.h>
 #include <stdint.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -43,7 +43,7 @@
 #include "logs.h"
 
 /** ============================================================================
- *               P R I V A T E  D E F I N E S  &  M A C R O S                   
+ *               P R I V A T E  D E F I N E S  &  M A C R O S
  * ========================================================================== */
 
 /** ============================================================================
@@ -54,7 +54,7 @@
  *              from test functions when a CHECK() macro detects
  *              a failed assertion or runtime error condition.
  * ========================================================================== */
-#define EXIT_ERRROR     (uint8_t)(1U)
+#define EXIT_ERRROR (uint8_t)(1U)
 
 /** ============================================================================
  *  @def        MAX_NODES
@@ -63,7 +63,7 @@
  *  @details    Defines the total number of nodes (5) to be allocated,
  *              initialized, and manipulated during linked list unit tests.
  * ========================================================================== */
-#define MAX_NODES       (uint8_t)(5U)
+#define MAX_NODES   (uint8_t)(5U)
 
 /** ============================================================================
  *  @def        CHECK(expr)
@@ -76,18 +76,18 @@
  *              then returns EXIT_ERRROR to indicate test failure.
  *              Halts further execution of the current test function.
  * ========================================================================== */
-#define CHECK(expr)                                     \
-    do {                                                \
-        if (!(expr))                                    \
-        {                                               \
-            LOG_ERROR("Assertion failed at %s:%d: %s",  \
-                      __FILE__, __LINE__, #expr);       \
-            return EXIT_ERRROR;                         \
-        }                                               \
-    } while (0)
+#define CHECK(expr)                                                          \
+  do                                                                         \
+  {                                                                          \
+    if (!(expr))                                                             \
+    {                                                                        \
+      LOG_ERROR("Assertion failed at %s:%d: %s", __FILE__, __LINE__, #expr); \
+      return EXIT_ERRROR;                                                    \
+    }                                                                        \
+  } while (0)
 
 /** ============================================================================
- *              P U B L I C  S T R U C T U R E S  &  T Y P E S                  
+ *              P U B L I C  S T R U C T U R E S  &  T Y P E S
  * ========================================================================== */
 
 /** ============================================================================
@@ -100,14 +100,14 @@
  *              and aligned according to ARCH_ALIGNMENT to ensure
  *              predictable memory layout for testing and performance.
  * ========================================================================== */
-typedef struct __PACKED Node 
+typedef struct __ALIGN Node
 {
-    uint64_t    data;   /**< Data stored in the node (64-bit value) */
-    struct Node *next;  /**< Pointer to the next node in the list */
+  uint64_t     data; /**< Data stored in the node (64-bit value) */
+  struct Node *next; /**< Pointer to the next node in the list */
 } node_t;
 
 /** ============================================================================
- *          P R I V A T E  F U N C T I O N S  P R O T O T Y P E S               
+ *          P R I V A T E  F U N C T I O N S  P R O T O T Y P E S
  * ========================================================================== */
 
 /** ============================================================================
@@ -136,62 +136,62 @@ static int TEST_printList(node_t *head);
  *  @retval     EXIT_SUCCESS  List printed correctly (non-empty list).
  *  @retval     EXIT_ERRROR   Input list was empty (head == NULL).
  * ========================================================================== */
-static node_t* TEST_reverseList(node_t *head);
+static node_t *TEST_reverseList(node_t *head);
 
 /** ============================================================================
- *                          M A I N  F U N C T I O N                            
+ *                          M A I N  F U N C T I O N
  * ========================================================================== */
 
 int main(void)
 {
-    int ret = EXIT_SUCCESS;
+  int ret = EXIT_SUCCESS;
 
-    node_t *head = NULL;
-    node_t *node = NULL;
-    node_t *iter = NULL;
-    node_t *next = NULL;
+  node_t *head = (node_t *)NULL;
+  node_t *node = (node_t *)NULL;
+  node_t *iter = (node_t *)NULL;
+  node_t *next = (node_t *)NULL;
 
-    mem_allocator_t allocator;
+  mem_allocator_t allocator;
 
-    size_t iterator = 0u;
+  size_t iterator = 0u;
 
-    ret = MEM_allocatorInit(&allocator);
+  ret = MEM_allocatorInit(&allocator);
+  CHECK(ret == EXIT_SUCCESS);
+
+  for (iterator = 1u; iterator <= MAX_NODES; ++iterator)
+  {
+    node = MEM_allocMallocFirstFit(&allocator, sizeof(node_t), "node");
+    CHECK(node != NULL);
+
+    node->data = iterator;
+    node->next = head;
+    head       = node;
+  }
+
+  printf("Original list: ");
+  ret = TEST_printList(head);
+  CHECK(ret == EXIT_SUCCESS);
+
+  head = TEST_reverseList(head);
+  CHECK(head != NULL);
+
+  printf("Reversed list: ");
+  ret = TEST_printList(head);
+  CHECK(ret == EXIT_SUCCESS);
+
+  for (iter = head; iter;)
+  {
+    next = iter->next;
+    ret  = MEM_allocFree(&allocator, (void *)iter, "node");
     CHECK(ret == EXIT_SUCCESS);
-    
-    for (iterator = 1u; iterator <= MAX_NODES; ++iterator)
-    {
-        node = MEM_allocMallocFirstFit(&allocator, sizeof(node_t), "node");
-        CHECK(node != NULL);
+    iter = next;
+  }
 
-        node->data = iterator;
-        node->next = head;
-        head = node;
-    }
-
-    printf("Original list: ");
-    ret = TEST_printList(head);
-    CHECK(ret == EXIT_SUCCESS);
-
-    head = TEST_reverseList(head);
-    CHECK(head != NULL);
-
-    printf("Reversed list: ");
-    ret = TEST_printList(head);
-    CHECK(ret == EXIT_SUCCESS);
-
-    for (iter = head; iter; )
-    {
-        next = iter->next;
-        ret = MEM_allocFree(&allocator, iter, "node");
-        CHECK(ret == EXIT_SUCCESS);
-        iter = next;
-    }
-
-    return ret;
+  return ret;
 }
 
 /** ============================================================================
- *                  F U N C T I O N S  D E F I N I T I O N S                    
+ *                  F U N C T I O N S  D E F I N I T I O N S
  * ========================================================================== */
 
 /** ============================================================================
@@ -206,27 +206,27 @@ int main(void)
  *  @retval     != NULL   New head node of the reversed list.
  *  @retval     NULL      If the input list was empty (head == NULL).
  * ========================================================================== */
-static node_t* TEST_reverseList(node_t *head)
+static node_t *TEST_reverseList(node_t *head)
 {
-    node_t *prev = NULL;
-    node_t *current = NULL;
-    node_t *next = NULL;
+  node_t *prev    = (node_t *)NULL;
+  node_t *current = (node_t *)NULL;
+  node_t *next    = (node_t *)NULL;
 
-    if (head == NULL)
-        goto function_output;
+  if (head == NULL)
+    goto function_output;
 
-    current = head;
+  current = head;
 
-    while (current)
-    {
-        next = current->next;
-        current->next = prev;
-        prev = current;
-        current = next;
-    }
+  while (current)
+  {
+    next          = current->next;
+    current->next = prev;
+    prev          = current;
+    current       = next;
+  }
 
 function_output:
-    return prev;
+  return prev;
 }
 
 /** ============================================================================
@@ -243,28 +243,28 @@ function_output:
  * ========================================================================== */
 static int TEST_printList(node_t *head)
 {
-    int ret = EXIT_SUCCESS;
+  int ret = EXIT_SUCCESS;
 
-    node_t *iter = NULL;
+  node_t *iter = (node_t *)NULL;
 
-    if (head == NULL)
-    {
-        ret = EXIT_ERRROR;
-        goto function_output;
-    }
+  if (head == NULL)
+  {
+    ret = EXIT_ERRROR;
+    goto function_output;
+  }
 
-    iter = head;
+  iter = head;
 
-    while (iter)
-    {
-        printf("%lud -> ", iter->data);
-        iter = iter->next;
-    }
+  while (iter)
+  {
+    printf("%lu -> ", (unsigned long)iter->data);
+    iter = iter->next;
+  }
 
-    printf("NULL\n");
+  printf("NULL\n");
 
 function_output:
-    return ret;
+  return ret;
 }
 
 /*< end of file >*/

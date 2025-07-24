@@ -6,7 +6,8 @@
  *  @file       test_multiple_realloc.c
  *  @headerfile libmemalloc.h
  *
- *  @details    Validates correct behavior of MEM_allocRealloc in the following cases:
+ *  @details    Validates correct behavior of MEM_allocRealloc in the following
+ * cases:
  *                - Growing an existing allocation
  *                - Shrinking an existing allocation
  *                - Freeing a shrunk allocation
@@ -30,14 +31,14 @@
  * ========================================================================== */
 
 /** ============================================================================
- *                      P R I V A T E  I N C L U D E S                          
+ *                      P R I V A T E  I N C L U D E S
  * ========================================================================== */
 
 /*< Dependencies >*/
 #include <assert.h>
 #include <errno.h>
-#include <stdio.h>
 #include <stdint.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -57,7 +58,7 @@
  *              Used as the buffer length for pattern-based memory operations
  *              during realloc growth/shrink validation.
  * ========================================================================== */
-#define PATTERN_SIZE  (size_t)(32U)
+#define PATTERN_SIZE (size_t)(32U)
 
 /** ============================================================================
  *  @def        INITIAL_SIZE
@@ -66,7 +67,7 @@
  *  @details    Defined as half of PATTERN_SIZE (32 / 2 = 16 bytes).
  *              Used to allocate the original block before resizing.
  * ========================================================================== */
-#define INITIAL_SIZE  (size_t)(PATTERN_SIZE / 2U)
+#define INITIAL_SIZE (size_t)(PATTERN_SIZE / 2U)
 
 /** ============================================================================
  *  @def        GROWN_SIZE
@@ -75,7 +76,7 @@
  *  @details    Defined equal to PATTERN_SIZE (32 bytes).
  *              Used to expand the original allocation.
  * ========================================================================== */
-#define GROWN_SIZE    (size_t)(PATTERN_SIZE)
+#define GROWN_SIZE   (size_t)(PATTERN_SIZE)
 
 /** ============================================================================
  *  @def        SHRUNK_SIZE
@@ -84,7 +85,7 @@
  *  @details    Defined as one-quarter of PATTERN_SIZE (32 / 4 = 8 bytes).
  *              Used to shrink the allocation after growth.
  * ========================================================================== */
-#define SHRUNK_SIZE   (size_t)(PATTERN_SIZE / 4U)
+#define SHRUNK_SIZE  (size_t)(PATTERN_SIZE / 4U)
 
 /** ============================================================================
  *  @def        NULL_SIZE
@@ -94,7 +95,7 @@
  *              ((32 * 3) / 4 = 24 bytes).
  *              Used to allocate a new block via realloc(NULL, size).
  * ========================================================================== */
-#define NULL_SIZE     (size_t)((PATTERN_SIZE * 3U) / 4U)
+#define NULL_SIZE    (size_t)((PATTERN_SIZE * 3U) / 4U)
 
 /** ============================================================================
  *  @def        EXIT_ERRROR
@@ -104,7 +105,7 @@
  *              assertion or test step failure within the test suite.
  *              Returned by test functions when a CHECK() fails.
  * ========================================================================== */
-#define EXIT_ERRROR     (uint8_t)(1U)
+#define EXIT_ERRROR  (uint8_t)(1U)
 
 /** ============================================================================
  *  @def        CHECK(expr)
@@ -117,18 +118,18 @@
  *              then returns EXIT_ERRROR from the current function.
  *              Ensures immediate test termination on failure.
  * ========================================================================== */
-#define CHECK(expr)                                     \
-    do {                                                \
-        if (!(expr))                                    \
-        {                                               \
-            LOG_ERROR("Assertion failed at %s:%d: %s",  \
-                      __FILE__, __LINE__, #expr);       \
-            return EXIT_ERRROR;                         \
-        }                                               \
-    } while (0)
+#define CHECK(expr)                                                          \
+  do                                                                         \
+  {                                                                          \
+    if (!(expr))                                                             \
+    {                                                                        \
+      LOG_ERROR("Assertion failed at %s:%d: %s", __FILE__, __LINE__, #expr); \
+      return EXIT_ERRROR;                                                    \
+    }                                                                        \
+  } while (0)
 
 /** ============================================================================
- *          P R I V A T E  F U N C T I O N S  P R O T O T Y P E S               
+ *          P R I V A T E  F U N C T I O N S  P R O T O T Y P E S
  * ========================================================================== */
 
 /** ============================================================================
@@ -145,20 +146,20 @@
 static int TEST_multipleRealloc(void);
 
 /** ============================================================================
- *                          M A I N  F U N C T I O N                            
+ *                          M A I N  F U N C T I O N
  * ========================================================================== */
 
 int main(void)
 {
-    int ret = TEST_multipleRealloc();
-    CHECK(ret == EXIT_SUCCESS);
+  int ret = TEST_multipleRealloc( );
+  CHECK(ret == EXIT_SUCCESS);
 
-    printf("All realloc tests passed.\n");
-    return EXIT_SUCCESS;
+  printf("All realloc tests passed.\n");
+  return EXIT_SUCCESS;
 }
 
 /** ============================================================================
- *                  F U N C T I O N S  D E F I N I T I O N S                    
+ *                  F U N C T I O N S  D E F I N I T I O N S
  * ========================================================================== */
 
 /** ============================================================================
@@ -174,30 +175,30 @@ int main(void)
  * ========================================================================== */
 static int TEST_multipleRealloc(void)
 {
-    int ret = EXIT_SUCCESS;
+  int ret = EXIT_SUCCESS;
 
-    mem_allocator_t allocator;
+  mem_allocator_t allocator;
 
-    void *ptr_0 = NULL;
-    void *ptr_1 = NULL;
-    void *ptr_2 = NULL;
-    void *ptr_3 = NULL;
+  void *ptr_0 = NULL;
+  void *ptr_1 = NULL;
+  void *ptr_2 = NULL;
+  void *ptr_3 = NULL;
 
-    CHECK(MEM_allocatorInit(&allocator) == EXIT_SUCCESS);
+  CHECK(MEM_allocatorInit(&allocator) == EXIT_SUCCESS);
 
-    ptr_0 = MEM_allocMallocFirstFit(&allocator, INITIAL_SIZE, "p");
+  ptr_0 = MEM_allocMallocFirstFit(&allocator, INITIAL_SIZE, "p");
 
-    ptr_1 = MEM_allocRealloc(&allocator, ptr_0, GROWN_SIZE, "p2", FIRST_FIT);
+  ptr_1 = MEM_allocRealloc(&allocator, ptr_0, GROWN_SIZE, "p2", FIRST_FIT);
 
-    ptr_2 = MEM_allocRealloc(&allocator, ptr_1, SHRUNK_SIZE, "p3", FIRST_FIT);
+  ptr_2 = MEM_allocRealloc(&allocator, ptr_1, SHRUNK_SIZE, "p3", FIRST_FIT);
 
-    CHECK(MEM_allocFree(&allocator, ptr_2, "p3") == EXIT_SUCCESS);
+  CHECK(MEM_allocFree(&allocator, ptr_2, "p3") == EXIT_SUCCESS);
 
-    ptr_3 = MEM_allocRealloc(&allocator, NULL, NULL_SIZE, "pn", FIRST_FIT);
+  ptr_3 = MEM_allocRealloc(&allocator, NULL, NULL_SIZE, "pn", FIRST_FIT);
 
-    CHECK(MEM_allocFree(&allocator, ptr_3, "pn") == EXIT_SUCCESS);
+  CHECK(MEM_allocFree(&allocator, ptr_3, "pn") == EXIT_SUCCESS);
 
-    return ret;
+  return ret;
 }
 
 /*< end of file >*/

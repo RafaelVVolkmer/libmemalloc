@@ -17,14 +17,14 @@
  */
 
 /** ============================================================================
- *                      P R I V A T E  I N C L U D E S                          
+ *                      P R I V A T E  I N C L U D E S
  * ========================================================================== */
 
 /*< Dependencies >*/
 #include <assert.h>
 #include <errno.h>
-#include <stdio.h>
 #include <stdint.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -44,7 +44,7 @@
  *              bytes (or elements, depending on context) for large allocations
  *              in test scenarios.
  * ========================================================================== */
-#define LARGE_SZ   (size_t)(64U)
+#define LARGE_SZ    (size_t)(64U)
 
 /** ============================================================================
  *  @def        SMALL_SZ
@@ -54,7 +54,7 @@
  *              bytes (or elements, depending on context) for small allocations
  *              in test scenarios.
  * ========================================================================== */
-#define SMALL_SZ   (size_t)(32U)
+#define SMALL_SZ    (size_t)(32U)
 
 /** ============================================================================
  *  @def        NR_BLOCKS
@@ -63,7 +63,7 @@
  *  @details    Defined as an unsigned integer value of 10 to specify
  *              the size of the arrays used for allocation tracking.
  * ========================================================================== */
-#define NR_BLOCKS (uint8_t)(10U)
+#define NR_BLOCKS   (uint8_t)(10U)
 
 /** ============================================================================
  *  @def        NR_REUSED
@@ -73,7 +73,7 @@
  *              Specifies how many blocks will be dropped and
  *              later reallocated during GC testing.
  * ========================================================================== */
-#define NR_REUSED (uint8_t)(NR_BLOCKS / 2U)
+#define NR_REUSED   (uint8_t)(NR_BLOCKS / 2U)
 
 /** ============================================================================
  *  @def        EXIT_ERRROR
@@ -83,7 +83,7 @@
  *              assertion or test step failure within the test suite.
  *              Returned by test functions when a CHECK() fails.
  * ========================================================================== */
-#define EXIT_ERRROR     (uint8_t)(1U)
+#define EXIT_ERRROR (uint8_t)(1U)
 
 /** ============================================================================
  *  @def        CHECK(expr)
@@ -96,18 +96,18 @@
  *              then returns EXIT_ERRROR from the current function.
  *              Ensures immediate test termination on failure.
  * ========================================================================== */
-#define CHECK(expr)                                     \
-    do {                                                \
-        if (!(expr))                                    \
-        {                                               \
-            LOG_ERROR("Assertion failed at %s:%d: %s",  \
-                      __FILE__, __LINE__, #expr);       \
-            return EXIT_ERRROR;                         \
-        }                                               \
-    } while (0)
+#define CHECK(expr)                                                          \
+  do                                                                         \
+  {                                                                          \
+    if (!(expr))                                                             \
+    {                                                                        \
+      LOG_ERROR("Assertion failed at %s:%d: %s", __FILE__, __LINE__, #expr); \
+      return EXIT_ERRROR;                                                    \
+    }                                                                        \
+  } while (0)
 
 /** ============================================================================
- *          P R I V A T E  F U N C T I O N S  P R O T O T Y P E S               
+ *          P R I V A T E  F U N C T I O N S  P R O T O T Y P E S
  * ========================================================================== */
 
 /** ============================================================================
@@ -127,17 +127,17 @@ static int TEST_freeThenReuse(void);
 
 int main(void)
 {
-    int ret = EXIT_SUCCESS;
+  int ret = EXIT_SUCCESS;
 
-    ret = TEST_freeThenReuse();
-    CHECK(ret == EXIT_SUCCESS);
+  ret = TEST_freeThenReuse( );
+  CHECK(ret == EXIT_SUCCESS);
 
-    LOG_INFO("Free-then-reuse test passed.\n");
-    return ret;
+  LOG_INFO("Free-then-reuse test passed.\n");
+  return ret;
 }
 
 /** ============================================================================
- *                  F U N C T I O N S  D E F I N I T I O N S                    
+ *                  F U N C T I O N S  D E F I N I T I O N S
  * ========================================================================== */
 
 /** ============================================================================
@@ -151,57 +151,54 @@ int main(void)
  * ========================================================================== */
 static int TEST_freeThenReuse(void)
 {
-    int ret = EXIT_SUCCESS;
+  int ret = EXIT_SUCCESS;
 
-    void *blocks[NR_BLOCKS];
-    void *reused[NR_REUSED];
+  void *blocks[NR_BLOCKS];
+  void *reused[NR_REUSED];
 
-    mem_allocator_t allocator;
+  mem_allocator_t allocator;
 
-    size_t iterator = 0u;
-    size_t iterator_aux = 0u;
+  size_t iterator     = 0u;
+  size_t iterator_aux = 0u;
 
-    ret = MEM_allocatorInit(&allocator);
+  ret = MEM_allocatorInit(&allocator);
+  CHECK(ret == EXIT_SUCCESS);
+
+  for (iterator = 0u; iterator < NR_BLOCKS; ++iterator)
+  {
+    blocks[iterator] = MEM_allocMallocFirstFit(&allocator, LARGE_SZ, "blk");
+    CHECK(blocks[iterator] != NULL);
+    MEM_memset(blocks[iterator], (int)iterator, LARGE_SZ);
+  }
+
+  for (iterator = 0u; iterator < NR_BLOCKS; iterator += 2u)
+  {
+    ret = MEM_allocFree(&allocator, blocks[iterator], "blk");
     CHECK(ret == EXIT_SUCCESS);
+    blocks[iterator] = NULL;
+  }
 
-    for (iterator = 0u; iterator < NR_BLOCKS; ++iterator)
-    {
-        blocks[iterator] = MEM_allocMallocFirstFit(&allocator, LARGE_SZ,
-                                                    "blk");
-        CHECK(blocks[iterator] != NULL);
-        MEM_memset(blocks[iterator], (int)iterator, LARGE_SZ);
-    }
+  for (iterator = 0u, iterator_aux  = 0u; iterator < NR_REUSED;
+       ++iterator, iterator_aux    += 2u)
+  {
+    reused[iterator] = MEM_allocMallocFirstFit(&allocator, SMALL_SZ, "reuse");
+    CHECK(reused[iterator] != NULL);
+    MEM_memset(reused[iterator], 0x55, SMALL_SZ);
+  }
 
-    for (iterator = 0u; iterator < NR_BLOCKS; iterator += 2u)
-    {
-        ret = MEM_allocFree(&allocator, blocks[iterator], "blk");
-        CHECK(ret == EXIT_SUCCESS);
-        blocks[iterator] = NULL;
-    }
+  for (iterator = 1u; iterator < NR_BLOCKS; iterator += 2u)
+  {
+    ret = MEM_allocFree(&allocator, blocks[iterator], "blk");
+    CHECK(ret == EXIT_SUCCESS);
+  }
 
-    for (iterator = 0u, iterator_aux = 0u;
-        iterator < NR_REUSED;
-        ++iterator, iterator_aux += 2u)
-    {
-        reused[iterator] = MEM_allocMallocFirstFit(&allocator, SMALL_SZ,
-                                                    "reuse");
-        CHECK(reused[iterator] != NULL);
-        MEM_memset(reused[iterator], 0x55, SMALL_SZ);
-    }
+  for (iterator = 0u; iterator < NR_REUSED; ++iterator)
+  {
+    ret = MEM_allocFree(&allocator, reused[iterator], "reuse");
+    CHECK(ret == EXIT_SUCCESS);
+  }
 
-    for (iterator = 1u; iterator < NR_BLOCKS; iterator += 2u)
-    {
-        ret = MEM_allocFree(&allocator, blocks[iterator], "blk");
-        CHECK(ret == EXIT_SUCCESS);
-    }
-
-    for (iterator = 0u; iterator < NR_REUSED; ++iterator)
-    {
-        ret = MEM_allocFree(&allocator, reused[iterator], "reuse");
-        CHECK(ret == EXIT_SUCCESS);
-    }
-
-    return EXIT_SUCCESS;
+  return EXIT_SUCCESS;
 }
 
 /*< end of file >*/

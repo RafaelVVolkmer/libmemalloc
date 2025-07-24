@@ -136,15 +136,6 @@
 #define DEFAULT_NUM_BINS (uint8_t)(10U)
 
 /** ============================================================================
- *  @def        MAGIC_NUMBER
- *  @brief      Magic number to validate memory blocks.
- *
- *  @details    This constant is used to verify the integrity of
- *              allocated memory blocks and detect corruption.
- * ========================================================================== */
-#define MAGIC_NUMBER     (uint32_t)(0xBEEFDEADU)
-
-/** ============================================================================
  *  @def        CACHE_LINE_SIZE
  *  @brief      Size of the CPU cache line in bytes.
  *
@@ -157,13 +148,38 @@
 #define CACHE_LINE_SIZE  (uint8_t)(64U)
 
 /** ============================================================================
+ *  @def        MAGIC_NUMBER
+ *  @brief      Magic number to validate memory blocks.
+ *
+ *  @details    This constant is used to verify the integrity of
+ *              allocated memory blocks and detect corruption.
+ * ========================================================================== */
+#if ARCH_ALIGNMENT == 8
+  #define MAGIC_NUMBER (uintptr_t)(0xBEEFDEADBEEFDEADULL)
+#elif ARCH_ALIGNMENT == 4
+  #define MAGIC_NUMBER (uintptr_t)(0xBEEFDEADU)
+#elif ARCH_ALIGNMENT == 1
+  #define MAGIC_NUMBER (uintptr_t)(0xADU)
+#else
+  #error "Unsupported ARCH_ALIGNMENT for MAGIC_NUMBER"
+#endif
+
+/** ============================================================================
  *  @def        CANARY_VALUE
  *  @brief      Canary value to detect buffer overflows.
  *
  *  @details    This constant is placed at the boundaries of
  *              memory allocations to detect buffer overflows.
  * ========================================================================== */
-#define CANARY_VALUE     (uint32_t)(0xDEADBEEFULL)
+#if ARCH_ALIGNMENT == 8
+  #define CANARY_VALUE (uintptr_t)(0xDEADBEEFDEADBEEFULL)
+#elif ARCH_ALIGNMENT == 4
+  #define CANARY_VALUE (uintptr_t)(0xDEADBEEFUL)
+#elif ARCH_ALIGNMENT == 1
+  #define CANARY_VALUE (uintptr_t)(0xEF)
+#else
+  #error "Unsupported ARCH_ALIGNMENT for CANARY_VALUE"
+#endif
 
 /** ============================================================================
  *  @def        PREFETCH_MULT
@@ -173,15 +189,13 @@
  *              operations. Faz stores de largura igual a ARCH_ALIGNMENT.
  * ========================================================================== */
 #if ARCH_ALIGNMENT == 8
-  #define PREFETCH_MULT (uint64_t)(0x0101010101010101ULL)
+  #define PREFETCH_MULT (uintptr_t)(0x0101010101010101ULL)
 #elif ARCH_ALIGNMENT == 4
-  #define PREFETCH_MULT (uint32_t)(0x01010101U)
-#endif
-
-#if ARCH_ALIGNMENT == 8
-  #define COPY_WORD uint64_t
-#elif ARCH_ALIGNMENT == 4
-  #define COPY_WORD uint32_t
+  #define PREFETCH_MULT (uintptr_t)(0x01010101U)
+#elif ARCH_ALIGNMENT == 1
+  #define CANARY_VALUE (uintptr_t)(0x01U)
+#else
+  #error "Unsupported ARCH_ALIGNMENT for PREFETCH_MULT"
 #endif
 
 /** ============================================================================
@@ -936,7 +950,9 @@ static int MEM_stackBounds(const pthread_t id, mem_allocator_t *const allocator)
 
   pthread_attr_t attr;
 
-  void *base_addr = NULL;
+  void *base_addr = (void *)NULL;
+
+  uintptr_t base = 0u;
 
   size_t stack_size = 0u;
   size_t guard_size = 0u;
@@ -976,17 +992,18 @@ static int MEM_stackBounds(const pthread_t id, mem_allocator_t *const allocator)
   if (guard_size < page)
     guard_size = page;
 
+  base = (uintptr_t)base_addr;
+
   grows_down = MEM_stackGrowsDown( );
   if (grows_down)
   {
-    allocator->stack_bottom = (uintptr_t *)((char *)base_addr + guard_size);
-    allocator->stack_top    = (uintptr_t *)((char *)base_addr + stack_size);
+    allocator->stack_bottom = (uintptr_t *)(base + guard_size);
+    allocator->stack_top    = (uintptr_t *)(base + stack_size);
   }
   else
   {
     allocator->stack_bottom = (uintptr_t *)base_addr;
-    allocator->stack_top
-      = (uintptr_t *)((char *)base_addr + stack_size - guard_size);
+    allocator->stack_top    = (uintptr_t *)(base + stack_size - guard_size);
   }
 
   LOG_INFO("Stack: grows %s | guard size=%zu | Bounds=[%p .. %p].\n",
@@ -1021,10 +1038,15 @@ function_output:
  * ========================================================================== */
 void *MEM_memset(void *const source, const int value, const size_t size)
 {
-  void *ret = NULL;
+  void *ret = (void *)NULL;
 
-  unsigned char *ptr     = NULL;
-  unsigned char *ptr_aux = NULL;
+  unsigned char *ptr       = (unsigned char *)NULL;
+  unsigned char *ptr_aux   = (unsigned char *)NULL;
+  unsigned char *ptr_fetch = (unsigned char *)NULL;
+
+  uintptr_t *word = (uintptr_t *)NULL;
+
+  uintptr_t pattern = 0u;
 
   size_t iterator = 0u;
 
@@ -1050,13 +1072,15 @@ void *MEM_memset(void *const source, const int value, const size_t size)
       iterator++;
     }
   }
+  /**/
+  pattern = ((uintptr_t)(unsigned char)value) * PREFETCH_MULT;
 
-  for (; (size_t)(iterator + ARCH_ALIGNMENT) <= size;
-       iterator += (size_t)ARCH_ALIGNMENT)
+  for (; iterator + ARCH_ALIGNMENT <= size; iterator += ARCH_ALIGNMENT)
   {
-    *(COPY_WORD *)(ptr + iterator)
-      = ((COPY_WORD)(unsigned char)value) * PREFETCH_MULT;
-    __builtin_prefetch(((ptr + iterator) + CACHE_LINE_SIZE), 1u, 1u);
+    ptr_fetch = ptr + iterator;
+    __builtin_prefetch(ptr_fetch + CACHE_LINE_SIZE, 1, 1);
+    word  = (uintptr_t *)__builtin_assume_aligned(ptr_fetch, ARCH_ALIGNMENT);
+    *word = pattern;
   }
 
   ptr_aux = (unsigned char *)(ptr + iterator);
@@ -1097,12 +1121,16 @@ function_output:
  * ========================================================================== */
 void *MEM_memcpy(void *const dest, const void *src, const size_t size)
 {
-  void *ret = NULL;
+  void *ret = (void *)NULL;
 
-  unsigned char *destine     = NULL;
-  unsigned char *destine_aux = NULL;
+  unsigned char       *destine      = (unsigned char *)NULL;
+  unsigned char       *destine_aux  = (unsigned char *)NULL;
+  unsigned char       *dest_fetch   = (unsigned char *)NULL;
+  const unsigned char *source       = (const unsigned char *)NULL;
+  const unsigned char *source_fetch = (const unsigned char *)NULL;
 
-  const unsigned char *source = NULL;
+  uintptr_t       *dest_word = (uintptr_t *)NULL;
+  const uintptr_t *src_word  = (const uintptr_t *)NULL;
 
   size_t iterator = 0u;
 
@@ -1131,16 +1159,23 @@ void *MEM_memcpy(void *const dest, const void *src, const size_t size)
     }
   }
 
-  for (; (size_t)(iterator + ARCH_ALIGNMENT) <= size;
-       iterator += (size_t)ARCH_ALIGNMENT)
+  for (; iterator + ARCH_ALIGNMENT <= size; iterator += ARCH_ALIGNMENT)
   {
-    *(COPY_WORD *)(destine + iterator)
-      = *(const COPY_WORD *)(source + iterator);
-    __builtin_prefetch((source + iterator) + CACHE_LINE_SIZE, 0u, 1u);
-    __builtin_prefetch((destine + iterator) + CACHE_LINE_SIZE, 1u, 1u);
+    dest_fetch   = destine + iterator;
+    source_fetch = source + iterator;
+
+    __builtin_prefetch(source_fetch + CACHE_LINE_SIZE, 0, 1);
+    __builtin_prefetch(dest_fetch + CACHE_LINE_SIZE, 1, 1);
+
+    dest_word
+      = (uintptr_t *)__builtin_assume_aligned(dest_fetch, ARCH_ALIGNMENT);
+    src_word = (const uintptr_t *)__builtin_assume_aligned(source_fetch,
+                                                           ARCH_ALIGNMENT);
+
+    *dest_word = *src_word;
   }
 
-  destine_aux = (unsigned char *)(destine + iterator);
+  destine_aux = destine + iterator;
   while (iterator < size)
   {
     *destine_aux++ = source[iterator];
@@ -1173,8 +1208,8 @@ function_output:
  * ========================================================================== */
 void *MEM_sbrk(const intptr_t increment)
 {
-  void *old_break = NULL;
-  void *new_break = NULL;
+  void *old_break = (void *)NULL;
+  void *new_break = (void *)NULL;
 
   old_break = sbrk(0);
   if (old_break == (void *)-1)
@@ -1242,9 +1277,10 @@ static int MEM_validateBlock(mem_allocator_t *const allocator,
 {
   int ret = EXIT_SUCCESS;
 
-  uint32_t *data_canary = NULL;
+  mmap_t *map = (mmap_t *)NULL;
 
-  mmap_t *map = NULL;
+  uintptr_t *data_canary = (uintptr_t *)NULL;
+  uintptr_t  canary_addr = 0u;
 
   uintptr_t addr       = 0u;
   uintptr_t heap_start = 0u;
@@ -1299,7 +1335,7 @@ static int MEM_validateBlock(mem_allocator_t *const allocator,
   if (block->canary != CANARY_VALUE && (int)in_heap)
   {
     ret = -EPROTO;
-    LOG_ERROR("Corrupted header at %p: 0x%X vs 0x%X. "
+    LOG_ERROR("Corrupted header at %p: 0x%" PRIxPTR " vs 0x%" PRIxPTR " ."
               "Error code: %d.\n",
               (void *)block,
               block->canary,
@@ -1308,11 +1344,13 @@ static int MEM_validateBlock(mem_allocator_t *const allocator,
     goto function_output;
   }
 
-  data_canary = (uint32_t *)((uint8_t *)block + block->size - sizeof(uint32_t));
+  canary_addr = (uintptr_t)block + block->size - sizeof(uintptr_t);
+  data_canary = (uintptr_t *)canary_addr;
+
   if (*data_canary != CANARY_VALUE && (int)in_heap)
   {
     ret = -EOVERFLOW;
-    LOG_ERROR("Data overflow detected at %p (canary: 0x%X). "
+    LOG_ERROR("Data overflow detected at %p (canary: 0x%" PRIxPTR "). "
               "Error code: %d.\n",
               (void *)block,
               *data_canary,
@@ -1454,7 +1492,7 @@ static int MEM_insertFreeBlock(mem_allocator_t *const allocator,
 
   block->fl_next = allocator->free_lists[index];
 
-  block->fl_prev = NULL;
+  block->fl_prev = (block_header_t *)NULL;
   if (allocator->free_lists[index])
     allocator->free_lists[index]->fl_prev = block;
 
@@ -1519,8 +1557,8 @@ static int MEM_removeFreeBlock(mem_allocator_t *const allocator,
   if (block->fl_next)
     block->fl_next->fl_prev = block->fl_prev;
 
-  block->fl_next = NULL;
-  block->fl_prev = NULL;
+  block->fl_next = (block_header_t *)NULL;
+  block->fl_prev = (block_header_t *)NULL;
 
   LOG_INFO("Block %p removed from free list %d (size: %zu)\n",
            (void *)block,
@@ -1557,11 +1595,11 @@ int MEM_allocatorInit(mem_allocator_t *const allocator)
 
   __UNUSED static bool mempool_created = false;
 
-  mem_arena_t *arena     = NULL;
-  gc_thread_t *gc_thread = NULL;
+  mem_arena_t *arena     = (mem_arena_t *)NULL;
+  gc_thread_t *gc_thread = (gc_thread_t *)NULL;
 
-  void *base = NULL;
-  void *old  = NULL;
+  void *base = (void *)NULL;
+  void *old  = (void *)NULL;
 
   uintptr_t addr = 0;
 
@@ -1598,7 +1636,7 @@ int MEM_allocatorInit(mem_allocator_t *const allocator)
 
   allocator->heap_start     = (uint8_t *)base;
   allocator->heap_end       = (uint8_t *)base;
-  allocator->last_allocated = NULL;
+  allocator->last_allocated = (block_header_t *)NULL;
 
   allocator->num_arenas = 1u;
 
@@ -1634,24 +1672,26 @@ int MEM_allocatorInit(mem_allocator_t *const allocator)
   allocator->free_lists       = arena->bins;
   allocator->num_size_classes = arena->num_bins;
 
-  allocator->mmap_list = NULL;
+  allocator->mmap_list = (mmap_t *)NULL;
 
   allocator->metadata_size
     = ((uintptr_t)arena->bins + bins_bytes) - (uintptr_t)allocator->heap_start;
 
   gc_thread = &allocator->gc_thread;
 
-  gc_thread->gc_interval_ms    = GC_INTERVAL_MS;
-  gc_thread->gc_thread_started = 0u;
+  gc_thread->gc_interval_ms = GC_INTERVAL_MS;
 
-  atomic_init(&gc_thread->gc_running, false);
-  atomic_init(&gc_thread->gc_exit, false);
+  gc_thread->gc_thread_started = false;
+  gc_thread->gc_running        = false;
+  gc_thread->gc_exit           = false;
 
-  ret = pthread_mutex_init(&gc_thread->gc_lock, NULL);
+  ret = pthread_mutex_init(&gc_thread->gc_lock,
+                           (const pthread_mutexattr_t *)NULL);
   if (ret != EXIT_SUCCESS)
     goto function_output;
 
-  ret = pthread_cond_init(&gc_thread->gc_cond, NULL);
+  ret
+    = pthread_cond_init(&gc_thread->gc_cond, (const pthread_condattr_t *)NULL);
   if (ret != EXIT_SUCCESS)
     goto function_output;
 
@@ -1673,8 +1713,8 @@ int MEM_allocatorInit(mem_allocator_t *const allocator)
 #endif
 
   LOG_INFO("Allocator initialized: initial_heap=[%p...%p], bins=%zu.\n",
-           allocator->heap_start,
-           allocator->heap_end,
+           (void *)allocator->heap_start,
+           (void *)allocator->heap_end,
            arena->num_bins);
 
 function_output:
@@ -1702,9 +1742,9 @@ function_output:
 static void *MEM_growUserHeap(mem_allocator_t *const allocator,
                               const intptr_t         inc)
 {
-  void *old = NULL;
+  void *old = (void *)NULL;
 
-  block_header_t *header = NULL;
+  block_header_t *header = (block_header_t *)NULL;
 
   if (UNLIKELY(allocator == NULL))
   {
@@ -1758,11 +1798,14 @@ function_output:
 static int *MEM_mapAlloc(mem_allocator_t *const allocator,
                          const size_t           total_size)
 {
-  void *ptr = NULL;
+  void *ptr = (void *)NULL;
 
-  mmap_t *map_block = NULL;
+  mmap_t *map_block = (mmap_t *)NULL;
 
-  block_header_t *header = NULL;
+  block_header_t *header = (block_header_t *)NULL;
+
+  uintptr_t *data_canary = (uintptr_t *)NULL;
+  uintptr_t  canary_addr = 0u;
 
   size_t page     = 0u;
   size_t map_size = 0u;
@@ -1824,13 +1867,15 @@ static int *MEM_mapAlloc(mem_allocator_t *const allocator,
   header->size     = map_size;
   header->free     = 0u;
   header->marked   = 1u;
-  header->prev     = NULL;
-  header->next     = NULL;
-  header->file     = NULL;
+  header->prev     = (block_header_t *)NULL;
+  header->next     = (block_header_t *)NULL;
+  header->file     = (const char *)NULL;
   header->line     = 0u;
-  header->var_name = NULL;
+  header->var_name = (const char *)NULL;
 
-  *(uint32_t *)((uint8_t *)ptr + map_size - sizeof(uint32_t)) = CANARY_VALUE;
+  canary_addr  = (uintptr_t)ptr + map_size - sizeof(uintptr_t);
+  data_canary  = (uintptr_t *)canary_addr;
+  *data_canary = CANARY_VALUE;
 
   LOG_INFO("Mmap allocated: %zu bytes at %p.\n", map_size, ptr);
 
@@ -1861,8 +1906,8 @@ static int MEM_mapFree(mem_allocator_t *const allocator, void *const addr)
 {
   int ret = EXIT_SUCCESS;
 
-  mmap_t **map_ref = NULL;
-  mmap_t  *to_free = NULL;
+  mmap_t **map_ref = (mmap_t **)NULL;
+  mmap_t  *to_free = (mmap_t *)NULL;
 
   size_t map_size = 0u;
 
@@ -1898,7 +1943,7 @@ static int MEM_mapFree(mem_allocator_t *const allocator, void *const addr)
       *map_ref = to_free->next;
 
       ret = MEM_allocatorFree(allocator,
-                              to_free,
+                              (void *)to_free,
                               __FILE__,
                               __LINE__,
                               "mmap_meta");
@@ -1950,7 +1995,7 @@ static int MEM_findFirstFit(mem_allocator_t *const allocator,
 {
   int ret = EXIT_SUCCESS;
 
-  block_header_t *current = NULL;
+  block_header_t *current = (block_header_t *)NULL;
 
   int    start_class = 0;
   size_t class_idx   = 0u;
@@ -2027,8 +2072,8 @@ static int MEM_findNextFit(mem_allocator_t *const allocator,
 {
   int ret = EXIT_SUCCESS;
 
-  block_header_t *current = NULL;
-  block_header_t *start   = NULL;
+  block_header_t *current = (block_header_t *)NULL;
+  block_header_t *start   = (block_header_t *)NULL;
 
   if (UNLIKELY(allocator == NULL || fit_block == NULL))
   {
@@ -2065,8 +2110,9 @@ static int MEM_findNextFit(mem_allocator_t *const allocator,
       goto function_output;
     }
 
-    current = (current->next) ? current->next
-                              : (block_header_t *)allocator->heap_start;
+    current = (current->next)
+                ? current->next
+                : (block_header_t *)(void *)(uintptr_t)allocator->heap_start;
   } while (current != start);
 
   ret = -ENOMEM;
@@ -2107,7 +2153,7 @@ static int MEM_findBestFit(mem_allocator_t *const allocator,
 {
   int ret = EXIT_SUCCESS;
 
-  block_header_t *current = NULL;
+  block_header_t *current = (block_header_t *)NULL;
 
   size_t iterator = 0u;
 
@@ -2124,7 +2170,7 @@ static int MEM_findBestFit(mem_allocator_t *const allocator,
     goto function_output;
   }
 
-  *best_fit = NULL;
+  *best_fit = (block_header_t *)NULL;
 
   start_class = MEM_getSizeClass(allocator, size);
   if (start_class < 0)
@@ -2202,7 +2248,10 @@ static int MEM_splitBlock(mem_allocator_t *const allocator,
 {
   int ret = EXIT_SUCCESS;
 
-  block_header_t *new_block = NULL;
+  block_header_t *new_block = (block_header_t *)NULL;
+
+  uintptr_t *data_canary = (uintptr_t *)NULL;
+  uintptr_t  canary_addr = 0u;
 
   size_t aligned_size   = 0u;
   size_t total_size     = 0u;
@@ -2254,18 +2303,19 @@ static int MEM_splitBlock(mem_allocator_t *const allocator,
   block->magic  = MAGIC_NUMBER;
   block->canary = CANARY_VALUE;
 
-  *(uint32_t *)((uint8_t *)block + block->size - sizeof(uint32_t))
-    = CANARY_VALUE;
+  canary_addr  = (uintptr_t)block + block->size - sizeof(uintptr_t);
+  data_canary  = (uintptr_t *)canary_addr;
+  *data_canary = CANARY_VALUE;
 
-  new_block = (block_header_t *)((uint8_t *)block + total_size);
+  new_block = (block_header_t *)((uintptr_t)block + total_size);
 
   new_block->magic    = MAGIC_NUMBER;
   new_block->size     = remaining_size;
   new_block->free     = 1u;
   new_block->marked   = 0u;
-  new_block->file     = NULL;
+  new_block->file     = (const char *)NULL;
   new_block->line     = 0ull;
-  new_block->var_name = NULL;
+  new_block->var_name = (const char *)NULL;
   new_block->prev     = block;
   new_block->next     = block->next;
 
@@ -2276,11 +2326,12 @@ static int MEM_splitBlock(mem_allocator_t *const allocator,
 
   new_block->canary = CANARY_VALUE;
 
-  *(uint32_t *)((uint8_t *)new_block + new_block->size - sizeof(uint32_t))
-    = CANARY_VALUE;
+  canary_addr  = (uintptr_t)new_block + new_block->size - sizeof(uintptr_t);
+  data_canary  = (uintptr_t *)canary_addr;
+  *data_canary = CANARY_VALUE;
 
-  new_block->fl_next = NULL;
-  new_block->fl_prev = NULL;
+  new_block->fl_next = (block_header_t *)NULL;
+  new_block->fl_prev = (block_header_t *)NULL;
 
   ret = MEM_removeFreeBlock(allocator, block);
   if (ret != EXIT_SUCCESS)
@@ -2327,12 +2378,14 @@ static int MEM_mergeBlocks(mem_allocator_t *const allocator,
 {
   int ret = EXIT_SUCCESS;
 
-  uint8_t *next_addr = NULL;
+  uint8_t *next_addr = (uint8_t *)NULL;
 
-  block_header_t *next_block = NULL;
-  block_header_t *prev_block = NULL;
+  block_header_t *next_block = (block_header_t *)NULL;
+  block_header_t *prev_block = (block_header_t *)NULL;
 
-  uint32_t *canary_ptr = NULL;
+  uintptr_t *data_canary = (uintptr_t *)NULL;
+  uintptr_t  canary_addr = 0u;
+  ;
 
   if (UNLIKELY(allocator == NULL || block == NULL))
   {
@@ -2356,7 +2409,7 @@ static int MEM_mergeBlocks(mem_allocator_t *const allocator,
   next_addr = (uint8_t *)((uint8_t *)block + block->size);
   if (next_addr + sizeof(block_header_t) <= allocator->heap_end)
   {
-    next_block = (block_header_t *)next_addr;
+    next_block = (block_header_t *)(uintptr_t)next_addr;
 
     ret = MEM_validateBlock(allocator, next_block);
     if (ret == EXIT_SUCCESS && next_block->free)
@@ -2378,9 +2431,10 @@ static int MEM_mergeBlocks(mem_allocator_t *const allocator,
       if (next_block->next)
         next_block->next->prev = block;
 
-      canary_ptr
-        = (uint32_t *)(((uint8_t *)block + block->size - sizeof(uint32_t)));
-      *canary_ptr = CANARY_VALUE;
+      canary_addr  = (uintptr_t)block + block->size - sizeof(uintptr_t);
+      data_canary  = (uintptr_t *)canary_addr;
+      *data_canary = CANARY_VALUE;
+
       LOG_DEBUG("New merged: payload=%p (%zu bytes.\n",
                 (void *)((uint8_t *)block + sizeof(block_header_t)),
                 block->size);
@@ -2410,9 +2464,10 @@ static int MEM_mergeBlocks(mem_allocator_t *const allocator,
       if (block->next)
         block->next->prev = prev_block;
 
-      canary_ptr  = (uint32_t *)(((uint8_t *)prev_block + prev_block->size
-                                 - sizeof(uint32_t)));
-      *canary_ptr = CANARY_VALUE;
+      canary_addr
+        = (uintptr_t)prev_block + prev_block->size - sizeof(uintptr_t);
+      data_canary  = (uintptr_t *)canary_addr;
+      *data_canary = CANARY_VALUE;
 
       block = prev_block;
       LOG_DEBUG("New merged: payload=%p (%zu bytes.\n",
@@ -2470,17 +2525,18 @@ static void *MEM_allocatorMalloc(mem_allocator_t *const      allocator,
                                  const char *const           var_name,
                                  const allocation_strategy_t strategy)
 {
-  void *user_ptr = NULL;
+  void *user_ptr = (void *)NULL;
 
-  mem_arena_t    *arena = NULL;
-  block_header_t *block = NULL;
+  mem_arena_t    *arena = (mem_arena_t *)NULL;
+  block_header_t *block = (block_header_t *)NULL;
 
-  void *old_brk  = NULL;
-  void *raw_mmap = NULL;
+  void *old_brk  = (void *)NULL;
+  void *raw_mmap = (void *)NULL;
+
+  uintptr_t *data_canary = (uintptr_t *)NULL;
+  uintptr_t  canary_addr = 0u;
 
   size_t total_size = 0u;
-
-  uint32_t *data = NULL;
 
   int ret = EXIT_SUCCESS;
 
@@ -2501,7 +2557,7 @@ static void *MEM_allocatorMalloc(mem_allocator_t *const      allocator,
     goto null_pointer;
   }
 
-  total_size = ALIGN(size) + sizeof(block_header_t) + sizeof(uint32_t);
+  total_size = ALIGN(size) + sizeof(block_header_t) + sizeof(uintptr_t);
 
   arena = &allocator->arenas[0];
 
@@ -2524,12 +2580,13 @@ static void *MEM_allocatorMalloc(mem_allocator_t *const      allocator,
     block->size   = total_size;
     block->free   = 0;
     block->marked = 0;
-    block->next   = NULL;
-    block->prev   = NULL;
+    block->next   = (block_header_t *)NULL;
+    block->prev   = (block_header_t *)NULL;
     block->canary = CANARY_VALUE;
 
-    data  = (uint32_t *)((uint8_t *)raw_mmap + total_size - sizeof(uint32_t));
-    *data = CANARY_VALUE;
+    canary_addr  = (uintptr_t)block + total_size - sizeof(uintptr_t);
+    data_canary  = (uintptr_t *)canary_addr;
+    *data_canary = CANARY_VALUE;
 
     block->file     = file;
     block->line     = (uint64_t)line;
@@ -2556,19 +2613,22 @@ static void *MEM_allocatorMalloc(mem_allocator_t *const      allocator,
       goto function_output;
     }
 
-    block         = (block_header_t *)old_brk;
+    block = (block_header_t *)old_brk;
+
     block->magic  = MAGIC_NUMBER;
     block->size   = total_size;
     block->free   = 1;
     block->marked = 0;
-    block->next   = NULL;
-    block->prev   = NULL;
+    block->next   = (block_header_t *)NULL;
+    block->prev   = (block_header_t *)NULL;
     block->canary = CANARY_VALUE;
 
-    data  = (uint32_t *)((uint8_t *)block + total_size - sizeof(uint32_t));
-    *data = CANARY_VALUE;
+    canary_addr  = (uintptr_t)block + total_size - sizeof(uintptr_t);
+    data_canary  = (uintptr_t *)canary_addr;
+    *data_canary = CANARY_VALUE;
 
-    block->fl_prev = block->fl_next = NULL;
+    block->fl_next = (block_header_t *)NULL;
+    block->fl_next = (block_header_t *)NULL;
 
     ret = MEM_removeFreeBlock(allocator, block);
     if (ret != EXIT_SUCCESS)
@@ -2608,7 +2668,7 @@ function_output:
   VALGRIND_MEMPOOL_ALLOC(allocator,
                          user_ptr,
                          block ? (block->size - sizeof(block_header_t)
-                                  - sizeof(uint32_t))
+                                  - sizeof(uintptr_t))
                                : 0);
 #endif
 
@@ -2653,9 +2713,11 @@ static void *MEM_allocatorRealloc(mem_allocator_t *const      allocator,
 {
   int ret = EXIT_SUCCESS;
 
-  void *new_ptr = NULL;
+  void *new_ptr = (void *)NULL;
+  ;
 
-  block_header_t *old_block = NULL;
+  block_header_t *old_block = (block_header_t *)NULL;
+  ;
 
   size_t old_size = 0u;
 
@@ -2681,14 +2743,14 @@ static void *MEM_allocatorRealloc(mem_allocator_t *const      allocator,
     goto function_output;
   }
 
-  old_block = (block_header_t *)((uint8_t *)ptr - sizeof(block_header_t));
+  old_block = (block_header_t *)((uintptr_t)ptr - sizeof(block_header_t));
 
   ret = MEM_validateBlock(allocator, old_block);
   if (ret != EXIT_SUCCESS)
     goto function_output;
 
   old_size
-    = (size_t)(old_block->size - sizeof(block_header_t) - sizeof(uint32_t));
+    = (size_t)(old_block->size - sizeof(block_header_t) - sizeof(uintptr_t));
   if (old_size >= new_size)
   {
     LOG_DEBUG("Reallocation not needed: "
@@ -2755,9 +2817,11 @@ static void *MEM_allocatorCalloc(mem_allocator_t *const      allocator,
                                  const char *const           var_name,
                                  const allocation_strategy_t strategy)
 {
-  void *ptr = NULL;
+  void *ptr = (void *)NULL;
+  ;
 
-  block_header_t *block = NULL;
+  block_header_t *block = (block_header_t *)NULL;
+  ;
 
   size_t data_size = 0u;
 
@@ -2776,8 +2840,9 @@ static void *MEM_allocatorCalloc(mem_allocator_t *const      allocator,
   if (ptr == NULL)
     goto function_output;
 
-  block     = (block_header_t *)((uint8_t *)ptr - sizeof(block_header_t));
-  data_size = (size_t)(block->size - sizeof(block_header_t) - sizeof(uint32_t));
+  block = (block_header_t *)((uintptr_t)ptr - sizeof(block_header_t));
+  data_size
+    = (size_t)(block->size - sizeof(block_header_t) - sizeof(uintptr_t));
 
   MEM_memset(ptr, 0, data_size);
 
@@ -2827,12 +2892,12 @@ static int MEM_allocatorFree(mem_allocator_t *const allocator,
 {
   int ret = EXIT_SUCCESS;
 
-  block_header_t *block = NULL;
-  mmap_t         *map   = NULL;
+  block_header_t *block = (block_header_t *)NULL;
+  mmap_t         *map   = (mmap_t *)NULL;
 
-  void *old = NULL;
+  void *old = (void *)NULL;
 
-  uint8_t *block_end = NULL;
+  uint8_t *block_end = (uint8_t *)NULL;
 
   intptr_t delta = 0;
 
@@ -2850,7 +2915,7 @@ static int MEM_allocatorFree(mem_allocator_t *const allocator,
     goto function_output;
   }
 
-  block = (block_header_t *)((uint8_t *)ptr - sizeof(block_header_t));
+  block = (block_header_t *)((uintptr_t)ptr - sizeof(block_header_t));
   for (map = allocator->mmap_list; map; map = map->next)
   {
     if ((void *)block == map->addr)
@@ -2860,7 +2925,7 @@ static int MEM_allocatorFree(mem_allocator_t *const allocator,
     }
   }
 
-  block = (block_header_t *)((uint8_t *)ptr - sizeof(block_header_t));
+  block = (block_header_t *)((uintptr_t)ptr - sizeof(block_header_t));
 
   ret = MEM_validateBlock(allocator, block);
   if (ret != EXIT_SUCCESS)
@@ -2905,12 +2970,13 @@ static int MEM_allocatorFree(mem_allocator_t *const allocator,
     old = MEM_sbrk(delta);
     if ((intptr_t)old >= 0)
     {
-      allocator->heap_end       = allocator->heap_end + delta;
-      allocator->last_allocated = (block_header_t *)allocator->heap_start;
+      allocator->heap_end = allocator->heap_end + delta;
+      allocator->last_allocated
+        = (block_header_t *)(uintptr_t)allocator->heap_start;
 
       LOG_INFO("Heap shrunk by %zu bytes. New heap_end=%p.\n",
                shrink_size,
-               allocator->heap_end);
+               (void *)allocator->heap_end);
 
       goto function_output;
     }
@@ -2924,7 +2990,7 @@ static int MEM_allocatorFree(mem_allocator_t *const allocator,
   if (ret != EXIT_SUCCESS)
     goto function_output;
 
-  freed_size = (size_t)(block->size - sizeof(*block) - sizeof(uint32_t));
+  freed_size = (size_t)(block->size - sizeof(*block) - sizeof(uintptr_t));
   LOG_INFO("Memory freed: addr: %p (%zu bytes).\n", ptr, freed_size);
 
 function_output:
@@ -2958,10 +3024,10 @@ static int MEM_setInitialMarks(mem_allocator_t *const allocator)
 {
   int ret = EXIT_SUCCESS;
 
-  block_header_t *block = NULL;
+  block_header_t *block = (block_header_t *)NULL;
 
-  block_header_t *meta_data = NULL;
-  mmap_t         *map       = NULL;
+  block_header_t *meta_data = (block_header_t *)NULL;
+  mmap_t         *map       = (mmap_t *)NULL;
 
   uintptr_t heap_ptr   = 0u;
   uintptr_t heap_start = 0u;
@@ -3003,7 +3069,7 @@ static int MEM_setInitialMarks(mem_allocator_t *const allocator)
 
     block->marked = 0u;
 
-    meta_data = (block_header_t *)((uint8_t *)map - sizeof(block_header_t));
+    meta_data = (block_header_t *)((uintptr_t)map - sizeof(block_header_t));
 
     meta_data->marked = 1u;
   }
@@ -3038,19 +3104,19 @@ static int MEM_gcMark(mem_allocator_t *const allocator)
 {
   int ret = EXIT_SUCCESS;
 
-  gc_thread_t *gc_thread = NULL;
+  gc_thread_t *gc_thread = (gc_thread_t *)NULL;
 
-  block_header_t *block = NULL;
+  block_header_t *block = (block_header_t *)NULL;
 
-  mmap_t *map = NULL;
+  mmap_t *map = (mmap_t *)NULL;
 
-  volatile uintptr_t *stack_ptr = NULL;
+  volatile uintptr_t *stack_ptr = (volatile uintptr_t *)NULL;
 
-  void *stack_frame = NULL;
+  void *stack_frame = (void *)NULL;
 
-  uintptr_t *stack_tmp    = NULL;
-  uintptr_t *stack_bottom = NULL;
-  uintptr_t *stack_top    = NULL;
+  uintptr_t *stack_tmp    = (uintptr_t *)NULL;
+  uintptr_t *stack_bottom = (uintptr_t *)NULL;
+  uintptr_t *stack_top    = (uintptr_t *)NULL;
 
   uintptr_t heap_start = 0u;
   uintptr_t heap_end   = 0u;
@@ -3109,7 +3175,7 @@ static int MEM_gcMark(mem_allocator_t *const allocator)
         block = (block_header_t *)(block_addr - sizeof(block_header_t));
 
         payload_start = (uintptr_t)block + sizeof(*block);
-        payload_end   = (uintptr_t)block + block->size - sizeof(uint32_t);
+        payload_end   = (uintptr_t)block + block->size - sizeof(uintptr_t);
 
         ret = MEM_validateBlock(allocator, block);
         if (block_addr >= payload_start && block_addr < payload_end
@@ -3134,7 +3200,7 @@ static int MEM_gcMark(mem_allocator_t *const allocator)
         block = (block_header_t *)map->addr;
 
         payload_start = (uintptr_t)map->addr + sizeof(*block);
-        payload_end   = (uintptr_t)map->addr + map->size - sizeof(uint32_t);
+        payload_end   = (uintptr_t)map->addr + map->size - sizeof(uintptr_t);
 
         if (block_addr >= payload_start && block_addr < payload_end
             && !block->free)
@@ -3185,16 +3251,16 @@ static int MEM_gcSweep(mem_allocator_t *const allocator)
 {
   int ret = EXIT_SUCCESS;
 
-  block_header_t *block = NULL;
+  block_header_t *block = (block_header_t *)NULL;
 
-  mmap_t  *map  = NULL;
-  mmap_t **scan = NULL;
+  mmap_t  *map  = (mmap_t *)NULL;
+  mmap_t **scan = (mmap_t **)NULL;
 
-  void *user_ptr = NULL;
+  void *user_ptr = (void *)NULL;
 
-  uint8_t *heap_end   = NULL;
-  uint8_t *heap_start = NULL;
-  uint8_t *heap_ptr   = NULL;
+  uint8_t *heap_end   = (uint8_t *)NULL;
+  uint8_t *heap_start = (uint8_t *)NULL;
+  uint8_t *heap_ptr   = (uint8_t *)NULL;
 
   size_t min_size    = 0u;
   size_t remain_size = 0u;
@@ -3220,7 +3286,7 @@ static int MEM_gcSweep(mem_allocator_t *const allocator)
 
   while (heap_ptr < heap_end)
   {
-    block = (block_header_t *)heap_ptr;
+    block = (block_header_t *)(uintptr_t)heap_ptr;
 
     remain_size = (size_t)(heap_end - heap_ptr);
 
@@ -3278,7 +3344,11 @@ static int MEM_gcSweep(mem_allocator_t *const allocator)
                map->size);
 
       munmap(map->addr, map->size);
-      MEM_allocatorFree(allocator, map, __FILE__, __LINE__, "mmap_meta");
+      MEM_allocatorFree(allocator,
+                        (void *)map,
+                        __FILE__,
+                        __LINE__,
+                        "mmap_meta");
     }
     else
     {
@@ -3315,8 +3385,8 @@ static void *MEM_gcThreadFunc(void *arg)
 {
   int ret = EXIT_SUCCESS;
 
-  mem_allocator_t *allocator = NULL;
-  gc_thread_t     *gc_thread = NULL;
+  mem_allocator_t *allocator = (mem_allocator_t *)NULL;
+  gc_thread_t     *gc_thread = (gc_thread_t *)NULL;
 
   if (UNLIKELY(arg == NULL))
   {
@@ -3334,13 +3404,12 @@ static void *MEM_gcThreadFunc(void *arg)
 
   pthread_mutex_lock(&gc_thread->gc_lock);
 
-  while (!atomic_load(&gc_thread->gc_exit))
+  while (!gc_thread->gc_exit)
   {
-    while (!atomic_load(&gc_thread->gc_running)
-           && !atomic_load(&gc_thread->gc_exit))
+    while (!gc_thread->gc_running && !gc_thread->gc_exit)
       pthread_cond_wait(&gc_thread->gc_cond, &gc_thread->gc_lock);
 
-    if (atomic_load(&gc_thread->gc_exit))
+    if (gc_thread->gc_exit)
       goto mutex_unlock;
 
     pthread_mutex_unlock(&gc_thread->gc_lock);
@@ -3353,7 +3422,7 @@ static void *MEM_gcThreadFunc(void *arg)
     if (ret != EXIT_SUCCESS)
       goto mutex_unlock;
 
-    usleep(gc_thread->gc_interval_ms * NR_OBJS);
+    usleep((__useconds_t)(gc_thread->gc_interval_ms * NR_OBJS));
 
     pthread_mutex_lock(&gc_thread->gc_lock);
   }
@@ -3384,7 +3453,9 @@ static int MEM_runGc(mem_allocator_t *const allocator)
 {
   int ret = EXIT_SUCCESS;
 
-  gc_thread_t *gc_thread = NULL;
+  gc_thread_t *gc_thread = (gc_thread_t *)NULL;
+
+  pthread_t thread;
 
   if (UNLIKELY(allocator == NULL))
   {
@@ -3403,15 +3474,16 @@ static int MEM_runGc(mem_allocator_t *const allocator)
   pthread_mutex_lock(&gc_thread->gc_lock);
   if (!gc_thread->gc_thread_started)
   {
-    gc_thread->gc_thread_started = 1u;
+    gc_thread->gc_thread_started = true;
+    gc_thread->gc_running        = true;
+    gc_thread->gc_exit           = false;
 
-    atomic_store(&gc_thread->gc_running, true);
-    atomic_store(&gc_thread->gc_exit, false);
+    thread = gc_thread->gc_thread;
 
-    ret = pthread_create(&gc_thread->gc_thread,
-                         NULL,
+    ret = pthread_create((pthread_t *)&thread,
+                         (const pthread_attr_t *)NULL,
                          MEM_gcThreadFunc,
-                         allocator);
+                         (void *)allocator);
     if (ret != EXIT_SUCCESS)
     {
       LOG_ERROR("Failed to create gc thread: %p. "
@@ -3423,7 +3495,7 @@ static int MEM_runGc(mem_allocator_t *const allocator)
   }
   else
   {
-    atomic_store(&gc_thread->gc_running, true);
+    gc_thread->gc_running = true;
     pthread_cond_signal(&gc_thread->gc_cond);
   }
 
@@ -3454,7 +3526,7 @@ static int MEM_stopGc(mem_allocator_t *const allocator)
 {
   int ret = EXIT_SUCCESS;
 
-  gc_thread_t *gc_thread = NULL;
+  gc_thread_t *gc_thread = (gc_thread_t *)NULL;
 
   if (UNLIKELY(allocator == NULL))
   {
@@ -3468,8 +3540,8 @@ static int MEM_stopGc(mem_allocator_t *const allocator)
 
   gc_thread = &allocator->gc_thread;
 
-  atomic_store(&gc_thread->gc_running, false);
-  atomic_store(&gc_thread->gc_exit, true);
+  gc_thread->gc_running = false;
+  gc_thread->gc_exit    = true;
 
   if (gc_thread->gc_thread_started)
   {
@@ -3484,7 +3556,7 @@ static int MEM_stopGc(mem_allocator_t *const allocator)
     if (ret != EXIT_SUCCESS)
       goto function_output;
 
-    gc_thread->gc_thread_started = 0u;
+    gc_thread->gc_thread_started = false;
   }
 
 function_output:
@@ -3513,9 +3585,9 @@ void *MEM_allocMallocFirstFit(mem_allocator_t *const allocator,
                               const size_t           size,
                               const char *const      var)
 {
-  void *ret = NULL;
+  void *ret = (void *)NULL;
 
-  gc_thread_t *gc_thread = NULL;
+  gc_thread_t *gc_thread = (gc_thread_t *)NULL;
 
   gc_thread = &allocator->gc_thread;
 
@@ -3545,9 +3617,9 @@ void *MEM_allocMallocBestFit(mem_allocator_t *const allocator,
                              const size_t           size,
                              const char *const      var)
 {
-  void *ret = NULL;
+  void *ret = (void *)NULL;
 
-  gc_thread_t *gc_thread = NULL;
+  gc_thread_t *gc_thread = (gc_thread_t *)NULL;
 
   gc_thread = &allocator->gc_thread;
 
@@ -3576,9 +3648,9 @@ void *MEM_allocMallocNextFit(mem_allocator_t *const allocator,
                              const size_t           size,
                              const char *const      var)
 {
-  void *ret = NULL;
+  void *ret = (void *)NULL;
 
-  gc_thread_t *gc_thread = NULL;
+  gc_thread_t *gc_thread = (gc_thread_t *)NULL;
 
   gc_thread = &allocator->gc_thread;
 
@@ -3609,9 +3681,9 @@ void *MEM_allocMalloc(mem_allocator_t *const      allocator,
                       const char *const           var,
                       const allocation_strategy_t strategy)
 {
-  void *ret = NULL;
+  void *ret = (void *)NULL;
 
-  gc_thread_t *gc_thread = NULL;
+  gc_thread_t *gc_thread = (gc_thread_t *)NULL;
 
   gc_thread = &allocator->gc_thread;
 
@@ -3642,9 +3714,9 @@ void *MEM_allocCalloc(mem_allocator_t *const      allocator,
                       const char *const           var,
                       const allocation_strategy_t strategy)
 {
-  void *ret = NULL;
+  void *ret = (void *)NULL;
 
-  gc_thread_t *gc_thread = NULL;
+  gc_thread_t *gc_thread = (gc_thread_t *)NULL;
 
   gc_thread = &allocator->gc_thread;
 
@@ -3677,9 +3749,9 @@ void *MEM_allocRealloc(mem_allocator_t *const      allocator,
                        const char *const           var,
                        const allocation_strategy_t strategy)
 {
-  void *ret = NULL;
+  void *ret = (void *)NULL;
 
-  gc_thread_t *gc_thread = NULL;
+  gc_thread_t *gc_thread = (gc_thread_t *)NULL;
 
   gc_thread = &allocator->gc_thread;
 
@@ -3716,7 +3788,7 @@ int MEM_allocFree(mem_allocator_t *const allocator,
 {
   int ret = EXIT_SUCCESS;
 
-  gc_thread_t *gc_thread = NULL;
+  gc_thread_t *gc_thread = (gc_thread_t *)NULL;
 
   gc_thread = &allocator->gc_thread;
 

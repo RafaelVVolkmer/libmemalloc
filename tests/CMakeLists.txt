@@ -26,9 +26,7 @@ foreach(test_src IN LISTS TEST_SRCS)
 
     set(valgrind_log "${CMAKE_BINARY_DIR}/bin/tests/${test_name}.valgrind.log")
 
-    # Valgrind currently breaks garbage collector builds due to threads
-    # accessing the stack of one thread. I'm working on fixing this.
-    if (VALGRIND_EXECUTABLE AND NOT("${test_name}" STREQUAL "test_garbage_collector"))
+    if (VALGRIND_EXECUTABLE)
         add_test(NAME ${test_name}
             COMMAND ${VALGRIND_EXECUTABLE}
                     --leak-check=full

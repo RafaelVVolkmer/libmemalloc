@@ -11,13 +11,14 @@ POSIX_VERSION="200809L"
 
 INCLUDE_DIR="inc"
 SOURCE_DIR="src"
+TESTS_DIR="tests"
 
 tidy_log=$(mktemp)
 if ! clang-tidy \
   --config-file=.clang-tidy \
   --system-headers \
   --quiet \
-  "${SOURCE_DIR}"/*.c "${INCLUDE_DIR}"/*.h \
+  "${SOURCE_DIR}"/*.c "${INCLUDE_DIR}"/*.h "${TESTS_DIR}"/*.c\
   --extra-arg=-Iinc \
   --extra-arg="-std=${STD_VERSION}" \
   --extra-arg="-D_POSIX_C_SOURCE=${POSIX_VERSION}" \

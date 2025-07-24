@@ -1,10 +1,9 @@
-# syntax = docker/dockerfile:1.4
+# syntax=docker/dockerfile:1.4
 
 #-------------------------------------------------------------------------------
 # BASE
 #-------------------------------------------------------------------------------
 ARG BASE_IMG=debian:bookworm-slim
-ARG EXPORT_IMG=busybox:1.36.1
 
 FROM ${BASE_IMG} AS base
 
@@ -16,6 +15,9 @@ RUN groupadd --system appgroup \
 #-------------------------------------------------------------------------------
 FROM base AS builder
 
+ARG TARGETARCH
+ARG TARGETVARIANT
+
 LABEL org.opencontainers.image.authors="Rafael V. Volkmer <rafael.v.volkmer@gmail.com>" \
       org.opencontainers.image.version="v4.0.00" \
       org.opencontainers.image.description="Builder for libmemalloc"
@@ -26,24 +28,16 @@ ENV DEBIAN_FRONTEND=noninteractive \
     BUILD_MODE=${BUILD_MODE} \
     BUILD_DIR=/app/build
 
-RUN rm -f /etc/apt/sources.list.d/* \
-        && printf 'deb http://ftp.br.debian.org/debian bookworm main\n\
-                deb http://ftp.br.debian.org/debian bookworm-updates main\n\
-                deb http://security.debian.org/debian-security bookworm-security main\n' \
-                > /etc/apt/sources.list
-
 RUN apt-get update -q \
-        && apt-get install -qy --no-install-recommends \
-                build-essential \
-                cmake \
-                git \
-                wget \
-                ca-certificates \
-                valgrind \
-                doxygen \
-                graphviz \
-        && apt-get clean \
-        && rm -rf /var/lib/apt/lists/*
+ && if [ "$TARGETARCH" = "amd64" ] || [ "$TARGETARCH" = "arm64" ]; then \
+      apt-get install -qy --no-install-recommends \
+        build-essential cmake git wget ca-certificates valgrind doxygen graphviz; \
+    else \
+      apt-get install -qy --no-install-recommends \
+        build-essential cmake git wget ca-certificates doxygen graphviz; \
+    fi \
+ && apt-get clean \
+ && rm -rf /var/lib/apt/lists/*
 
 USER appuser
 WORKDIR /app
@@ -98,7 +92,7 @@ CMD ["--help"]
 #-------------------------------------------------------------------------------
 # Stage 3: Export artifacts
 #-------------------------------------------------------------------------------
-FROM ${EXPORT_IMG} AS export
+FROM ${BASE_IMG} AS export
 
 LABEL org.opencontainers.image.authors="Rafael V. Volkmer <rafael.v.volkmer@gmail.com>" \
       org.opencontainers.image.version="v4.0.00" \

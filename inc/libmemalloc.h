@@ -30,6 +30,7 @@ extern "C"
 /*< Dependencies >*/
 #include <pthread.h>
 #include <stdatomic.h>
+#include <stdbool.h>
 #include <stdint.h>
 #include <string.h>
 
@@ -44,28 +45,165 @@ extern "C"
  *  @details    Determines the appropriate memory alignment based
  *              on the current target architecture.
  * ========================================================================== */
-#if defined(__x86_64__) || defined(_M_X64)
-  #define ARCH_ALIGNMENT (8U) /**< x86_64 (CISC 64 bits) */
-#elif defined(__i386__) || defined(_M_IX86)
-  #define ARCH_ALIGNMENT (4U) /**< x86 (CISC 32 bits) */
-#elif defined(__aarch64__) || defined(_M_ARM64)
-  #define ARCH_ALIGNMENT (8U) /**< ARM (64 bits) */
-#elif defined(__arm__) || defined(_M_ARM)
-  #define ARCH_ALIGNMENT (4U) /**< ARM (32 bits) */
-#elif defined(__riscv) && (__riscv_xlen == 64)
-  #define ARCH_ALIGNMENT (8U) /**< RISC-V (64 bits) */
-#elif defined(__riscv) && (__riscv_xlen == 32)
-  #define ARCH_ALIGNMENT (4U) /**< RISC-V (32 bits) */
-#elif defined(__powerpc64__)
-  #define ARCH_ALIGNMENT (8U) /**< PowerPC (64 bits) */
-#elif defined(__powerpc__)
-  #define ARCH_ALIGNMENT (4U) /**< PowerPC (32 bits) */
-#elif defined(__TI_PRU__) || defined(__PRU__)
-  #define ARCH_ALIGNMENT (4U) /**< TI PRU (32 bits) */
-#elif defined(__AVR__)
-  #define ARCH_ALIGNMENT (2U) /**< AVR (8 bits) */
-#else
-  #define ARCH_ALIGNMENT (4U)
+#ifndef ARCH_ALIGNMENT
+  /* x86_64 processor [64-bit] - Vendor: AMD/Intel */
+  #if defined(__x86_64__) || defined(_M_X64) || defined(__amd64__)
+    #define ARCH_ALIGNMENT (8U)
+
+  /* i386 processor [32-bit] - Vendor: Intel */
+  #elif defined(__i386__) || defined(_M_IX86) || defined(__386__)
+    #define ARCH_ALIGNMENT (4U)
+
+  /* aarch64 processor [64-bit] - Vendor: ARM */
+  #elif defined(__aarch64__) || defined(_M_ARM64) || defined(__arm64__)
+    #define ARCH_ALIGNMENT (8U)
+
+  /* arm processor [32-bit] - Vendor: ARM (v7/v6) */
+  #elif defined(__ARM_ARCH_7__) || defined(__ARM_ARCH_6__) || defined(__arm__) \
+    || defined(_M_ARM)
+    #define ARCH_ALIGNMENT (4U)
+
+  /* riscv processor [64-bit] - Vendor: RISC-V */
+  #elif defined(__riscv) && (__riscv_xlen == 64)
+    #define ARCH_ALIGNMENT (8U)
+  /* riscv processor [32-bit] - Vendor: RISC-V */
+  #elif defined(__riscv) && (__riscv_xlen == 32)
+    #define ARCH_ALIGNMENT (4U)
+
+  /* powerpc processor [64-bit] - Vendor: IBM */
+  #elif defined(__powerpc64__) || defined(__PPC64__)
+    #define ARCH_ALIGNMENT (8U)
+  /* powerpc processor [32-bit] - Vendor: IBM */
+  #elif defined(__powerpc__) || defined(__PPC__)
+    #define ARCH_ALIGNMENT (4U)
+
+  /* s390x processor [64-bit] - Vendor: IBM */
+  #elif defined(__s390x__) || defined(__s390__)
+    #define ARCH_ALIGNMENT (8U)
+
+  /* mips processor [64-bit] - Vendor: MIPS */
+  #elif defined(__mips64) || defined(__mips64el__)
+    #define ARCH_ALIGNMENT (8U)
+  /* mips processor [32-bit] - Vendor: MIPS */
+  #elif defined(__mips__)
+    #define ARCH_ALIGNMENT (4U)
+
+  /* loongarch processor [64-bit] - Vendor: Loongson */
+  #elif defined(__loongarch__)
+    #define ARCH_ALIGNMENT (8U)
+
+  /* avr processor [8-bit] - Vendor: Microchip */
+  #elif defined(__AVR__)
+    #define ARCH_ALIGNMENT (2U)
+  /* avr32 processor [32-bit] - Vendor: Microchip */
+  #elif defined(__avr32__)
+    #define ARCH_ALIGNMENT (4U)
+
+  /* microblaze processor [32-bit] - Vendor: Xilinx */
+  #elif defined(__MICROBLAZE__)
+    #define ARCH_ALIGNMENT (4U)
+
+  /* sh processor [32-bit] - Vendor: Renesas */
+  #elif defined(__sh__)
+    #define ARCH_ALIGNMENT (4U)
+
+  /* arc processor [32-bit] - Vendor: Synopsys */
+  #elif defined(__arc__)
+    #define ARCH_ALIGNMENT (4U)
+
+  /* bfin processor [32-bit] - Vendor: Analog Devices */
+  #elif defined(__bfin__)
+    #define ARCH_ALIGNMENT (4U)
+
+  /* wasm processor [32-bit] - Vendor: WebAssembly/Emscripten */
+  #elif defined(__EMSCRIPTEN__) || defined(__wasm__)
+    #define ARCH_ALIGNMENT (4U)
+
+  /* sparc processor [32-bit] - Vendor: Oracle */
+  #elif defined(__sparc__) || defined(__sparc)
+    #define ARCH_ALIGNMENT (4U)
+  /* sparc processor [64-bit] - Vendor: Oracle (V9) */
+  #elif defined(__sparcv9__)
+    #define ARCH_ALIGNMENT (8U)
+
+  /* ia64 processor [64-bit] - Vendor: Intel Itanium */
+  #elif defined(__ia64__)
+    #define ARCH_ALIGNMENT (8U)
+
+  /* alpha processor [64-bit] - Vendor: DEC */
+  #elif defined(__alpha__)
+    #define ARCH_ALIGNMENT (8U)
+
+  /* pru processor [32-bit] - Vendor: TI */
+  #elif defined(__TI_PRU__) || defined(__PRU__)
+    #define ARCH_ALIGNMENT (4U)
+  /* PA-RISC [32-bit] – Vendor: HP PA-RISC */
+  #elif defined(__hppa__)
+    #define ARCH_ALIGNMENT (4U)
+
+  /* z/Arch [64-bit] – Vendor: IBM Z */
+  #elif defined(__zarch__)
+    #define ARCH_ALIGNMENT (8U)
+
+  /* SPU [32-bit] – Vendor: Cell Broadband */
+  #elif defined(__cell_spu__)
+    #define ARCH_ALIGNMENT (16U) /* SPU natural aligns to 16 bytes */
+
+  /* NVPTX [64-bit] – Vendor: NVIDIA PTX */
+  #elif defined(__NVPTX__) || defined(__PTX__)
+    #define ARCH_ALIGNMENT (8U)
+
+  /* eBPF [64-bit] – in-kernel VM */
+  #elif defined(__bpf__)
+    #define ARCH_ALIGNMENT (8U)
+
+  /* Elbrus E2K [64-bit] – Vendor: MCST */
+  #elif defined(__e2k__)
+    #define ARCH_ALIGNMENT (8U)
+
+  /* CRIS [32-bit] – Vendor: Axis Communications */
+  #elif defined(__CRIS__)
+    #define ARCH_ALIGNMENT (4U)
+
+  /* TILEGX [64-bit] – Vendor: Tilera */
+  #elif defined(__tilegx__)
+    #define ARCH_ALIGNMENT (8U)
+
+  /* Generic fallback */
+  #else
+    #error "[ERROR] Unknow Architecture: check 'ARCH_ALIGNMENT'"
+  #endif
+#endif
+
+/** ============================================================================
+ *  @def        __ALIGN
+ *  @brief      Defines structure alignment and enforces the target byte
+ * order.
+ *
+ *  @details    When using GCC or Clang, expands to
+ *              __attribute__((scalar_storage_order("<host-endian>"),
+ *                                 aligned(ARCH_ALIGNMENT)))
+ *              where <host-endian> fica automaticamente ajustado para
+ *              "little-endian" ou "big-endian" conforme o compilador.
+ *              Em compiladores sem suporte a esse atributo, expande para
+ * nada.
+ * ========================================================================== */
+#ifndef __ALIGN
+  #if defined(__GNUC__) || defined(__clang__)
+    #if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+      #define __ALIGN                                      \
+        __attribute__((scalar_storage_order("big-endian"), \
+                       aligned(ARCH_ALIGNMENT)))
+    #elif __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
+      #define __ALIGN                                         \
+        __attribute__((scalar_storage_order("little-endian"), \
+                       aligned(ARCH_ALIGNMENT)))
+    #else
+      #error "[ERROR] Unknow Endianness: check '__BYTE_ORDER__'"
+    #endif
+  #else
+    #define __ALIGN
+  #endif
 #endif
 
 /** ============================================================================
@@ -86,10 +224,12 @@ extern "C"
   #else
     #define __LIBMEMALLOC_API __declspec(dllimport)
   #endif
-#elif defined(__GNUC__)
-  #define __LIBMEMALLOC_API __attribute__((visibility("default")))
 #else
-  #define __LIBMEMALLOC_API
+  #if defined(__GNUC__) || defined(__clang__)
+    #define __LIBMEMALLOC_API __attribute__((visibility("default")))
+  #else
+    #define __LIBMEMALLOC_API
+  #endif
 #endif
 
 /** ============================================================================
@@ -105,7 +245,7 @@ extern "C"
  *              return value should not be ignored. Otherwise,
  *              expands to nothing.
  * ========================================================================== */
-#if defined(__GNUC__)
+#if defined(__GNUC__) || defined(__clang__)
   #define __LIBMEMALLOC_MALLOC \
     __attribute__((malloc, alloc_size(2), warn_unused_result))
 #else
@@ -124,29 +264,11 @@ extern "C"
  *              of the allocation and that the return value
  *              should not be ignored. Otherwise, expands to nothing.
  * ========================================================================== */
-#if defined(__GNUC__)
+#if defined(__GNUC__) || defined(__clang__)
   #define __LIBMEMALLOC_REALLOC \
     __attribute__((malloc, alloc_size(3), warn_unused_result))
 #else
   #define __LIBMEMALLOC_REALLOC
-#endif
-
-/** ============================================================================
- *  @def        __PACKED
- *  @brief      Defines packed structure attribute with alignment.
- *
- *  @details    When using GCC or Clang, expands to
- *              __attribute__((packed, aligned(ARCH_ALIGNMENT))) to ensure
- *              minimal padding in structures while enforcing the architecture-
- *              specific alignment. On compilers that do not support this
- *              attribute, expands to nothing.
- * ========================================================================== */
-#ifndef __PACKED
-  #if defined(__GNUC__)
-    #define __PACKED __attribute__((packed, aligned(ARCH_ALIGNMENT)))
-  #else
-    #define __PACKED
-  #endif
 #endif
 
 /** ============================================================================
@@ -230,10 +352,10 @@ typedef enum AllocationStrategy
  *    @li @b fl_next  – Pointer to the next block on free list
  *    @li @b fl_prev  – Pointer to the previous block on free list
  * ========================================================================== */
-typedef struct __PACKED BlockHeader
+typedef struct __ALIGN BlockHeader
 {
-  uint32_t magic;  /**< Magic number for integrity check */
-  size_t   size;   /**< Total block size (includes header, data, and canary) */
+  uintptr_t magic; /**< Magic number for integrity check */
+  size_t    size;  /**< Total block size (includes header, data, and canary) */
 
   uint32_t free;   /**< 1 if block is free, 0 if allocated */
   uint32_t marked; /**< Garbage collector mark flag */
@@ -242,7 +364,7 @@ typedef struct __PACKED BlockHeader
   const char *file;         /**< Source file of allocation (for debugging) */
   uint64_t    line;         /**< Line number of allocation (for debugging) */
 
-  uint32_t canary;          /**< Canary value for buffer-overflow detection */
+  uintptr_t canary;         /**< Canary value for buffer-overflow detection */
 
   struct BlockHeader *next; /**< Pointer to the next block */
   struct BlockHeader *prev; /**< Pointer to the previous block */
@@ -267,7 +389,7 @@ typedef struct __PACKED BlockHeader
  *    @li @b top_chunk – Top free block in the heap (for fast extension)
  *    @li @b num_bins  – Number of size classes (bins) managed by this arena
  * ========================================================================== */
-typedef struct __PACKED MemArena
+typedef struct __ALIGN MemArena
 {
   size_t num_bins;            /**< Number of bins in this arena */
 
@@ -288,7 +410,7 @@ typedef struct __PACKED MemArena
  *    @li @b size – Total mapped region size (rounded to pages)
  *    @li @b next – Next region in allocator’s mmap list
  * ========================================================================== */
-typedef struct __PACKED MmapBlock
+typedef struct __ALIGN MmapBlock
 {
   void  *addr;            /**< Base address returned by mmap() */
   size_t size;            /**< Total mapped region size (rounded to pages) */
@@ -318,17 +440,17 @@ typedef struct __PACKED MmapBlock
  *    @li @b gc_cond          – Condition variable to signal GC thread
  *    @li @b gc_lock          – Mutex for synchronizing GC start/stop
  * ========================================================================== */
-typedef struct __PACKED GcThread
+typedef struct __ALIGN GcThread
 {
   pthread_t gc_thread;        /**< GC thread handle */
   pthread_t main_thread;      /**< Main thread handle */
 
-  atomic_bool gc_running;     /**< Flag indicating GC is running */
-  atomic_bool gc_exit;        /**< Flag to signal GC shutdown */
-
-  uint32_t gc_interval_ms;    /**< Interval between GC cycles (ms) */
+  bool gc_running;            /**< Flag indicating GC is running */
+  bool gc_exit;               /**< Flag to signal GC shutdown */
 
   uint16_t gc_thread_started; /**< Indicates whether GC thread has started */
+
+  uint32_t gc_interval_ms;    /**< Interval between GC cycles (ms) */
 
   pthread_cond_t  gc_cond;    /**< Condition variable for GC signaling */
   pthread_mutex_t gc_lock;    /**< Mutex protecting the condition */
@@ -356,7 +478,7 @@ typedef struct __PACKED GcThread
  *    @li @b free_lists       – Segregated free lists by size class
  *    @li @b gc_thread        – Garbage collector controller
  * ========================================================================== */
-typedef struct __PACKED MemoryAllocator
+typedef struct __ALIGN MemoryAllocator
 {
   uint8_t *heap_start;             /**< Base of the user heap region */
   uint8_t *heap_end;               /**< Current end of the heap */
@@ -370,10 +492,12 @@ typedef struct __PACKED MemoryAllocator
   size_t num_arenas;               /**< Number of arena partitions */
 
   block_header_t  *last_allocated; /**< Last block returned (NEXT_FIT) */
-  mem_arena_t     *arenas;         /**< Array of arena metadata */
-  mmap_t          *mmap_list;      /**< Linked list of mmap’d regions */
   block_header_t **free_lists;     /**< Segregated free lists by size class */
-  gc_thread_t      gc_thread;      /**< Garbage collector controller */
+
+  mem_arena_t *arenas;             /**< Array of arena metadata */
+  mmap_t      *mmap_list;          /**< Linked list of mmap’d regions */
+
+  gc_thread_t gc_thread;           /**< Garbage collector controller */
 } mem_allocator_t;
 
 /** ============================================================================

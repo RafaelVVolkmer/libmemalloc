@@ -82,13 +82,25 @@ if $DOCKER; then
     IMAGE_TAG="libmemalloc:${BUILD_TYPE,,}"
     TARGET=$([ "$BUILD_TYPE" = "Release" ] && echo "docs-export" || echo "export")
 
-    # build multi-arch via buildx + QEMU
     docker buildx create --use --name multiarch-builder >/dev/null 2>&1 || true
     docker buildx inspect --bootstrap
+
+    if echo "$PLATFORMS" | grep -q "linux/riscv64"; then
+        BASE_ARG="debian:trixie-slim"
+    elif echo "$PLATFORMS" | grep -q "linux/loong64"; then
+        BASE_ARG="loongarch64/debian-base-loong64:bullseye-v1.4.3"
+    elif echo "$PLATFORMS" | grep -q "linux/mips64"; then
+        BASE_ARG="polyarch/debian-ports:latest-linux-mips64le"
+    elif echo "$PLATFORMS" | grep -q "linux/mips64le"; then
+        BASE_ARG="debian:bookworm-slim"
+    else
+        BASE_ARG="debian:bookworm-slim"
+    fi
 
     docker buildx build \
         --build-arg BUILD_MODE="$BUILD_TYPE" \
         --target "$TARGET" \
+        --build-arg BASE_IMG="$BASE_ARG" \
         --platform "$PLATFORMS" \
         --load \
         --tag "$IMAGE_TAG" \

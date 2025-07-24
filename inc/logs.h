@@ -226,14 +226,16 @@ static inline int LOG_output(log_level_t level,
 {
   int ret = EXIT_SUCCESS;
 
-  FILE *out = NULL;
+  FILE *out = (FILE *)NULL;
 
   static pthread_mutex_t log_mutex = PTHREAD_MUTEX_INITIALIZER;
 
   struct timespec ts;
-  struct tm      *ptm = NULL;
+  struct tm      *ptm = (struct tm *)NULL;
 
   time_t now = 0;
+
+  long msec = 0u;
 
   if (level > LOG_LEVEL)
   {
@@ -250,13 +252,15 @@ static inline int LOG_output(log_level_t level,
   now = ts.tv_sec;
   ptm = localtime(&now);
 
-  out = (level <= LOG_LEVEL_WARNING) ? stderr : stdout;
+  out  = (level <= LOG_LEVEL_WARNING) ? stderr : stdout;
+  msec = ts.tv_nsec / 1000000L;
+
   LOG_PRINTF(out,
              "[%02d:%02d:%02d.%03ld] ",
              ptm->tm_hour,
              ptm->tm_min,
              ptm->tm_sec,
-             ts.tv_nsec / 1000000u);
+             msec);
 
   if (isatty(fileno(out)))
     LOG_PRINTF(out, "%s%s%s ", color, prefix, COLOR_RESET);
