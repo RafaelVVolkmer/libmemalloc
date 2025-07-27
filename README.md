@@ -38,9 +38,6 @@
 
 ```python
 /libmemalloc
-├── /bin
-│   ├── libmemalloc.a
-│   └── libmemalloc.so
 ├── /inc
 │   ├── logs.h
 │   └── libmemalloc.h
@@ -48,59 +45,25 @@
 │   ├── CMakeLists.txt
 │   └── libmemalloc.c
 ├── /test
+│   ├── CMakeLists.txt
 │   └── tests.c
+├── / Doxygen
+│   ├── CMakeLists.txt
+│   ├── Doxyfile.in
+│   └── doxygen.md
 ├── /readme
 │    └── libmemalloc.svg
 ├── Dockerfile
 ├── .dockerignore
-├── build.sh
 ├── CMakeLists.txt
+├── .clang-format
+├── .clang-tidy
+├── build.sh
 ├── .gitattributes
 ├── .gitignore
 ├── LICENSE
 └── README.md
 ```
-The libmemalloc repository is organized to keep everything modular, discoverable and easy to extend:
-
-* **Public API vs. Implementation**
-
-  All user-facing headers live in `inc/` (e.g. `libmemalloc.h`, `logs.h`), while the actual allocator logic and build rules for that module reside under `src/`. This clear separation makes it trivial to browse the API without wading through implementation details.
-
-* **Build Artifacts**
-
-  Compiled outputs (both static `.a` and shared `.so` libraries) are deposited in `bin/`, preventing accidental commits of large binaries and keeping the source tree clean.
-
-* **Test Suite**
-  
-  The `test/` directory contains unit- and integration-tests (`tests.c`) that exercise every allocation strategy and GC sweep.  These tests are wired into CTest and invoked automatically by `build.sh` for both Debug and Release modes.
-
-* **Documentation Assets**
-  
-  Visual assets—project logo, diagrams, screenshots—are housed in `readme/`.  This keeps non-code files out of the root and lets you reference them consistently in your Markdown documentation.
-
-* **Top-Level Build Orchestration**
-
-  * **`CMakeLists.txt`** at the project root defines cross-platform build targets, dependency checks, and install rules.
-  * **`build.sh`** wraps CMake and CTest in a simple Bash interface (Release vs. Debug).  A `chmod +x` step ensures it runs everywhere.
-
-* **Containerized Builds**
-
-  * **`Dockerfile`** uses a multi-stage build: an Alpine-based builder with GCC 13.3, CMake and Valgrind, then a minimal runtime image.
-  * **`.dockerignore`** excludes temporary files, build folders and VCS metadata to speed up Docker builds and reduce image size.
-
-* **Version Control Configuration**
-
-  * **`.gitignore`** filters out binaries, build directories, editor backups and OS-specific cruft.
-  * **`.gitattributes`** enforces consistent line endings, export settings and diff behaviors across platforms.
-
-* **License & Contribution Guidance**
-
-  * **`LICENSE`** contains the full text of your chosen open-source license.
-  * **`README.md`** doubles as a quickstart guide, covering build instructions, usage examples, directory layout and contribution pointers (e.g. code style conventions, how to run tests).
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
----
 
 # - Build and Use
 
@@ -124,59 +87,17 @@ chmod +x build.sh
 # Or build in Debug mode
 ./build.sh debug
 ```
-
-### Build with Docker
-
-```bash
-# Release (latest)
-docker build \
-  --platform linux/amd64 \
-  --file Dockerfile \
-  --build-arg BUILD_MODE=Release \
-  --target runtime \
-  -t libmemalloc:latest \
-  .
-
-# Debug
-docker build \
-  --platform linux/amd64 \
-  --file Dockerfile \
-  --build-arg BUILD_MODE=Debug \
-  --target runtime \
-  -t libmemalloc:debug \
-  .
-```
-
-### Export Libraries (.a/.so)
+### Docker build
 
 ```bash
-# Release (latest)
-docker build \
-  --platform linux/amd64 \
-  --file Dockerfile \
-  --build-arg BUILD_MODE=Release \
-  --target export \
-  --output ./artifacts/release \
-  .
+# Make the build script executable
+chmod +x build.sh
 
-# Debug
-docker build \
-  --platform linux/amd64 \
-  --file Dockerfile \
-  --build-arg BUILD_MODE=Debug \
-  --target export \
-  --output ./artifacts/debug \
-  .
-```
+# Build in Release mode (default)
+./build.sh --docker release
 
-###  Container Run
-
-```bash
-# Release (latest)
-docker run --rm libmemalloc:latest
-
-# Debug
-docker run --rm libmemalloc:debug
+# Or build in Debug mode
+./build.sh --docker debug
 ```
 
 <p align="right">(<a href="#readme-top">Back to Top</a>)</p>
