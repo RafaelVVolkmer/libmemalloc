@@ -25,8 +25,8 @@
  *              All runtime assertions and error checks use the CHECK() macro
  *              to ensure that test execution halts immediately on failure.
  *
- *  @version    v4.0.00
- *  @date       26.06.2025
+ *  @version    v1.0.00
+ *  @date       23.08.2025
  *  @author     Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
  * ========================================================================== */
 
