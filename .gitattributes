@@ -1,0 +1,397 @@
+# ==============================================================================
+# 1) General Settings
+# ==============================================================================
+*                        text=auto
+#   → Automatically detect text vs. binary.
+#     Text files: normalized to LF in repo, converted on checkout.
+#     Binary files: no conversion or diffs.
+
+# ==============================================================================
+# 2) Git Core Files
+# ==============================================================================
+.gitattributes          text    eol=lf
+.gitignore              text    eol=lf
+.gitconfig              text    eol=lf
+.gitmodules             text    eol=lf
+
+# ==============================================================================
+# 4) Global Text Formats
+# ==============================================================================
+# Documents & Markup
+*.sql                   text    eol=lf
+*.md                    text    eol=lf
+*.adoc                  text    eol=lf
+*.textile               text    eol=lf
+*.mustache              text    eol=lf
+*.csv                   text    eol=lf
+*.tab                   text    eol=lf
+*.tsv                   text    eol=lf
+*.log                   text    eol=lf
+
+# Web & Code Snippets
+*.css                   text    eol=lf
+*.htm                   text    eol=lf
+*.html                  text    eol=lf
+*.xhtml                 text    eol=lf
+*.js                    text    eol=lf
+*.jsx                   text    eol=lf
+*.ts                    text    eol=lf
+*.tsx                   text    eol=lf
+
+# Configuration & Metadata
+*.cnf                   text    eol=lf
+*.cfg                   text    eol=lf
+*.conf                  text    eol=lf
+*.config                text    eol=lf
+*.ini                   text    eol=lf
+*.json                  text    eol=lf
+*.xml                   text    eol=lf
+*.bowerrc               text    eol=lf
+.browserslistrc         text    eol=lf
+.editorconfig           text    eol=lf
+*.npmignore             text    eol=lf
+*.yaml                  text    eol=lf
+*.yml                   text    eol=lf
+browserslist            text    eol=lf
+Makefile                text    eol=lf
+makefile                text    eol=lf
+Procfile                text    eol=lf
+.slugignore             text    eol=lf
+
+# Licensing & Project Metadata
+AUTHORS                 text    eol=lf
+CHANGELOG               text    eol=lf
+CHANGES                 text    eol=lf
+CONTRIBUTING            text    eol=lf
+COPYING                 text    eol=lf
+copyright               text    eol=lf
+*COPYRIGHT*             text    eol=lf
+INSTALL                 text    eol=lf
+license                 text    eol=lf
+LICENSE                 text    eol=lf
+NEWS                    text    eol=lf
+readme                  text    eol=lf
+*README*                text    eol=lf
+TODO                    text    eol=lf
+
+# Linters & Tool Configs
+.csslintrc              text    eol=lf
+.eslintrc               text    eol=lf
+.htmlhintrc             text    eol=lf
+.jscsrc                 text    eol=lf
+.jshintrc               text    eol=lf
+.jshintignore           text    eol=lf
+.stylelintrc            text    eol=lf
+
+# ==============================================================================
+# 5) Common Binary Formats
+# ==============================================================================
+# Video
+*.3gpp                  filter=lfs diff=lfs merge=lfs -text
+*.3gp                   filter=lfs diff=lfs merge=lfs -text
+*.asf                   filter=lfs diff=lfs merge=lfs -text
+*.asx                   filter=lfs diff=lfs merge=lfs -text
+*.fla                   filter=lfs diff=lfs merge=lfs -text
+*.flv                   filter=lfs diff=lfs merge=lfs -text
+*.m4v                   filter=lfs diff=lfs merge=lfs -text
+*.mng                   filter=lfs diff=lfs merge=lfs -text
+*.mov                   filter=lfs diff=lfs merge=lfs -text
+*.mp4                   filter=lfs diff=lfs merge=lfs -text
+*.mpeg                  filter=lfs diff=lfs merge=lfs -text
+*.mpg                   filter=lfs diff=lfs merge=lfs -text
+*.ogv                   filter=lfs diff=lfs merge=lfs -text
+*.swf                   filter=lfs diff=lfs merge=lfs -text
+*.webm                  filter=lfs diff=lfs merge=lfs -text
+*.swc                   filter=lfs diff=lfs merge=lfs -text
+
+# Audio
+*.kar                   filter=lfs diff=lfs merge=lfs -text
+*.m4a                   filter=lfs diff=lfs merge=lfs -text
+*.mid                   filter=lfs diff=lfs merge=lfs -text
+*.midi                  filter=lfs diff=lfs merge=lfs -text
+*.mp3                   filter=lfs diff=lfs merge=lfs -text
+*.ogg                   filter=lfs diff=lfs merge=lfs -text
+*.ra                    filter=lfs diff=lfs merge=lfs -text
+
+# Graphics
+*.svg                   text    eol=lf      linguist-language=XML
+*.png                   filter=lfs diff=lfs merge=lfs -text
+*.jpg                   filter=lfs diff=lfs merge=lfs -text
+*.jpeg                  filter=lfs diff=lfs merge=lfs -text
+*.gif                   filter=lfs diff=lfs merge=lfs -text
+*.tif                   filter=lfs diff=lfs merge=lfs -text
+*.tiff                  filter=lfs diff=lfs merge=lfs -text
+*.ico                   filter=lfs diff=lfs merge=lfs -text
+*.eps                   filter=lfs diff=lfs merge=lfs -text
+*.ai                    filter=lfs diff=lfs merge=lfs -text
+*.bmp                   filter=lfs diff=lfs merge=lfs -text
+*.jng                   filter=lfs diff=lfs merge=lfs -text
+*.jp2                   filter=lfs diff=lfs merge=lfs -text
+*.jpx                   filter=lfs diff=lfs merge=lfs -text
+*.jxr                   filter=lfs diff=lfs merge=lfs -text
+*.pdf                   filter=lfs diff=lfs merge=lfs -text
+*.psb                   filter=lfs diff=lfs merge=lfs -text
+*.psd                   filter=lfs diff=lfs merge=lfs -text
+*.svgz                  filter=lfs diff=lfs merge=lfs -text
+*.wbmp                  filter=lfs diff=lfs merge=lfs -text
+*.webp                  filter=lfs diff=lfs merge=lfs -text
+
+# Archives & Fonts
+*.7z                    filter=lfs diff=lfs merge=lfs -text
+*.gz                    filter=lfs diff=lfs merge=lfs -text
+*.jar                   filter=lfs diff=lfs merge=lfs -text
+*.rar                   filter=lfs diff=lfs merge=lfs -text
+*.tar                   filter=lfs diff=lfs merge=lfs -text
+*.zip                   filter=lfs diff=lfs merge=lfs -text
+*.ttf                   filter=lfs diff=lfs merge=lfs -text
+*.eot                   filter=lfs diff=lfs merge=lfs -text
+*.otf                   filter=lfs diff=lfs merge=lfs -text
+*.woff                  filter=lfs diff=lfs merge=lfs -text
+*.woff2                 filter=lfs diff=lfs merge=lfs -text
+
+# ==============================================================================
+# 6) IDE / Editor Files
+# ==============================================================================
+##### Eclipse
+*.project               text    eol=lf
+*.classpath             text    eol=lf
+*.prefs                 text    eol=lf
+
+# ==============================================================================
+# 7) Merge / Lock / LFS Rules
+# ==============================================================================
+*.psd                   filter=lfs diff=lfs merge=lfs -text
+*.lock                  merge=ours
+*.yml                   merge=union
+*.ai                    lockable
+*.sketch                lockable
+
+# ==============================================================================
+# 8) Export-ignore for Releases
+# ==============================================================================
+.github/workflows/**    export-ignore
+bin/**                  export-ignore
+build/**                export-ignore
+docs/**                 export-ignore
+doxygen/**              export-ignore
+*.md                    export-ignore
+
+# ==============================================================================
+# 9) Programming Languages & Ecosystem
+# ==============================================================================
+
+## C
+*.c                     text    eol=lf    linguist-language=C
+*.h                     text    eol=lf    linguist-language=C
+*.slo                   binary
+*.lo                    binary
+*.o                     binary
+*.obj                   binary
+*.gch                   binary
+*.pch                   binary
+*.so                    binary
+*.dylib                 binary
+*.dll                   binary
+*.lai                   binary
+*.la                    binary
+*.a                     binary
+*.lib                   binary
+*.exe                   binary
+*.out                   binary
+*.app                   binary
+
+## C++
+*.cpp                   text    eol=lf    linguist-language=C++
+*.c++                   text    eol=lf    linguist-language=C++
+*.cc                    text    eol=lf    linguist-language=C++
+*.cxx                   text    eol=lf    linguist-language=C++
+*.hpp                   text    eol=lf    linguist-language=C++
+*.h++                   text    eol=lf    linguist-language=C++
+*.hh                    text    eol=lf    linguist-language=C++
+*.hxx                   text    eol=lf    linguist-language=C++
+
+## Objective-C / Objective-C++
+*.m                     text    eol=lf    linguist-language=Objective-C
+*.M                     text    eol=lf    linguist-language=Objective-C
+*.mm                    text    eol=lf    linguist-language=Objective-C++
+
+## Arduino Sketches
+*.ino                   text    eol=lf    linguist-language=Arduino
+*.pde                   text    eol=lf    linguist-language=Processing
+platformio.ini          text    eol=lf    linguist-language=INI
+
+## Shell (Bash, Zsh, etc.)
+*.sh                    text    eol=lf    linguist-language=Shell
+*.bash                  text    eol=lf    linguist-language=Shell
+*.zsh                   text    eol=lf    linguist-language=Shell
+*.ksh                   text    eol=lf    linguist-language=Shell
+*.tcsh                  text    eol=lf    linguist-language=Shell
+*.fish                  text    eol=lf    linguist-language=Shell
+*.cmd                   text    eol=lf    linguist-language=Shell
+*.ps1                   text    eol=lf    linguist-language=PowerShell
+*.psm1                  text    eol=lf    linguist-language=PowerShell
+*.psd1                  text    eol=lf    linguist-language=PowerShell
+
+## Assembly
+*.s                     text    eol=lf    linguist-language=Assembly
+*.S                     text    eol=lf    linguist-language=Assembly
+*.asm                   text    eol=lf    linguist-language=Assembly
+
+## CMake
+CMakeLists.txt          text    eol=lf    linguist-language=CMake
+*.cmake                 text    eol=lf    linguist-language=CMake
+
+## Makefiles
+Makefile*               text    eol=lf    linguist-language=Makefile
+makefile                text    eol=lf    linguist-language=Makefile
+makefile.am             text    eol=lf    linguist-language=Makefile
+makefile.in             text    eol=lf    linguist-language=Makefile
+
+## Clang Tooling
+.clang-format           text    eol=lf    linguist-language=YAML
+.clang-tidy             text    eol=lf    linguist-language=YAML
+
+## CUDA
+*.cu                    text    eol=lf    linguist-language=CUDA
+*.cuh                   text    eol=lf    linguist-language=CUDA
+*.ptx                   text    eol=lf    linguist-language=CUDA
+*.cubin                 binary
+*.fatbin                binary
+
+## OpenCL C
+*.cl                    text    eol=lf    linguist-language=OpenCL
+*.ocl                   text    eol=lf    linguist-language=OpenCL
+*.spv                   binary
+
+## Linker Scripts
+*.ld                    text    eol=lf    linguist-language=LinkerScript
+*.lds                   text    eol=lf    linguist-language=LinkerScript
+*.ldscript              text    eol=lf    linguist-language=LinkerScript
+*.x                     text    eol=lf    linguist-language=LinkerScript
+*.map                   text    eol=lf    linguist-language=LinkerScript
+
+## Linux Kernel / Device Tree
+*.dts                   text    eol=lf    linguist-language=DeviceTree
+*.dtsi                  text    eol=lf    linguist-language=DeviceTree
+*.ko                    binary
+*.mod                   binary
+
+## Autotools / m4
+*.ac                    text    eol=lf    linguist-language=M4
+*.m4                    text    eol=lf    linguist-language=M4
+configure.ac            text    eol=lf    linguist-language=M4
+configure.in            text    eol=lf    linguist-language=M4
+config.sub              text    eol=lf    linguist-language=M4
+config.guess            text    eol=lf    linguist-language=M4
+aclocal.m4              text    eol=lf    linguist-language=M4
+libtool.m4              text    eol=lf    linguist-language=M4
+ltmain.sh               text    eol=lf    linguist-language=M4
+config.status           text    eol=lf    linguist-language=M4
+config.log              text    eol=lf    linguist-language=M4
+
+## Meson / Ninja
+meson.build             text    eol=lf    linguist-language=Meson
+build.ninja             text    eol=lf    linguist-language=Ninja
+
+## Pkg-config
+*.pc                    text    eol=lf    linguist-language=Autoconf
+
+## RPM Spec
+*.spec                  text    eol=lf    linguist-language=RPMSpec
+
+## Protocol Buffers / FlatBuffers
+*.proto                 text    eol=lf    linguist-language=ProtocolBuffers
+*.fbs                   text    eol=lf    linguist-language=FlatBuffers
+
+## CORBA IDL
+*.idl                   text    eol=lf    linguist-language=IDL
+
+## Qt / qmake
+*.pro                   text    eol=lf    linguist-language=QMake
+*.pri                   text    eol=lf    linguist-language=QMake
+*.ui                    text    eol=lf    linguist-language=XML
+*.qrc                   text    eol=lf    linguist-language=XML
+
+## Bazel / Starlark
+BUILD                   text    eol=lf    linguist-language=Bazel
+WORKSPACE               text    eol=lf    linguist-language=Bazel
+*.bzl                   text    eol=lf    linguist-language=Starlark
+
+## Coverage & Profiling
+*.gprof                 text    eol=lf    linguist-language=Text
+*.gcno                  binary
+*.gcda                  binary
+*.prof                  binary
+
+## CMSIS / SVD
+*.svd                   text    eol=lf    linguist-language=XML
+
+## Package Managers
+conanfile.txt           text    eol=lf    linguist-language=INI
+conanfile.py            text    eol=lf    linguist-language=Python
+vcpkg.json              text    eol=lf    linguist-language=JSON
+
+## Debug & Symbols
+*.sym                   text    eol=lf    linguist-language=Text
+*.dbg                   binary
+
+## Go
+*.go                    text    eol=lf    linguist-language=Go
+go.mod                  text    eol=lf    linguist-language=Go
+go.sum                  text    eol=lf    linguist-language=Go
+Gopkg.toml              text    eol=lf    linguist-language=TOML
+Gopkg.lock              text    eol=lf    linguist-language=TOML
+vendor/**               binary
+
+## Zig
+*.zig                   text    eol=lf    linguist-language=Zig
+build.zig               text    eol=lf    linguist-language=Zig
+zig-cache/**            binary
+
+## Documentation (Doxygen, Graphviz)
+Doxyfile                text    eol=lf    linguist-language=INI
+Doxyfile.in             text    eol=lf    linguist-language=INI
+*.dot                   text    eol=lf    linguist-language=Graphviz
+
+## Patches & Diffs
+*.patch                 text    eol=lf    linguist-language=Diff
+
+# ==============================================================================
+# 10) Docker, CI & Orchestration
+# ==============================================================================
+
+### Docker
+Dockerfile*             text    eol=lf    linguist-language=Dockerfile
+*.dockerfile            text    eol=lf    linguist-language=Dockerfile
+.dockerignore           text    eol=lf    linguist-language=Dockerfile
+docker-compose*.yml     text    eol=lf    linguist-language=YAML
+docker-compose*.yaml    text    eol=lf    linguist-language=YAML
+
+### Jenkins
+Jenkinsfile             text    eol=lf    linguist-language=Groovy
+*.jenkinsfile           text    eol=lf    linguist-language=Groovy
+jenkins/*.groovy        text    eol=lf    linguist-language=Groovy
+
+### Kubernetes & Helm
+*.k8s.yaml              text    eol=lf    linguist-language=YAML
+*.k8s.yml               text    eol=lf    linguist-language=YAML
+*.kube.yaml             text    eol=lf    linguist-language=YAML
+*.kube.yml              text    eol=lf    linguist-language=YAML
+charts/**               text    eol=lf    linguist-language=YAML
+templates/**            text    eol=lf    linguist-language=YAML
+
+# ==============================================================================
+# 16) Office & Binary Documents
+# ==============================================================================
+*.doc    lockable filter=lfs diff=lfs merge=lfs -text
+*.docx   lockable filter=lfs diff=lfs merge=lfs -text
+*.docm   lockable filter=lfs diff=lfs merge=lfs -text
+*.xls    lockable filter=lfs diff=lfs merge=lfs -text
+*.xlsx   lockable filter=lfs diff=lfs merge=lfs -text
+*.xlsm   lockable filter=lfs diff=lfs merge=lfs -text
+*.ppt    lockable filter=lfs diff=lfs merge=lfs -text
+*.pptx   lockable filter=lfs diff=lfs merge=lfs -text
+*.pptm   lockable filter=lfs diff=lfs merge=lfs -text
+*.odt    lockable filter=lfs diff=lfs merge=lfs -text
+*.ods    lockable filter=lfs diff=lfs merge=lfs -text
+*.odp    lockable filter=lfs diff=lfs merge=lfs -text

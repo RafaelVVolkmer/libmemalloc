@@ -1,0 +1,186 @@
+# .clang-format - Project Formatting Configuration
+
+# =============================
+# 1. Base Style
+# =============================
+BasedOnStyle:                               Mozilla     # inherit Mozilla coding style defaults
+Language:                                   Cpp         # format as C/C++
+Standard:                                   Cpp11       # use C++11 standards
+AccessModifierOffset:                       -4          # indent access modifiers by -4 spaces
+IndentWidth:                                2           # use 2 spaces per indent level
+TabWidth:                                   2           # treat a tab as 2 spaces
+UseTab:                                     Never       # never use tab characters
+ColumnLimit:                                80          # wrap lines beyond 80 characters
+BreakBeforeBraces:                          Allman      # put opening brace on its own line (Allman style)
+ReflowComments:                             true        # allow reflow of comments for wrapping
+InsertNewlineAtEOF:                         true        # ensure file ends with a newline
+
+# =============================
+# 2. BraceWrapping
+# =============================
+BraceWrapping:
+  AfterFunction:                            true        # put brace on new line after function definitions
+  AfterClass:                               true        # put brace on new line after class definitions
+  AfterEnum:                                true        # put brace on new line after enum definitions
+  AfterControlStatement:                    true        # put brace on new line after if/for/while statements
+  BeforeCatch:                              true        # put brace on new line before catch blocks
+  BeforeElse:                               true        # put brace on new line before else blocks
+
+# =============================
+# 3. Alignment Rules
+# =============================
+AlignAfterOpenBracket:                      Align       # align parameters after opening bracket
+BracedInitializerIndentWidth:               2           # indent braced initializer lists by 2 spaces
+AlignArrayOfStructures:                     Right       # align elements of array-of-structures to the right
+
+AlignConsecutiveAssignments:                            # alignment for assignment statements
+  Enabled:                                  true        #   turn on alignment
+  AcrossEmptyLines:                         false       #   do not align across empty lines
+  AcrossComments:                           true        #   align across comments
+  AlignCompound:                            true        #   align compound assignments like +=
+  PadOperators:                             true        #   pad operators when aligning
+  
+AlignConsecutiveBitFields:                              # align declarations of consecutive bit-fields
+  Enabled:                                  true        #   turn on bit-field alignment
+  AcrossEmptyLines:                         true        #   also align over empty lines
+  AcrossComments:                           true        #   also align over comments
+
+AlignConsecutiveDeclarations:                           # align declarations in a row
+  Enabled:                                  true        #   turn on declaration alignment
+  AcrossEmptyLines:                         false       #   do not align across empty lines
+  AcrossComments:                           true        #   do align across comments
+
+AlignConsecutiveMacros:                                 # align macro definitions
+  Enabled:                                  true        #   turn on macro alignment
+  AcrossEmptyLines:                         true        #   do align across empty lines
+  AcrossComments:                           true        #   do align across comments
+
+AlignConsecutiveShortCaseStatements:                    # align short `case:` statements
+  Enabled:                                  true        #   turn on case-statement alignment
+  AcrossEmptyLines:                         true        #   align even across empty lines
+  AcrossComments:                           true        #   align even across comments
+  AlignCaseColons:                          false       #   do not align the colons after `case`
+
+AlignEscapedNewlines:                       Left        # align escaped newline lines to left
+AlignOperands:                              true        #   align operands in expressions
+ReferenceAlignment:                         Right       #   align & and && with the identifier
+
+AlignTrailingComments:                                  # alignment for trailing comments
+  Kind:                                     Always      #   always align
+  OverEmptyLines:                           2           #   align even across up to 2 empty lines
+
+# =============================
+# 4. Bin Packing & Wrapping
+# =============================
+AllowAllParametersOfDeclarationOnNextLine:  true        # allow all parameters on next line
+AllowAllArgumentsOnNextLine:                true        # allow all arguments on next line
+AllowShortBlocksOnASingleLine:              true        # allow {} blocks on one line
+AllowShortCaseLabelsOnASingleLine:          false       # disallow short case labels on one line
+AllowShortEnumsOnASingleLine:               false       # disallow short enums on one line
+AllowShortIfStatementsOnASingleLine:        false       # disallow short if statements on one line
+AllowShortLambdasOnASingleLine:             true        # allow short lambdas on one line
+AllowShortLoopsOnASingleLine:               false       # disallow short loops on one line
+AllowShortFunctionsOnASingleLine:           false       # disallow short functions on one line
+
+AlwaysBreakAfterReturnType:                 None        # never break after return type
+AlwaysBreakAfterDefinitionReturnType:       None        # never break after definition return type
+
+AlwaysBreakBeforeMultilineStrings:          false       # do not break before multiline string literals
+BinPackArguments:                           false       # do not pack arguments on the same line
+BinPackParameters:                          false       # do not pack parameters on the same line
+BitFieldColonSpacing:                       Both        # put space on both sides of bit-field colon
+
+BreakAdjacentStringLiterals:                true        # break adjacent string literals separately
+BreakAfterAttributes:                       Never       # never break after attributes
+
+BreakArrays:                                true        # break array initializers
+BreakBeforeBinaryOperators:                 All         # break before binary operators
+BreakBeforeInlineASMColon:                  Always      # break before colon in inline ASM
+AlwaysBreakTemplateDeclarations:            true        # always break template declarations
+BreakBeforeTernaryOperators:                true        # break before ternary operators
+BreakInheritanceList:                       AfterComma  # break inheritance list after comma
+BreakStringLiterals:                        true        # break string literals
+
+# =============================
+# 5. Pointer & Qualifier Style
+# =============================
+DerivePointerAlignment:                     false       # do not derive pointer alignment from code
+PointerAlignment:                           Right       # place * to the right of the type
+QualifierAlignment:                         Left        # align qualifiers to the left
+SpaceAroundPointerQualifiers:               Default     # default spacing around pointer qualifiers
+
+# =============================
+# 6. Includes & Miscellaneous
+# =============================
+SortIncludes:                               true        # sort #include directives
+IncludeBlocks:                              Regroup     # regroup include blocks by category
+RemoveParentheses:                          Leave       # leave parentheses untouched
+RemoveSemicolon:                            false       # do not remove unnecessary semicolons
+JavaScriptQuotes:                           Single      # prefer single quotes in JS
+
+# =============================
+# 7. Indentation & Directives
+# =============================
+IndentCaseBlocks:                           false       # do not indent case blocks
+IndentCaseLabels:                           true        # indent case labels
+IndentExternBlock:                          false       # do not indent extern blocks
+IndentGotoLabels:                           false       # do not indent goto labels
+IndentPPDirectives:                         BeforeHash  # indent preprocessor directives before '#'
+IndentWrappedFunctionNames:                 false       # do not indent wrapped function names
+InsertBraces:                               false       # do not force insertion of braces
+
+# =============================
+# 8. Parentheses & Spacing
+# =============================
+SpaceBeforeParens:                          Custom      # custom handling for space before parentheses
+SpaceBeforeParensOptions:                               # customize
+  AfterControlStatements:                   true        #   space before parentheses in control statements
+  AfterFunctionDefinitionName:              false       #   no space after function definition name
+  AfterFunctionDeclarationName:             false       #   no space after function declaration name
+
+SpaceInEmptyBlock:                          true        # space inside empty block {}
+SpaceInEmptyParentheses:                    true        # space inside empty parentheses ()
+SpacesInContainerLiterals:                  false       # no spaces in container literals
+SpacesInSquareBrackets:                     false       # no spaces in square brackets
+SpaceBeforeSquareBrackets:                  false       # no space before square brackets
+
+SpaceAfterCStyleCast:                       false       # no space after C-style cast
+SpaceAfterLogicalNot:                       false       # no space after logical not operator
+SpaceBeforeAssignmentOperators:             true        # space before assignment operators
+SpaceBeforeCaseColon:                       true        # space before case colon
+
+SpacesBeforeTrailingComments:               1           # spaces before trailing comment start
+SpacesInLineCommentPrefix:                              # control spaces in line comment prefix
+  Minimum:                                  1           #   minimum spaces after '//'
+  Maximum:                                  1           #   maximum spaces after '//'
+
+SpacesInParens:                             Custom      # custom spaces inside parentheses
+SpacesInParensOptions:                                  # customize
+  InConditionalStatements:                  false       #   no extra spaces in conditionals
+  InCStyleCasts:                            false       #   no extra spaces in C-style casts
+  InEmptyParentheses:                       true        #   space in empty parentheses
+  Other:                                    false       #   no extra spaces elsewhere
+
+# =============================
+# 9. Numeric Literals & Line Endings
+# =============================
+IntegerLiteralSeparator:                                # digit separator settings
+  Binary:                                   -1          #   separate binary digits every 4 bits
+  Decimal:                                  -1          #   separate decimal digits every 3 digits
+  Hex:                                      -1          #   separate hex digits every 2 digits
+
+LineEnding:                                 LF          # use LF for line endings
+MaxEmptyLinesToKeep:                        1           # max empty lines to keep consecutively
+KeepEmptyLinesAtTheStartOfBlocks:           false       # no empty lines at block start
+DisableFormat:                              false       # do not disable formatting
+
+# =============================
+# 10. Formatting Penalties
+# =============================
+PenaltyReturnTypeOnItsOwnLine:              1000        # cost for breaking return type to its own line
+PenaltyBreakComment:                        1000        # cost for introducing breaks inside comments
+PenaltyBreakOpenParenthesis:                1000        # cost for breaking after '('
+PenaltyBreakBeforeFirstCallParameter:       1000        # cost for breaking before first call parameter
+PenaltyExcessCharacter:                     1000        # cost per character beyond column limit
+PenaltyIndentedWhitespace:                  0           # cost for indent whitespace
+PenaltyBreakString:                         0           # cost for breaking inside string literal
