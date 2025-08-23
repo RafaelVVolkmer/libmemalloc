@@ -9,8 +9,8 @@
  *  @details    Allocates a single block, frees it, then attempts to free it
  * again. Verifies that the second free returns an error (not EXIT_SUCCESS).
  *
- *  @version    v4.0.00
- *  @date       26.06.2025
+ *  @version    v1.0.00
+ *  @date       23.08.2025
  *  @author     Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
  * ============================================================================
  */
