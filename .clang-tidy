@@ -1,0 +1,109 @@
+# .clang-tidy - Project Formatting Configuration
+
+# =============================
+# Checks: enable/disable specific modules
+# =============================
+Checks: >
+  -*,
+  readability-identifier-naming,
+  -clang-diagnostic-*
+
+# =============================
+# WarningsAsErrors: promote certain warnings to errors
+# =============================
+WarningsAsErrors: >
+  readability-identifier-naming
+
+# =============================
+# Filtering: restrict diagnostics to your own code
+# =============================
+HeaderFilterRegex: '^(src|inc)/.*$'
+SystemHeaders: false
+
+# =============================
+# CheckOptions: detailed naming rules
+# =============================
+CheckOptions:
+  # --- Typedefs ----------------------
+  - key: readability-identifier-naming.TypedefCase
+    value: lower_case                   # all typedefs must be lower_case
+  - key: readability-identifier-naming.TypedefSuffix
+    value: _t                           # typedef names must end with “_t”
+
+  # --- Variables ---------------------
+  - key: readability-identifier-naming.VariableCase
+    value: lower_case                   # variables in lower_case
+
+  # --- Types: classes, structs, unions
+  - key: readability-identifier-naming.ClassCase
+    value: CamelCase                    # class/struct names in CamelCase
+  - key: readability-identifier-naming.UnionCase
+    value: CamelCase                    # union names in CamelCase
+  - key: readability-identifier-naming.StructCase
+    value: CamelCase                    # struct names in CamelCase
+
+  # --- Enum constants ----------------
+  - key: readability-identifier-naming.EnumConstantCase
+    value: UPPER_CASE                   # enum constants in UPPER_CASE
+  - key: readability-identifier-naming.ScopedEnumConstantCase
+    value: UPPER_CASE                   # scoped enum constants in UPPER_CASE
+
+  # --- Global symbols ----------------
+  - key: readability-identifier-naming.GlobalVariableCase
+    value: lower_case                   # globals in lower_case
+  - key: readability-identifier-naming.GlobalVariablePrefix
+    value: g_                           # global variables start with g_
+
+  - key: readability-identifier-naming.GlobalConstantCase
+    value: lower_case                   # global constants in lower_case
+  - key: readability-identifier-naming.GlobalConstantPrefix
+    value: g_                           # constants start with g_
+
+  - key: readability-identifier-naming.GlobalPointerCase
+    value: lower_case                   # global pointers in lower_case
+  - key: readability-identifier-naming.GlobalPointerPrefix
+    value: g_                           # pointers start with g_
+
+  - key: readability-identifier-naming.GlobalConstantPointerCase
+    value: lower_case                   # global const pointers in lower_case
+  - key: readability-identifier-naming.GlobalConstantPointerPrefix
+    value: g_                           # const pointers start with g_
+
+  # --- Local symbols -----------------
+  - key: readability-identifier-naming.LocalVariableCase
+    value: lower_case                   # locals in lower_case
+  - key: readability-identifier-naming.LocalPointerCase
+    value: lower_case                   # local pointers in lower_case
+  - key: readability-identifier-naming.LocalConstantCase
+    value: lower_case                   # local constants in lower_case
+  - key: readability-identifier-naming.LocalConstantPointerCase
+    value: lower_case
+
+  # --- Members & parameters ----------
+  - key: readability-identifier-naming.MemberCase
+    value: lower_case                   # struct/class members
+  - key: readability-identifier-naming.ParameterCase
+    value: lower_case                   # function parameters
+  - key: readability-identifier-naming.PointerParameterCase
+    value: lower_case                   # pointer parameters
+
+  # --- Static symbols ----------------
+  - key: readability-identifier-naming.StaticVariableCase
+    value: lower_case                   # static variables
+  - key: readability-identifier-naming.StaticConstantCase
+    value: lower_case                   # static constants
+
+  # --- Macros ------------------------
+  - key: readability-identifier-naming.MacroDefinitionCase
+    value: UPPER_CASE                   # macros in UPPER_CASE
+  - key: readability-identifier-naming.MacroDefinitionIgnoredRegexp
+    value: '^(_{1,2}[A-Z][A-Z0-9_]*|[A-Z][A-Z0-9_]*_{1,2})$'
+                                        # ignore macros with 1–2 leading or trailing underscores
+
+  # --- Function naming ---------------
+  - key: readability-identifier-naming.FunctionCase
+    value: camelBack                    # enforce lowerCamelCase for functions
+
+  - key: readability-identifier-naming.FunctionIgnoredRegexp
+    value: '^[A-Z][A-Z0-9]*_[a-z][a-z0-9]*([A-Z][a-z0-9]*)*$'
+                                        # ignore functions beginning with UPPER_SNAKE_ prefix

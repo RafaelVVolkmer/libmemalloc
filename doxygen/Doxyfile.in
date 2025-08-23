@@ -1,0 +1,338 @@
+# ==============================================================================
+# PROJECT IDENTITY
+# ==============================================================================
+PROJECT_NAME            = "libmemalloc"
+PROJECT_NUMBER          = "v4.0.00"
+PROJECT_BRIEF           = "Modern Memory Allocator"
+
+PROJECT_LOGO            = "@CMAKE_SOURCE_DIR@/readme/libmemalloc.svg"
+USE_MDFILE_AS_MAINPAGE  = doxygen.md
+
+# ==============================================================================
+# TEXT OPTIONS
+# ==============================================================================
+DOXYFILE_ENCODING      = UTF-8
+OUTPUT_LANGUAGE        = English
+ALLOW_UNICODE_NAMES    = NO
+
+# ==============================================================================
+# DIRECTORY CONFIGURATION 
+# ==============================================================================
+CREATE_SUBDIRS         = NO
+CREATE_SUBDIRS_LEVEL   = 8
+
+# ==============================================================================
+# INPUT SOURCES
+# ==============================================================================
+INPUT                   = "@CMAKE_SOURCE_DIR@/doxygen/doxygen.md" \
+                          "@CMAKE_SOURCE_DIR@/src/libmemalloc.c"  \
+                          "@CMAKE_SOURCE_DIR@/inc/libmemalloc.h"  \
+                          "@CMAKE_SOURCE_DIR@/inc/logs.h"
+
+
+HTML_EXTRA_FILES        = "@CMAKE_SOURCE_DIR@/readme/libmemalloc.svg"
+
+FILE_PATTERNS           = *.h *.c *.md
+RECURSIVE               = NO
+
+# ==============================================================================
+# OUTPUT FILES 
+# ==============================================================================
+
+## Output Directory
+OUTPUT_DIRECTORY        = "@CMAKE_SOURCE_DIR@/docs"
+
+## HTML
+GENERATE_HTML           = YES
+HTML_OUTPUT             = html
+HTML_FILE_EXTENSION     = .html
+
+## MAN
+GENERATE_MAN            = YES
+MAN_OUTPUT              = man
+MAN_EXTENSION           = .3
+MAN_LINKS               = YES
+
+## LATEX
+GENERATE_LATEX          = YES
+LATEX_OUTPUT            = latex
+LATEX_CMD_NAME          = latex
+MAKEINDEX_CMD_NAME      = makeindex
+LATEX_MAKEINDEX_CMD     = makeindex
+PAPER_TYPE              = a4
+LATEX_BIB_STYLE         = plain
+COMPACT_LATEX           = NO
+PDF_HYPERLINKS          = NO
+PDFLATEX                = NO
+LATEX_BATCHMODE         = NO
+LATEX_HIDE_INDICES      = NO
+
+## XML
+GENERATE_XML            = YES
+XML_OUTPUT              = xml
+XML_PROGRAMLISTING      = YES
+XML_NS_MEMB_FILE_SCOPE  = NO
+
+## TAGFILES
+TAGFILES                = libmemalloc.tag
+GENERATE_TAGFILE        = libmemalloc.tag
+ALLEXTERNALS            = NO
+EXTERNAL_GROUPS         = YES
+EXTERNAL_PAGES          = YES
+
+# ==============================================================================
+# EXTRACTION CONTROLS
+# ==============================================================================
+EXTRACT_ALL              = YES
+EXTRACT_PRIVATE          = YES
+EXTRACT_STATIC           = YES
+EXTRACT_LOCAL_CLASSES    = YES
+EXTRACT_LOCAL_METHODS    = YES
+EXTRACT_ANON_NSPACES     = YES
+RESOLVE_UNNAMED_PARAMS   = YES
+TYPEDEF_HIDES_STRUCT     = YES
+
+# ==============================================================================
+# MACROS AND PREPROCESSING 
+# ==============================================================================
+ENABLE_PREPROCESSING    = YES
+MACRO_EXPANSION         = YES
+
+# ==============================================================================
+# MARKDOWN SUPPORT 
+# ==============================================================================
+MARKDOWN_SUPPORT        = YES
+EXTENSION_MAPPING       = md=markdown
+
+# ==============================================================================
+# SOURCE BROWSING 
+# ==============================================================================
+SOURCE_BROWSER          = YES
+INLINE_SOURCES          = YES
+STRIP_CODE_COMMENTS     = NO
+
+# ==============================================================================
+# GRAPH GENERATION (GRAPHVIZ)
+# ==============================================================================
+HAVE_DOT                = YES
+UML_LOOK                = YES
+CALL_GRAPH              = YES
+CALLER_GRAPH            = YES
+DOT_MULTI_TARGETS       = YES
+DOT_IMAGE_FORMAT        = svg
+DOT_GRAPH_MAX_NODES     = 50
+
+# ==============================================================================
+# SEARCH AND INDEX
+# ==============================================================================
+SEARCHENGINE            = YES
+SERVER_BASED_SEARCH     = NO
+
+# ==============================================================================
+# WARNING CONTROL
+# ==============================================================================
+WARN_IF_UNDOCUMENTED    = YES
+WARN_NO_PARAMDOC        = YES
+WARN_FORMAT             = "$file:$line: $text"
+
+# ==============================================================================
+# PAGE STYLE 
+# ==============================================================================
+
+## HTML Configs
+HTML_HEADER            = "@AWESOME_DOXYGEN_DIR@/doxygen-custom/header.html"
+HTML_FOOTER            =
+
+HTML_COLORSTYLE        = LIGHT
+
+HTML_COLORSTYLE_HUE    = 209
+HTML_COLORSTYLE_SAT    = 255
+HTML_COLORSTYLE_GAMMA  = 113
+
+HTML_DYNAMIC_SECTIONS  = NO
+HTML_DYNAMIC_MENUS     = YES
+HTML_CODE_FOLDING      = YES
+
+HTML_INDEX_NUM_ENTRIES = 100
+
+## HTML paths
+HTML_EXTRA_STYLESHEET  = "@AWESOME_DOXYGEN_DIR@/doxygen-awesome.css" \
+                         "@AWESOME_DOXYGEN_DIR@/doxygen-custom/custom.css" \
+                         "@AWESOME_DOXYGEN_DIR@/doxygen-awesome-sidebar-only.css" \
+                         "@AWESOME_DOXYGEN_DIR@/doxygen-awesome-sidebar-only-darkmode-toggle.css" \
+                         "@AWESOME_DOXYGEN_DIR@/doxygen-custom/custom-alternative.css"
+
+HTML_EXTRA_FILES       = "@AWESOME_DOXYGEN_DIR@/doxygen-awesome-darkmode-toggle.js" \
+                         "@AWESOME_DOXYGEN_DIR@/doxygen-awesome-fragment-copy-button.js" \
+                         "@AWESOME_DOXYGEN_DIR@/doxygen-awesome-paragraph-link.js" \
+                         "@AWESOME_DOXYGEN_DIR@/doxygen-custom/toggle-alternative-theme.js" \
+                         "@AWESOME_DOXYGEN_DIR@/doxygen-awesome-interactive-toc.js" \
+                         "@AWESOME_DOXYGEN_DIR@/doxygen-awesome-tabs.js"
+
+## Page Configs
+GENERATE_TREEVIEW      = YES
+DISABLE_INDEX          = NO
+FULL_SIDEBAR           = NO  
+
+# ==============================================================================
+# MEMBER & CLASS DISPLAY
+# ==============================================================================
+BRIEF_MEMBER_DESC        = YES    # show brief description next to members
+REPEAT_BRIEF             = YES    # repeat brief description in detailed sections
+ALWAYS_DETAILED_SEC      = NO     # don’t always expand detailed sections
+INLINE_INHERITED_MEMB    = NO     # do not inline inherited members
+SEPARATE_MEMBER_PAGES    = NO     # keep all members together on one page
+SORT_MEMBER_DOCS         = YES    # sort members by name in documentation
+SORT_MEMBERS_CTORS_1ST   = NO     # don’t force constructors first
+SORT_BRIEF_DOCS          = NO     # don’t sort brief docs separately
+
+# ==============================================================================
+# NAMING, PATHS & IDENTIFIERS
+# ==============================================================================
+FULL_PATH_NAMES          = NO    # show full file paths
+SHORT_NAMES              = NO     # use full names, not shortened
+CASE_SENSE_NAMES         = NO     # case-insensitive name handling
+IGNORE_PREFIX            =        # no prefix ignored in names
+
+# ==============================================================================
+# JAVADOC & STYLE SUPPORT
+# ==============================================================================
+JAVADOC_AUTOBRIEF        = NO     # disable JavaDoc @brief parsing
+JAVADOC_BANNER           = NO     # disable JavaDoc banner blocks
+QT_AUTOBRIEF             = NO     # disable Qt-style @brief parsing
+MULTILINE_CPP_IS_BRIEF   = NO     # require @brief on same line
+PYTHON_DOCSTRING         = YES    # parse Python triple-quote docstrings
+MARKDOWN_SUPPORT         = YES    # allow Markdown in docs
+EXTENSION_MAPPING        = md=markdown  # map .md files to Markdown
+
+# ==============================================================================
+# INHERITANCE & GROUPING
+# ==============================================================================
+INHERIT_DOCS             = YES    # inherit docs from base classes
+DISTRIBUTE_GROUP_DOC     = NO     # keep group docs centralized
+GROUP_NESTED_COMPOUNDS   = NO     # don’t group nested compounds
+SUBGROUPING              = YES    # allow subgrouping of members
+INLINE_GROUPED_CLASSES   = NO     # don’t inline grouped C++ classes
+INLINE_SIMPLE_STRUCTS    = NO     # don’t inline simple structs
+
+# ==============================================================================
+# LAYOUT & FORMATTING
+# ==============================================================================
+TAB_SIZE                 = 4      # code block tab width
+AUTOLINK_SUPPORT         = YES    # automatically link URLs
+MARKDOWN_ID_STYLE        = DOXYGEN # style for generated IDs
+ALIASES                  =        # no custom command aliases
+FULL_PATH_NAMES          = YES    # show full paths for includes
+
+
+
+# ==============================================================================
+# SEARCH & INDEXING
+# ==============================================================================
+SEARCHENGINE             = YES    # enable built-in search
+SERVER_BASED_SEARCH      = NO     # use client-side search
+ALPHABETICAL_INDEX       = YES    # generate alphabetical index
+EXTERNAL_SEARCH          = NO     # disable external search integration
+SEARCHDATA_FILE          = searchdata.xml  # search index filename
+
+# ==============================================================================
+# WARNINGS & VERBOSE SETTINGS
+# ==============================================================================
+QUIET                    = NO     # show Doxygen progress
+WARNINGS                 = YES    # enable warning output
+WARN_IF_UNDOCUMENTED     = YES    # warn on undocumented items
+WARN_NO_PARAMDOC         = NO     # do not warn on missing @param
+WARN_IF_DOC_ERROR        = YES    # warn on documentation errors
+WARN_IF_INCOMPLETE_DOC   = YES    # warn on incomplete documentation
+WARN_IF_UNDOC_ENUM_VAL   = NO     # do not warn on undocumented enum values
+WARN_AS_ERROR            = NO     # treat warnings as errors?
+WARN_FORMAT              = "$file:$line: $text"              # warning format
+WARN_LINE_FORMAT         = "at line $line of file $file"    # detailed warning format
+
+# ==============================================================================
+# LIST GENERATION
+# ==============================================================================
+GENERATE_TODOLIST        = YES    # generate list of TODOs
+GENERATE_TESTLIST        = YES    # generate list of tests
+GENERATE_BUGLIST         = YES    # generate list of bugs
+GENERATE_DEPRECATEDLIST  = YES    # generate list of deprecated items
+
+# ==============================================================================
+# EXAMPLES & IMAGES
+# ==============================================================================
+EXAMPLE_PATH             =        # no example dirs by default
+EXAMPLE_PATTERNS         = *      # include all example files
+EXAMPLE_RECURSIVE        = NO     # don’t recurse into example dirs
+IMAGE_PATH               = img \
+                           docs/img   # look for images here
+
+# ==============================================================================
+# SOURCE BROWSING & FILTERING
+# ==============================================================================
+SOURCE_BROWSER           = NO     # disable source browser
+INLINE_SOURCES           = NO     # don’t show source inline
+STRIP_CODE_COMMENTS      = YES    # strip comments from shown code
+FILTER_SOURCE_FILES      = NO     # disable source filtering
+FILTER_SOURCE_PATTERNS   =        # no filter patterns
+
+# ==============================================================================
+# MATH & FORMULAS
+# ==============================================================================
+USE_MATHJAX              = NO     # disable MathJax support
+HTML_FORMULA_FORMAT      = png    # render formulas as PNG
+FORMULA_FONTSIZE         = 10     # font size for formula images
+
+# ==============================================================================
+# LANGUAGE & OUTPUT OPTIMIZATIONS
+# ==============================================================================
+OPTIMIZE_OUTPUT_FOR_C    = NO     # do not tailor for C
+OPTIMIZE_OUTPUT_JAVA     = NO     # do not tailor for Java
+OPTIMIZE_FOR_FORTRAN     = NO     # do not tailor for Fortran
+OPTIMIZE_OUTPUT_VHDL     = NO     # do not tailor for VHDL
+OPTIMIZE_OUTPUT_SLICE    = NO     # do not tailor for Slice
+BUILTIN_STL_SUPPORT      = NO     # disable STL built-in support
+CPP_CLI_SUPPORT          = NO     # disable C++/CLI support
+SIP_SUPPORT              = NO     # disable SIP support
+IDL_PROPERTY_SUPPORT     = YES    # enable IDL properties
+
+# ==============================================================================
+# DOCSET & HELP FORMATS
+# ==============================================================================
+GENERATE_DOCSET          = NO     # disable Apple docsets
+DOCSET_FEEDNAME          = "Doxygen generated docs"
+DOCSET_BUNDLE_ID        = org.doxygen.Project
+DOCSET_PUBLISHER_NAME   = Publisher
+
+GENERATE_HTMLHELP        = NO     # disable HTML Help
+GENERATE_QHP             = NO     # disable QHP output
+GENERATE_ECLIPSEHELP     = NO     # disable Eclipse help
+
+# ==============================================================================
+# OTHER FORMATS (RTF, DocBook, SQLite, etc.)
+# ==============================================================================
+GENERATE_RTF             = NO     # disable RTF output
+GENERATE_DOCBOOK         = NO     # disable DocBook output
+GENERATE_SQLITE3         = NO     # disable SQLite output
+GENERATE_PERLMOD         = NO     # disable Perl module output
+
+# ==============================================================================
+# EXTENSIONS & PLUGINS
+# ==============================================================================
+MSCGEN_TOOL              =        # no msgen tool specified
+PLANTUML_JAR_PATH        =        # no PlantUML JAR specified
+
+# ==============================================================================
+# FILTER PATTERNS
+# ==============================================================================
+
+FILTER_PATTERNS = \
+  *.h="sed -E \
+        -e '/^[[:space:]]*\/\*\*/s/={2,}//g' \
+        -e '/^[[:space:]]*\*/s/={2,}//g' \
+        -e '/^[[:space:]]*\*[[:space:]]*([A-Z]|&)([[:space:]]+([A-Z]|&))*$/d' \
+        -e '/^[[:space:]]*([A-Z]|&)([[:space:]]+([A-Z]|&))*$/d'" \
+  *.c="sed -E \
+        -e '/^[[:space:]]*\/\*\*/s/={2,}//g' \
+        -e '/^[[:space:]]*\*/s/={2,}//g' \
+        -e '/^[[:space:]]*\*[[:space:]]*([A-Z]|&)([[:space:]]+([A-Z]|&))*$/d' \
+        -e '/^[[:space:]]*([A-Z]|&)([[:space:]]+([A-Z]|&))*$/d'"
