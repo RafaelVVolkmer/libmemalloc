@@ -1,0 +1,38 @@
+name: Style Check
+
+permissions:
+  contents: read
+  checks:   write
+  actions:  read
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  lint:
+    name: Lint & Format
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install clang-format & clang-tidy
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang-format clang-tidy cmake valgrind
+
+      - name: Prepare style script
+        run: chmod +x ./style_check.sh
+
+      - name: Run style_check.sh
+        run: ./style_check.sh
+
+      - name: Upload tidy log
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: clang-tidy-log
+          path: /tmp/tidy_log*

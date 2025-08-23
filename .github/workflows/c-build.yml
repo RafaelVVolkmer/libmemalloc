@@ -1,0 +1,41 @@
+name: Build and Test libmemalloc
+
+permissions:
+  contents: read
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        build_type: [ Release, Debug ]
+
+    env:
+      BUILD_TYPE: ${{ matrix.build_type }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y software-properties-common
+          sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
+          sudo apt-get update
+          sudo apt-get install -y \
+          gcc g++ cmake make valgrind doxygen graphviz
+
+      - name: Make build script executable
+        run: chmod +x ./build.sh
+
+      - name: Build & test (${{ env.BUILD_TYPE }})
+        run: ./build.sh ${{ env.BUILD_TYPE }}
+
