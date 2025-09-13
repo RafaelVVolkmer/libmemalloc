@@ -561,8 +561,8 @@ static void *MEM_growUserHeap(mem_allocator_t *const allocator,
  *  @retval -EIO:             mmap() failed.
  *  @retval -ENOMEM:          Allocation of mmap_t metadata failed.
  * ========================================================================== */
-static int *MEM_mapAlloc(mem_allocator_t *const allocator,
-                         const size_t           total_size);
+static void *MEM_mapAlloc(mem_allocator_t *const allocator,
+                          const size_t           total_size);
 
 /** ============================================================================
  *  @brief  Unmaps a previously mapped memory region and removes its
@@ -1795,8 +1795,8 @@ function_output:
  *  @retval -EIO:             mmap() failed.
  *  @retval -ENOMEM:          Allocation of mmap_t metadata failed.
  * ========================================================================== */
-static int *MEM_mapAlloc(mem_allocator_t *const allocator,
-                         const size_t           total_size)
+static void *MEM_mapAlloc(mem_allocator_t *const allocator,
+                          const size_t           total_size)
 {
   void *ptr = (void *)NULL;
 
