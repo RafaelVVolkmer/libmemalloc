@@ -2274,7 +2274,7 @@ static int MEM_splitBlock(mem_allocator_t *const allocator,
 
   aligned_size = ALIGN(req_size);
   total_size
-    = (size_t)(aligned_size + sizeof(block_header_t) + sizeof(uint32_t));
+    = (size_t)(aligned_size + sizeof(block_header_t) + sizeof(uintptr_t));
 
   if (block->size < total_size + MIN_BLOCK_SIZE)
   {
