@@ -193,7 +193,7 @@
 #elif ARCH_ALIGNMENT == 4
   #define PREFETCH_MULT (uintptr_t)(0x01010101U)
 #elif ARCH_ALIGNMENT == 1
-  #define CANARY_VALUE (uintptr_t)(0x01U)
+  #define PREFETCH_MULT (uintptr_t)(0x01U)
 #else
   #error "Unsupported ARCH_ALIGNMENT for PREFETCH_MULT"
 #endif
