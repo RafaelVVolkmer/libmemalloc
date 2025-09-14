@@ -2965,15 +2965,11 @@ static int MEM_allocatorFree(mem_allocator_t *const allocator,
 
       goto function_output;
     }
+    else
+    {
+      (void)MEM_insertFreeBlock(allocator, block);
+    }
   }
-
-  ret = MEM_removeFreeBlock(allocator, block);
-  if (ret != EXIT_SUCCESS)
-    goto function_output;
-
-  ret = MEM_insertFreeBlock(allocator, block);
-  if (ret != EXIT_SUCCESS)
-    goto function_output;
 
   freed_size = (size_t)(block->size - sizeof(*block) - sizeof(uintptr_t));
   LOG_INFO("Memory freed: addr: %p (%zu bytes).\n", ptr, freed_size);
