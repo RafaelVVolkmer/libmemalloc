@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['default_5fnum_5fbins_0',['DEFAULT_NUM_BINS',['../libmemalloc_8c.html#a8acceb8a32aeb665817bcac0ae976c3e',1,'libmemalloc.c']]]
+  ['cache_5fline_5fsize_0',['CACHE_LINE_SIZE',['../libmemalloc_8c.html#af89f60b07247176687889ade776c8e10',1,'libmemalloc.c']]]
 ];

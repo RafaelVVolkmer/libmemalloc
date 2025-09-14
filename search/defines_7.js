@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['unlikely_0',['UNLIKELY',['../libmemalloc_8c.html#ab10d0a221f4d7a706701b806c8135fd7',1,'libmemalloc.c']]]
+  ['nr_5fobjs_0',['NR_OBJS',['../libmemalloc_8c.html#a52c92840d7afc957a6424b6dc3cc089c',1,'libmemalloc.c']]]
 ];

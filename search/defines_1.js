@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['bytes_5fper_5fclass_0',['BYTES_PER_CLASS',['../libmemalloc_8c.html#a2ddd2aeacc155dcd57ad9f7ed7199d9f',1,'libmemalloc.c']]]
+  ['assume_5faligned_0',['ASSUME_ALIGNED',['../libmemalloc_8c.html#a7b23e1e7799e0c6fecc8b93d98963857',1,'libmemalloc.c']]]
 ];

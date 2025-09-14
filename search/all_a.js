@@ -28,7 +28,7 @@ var searchData=
   ['mem_5fgetsizeclass_25',['MEM_getSizeClass',['../libmemalloc_8c.html#afce3c776f36dbcd4df3f257d425d5c16',1,'libmemalloc.c']]],
   ['mem_5fgrowuserheap_26',['MEM_growUserHeap',['../libmemalloc_8c.html#a429b6c3c4d5bc23814ec213f757471b5',1,'libmemalloc.c']]],
   ['mem_5finsertfreeblock_27',['MEM_insertFreeBlock',['../libmemalloc_8c.html#ae5d23c9024583a7682a5857f59523d6e',1,'libmemalloc.c']]],
-  ['mem_5fmapalloc_28',['MEM_mapAlloc',['../libmemalloc_8c.html#a459050cc1705eb2cf6a202bc83083cdf',1,'libmemalloc.c']]],
+  ['mem_5fmapalloc_28',['MEM_mapAlloc',['../libmemalloc_8c.html#a302a9aebc59213a1fdca5ef62cfd3eef',1,'libmemalloc.c']]],
   ['mem_5fmapfree_29',['MEM_mapFree',['../libmemalloc_8c.html#af1b841111a1506abe32e887ca96b883c',1,'libmemalloc.c']]],
   ['mem_5fmemcpy_30',['mem_memcpy',['../group___libmemalloc.html#gaf0f38e83f3601cb880ea1feeb6deaf93',1,'MEM_memcpy(void *const dest, const void *src, const size_t size):&#160;libmemalloc.c'],['../group___libmemalloc.html#gaf0f38e83f3601cb880ea1feeb6deaf93',1,'MEM_memcpy(void *const dest, const void *src, const size_t size):&#160;libmemalloc.c']]],
   ['mem_5fmemset_31',['mem_memset',['../group___libmemalloc.html#gacfe1e6a057174df954033f59117b9cde',1,'MEM_memset(void *const source, const int value, const size_t size):&#160;libmemalloc.c'],['../group___libmemalloc.html#gacfe1e6a057174df954033f59117b9cde',1,'MEM_memset(void *const source, const int value, const size_t size):&#160;libmemalloc.c']]],

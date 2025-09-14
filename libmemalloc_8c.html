@@ -183,12 +183,21 @@ Macros</h2></td></tr>
 <tr class="memitem:a52c92840d7afc957a6424b6dc3cc089c" id="r_a52c92840d7afc957a6424b6dc3cc089c"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="libmemalloc_8c.html#a52c92840d7afc957a6424b6dc3cc089c">NR_OBJS</a>&#160;&#160;&#160;(uint16_t)(1000U)</td></tr>
 <tr class="memdesc:a52c92840d7afc957a6424b6dc3cc089c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Number of iterations used to scale GC sleep duration.  <br /></td></tr>
 <tr class="separator:a52c92840d7afc957a6424b6dc3cc089c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:affde14445f49f65ff4f5b592e44ee71a" id="r_affde14445f49f65ff4f5b592e44ee71a"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="libmemalloc_8c.html#affde14445f49f65ff4f5b592e44ee71a">LIKELY</a>(x)&#160;&#160;&#160;(__builtin_expect(!!(x), 1))</td></tr>
+<tr class="memitem:affde14445f49f65ff4f5b592e44ee71a" id="r_affde14445f49f65ff4f5b592e44ee71a"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="libmemalloc_8c.html#affde14445f49f65ff4f5b592e44ee71a">LIKELY</a>(x)&#160;&#160;&#160;(!!(x))</td></tr>
 <tr class="memdesc:affde14445f49f65ff4f5b592e44ee71a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compiler hint for likely branch prediction.  <br /></td></tr>
 <tr class="separator:affde14445f49f65ff4f5b592e44ee71a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab10d0a221f4d7a706701b806c8135fd7" id="r_ab10d0a221f4d7a706701b806c8135fd7"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="libmemalloc_8c.html#ab10d0a221f4d7a706701b806c8135fd7">UNLIKELY</a>(x)&#160;&#160;&#160;(__builtin_expect(!!(x), 0))</td></tr>
+<tr class="memitem:ab10d0a221f4d7a706701b806c8135fd7" id="r_ab10d0a221f4d7a706701b806c8135fd7"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="libmemalloc_8c.html#ab10d0a221f4d7a706701b806c8135fd7">UNLIKELY</a>(x)&#160;&#160;&#160;(!!(x))</td></tr>
 <tr class="memdesc:ab10d0a221f4d7a706701b806c8135fd7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compiler hint for unlikely branch prediction.  <br /></td></tr>
 <tr class="separator:ab10d0a221f4d7a706701b806c8135fd7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a937b54fe2d596b5a36db031247d6e3ff" id="r_a937b54fe2d596b5a36db031247d6e3ff"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="libmemalloc_8c.html#a937b54fe2d596b5a36db031247d6e3ff">PREFETCH_R</a>(addr)&#160;&#160;&#160;((void)0)</td></tr>
+<tr class="memdesc:a937b54fe2d596b5a36db031247d6e3ff"><td class="mdescLeft">&#160;</td><td class="mdescRight">Read prefetch hint.  <br /></td></tr>
+<tr class="separator:a937b54fe2d596b5a36db031247d6e3ff"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a043df21bea6aed34695ff666c0dfd0fd" id="r_a043df21bea6aed34695ff666c0dfd0fd"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="libmemalloc_8c.html#a043df21bea6aed34695ff666c0dfd0fd">PREFETCH_W</a>(addr)&#160;&#160;&#160;((void)0)</td></tr>
+<tr class="memdesc:a043df21bea6aed34695ff666c0dfd0fd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Write prefetch hint.  <br /></td></tr>
+<tr class="separator:a043df21bea6aed34695ff666c0dfd0fd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7b23e1e7799e0c6fecc8b93d98963857" id="r_a7b23e1e7799e0c6fecc8b93d98963857"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="libmemalloc_8c.html#a7b23e1e7799e0c6fecc8b93d98963857">ASSUME_ALIGNED</a>(ptr,  align)&#160;&#160;&#160;(ptr)</td></tr>
+<tr class="memdesc:a7b23e1e7799e0c6fecc8b93d98963857"><td class="mdescLeft">&#160;</td><td class="mdescRight">Tell the compiler the pointer has a fixed alignment.  <br /></td></tr>
+<tr class="separator:a7b23e1e7799e0c6fecc8b93d98963857"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="typedef-members" name="typedef-members"></a>
 Typedefs</h2></td></tr>
@@ -231,9 +240,9 @@ Functions</h2></td></tr>
 <tr class="memitem:a429b6c3c4d5bc23814ec213f757471b5" id="r_a429b6c3c4d5bc23814ec213f757471b5"><td class="memItemLeft" align="right" valign="top">static void *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="libmemalloc_8c.html#a429b6c3c4d5bc23814ec213f757471b5">MEM_growUserHeap</a> (<a class="el" href="structmem__allocator__t.html">mem_allocator_t</a> *const allocator, const intptr_t inc)</td></tr>
 <tr class="memdesc:a429b6c3c4d5bc23814ec213f757471b5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Expands the user heap by a specified increment.  <br /></td></tr>
 <tr class="separator:a429b6c3c4d5bc23814ec213f757471b5"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a459050cc1705eb2cf6a202bc83083cdf" id="r_a459050cc1705eb2cf6a202bc83083cdf"><td class="memItemLeft" align="right" valign="top">static int *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="libmemalloc_8c.html#a459050cc1705eb2cf6a202bc83083cdf">MEM_mapAlloc</a> (<a class="el" href="structmem__allocator__t.html">mem_allocator_t</a> *const allocator, const size_t total_size)</td></tr>
-<tr class="memdesc:a459050cc1705eb2cf6a202bc83083cdf"><td class="mdescLeft">&#160;</td><td class="mdescRight">Allocates a page-aligned memory region via mmap and registers it in the allocator’s mmap list for later freeing.  <br /></td></tr>
-<tr class="separator:a459050cc1705eb2cf6a202bc83083cdf"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a302a9aebc59213a1fdca5ef62cfd3eef" id="r_a302a9aebc59213a1fdca5ef62cfd3eef"><td class="memItemLeft" align="right" valign="top">static void *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="libmemalloc_8c.html#a302a9aebc59213a1fdca5ef62cfd3eef">MEM_mapAlloc</a> (<a class="el" href="structmem__allocator__t.html">mem_allocator_t</a> *const allocator, const size_t total_size)</td></tr>
+<tr class="memdesc:a302a9aebc59213a1fdca5ef62cfd3eef"><td class="mdescLeft">&#160;</td><td class="mdescRight">Allocates a page-aligned memory region via mmap and registers it in the allocator’s mmap list for later freeing.  <br /></td></tr>
+<tr class="separator:a302a9aebc59213a1fdca5ef62cfd3eef"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af1b841111a1506abe32e887ca96b883c" id="r_af1b841111a1506abe32e887ca96b883c"><td class="memItemLeft" align="right" valign="top">static int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="libmemalloc_8c.html#af1b841111a1506abe32e887ca96b883c">MEM_mapFree</a> (<a class="el" href="structmem__allocator__t.html">mem_allocator_t</a> *const allocator, void *const addr)</td></tr>
 <tr class="memdesc:af1b841111a1506abe32e887ca96b883c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Unmaps a previously mapped memory region and removes its metadata entry from the allocator’s mmap list.  <br /></td></tr>
 <tr class="separator:af1b841111a1506abe32e887ca96b883c"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -388,6 +397,45 @@ Functions</h2></td></tr>
 
 </div>
 </div>
+<a id="a7b23e1e7799e0c6fecc8b93d98963857" name="a7b23e1e7799e0c6fecc8b93d98963857"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7b23e1e7799e0c6fecc8b93d98963857">&#9670;&#160;</a></span>ASSUME_ALIGNED</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define ASSUME_ALIGNED</td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">ptr, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">align&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td>&#160;&#160;&#160;(ptr)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Tell the compiler the pointer has a fixed alignment. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">ptr</td><td>Pointer value. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">align</td><td>Alignment in bytes (power of two).</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>The same pointer, possibly carrying alignment/aliasing info.</dd></dl>
+<p>Uses __builtin_assume_aligned() when available; otherwise returns <code>ptr</code> unchanged. Passing a wrong alignment is UB. </p>
+
+</div>
+</div>
 <a id="a2ddd2aeacc155dcd57ad9f7ed7199d9f" name="a2ddd2aeacc155dcd57ad9f7ed7199d9f"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a2ddd2aeacc155dcd57ad9f7ed7199d9f">&#9670;&#160;</a></span>BYTES_PER_CLASS</h2>
 
@@ -450,7 +498,7 @@ Functions</h2></td></tr>
           <td>(</td>
           <td class="paramtype">&#160;</td>
           <td class="paramname">x</td><td>)</td>
-          <td>&#160;&#160;&#160;(__builtin_expect(!!(x), 1))</td>
+          <td>&#160;&#160;&#160;(!!(x))</td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -540,6 +588,60 @@ Functions</h2></td></tr>
 
 </div>
 </div>
+<a id="a937b54fe2d596b5a36db031247d6e3ff" name="a937b54fe2d596b5a36db031247d6e3ff"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a937b54fe2d596b5a36db031247d6e3ff">&#9670;&#160;</a></span>PREFETCH_R</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define PREFETCH_R</td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">addr</td><td>)</td>
+          <td>&#160;&#160;&#160;((void)0)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Read prefetch hint. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">addr</td><td>Address expected to be read soon (may be NULL).</td></tr>
+  </table>
+  </dd>
+</dl>
+<p>Wraps __builtin_prefetch when available; otherwise a no-op. Uses default locality level 1. </p>
+
+</div>
+</div>
+<a id="a043df21bea6aed34695ff666c0dfd0fd" name="a043df21bea6aed34695ff666c0dfd0fd"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a043df21bea6aed34695ff666c0dfd0fd">&#9670;&#160;</a></span>PREFETCH_W</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define PREFETCH_W</td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">addr</td><td>)</td>
+          <td>&#160;&#160;&#160;((void)0)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Write prefetch hint. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">addr</td><td>Address expected to be written soon (may be NULL).</td></tr>
+  </table>
+  </dd>
+</dl>
+<p>Wraps __builtin_prefetch when available; otherwise a no-op. Uses default locality level 1. </p>
+
+</div>
+</div>
 <a id="ab10d0a221f4d7a706701b806c8135fd7" name="ab10d0a221f4d7a706701b806c8135fd7"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ab10d0a221f4d7a706701b806c8135fd7">&#9670;&#160;</a></span>UNLIKELY</h2>
 
@@ -551,7 +653,7 @@ Functions</h2></td></tr>
           <td>(</td>
           <td class="paramtype">&#160;</td>
           <td class="paramname">x</td><td>)</td>
-          <td>&#160;&#160;&#160;(__builtin_expect(!!(x), 0))</td>
+          <td>&#160;&#160;&#160;(!!(x))</td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -1432,8 +1534,8 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="a459050cc1705eb2cf6a202bc83083cdf" name="a459050cc1705eb2cf6a202bc83083cdf"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a459050cc1705eb2cf6a202bc83083cdf">&#9670;&#160;</a></span>MEM_mapAlloc()</h2>
+<a id="a302a9aebc59213a1fdca5ef62cfd3eef" name="a302a9aebc59213a1fdca5ef62cfd3eef"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a302a9aebc59213a1fdca5ef62cfd3eef">&#9670;&#160;</a></span>MEM_mapAlloc()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -1442,7 +1544,7 @@ Functions</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static int * MEM_mapAlloc </td>
+          <td class="memname">static void * MEM_mapAlloc </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="structmem__allocator__t.html">mem_allocator_t</a> *const&#160;</td>
           <td class="paramname"><em>allocator</em>, </td>
