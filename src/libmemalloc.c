@@ -2386,22 +2386,15 @@ static int MEM_mergeBlocks(mem_allocator_t *const allocator,
 
   uintptr_t *data_canary = (uintptr_t *)NULL;
   uintptr_t  canary_addr = 0u;
-  ;
 
   if (UNLIKELY(allocator == NULL || block == NULL))
   {
     ret = -EINVAL;
     LOG_ERROR("Invalid parameters: allocator=%p, block=%p. "
               "Error code: %d.\n",
-              (void *)allocator,
-              (void *)block,
-              ret);
+              (void *)allocator, (void *)block, ret);
     goto function_output;
   }
-
-  ret = MEM_removeFreeBlock(allocator, block);
-  if (ret != EXIT_SUCCESS)
-    goto function_output;
 
   ret = MEM_validateBlock(allocator, block);
   if (ret != EXIT_SUCCESS)
@@ -2415,8 +2408,7 @@ static int MEM_mergeBlocks(mem_allocator_t *const allocator,
     ret = MEM_validateBlock(allocator, next_block);
     if (ret == EXIT_SUCCESS && next_block->free)
     {
-      LOG_DEBUG("Merging blocks: current payload=%p (%zu bytes) |"
-                "next payload=%p (%zu bytes).\n",
+      LOG_DEBUG("Merging blocks (next): cur=%p (%zu) | next=%p (%zu).\n",
                 (void *)((uint8_t *)block + sizeof(block_header_t)),
                 block->size,
                 (void *)((uint8_t *)next_block + sizeof(block_header_t)),
@@ -2428,7 +2420,6 @@ static int MEM_mergeBlocks(mem_allocator_t *const allocator,
 
       block->size += next_block->size;
       block->next  = next_block->next;
-
       if (next_block->next)
         next_block->next->prev = block;
 
@@ -2436,7 +2427,7 @@ static int MEM_mergeBlocks(mem_allocator_t *const allocator,
       data_canary  = (uintptr_t *)canary_addr;
       *data_canary = CANARY_VALUE;
 
-      LOG_DEBUG("New merged: payload=%p (%zu bytes.\n",
+      LOG_DEBUG("Merged(next): payload=%p (%zu).\n",
                 (void *)((uint8_t *)block + sizeof(block_header_t)),
                 block->size);
     }
@@ -2448,38 +2439,35 @@ static int MEM_mergeBlocks(mem_allocator_t *const allocator,
     ret = MEM_validateBlock(allocator, prev_block);
     if (ret == EXIT_SUCCESS && prev_block->free)
     {
-      LOG_DEBUG("Merging blocks: current payload=%p (%zu bytes) |"
-                "current ext payload=%p (%zu bytes).\n",
+      LOG_DEBUG("Merging blocks (prev): prev=%p (%zu) | cur=%p (%zu).\n",
                 (void *)((uint8_t *)prev_block + sizeof(block_header_t)),
                 prev_block->size,
                 (void *)((uint8_t *)block + sizeof(block_header_t)),
                 block->size);
 
-      MEM_removeFreeBlock(allocator, prev_block);
+      ret = MEM_removeFreeBlock(allocator, prev_block);
       if (ret != EXIT_SUCCESS)
         goto function_output;
 
       prev_block->size += block->size;
       prev_block->next  = block->next;
-
       if (block->next)
         block->next->prev = prev_block;
 
-      canary_addr
-        = (uintptr_t)prev_block + prev_block->size - sizeof(uintptr_t);
+      canary_addr  = (uintptr_t)prev_block + prev_block->size - sizeof(uintptr_t);
       data_canary  = (uintptr_t *)canary_addr;
       *data_canary = CANARY_VALUE;
 
       block = prev_block;
-      LOG_DEBUG("New merged: payload=%p (%zu bytes.\n",
+
+      LOG_DEBUG("Merged(prev): payload=%p (%zu).\n",
                 (void *)((uint8_t *)block + sizeof(block_header_t)),
                 block->size);
     }
   }
 
-  ret = MEM_removeFreeBlock(allocator, block);
-  if (ret != EXIT_SUCCESS)
-    goto function_output;
+  block->fl_next = (block_header_t *)NULL;
+  block->fl_prev = (block_header_t *)NULL;
 
   ret = MEM_insertFreeBlock(allocator, block);
   if (ret != EXIT_SUCCESS)
