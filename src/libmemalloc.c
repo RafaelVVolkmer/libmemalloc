@@ -2392,7 +2392,9 @@ static int MEM_mergeBlocks(mem_allocator_t *const allocator,
     ret = -EINVAL;
     LOG_ERROR("Invalid parameters: allocator=%p, block=%p. "
               "Error code: %d.\n",
-              (void *)allocator, (void *)block, ret);
+              (void *)allocator,
+              (void *)block,
+              ret);
     goto function_output;
   }
 
@@ -2454,7 +2456,8 @@ static int MEM_mergeBlocks(mem_allocator_t *const allocator,
       if (block->next)
         block->next->prev = prev_block;
 
-      canary_addr  = (uintptr_t)prev_block + prev_block->size - sizeof(uintptr_t);
+      canary_addr
+        = (uintptr_t)prev_block + prev_block->size - sizeof(uintptr_t);
       data_canary  = (uintptr_t *)canary_addr;
       *data_canary = CANARY_VALUE;
 
@@ -2547,8 +2550,7 @@ static void *MEM_allocatorMalloc(mem_allocator_t *const      allocator,
   }
 
   total_size = ALIGN(size) + sizeof(block_header_t) + sizeof(uintptr_t);
-
-  arena = &allocator->arenas[0];
+  arena      = &allocator->arenas[0];
 
   if (size > MMAP_THRESHOLD)
   {
@@ -2556,8 +2558,7 @@ static void *MEM_allocatorMalloc(mem_allocator_t *const      allocator,
     if (raw_mmap == NULL)
     {
       user_ptr = PTR_ERR(-ENOMEM);
-      LOG_ERROR("Mmap failed: grow heap by %zu bytes. "
-                "Error code: %d.\n",
+      LOG_ERROR("Mmap failed: %zu bytes. Error code: %d.\n",
                 total_size,
                 (int)(intptr_t)user_ptr);
       goto function_output;
@@ -2567,8 +2568,8 @@ static void *MEM_allocatorMalloc(mem_allocator_t *const      allocator,
 
     block->magic  = MAGIC_NUMBER;
     block->size   = total_size;
-    block->free   = 0;
-    block->marked = 0;
+    block->free   = 0u;
+    block->marked = 0u;
     block->next   = (block_header_t *)NULL;
     block->prev   = (block_header_t *)NULL;
     block->canary = CANARY_VALUE;
@@ -2583,7 +2584,6 @@ static void *MEM_allocatorMalloc(mem_allocator_t *const      allocator,
 
     LOG_INFO("Mmap used for alloc: %p (%zu bytes).\n", raw_mmap, size);
     user_ptr = (uint8_t *)raw_mmap + sizeof(block_header_t);
-
     goto function_output;
   }
 
@@ -2606,8 +2606,8 @@ static void *MEM_allocatorMalloc(mem_allocator_t *const      allocator,
 
     block->magic  = MAGIC_NUMBER;
     block->size   = total_size;
-    block->free   = 1;
-    block->marked = 0;
+    block->free   = 1u;
+    block->marked = 0u;
     block->next   = (block_header_t *)NULL;
     block->prev   = (block_header_t *)NULL;
     block->canary = CANARY_VALUE;
@@ -2617,11 +2617,7 @@ static void *MEM_allocatorMalloc(mem_allocator_t *const      allocator,
     *data_canary = CANARY_VALUE;
 
     block->fl_next = (block_header_t *)NULL;
-    block->fl_next = (block_header_t *)NULL;
-
-    ret = MEM_removeFreeBlock(allocator, block);
-    if (ret != EXIT_SUCCESS)
-      goto function_output;
+    block->fl_prev = (block_header_t *)NULL;
 
     ret = MEM_insertFreeBlock(allocator, block);
     if (ret != EXIT_SUCCESS)
