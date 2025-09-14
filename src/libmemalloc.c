@@ -2256,6 +2256,7 @@ static int MEM_splitBlock(mem_allocator_t *const allocator,
   size_t aligned_size   = 0u;
   size_t total_size     = 0u;
   size_t remaining_size = 0u;
+  size_t original_size  = 0u;
 
   if (UNLIKELY(allocator == NULL || block == NULL))
   {
@@ -2276,27 +2277,30 @@ static int MEM_splitBlock(mem_allocator_t *const allocator,
   total_size
     = (size_t)(aligned_size + sizeof(block_header_t) + sizeof(uintptr_t));
 
+  ret = MEM_removeFreeBlock(allocator, block);
+  if (ret != EXIT_SUCCESS)
+    goto function_output;
+
+  original_size = block->size;
+
   if (block->size < total_size + MIN_BLOCK_SIZE)
   {
-    block->free = 0u;
+    block->free   = 0u;
+    block->magic  = MAGIC_NUMBER;
+    block->canary = CANARY_VALUE;
 
-    ret = MEM_removeFreeBlock(allocator, block);
-    if (ret != EXIT_SUCCESS)
-      goto function_output;
+    canary_addr  = (uintptr_t)block + block->size - sizeof(uintptr_t);
+    data_canary  = (uintptr_t *)canary_addr;
+    *data_canary = CANARY_VALUE;
 
     LOG_DEBUG("Using full block %p | Req size: %zu | Block size: %zu.\n",
               (void *)block,
               req_size,
-              block->size);
-
+              original_size);
     goto function_output;
   }
 
   remaining_size = block->size - total_size;
-
-  ret = MEM_removeFreeBlock(allocator, block);
-  if (ret != EXIT_SUCCESS)
-    goto function_output;
 
   block->size   = total_size;
   block->free   = 0u;
@@ -2321,11 +2325,9 @@ static int MEM_splitBlock(mem_allocator_t *const allocator,
 
   if (block->next)
     block->next->prev = new_block;
-
   block->next = new_block;
 
   new_block->canary = CANARY_VALUE;
-
   canary_addr  = (uintptr_t)new_block + new_block->size - sizeof(uintptr_t);
   data_canary  = (uintptr_t *)canary_addr;
   *data_canary = CANARY_VALUE;
@@ -2333,15 +2335,14 @@ static int MEM_splitBlock(mem_allocator_t *const allocator,
   new_block->fl_next = (block_header_t *)NULL;
   new_block->fl_prev = (block_header_t *)NULL;
 
-  ret = MEM_removeFreeBlock(allocator, block);
-  if (ret != EXIT_SUCCESS)
-    goto function_output;
-
   ret = MEM_insertFreeBlock(allocator, new_block);
   if (ret != EXIT_SUCCESS)
     goto function_output;
 
-  LOG_DEBUG("Block split | Original: %p (%zu bytes) | New: %p (%zu bytes).\n",
+  LOG_DEBUG("Block split | Original: %p (%zu) | Alloc: %p (%zu) | Remainder: "
+            "%p (%zu).\n",
+            (void *)block,
+            original_size,
             (void *)block,
             block->size,
             (void *)new_block,
