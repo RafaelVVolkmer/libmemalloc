@@ -2171,8 +2171,11 @@ static int MEM_findNextFit(mem_allocator_t *const allocator,
 
     current = (current->next)
                 ? current->next
-                : (block_header_t *)((uint8_t *)allocator->heap_start
-                                     + allocator->metadata_size);
+               : (block_header_t *)ASSUME_ALIGNED(
+                      (uint8_t *)allocator->heap_start
+                      + allocator->metadata_size,
+                      ARCH_ALIGNMENT);
+
   } while (current != start);
 
   ret = -ENOMEM;
