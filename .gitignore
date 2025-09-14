@@ -255,6 +255,7 @@ release/
 debug/
 bin/
 docs/
+doxygen/doxygen-awesome
 
 # System Files
 .DS_Store

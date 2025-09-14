@@ -193,7 +193,7 @@
 #elif ARCH_ALIGNMENT == 4
   #define PREFETCH_MULT (uintptr_t)(0x01010101U)
 #elif ARCH_ALIGNMENT == 1
-  #define CANARY_VALUE (uintptr_t)(0x01U)
+  #define PREFETCH_MULT (uintptr_t)(0x01U)
 #else
   #error "Unsupported ARCH_ALIGNMENT for PREFETCH_MULT"
 #endif
@@ -248,7 +248,12 @@
  *  @details    Helps the compiler optimize branch prediction by
  *              indicating the condition is expected to be true.
  * ========================================================================== */
-#define LIKELY(x)       (__builtin_expect(!!(x), 1))
+#if (defined(__has_builtin) && __has_builtin(__builtin_expect)) \
+  || defined(__GNUC__) || defined(__clang__)
+  #define LIKELY(x) (__builtin_expect(!!(x), 1))
+#else
+  #define LIKELY(x) (!!(x))
+#endif
 
 /** ============================================================================
  *  @def        UNLIKELY(x)
@@ -259,7 +264,63 @@
  *  @details    Helps the compiler optimize branch prediction by
  *              indicating the condition is expected to be false.
  * ========================================================================== */
-#define UNLIKELY(x)     (__builtin_expect(!!(x), 0))
+#if (defined(__has_builtin) && __has_builtin(__builtin_expect)) \
+  || defined(__GNUC__) || defined(__clang__)
+  #define UNLIKELY(x) (__builtin_expect(!!(x), 0))
+#else
+  #define UNLIKELY(x) (!!(x))
+#endif
+
+/** ============================================================================
+ *  @def        PREFETCH_R(addr)
+ *  @brief      Read prefetch hint.
+ *
+ *  @param[in]  addr  Address expected to be read soon (may be NULL).
+ *
+ *  @details    Wraps __builtin_prefetch when available; otherwise a no-op.
+ *              Uses default locality level 1.
+ * ========================================================================== */
+#if (defined(__has_builtin) && __has_builtin(__builtin_expect)) \
+  || defined(__GNUC__) || defined(__clang__)
+  #define PREFETCH_R(addr) __builtin_prefetch((addr), 0, 1)
+#else
+  #define PREFETCH_R(addr) ((void)0)
+#endif
+
+/** ============================================================================
+ *  @def        PREFETCH_W(addr)
+ *  @brief      Write prefetch hint.
+ *
+ *  @param[in]  addr  Address expected to be written soon (may be NULL).
+ *
+ *  @details    Wraps __builtin_prefetch when available; otherwise a no-op.
+ *              Uses default locality level 1.
+ * ========================================================================== */
+#if (defined(__has_builtin) && __has_builtin(__builtin_expect)) \
+  || defined(__GNUC__) || defined(__clang__)
+  #define PREFETCH_W(addr) __builtin_prefetch((addr), 1, 1)
+#else
+  #define PREFETCH_W(addr) ((void)0)
+#endif
+
+/** ============================================================================
+ *  @def        ASSUME_ALIGNED(ptr, align)
+ *  @brief      Tell the compiler the pointer has a fixed alignment.
+ *
+ *  @param[in]  ptr     Pointer value.
+ *  @param[in]  align   Alignment in bytes (power of two).
+ *
+ *  @return     The same pointer, possibly carrying alignment/aliasing info.
+ *
+ *  @details    Uses __builtin_assume_aligned() when available; otherwise
+ *              returns @p ptr unchanged. Passing a wrong alignment is UB.
+ * ========================================================================== */
+#if (defined(__has_builtin) && __has_builtin(__builtin_expect)) \
+  || defined(__GNUC__) || defined(__clang__)
+  #define ASSUME_ALIGNED(ptr, align) __builtin_assume_aligned((ptr), (align))
+#else
+  #define ASSUME_ALIGNED(ptr, align) (ptr)
+#endif
 
 /** ============================================================================
  *              P R I V A T E  T Y P E S  D E F I N I T I O N
@@ -561,8 +622,8 @@ static void *MEM_growUserHeap(mem_allocator_t *const allocator,
  *  @retval -EIO:             mmap() failed.
  *  @retval -ENOMEM:          Allocation of mmap_t metadata failed.
  * ========================================================================== */
-static int *MEM_mapAlloc(mem_allocator_t *const allocator,
-                         const size_t           total_size);
+static void *MEM_mapAlloc(mem_allocator_t *const allocator,
+                          const size_t           total_size);
 
 /** ============================================================================
  *  @brief  Unmaps a previously mapped memory region and removes its
@@ -1072,14 +1133,14 @@ void *MEM_memset(void *const source, const int value, const size_t size)
       iterator++;
     }
   }
-  /**/
+
   pattern = ((uintptr_t)(unsigned char)value) * PREFETCH_MULT;
 
   for (; iterator + ARCH_ALIGNMENT <= size; iterator += ARCH_ALIGNMENT)
   {
     ptr_fetch = ptr + iterator;
-    __builtin_prefetch(ptr_fetch + CACHE_LINE_SIZE, 1, 1);
-    word  = (uintptr_t *)__builtin_assume_aligned(ptr_fetch, ARCH_ALIGNMENT);
+    PREFETCH_W(ptr_fetch + CACHE_LINE_SIZE);
+    word  = (uintptr_t *)ASSUME_ALIGNED(ptr_fetch, ARCH_ALIGNMENT);
     *word = pattern;
   }
 
@@ -1164,13 +1225,11 @@ void *MEM_memcpy(void *const dest, const void *src, const size_t size)
     dest_fetch   = destine + iterator;
     source_fetch = source + iterator;
 
-    __builtin_prefetch(source_fetch + CACHE_LINE_SIZE, 0, 1);
-    __builtin_prefetch(dest_fetch + CACHE_LINE_SIZE, 1, 1);
+    PREFETCH_R(source_fetch + CACHE_LINE_SIZE);
+    PREFETCH_W(dest_fetch + CACHE_LINE_SIZE);
 
-    dest_word
-      = (uintptr_t *)__builtin_assume_aligned(dest_fetch, ARCH_ALIGNMENT);
-    src_word = (const uintptr_t *)__builtin_assume_aligned(source_fetch,
-                                                           ARCH_ALIGNMENT);
+    dest_word = (uintptr_t *)ASSUME_ALIGNED(dest_fetch, ARCH_ALIGNMENT);
+    src_word  = (const uintptr_t *)ASSUME_ALIGNED(source_fetch, ARCH_ALIGNMENT);
 
     *dest_word = *src_word;
   }
@@ -1795,8 +1854,8 @@ function_output:
  *  @retval -EIO:             mmap() failed.
  *  @retval -ENOMEM:          Allocation of mmap_t metadata failed.
  * ========================================================================== */
-static int *MEM_mapAlloc(mem_allocator_t *const allocator,
-                         const size_t           total_size)
+static void *MEM_mapAlloc(mem_allocator_t *const allocator,
+                          const size_t           total_size)
 {
   void *ptr = (void *)NULL;
 
@@ -2110,9 +2169,13 @@ static int MEM_findNextFit(mem_allocator_t *const allocator,
       goto function_output;
     }
 
-    current = (current->next)
-                ? current->next
-                : (block_header_t *)(void *)(uintptr_t)allocator->heap_start;
+    current
+      = (current->next)
+          ? current->next
+          : (block_header_t *)ASSUME_ALIGNED((uint8_t *)allocator->heap_start
+                                               + allocator->metadata_size,
+                                             ARCH_ALIGNMENT);
+
   } while (current != start);
 
   ret = -ENOMEM;
@@ -2256,6 +2319,7 @@ static int MEM_splitBlock(mem_allocator_t *const allocator,
   size_t aligned_size   = 0u;
   size_t total_size     = 0u;
   size_t remaining_size = 0u;
+  size_t original_size  = 0u;
 
   if (UNLIKELY(allocator == NULL || block == NULL))
   {
@@ -2274,29 +2338,32 @@ static int MEM_splitBlock(mem_allocator_t *const allocator,
 
   aligned_size = ALIGN(req_size);
   total_size
-    = (size_t)(aligned_size + sizeof(block_header_t) + sizeof(uint32_t));
-
-  if (block->size < total_size + MIN_BLOCK_SIZE)
-  {
-    block->free = 0u;
-
-    ret = MEM_removeFreeBlock(allocator, block);
-    if (ret != EXIT_SUCCESS)
-      goto function_output;
-
-    LOG_DEBUG("Using full block %p | Req size: %zu | Block size: %zu.\n",
-              (void *)block,
-              req_size,
-              block->size);
-
-    goto function_output;
-  }
-
-  remaining_size = block->size - total_size;
+    = (size_t)(aligned_size + sizeof(block_header_t) + sizeof(uintptr_t));
 
   ret = MEM_removeFreeBlock(allocator, block);
   if (ret != EXIT_SUCCESS)
     goto function_output;
+
+  original_size = block->size;
+
+  if (block->size < total_size + MIN_BLOCK_SIZE)
+  {
+    block->free   = 0u;
+    block->magic  = MAGIC_NUMBER;
+    block->canary = CANARY_VALUE;
+
+    canary_addr  = (uintptr_t)block + block->size - sizeof(uintptr_t);
+    data_canary  = (uintptr_t *)canary_addr;
+    *data_canary = CANARY_VALUE;
+
+    LOG_DEBUG("Using full block %p | Req size: %zu | Block size: %zu.\n",
+              (void *)block,
+              req_size,
+              original_size);
+    goto function_output;
+  }
+
+  remaining_size = block->size - total_size;
 
   block->size   = total_size;
   block->free   = 0u;
@@ -2321,11 +2388,9 @@ static int MEM_splitBlock(mem_allocator_t *const allocator,
 
   if (block->next)
     block->next->prev = new_block;
-
   block->next = new_block;
 
   new_block->canary = CANARY_VALUE;
-
   canary_addr  = (uintptr_t)new_block + new_block->size - sizeof(uintptr_t);
   data_canary  = (uintptr_t *)canary_addr;
   *data_canary = CANARY_VALUE;
@@ -2333,15 +2398,14 @@ static int MEM_splitBlock(mem_allocator_t *const allocator,
   new_block->fl_next = (block_header_t *)NULL;
   new_block->fl_prev = (block_header_t *)NULL;
 
-  ret = MEM_removeFreeBlock(allocator, block);
-  if (ret != EXIT_SUCCESS)
-    goto function_output;
-
   ret = MEM_insertFreeBlock(allocator, new_block);
   if (ret != EXIT_SUCCESS)
     goto function_output;
 
-  LOG_DEBUG("Block split | Original: %p (%zu bytes) | New: %p (%zu bytes).\n",
+  LOG_DEBUG("Block split | Original: %p (%zu) | Alloc: %p (%zu) | Remainder: "
+            "%p (%zu).\n",
+            (void *)block,
+            original_size,
             (void *)block,
             block->size,
             (void *)new_block,
@@ -2385,7 +2449,6 @@ static int MEM_mergeBlocks(mem_allocator_t *const allocator,
 
   uintptr_t *data_canary = (uintptr_t *)NULL;
   uintptr_t  canary_addr = 0u;
-  ;
 
   if (UNLIKELY(allocator == NULL || block == NULL))
   {
@@ -2397,10 +2460,6 @@ static int MEM_mergeBlocks(mem_allocator_t *const allocator,
               ret);
     goto function_output;
   }
-
-  ret = MEM_removeFreeBlock(allocator, block);
-  if (ret != EXIT_SUCCESS)
-    goto function_output;
 
   ret = MEM_validateBlock(allocator, block);
   if (ret != EXIT_SUCCESS)
@@ -2414,8 +2473,7 @@ static int MEM_mergeBlocks(mem_allocator_t *const allocator,
     ret = MEM_validateBlock(allocator, next_block);
     if (ret == EXIT_SUCCESS && next_block->free)
     {
-      LOG_DEBUG("Merging blocks: current payload=%p (%zu bytes) |"
-                "next payload=%p (%zu bytes).\n",
+      LOG_DEBUG("Merging blocks (next): cur=%p (%zu) | next=%p (%zu).\n",
                 (void *)((uint8_t *)block + sizeof(block_header_t)),
                 block->size,
                 (void *)((uint8_t *)next_block + sizeof(block_header_t)),
@@ -2427,7 +2485,6 @@ static int MEM_mergeBlocks(mem_allocator_t *const allocator,
 
       block->size += next_block->size;
       block->next  = next_block->next;
-
       if (next_block->next)
         next_block->next->prev = block;
 
@@ -2435,7 +2492,7 @@ static int MEM_mergeBlocks(mem_allocator_t *const allocator,
       data_canary  = (uintptr_t *)canary_addr;
       *data_canary = CANARY_VALUE;
 
-      LOG_DEBUG("New merged: payload=%p (%zu bytes.\n",
+      LOG_DEBUG("Merged(next): payload=%p (%zu).\n",
                 (void *)((uint8_t *)block + sizeof(block_header_t)),
                 block->size);
     }
@@ -2447,20 +2504,18 @@ static int MEM_mergeBlocks(mem_allocator_t *const allocator,
     ret = MEM_validateBlock(allocator, prev_block);
     if (ret == EXIT_SUCCESS && prev_block->free)
     {
-      LOG_DEBUG("Merging blocks: current payload=%p (%zu bytes) |"
-                "current ext payload=%p (%zu bytes).\n",
+      LOG_DEBUG("Merging blocks (prev): prev=%p (%zu) | cur=%p (%zu).\n",
                 (void *)((uint8_t *)prev_block + sizeof(block_header_t)),
                 prev_block->size,
                 (void *)((uint8_t *)block + sizeof(block_header_t)),
                 block->size);
 
-      MEM_removeFreeBlock(allocator, prev_block);
+      ret = MEM_removeFreeBlock(allocator, prev_block);
       if (ret != EXIT_SUCCESS)
         goto function_output;
 
       prev_block->size += block->size;
       prev_block->next  = block->next;
-
       if (block->next)
         block->next->prev = prev_block;
 
@@ -2470,15 +2525,15 @@ static int MEM_mergeBlocks(mem_allocator_t *const allocator,
       *data_canary = CANARY_VALUE;
 
       block = prev_block;
-      LOG_DEBUG("New merged: payload=%p (%zu bytes.\n",
+
+      LOG_DEBUG("Merged(prev): payload=%p (%zu).\n",
                 (void *)((uint8_t *)block + sizeof(block_header_t)),
                 block->size);
     }
   }
 
-  ret = MEM_removeFreeBlock(allocator, block);
-  if (ret != EXIT_SUCCESS)
-    goto function_output;
+  block->fl_next = (block_header_t *)NULL;
+  block->fl_prev = (block_header_t *)NULL;
 
   ret = MEM_insertFreeBlock(allocator, block);
   if (ret != EXIT_SUCCESS)
@@ -2558,8 +2613,7 @@ static void *MEM_allocatorMalloc(mem_allocator_t *const      allocator,
   }
 
   total_size = ALIGN(size) + sizeof(block_header_t) + sizeof(uintptr_t);
-
-  arena = &allocator->arenas[0];
+  arena      = &allocator->arenas[0];
 
   if (size > MMAP_THRESHOLD)
   {
@@ -2567,8 +2621,7 @@ static void *MEM_allocatorMalloc(mem_allocator_t *const      allocator,
     if (raw_mmap == NULL)
     {
       user_ptr = PTR_ERR(-ENOMEM);
-      LOG_ERROR("Mmap failed: grow heap by %zu bytes. "
-                "Error code: %d.\n",
+      LOG_ERROR("Mmap failed: %zu bytes. Error code: %d.\n",
                 total_size,
                 (int)(intptr_t)user_ptr);
       goto function_output;
@@ -2578,8 +2631,8 @@ static void *MEM_allocatorMalloc(mem_allocator_t *const      allocator,
 
     block->magic  = MAGIC_NUMBER;
     block->size   = total_size;
-    block->free   = 0;
-    block->marked = 0;
+    block->free   = 0u;
+    block->marked = 0u;
     block->next   = (block_header_t *)NULL;
     block->prev   = (block_header_t *)NULL;
     block->canary = CANARY_VALUE;
@@ -2594,7 +2647,6 @@ static void *MEM_allocatorMalloc(mem_allocator_t *const      allocator,
 
     LOG_INFO("Mmap used for alloc: %p (%zu bytes).\n", raw_mmap, size);
     user_ptr = (uint8_t *)raw_mmap + sizeof(block_header_t);
-
     goto function_output;
   }
 
@@ -2617,8 +2669,8 @@ static void *MEM_allocatorMalloc(mem_allocator_t *const      allocator,
 
     block->magic  = MAGIC_NUMBER;
     block->size   = total_size;
-    block->free   = 1;
-    block->marked = 0;
+    block->free   = 1u;
+    block->marked = 0u;
     block->next   = (block_header_t *)NULL;
     block->prev   = (block_header_t *)NULL;
     block->canary = CANARY_VALUE;
@@ -2628,11 +2680,7 @@ static void *MEM_allocatorMalloc(mem_allocator_t *const      allocator,
     *data_canary = CANARY_VALUE;
 
     block->fl_next = (block_header_t *)NULL;
-    block->fl_next = (block_header_t *)NULL;
-
-    ret = MEM_removeFreeBlock(allocator, block);
-    if (ret != EXIT_SUCCESS)
-      goto function_output;
+    block->fl_prev = (block_header_t *)NULL;
 
     ret = MEM_insertFreeBlock(allocator, block);
     if (ret != EXIT_SUCCESS)
@@ -2980,15 +3028,11 @@ static int MEM_allocatorFree(mem_allocator_t *const allocator,
 
       goto function_output;
     }
+    else
+    {
+      (void)MEM_insertFreeBlock(allocator, block);
+    }
   }
-
-  ret = MEM_removeFreeBlock(allocator, block);
-  if (ret != EXIT_SUCCESS)
-    goto function_output;
-
-  ret = MEM_insertFreeBlock(allocator, block);
-  if (ret != EXIT_SUCCESS)
-    goto function_output;
 
   freed_size = (size_t)(block->size - sizeof(*block) - sizeof(uintptr_t));
   LOG_INFO("Memory freed: addr: %p (%zu bytes).\n", ptr, freed_size);

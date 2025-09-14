@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/usr/bin/env bash 
 
 set -euo pipefail
 
@@ -14,11 +14,12 @@ RESET=$'\033[0m'
 
 usage() {
     cat <<EOF
-Usage: $0 [release|debug] [--docker] [--platform <platform>]
+Usage: $0 [release|debug] [--docker] [--platform <platform>] [--clear]
   release       → build Release (default)
   debug         → build Debug
   --docker      → instead of local build, generate Docker image
   --platform    → target platform for Docker buildx (default: linux/amd64)
+  --clear       → remove ./bin ./build ./docs ./doxygen and exit
 EOF
     exit 2
 }
@@ -27,6 +28,7 @@ EOF
 MODE="release"
 DOCKER=false
 PLATFORMS="linux/amd64"
+CLEAR=false
 
 # parse args
 while [ $# -gt 0 ]; do
@@ -44,11 +46,35 @@ while [ $# -gt 0 ]; do
             PLATFORMS="$2"
             shift 2
             ;;
+        --clear)
+            CLEAR=true
+            shift
+            ;;
         *)
             usage
             ;;
     esac
 done
+
+# hard cleanup: remove full trees regardless de modo
+clear_all() {
+    echo "${GREEN}→ Clearing ./bin ./build ./docs ./doxygen/doxygen-awesome ...${RESET}"
+    for d in "./bin" "./build" "./docs" "./doxygen/doxygen-awesome"; do
+        if [ -d "$d" ]; then
+            sudo rm -rf -- "$d"
+            echo "  removed: $d"
+        else
+            echo "  skip (not found): $d"
+        fi
+    done
+    echo "${GREEN}✓ Clear completed${RESET}"
+}
+
+# if user only wants to clear, do it and exit
+if $CLEAR; then
+    clear_all
+    exit 0
+fi
 
 # map to CMake build type
 case "${MODE}" in
@@ -66,10 +92,11 @@ else
     command -v cmake  >/dev/null 2>&1 || { echo "${RED}CMake not found!${RESET}"; exit 1; }
 fi
 
+# light cleanup for (re)builds
 cleanup() {
     for d in "$BUILD_DIR" "$DOCS_DIR" "$BIN_DIR" "$DOXYGEN_DIR"; do
         if [ -d "$d" ]; then
-            sudo rm -rf "$d"
+            sudo rm -rf -- "$d"
         fi
     done
 }
