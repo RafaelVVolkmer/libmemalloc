@@ -2169,12 +2169,12 @@ static int MEM_findNextFit(mem_allocator_t *const allocator,
       goto function_output;
     }
 
-    current = (current->next)
-                ? current->next
-               : (block_header_t *)ASSUME_ALIGNED(
-                      (uint8_t *)allocator->heap_start
-                      + allocator->metadata_size,
-                      ARCH_ALIGNMENT);
+    current
+      = (current->next)
+          ? current->next
+          : (block_header_t *)ASSUME_ALIGNED((uint8_t *)allocator->heap_start
+                                               + allocator->metadata_size,
+                                             ARCH_ALIGNMENT);
 
   } while (current != start);
 
