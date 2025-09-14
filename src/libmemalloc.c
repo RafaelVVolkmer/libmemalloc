@@ -248,7 +248,12 @@
  *  @details    Helps the compiler optimize branch prediction by
  *              indicating the condition is expected to be true.
  * ========================================================================== */
-#define LIKELY(x)       (__builtin_expect(!!(x), 1))
+#if (defined(__has_builtin) && __has_builtin(__builtin_expect)) \
+  || defined(__GNUC__) || defined(__clang__)
+  #define LIKELY(x) (__builtin_expect(!!(x), 1))
+#else
+  #define LIKELY(x) (!!(x))
+#endif
 
 /** ============================================================================
  *  @def        UNLIKELY(x)
@@ -259,7 +264,63 @@
  *  @details    Helps the compiler optimize branch prediction by
  *              indicating the condition is expected to be false.
  * ========================================================================== */
-#define UNLIKELY(x)     (__builtin_expect(!!(x), 0))
+#if (defined(__has_builtin) && __has_builtin(__builtin_expect)) \
+  || defined(__GNUC__) || defined(__clang__)
+  #define UNLIKELY(x) (__builtin_expect(!!(x), 0))
+#else
+  #define UNLIKELY(x) (!!(x))
+#endif
+
+/** ============================================================================
+ *  @def        PREFETCH_R(addr)
+ *  @brief      Read prefetch hint.
+ *
+ *  @param[in]  addr  Address expected to be read soon (may be NULL).
+ *
+ *  @details    Wraps __builtin_prefetch when available; otherwise a no-op.
+ *              Uses default locality level 1.
+ * ========================================================================== */
+#if (defined(__has_builtin) && __has_builtin(__builtin_expect)) \
+  || defined(__GNUC__) || defined(__clang__)
+  #define PREFETCH_R(addr) __builtin_prefetch((addr), 0, 1)
+#else
+  #define PREFETCH_R(addr) ((void)0)
+#endif
+
+/** ============================================================================
+ *  @def        PREFETCH_W(addr)
+ *  @brief      Write prefetch hint.
+ *
+ *  @param[in]  addr  Address expected to be written soon (may be NULL).
+ *
+ *  @details    Wraps __builtin_prefetch when available; otherwise a no-op.
+ *              Uses default locality level 1.
+ * ========================================================================== */
+#if (defined(__has_builtin) && __has_builtin(__builtin_expect)) \
+  || defined(__GNUC__) || defined(__clang__)
+  #define PREFETCH_W(addr) __builtin_prefetch((addr), 1, 1)
+#else
+  #define PREFETCH_W(addr) ((void)0)
+#endif
+
+/** ============================================================================
+ *  @def        ASSUME_ALIGNED(ptr, align)
+ *  @brief      Tell the compiler the pointer has a fixed alignment.
+ *
+ *  @param[in]  ptr     Pointer value.
+ *  @param[in]  align   Alignment in bytes (power of two).
+ *
+ *  @return     The same pointer, possibly carrying alignment/aliasing info.
+ *
+ *  @details    Uses __builtin_assume_aligned() when available; otherwise
+ *              returns @p ptr unchanged. Passing a wrong alignment is UB.
+ * ========================================================================== */
+#if (defined(__has_builtin) && __has_builtin(__builtin_expect)) \
+  || defined(__GNUC__) || defined(__clang__)
+  #define ASSUME_ALIGNED(ptr, align) __builtin_assume_aligned((ptr), (align))
+#else
+  #define ASSUME_ALIGNED(ptr, align) (ptr)
+#endif
 
 /** ============================================================================
  *              P R I V A T E  T Y P E S  D E F I N I T I O N
@@ -1072,14 +1133,14 @@ void *MEM_memset(void *const source, const int value, const size_t size)
       iterator++;
     }
   }
-  /**/
+
   pattern = ((uintptr_t)(unsigned char)value) * PREFETCH_MULT;
 
   for (; iterator + ARCH_ALIGNMENT <= size; iterator += ARCH_ALIGNMENT)
   {
     ptr_fetch = ptr + iterator;
-    __builtin_prefetch(ptr_fetch + CACHE_LINE_SIZE, 1, 1);
-    word  = (uintptr_t *)__builtin_assume_aligned(ptr_fetch, ARCH_ALIGNMENT);
+    PREFETCH_W(ptr_fetch + CACHE_LINE_SIZE);
+    word  = (uintptr_t *)ASSUME_ALIGNED(ptr_fetch, ARCH_ALIGNMENT);
     *word = pattern;
   }
 
@@ -1164,13 +1225,11 @@ void *MEM_memcpy(void *const dest, const void *src, const size_t size)
     dest_fetch   = destine + iterator;
     source_fetch = source + iterator;
 
-    __builtin_prefetch(source_fetch + CACHE_LINE_SIZE, 0, 1);
-    __builtin_prefetch(dest_fetch + CACHE_LINE_SIZE, 1, 1);
+    PREFETCH_R(source_fetch + CACHE_LINE_SIZE);
+    PREFETCH_W(dest_fetch + CACHE_LINE_SIZE);
 
-    dest_word
-      = (uintptr_t *)__builtin_assume_aligned(dest_fetch, ARCH_ALIGNMENT);
-    src_word = (const uintptr_t *)__builtin_assume_aligned(source_fetch,
-                                                           ARCH_ALIGNMENT);
+    dest_word = (uintptr_t *)ASSUME_ALIGNED(dest_fetch, ARCH_ALIGNMENT);
+    src_word  = (const uintptr_t *)ASSUME_ALIGNED(source_fetch, ARCH_ALIGNMENT);
 
     *dest_word = *src_word;
   }
