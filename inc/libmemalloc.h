@@ -476,6 +476,8 @@ typedef struct __ALIGN GcThread
  *    @li @b arenas           – Array of arena metadata
  *    @li @b mmap_list        – Linked list of mmap’d regions
  *    @li @b free_lists       – Segregated free lists by size class
+ *    @li @b last_brk_start   – Start address of the last sbrk(+) lease
+ *    @li @b last_brk_end     – End (exclusive) of the last sbrk(+) lease
  *    @li @b gc_thread        – Garbage collector controller
  * ========================================================================== */
 typedef struct __ALIGN MemoryAllocator
@@ -497,7 +499,10 @@ typedef struct __ALIGN MemoryAllocator
   mem_arena_t *arenas;             /**< Array of arena metadata */
   mmap_t      *mmap_list;          /**< Linked list of mmap’d regions */
 
-  gc_thread_t gc_thread;           /**< Garbage collector controller */
+  uint8_t *last_brk_start; /**< Start address of the last sbrk(+) lease */
+  uint8_t *last_brk_end;   /**< End (exclusive) of the last sbrk(+) lease */
+
+  gc_thread_t gc_thread;   /**< Garbage collector controller */
 } mem_allocator_t;
 
 /** ============================================================================

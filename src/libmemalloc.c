@@ -1665,6 +1665,9 @@ int MEM_allocatorInit(mem_allocator_t *const allocator)
   size_t pad        = 0u;
   size_t bins_bytes = 0u;
 
+  allocator->last_brk_start = NULL;
+  allocator->last_brk_end   = NULL;
+
   base = MEM_sbrk(0);
   if (base == PTR_ERR(-ENOMEM))
   {
@@ -1822,17 +1825,20 @@ static void *MEM_growUserHeap(mem_allocator_t *const allocator,
 
   MEM_memset(old, 0, (size_t)inc);
 
+  header = (block_header_t *)old;
+
+  header->size   = (size_t)inc;
+  header->free   = 1u;
+  header->marked = 0u;
+
   allocator->heap_end = (uint8_t *)((uint8_t *)old + inc);
 
-  header         = (block_header_t *)old;
-  header->size   = (size_t)inc;
-  header->free   = 0u;
-  header->marked = 1u;
+  allocator->last_brk_start = (uint8_t *)old;
+  allocator->last_brk_end   = (uint8_t *)old + inc;
 
 function_output:
   return old;
 }
-
 /** ============================================================================
  *  @brief      Allocates a page-aligned memory region via mmap and registers it
  *              in the allocator’s mmap list for later freeing.
@@ -2665,6 +2671,9 @@ static void *MEM_allocatorMalloc(mem_allocator_t *const      allocator,
       goto function_output;
     }
 
+    allocator->last_brk_start = (uint8_t *)((uint8_t *)old_brk);
+    allocator->last_brk_end   = (uint8_t *)((uint8_t *)old_brk + total_size);
+
     block = (block_header_t *)old_brk;
 
     block->magic  = MAGIC_NUMBER;
@@ -2947,10 +2956,13 @@ static int MEM_allocatorFree(mem_allocator_t *const allocator,
 
   uint8_t *block_end = (uint8_t *)NULL;
 
+  uint8_t *cur_brk = (uint8_t *)NULL;
+
   intptr_t delta = 0;
 
   size_t shrink_size = 0u;
   size_t freed_size  = 0u;
+  size_t lease       = 0u;
 
   if (UNLIKELY(allocator == NULL || ptr == NULL))
   {
@@ -3004,33 +3016,53 @@ static int MEM_allocatorFree(mem_allocator_t *const allocator,
     goto function_output;
 
   block_end = (uint8_t *)block + block->size;
+
   if (block_end == allocator->heap_end)
   {
-    shrink_size = block->size;
+    cur_brk = (uint8_t *)sbrk(0);
 
-    ret = MEM_removeFreeBlock(allocator, block);
-    if (ret != EXIT_SUCCESS)
-      goto function_output;
-
-    delta = -(intptr_t)shrink_size;
-    LOG_INFO("Shrinking heap by %zu bytes.\n", shrink_size);
-
-    old = MEM_sbrk(delta);
-    if ((intptr_t)old >= 0)
+    if (cur_brk == allocator->heap_end && allocator->last_brk_start != NULL
+        && allocator->last_brk_end != NULL
+        && allocator->last_brk_end == allocator->heap_end)
     {
-      allocator->heap_end = allocator->heap_end + delta;
-      allocator->last_allocated
-        = (block_header_t *)(uintptr_t)allocator->heap_start;
+      lease = (size_t)(allocator->last_brk_end - allocator->last_brk_start);
 
-      LOG_INFO("Heap shrunk by %zu bytes. New heap_end=%p.\n",
-               shrink_size,
-               (void *)allocator->heap_end);
+      if (lease > 0u && block->size >= lease)
+      {
+        ret = MEM_removeFreeBlock(allocator, block);
+        if (ret != EXIT_SUCCESS)
+          goto function_output;
 
-      goto function_output;
-    }
-    else
-    {
-      (void)MEM_insertFreeBlock(allocator, block);
+        shrink_size = lease;
+        delta       = -(intptr_t)shrink_size;
+
+        LOG_INFO("Conservative shrink: returning last lease of %zu bytes.\n",
+                 shrink_size);
+
+        old = MEM_sbrk(delta);
+        if ((intptr_t)old >= 0)
+        {
+          allocator->heap_end       = allocator->heap_end + delta;
+          allocator->last_brk_start = (uint8_t *)NULL;
+          allocator->last_brk_end   = (uint8_t *)NULL;
+          allocator->last_allocated
+            = (block_header_t *)(uintptr_t)allocator->heap_start;
+
+          LOG_INFO("Heap shrunk by %zu bytes. New heap_end=%p.\n",
+                   shrink_size,
+                   (void *)allocator->heap_end);
+
+          goto function_output;
+        }
+        else
+        {
+          (void)MEM_insertFreeBlock(allocator, block);
+          LOG_WARNING("sbrk(-%zu) failed; skipping shrink. errno=%d\n",
+                      shrink_size,
+                      ENOMEM);
+          ret = EXIT_SUCCESS;
+        }
+      }
     }
   }
 
@@ -3040,7 +3072,6 @@ static int MEM_allocatorFree(mem_allocator_t *const allocator,
 function_output:
   return ret;
 }
-
 /** ============================================================================
  *      P R I V A T E  G A R B A G E  C O L L E C T O R  F U N C T I O N S
  * ========================================================================== */
