@@ -1338,52 +1338,62 @@ static int MEM_validateBlock(mem_allocator_t *const allocator,
 
   mmap_t *map = (mmap_t *)NULL;
 
-  uintptr_t *data_canary = (uintptr_t *)NULL;
-  uintptr_t  canary_addr = 0u;
-
   uintptr_t addr       = 0u;
   uintptr_t heap_start = 0u;
   uintptr_t heap_end   = 0u;
   uintptr_t map_start  = 0u;
   uintptr_t map_end    = 0u;
 
+  size_t hdr_sz    = 0u;
+  size_t min_total = 0u;
+  size_t bsize     = 0u;
+
+  uintptr_t  tail_addr = 0u;
+  uintptr_t *tail      = (uintptr_t *)NULL;
+
   bool in_heap = false;
-  bool found   = false;
+  bool in_mmap = false;
 
   if (UNLIKELY((allocator == NULL) || (block == NULL)))
   {
     ret = -EINVAL;
-    LOG_ERROR("Invalid parameters. Allocator: %p, Block: %p. "
-              "Error code: %d.\n",
+    LOG_ERROR("Invalid parameters. Allocator: %p, Block: %p. Error code: %d.\n",
               (void *)allocator,
               (void *)block,
               ret);
     goto function_output;
   }
 
+  addr       = (uintptr_t)block;
   heap_start = (uintptr_t)allocator->heap_start;
   heap_end   = (uintptr_t)allocator->heap_end;
-  addr       = (uintptr_t)block;
+  hdr_sz     = sizeof(block_header_t);
+  min_total  = (size_t)(hdr_sz + sizeof(uintptr_t));
 
-  if (addr >= heap_start && addr < heap_end)
+  if ((addr >= heap_start) && (addr < heap_end))
   {
     in_heap = true;
-    found   = true;
   }
-
-  for (map = allocator->mmap_list; map && !found; map = map->next)
+  else
   {
-    map_start = (uintptr_t)map->addr;
-    map_end   = map_start + map->size;
+    for (map = allocator->mmap_list; map; map = map->next)
+    {
+      map_start = (uintptr_t)map->addr;
+      map_end   = map_start + map->size;
 
-    found = (bool)(addr >= map_start && addr < map_end);
+      if ((addr >= map_start) && (addr < map_end))
+      {
+        in_mmap = true;
+        break;
+      }
+    }
   }
 
-  if (!found)
+  if (UNLIKELY(!in_heap && !in_mmap))
   {
     ret = -EFAULT;
-    LOG_ERROR("Block %p outside heap [%p ... %p] and mmap regions. "
-              "Error: %d\n",
+    LOG_ERROR("Block %p is outside managed regions. Heap=[%p .. %p]. Error "
+              "code: %d.\n",
               (void *)block,
               (void *)allocator->heap_start,
               (void *)allocator->heap_end,
@@ -1391,44 +1401,176 @@ static int MEM_validateBlock(mem_allocator_t *const allocator,
     goto function_output;
   }
 
-  if (block->canary != CANARY_VALUE && (int)in_heap)
+  if ((addr & (ARCH_ALIGNMENT - 1u)) != 0u)
+  {
+    ret = -ENOENT;
+    LOG_WARNING("Not a memalloc block: misaligned header at %p (alignment=%u). "
+                "Error code: %d.\n",
+                (void *)block,
+                (unsigned)ARCH_ALIGNMENT,
+                ret);
+    goto function_output;
+  }
+
+  if (in_heap)
+  {
+    const uintptr_t user_start = heap_start + allocator->metadata_size;
+
+    if (addr < user_start)
+    {
+      ret = -ENOENT;
+      LOG_WARNING("Not a memalloc block: header at %p lies inside allocator "
+                  "metadata region [%p .. %p). Error code: %d.\n",
+                  (void *)block,
+                  (void *)allocator->heap_start,
+                  (void *)user_start,
+                  ret);
+      goto function_output;
+    }
+
+    if (addr > (heap_end - hdr_sz))
+    {
+      ret = -ENOENT;
+      LOG_WARNING("Not a memalloc block: header at %p truncated at heap end "
+                  "%p. Error code: %d.\n",
+                  (void *)block,
+                  (void *)allocator->heap_end,
+                  ret);
+      goto function_output;
+    }
+  }
+  else
+  {
+    if (addr > (map_end - hdr_sz))
+    {
+      ret = -ENOENT;
+      LOG_WARNING("Not a memalloc block: header at %p truncated inside mmap "
+                  "region [%p .. %p). Error code: %d.\n",
+                  (void *)block,
+                  (void *)map->addr,
+                  (void *)((uint8_t *)map->addr + map->size),
+                  ret);
+      goto function_output;
+    }
+  }
+
+  bsize = block->size;
+
+  if (bsize < min_total)
+  {
+    ret = -ENOENT;
+    LOG_WARNING("Not a memalloc block: too small size at %p (%zu < %zu). Error "
+                "code: %d.\n",
+                (void *)block,
+                bsize,
+                min_total,
+                ret);
+    goto function_output;
+  }
+
+  if ((bsize & (ARCH_ALIGNMENT - 1u)) != 0u)
+  {
+    ret = -ENOENT;
+    LOG_WARNING("Not a memalloc block: size not aligned at %p (%zu, "
+                "alignment=%u). Error code: %d.\n",
+                (void *)block,
+                bsize,
+                (unsigned)ARCH_ALIGNMENT,
+                ret);
+    goto function_output;
+  }
+
+  if (in_heap && ((addr + bsize) > heap_end))
+  {
+    ret = -ENOENT;
+    LOG_WARNING("Not a memalloc block: block at %p extends past heap end (%p). "
+                "size=%zu. Error code: %d.\n",
+                (void *)block,
+                (void *)allocator->heap_end,
+                bsize,
+                ret);
+    goto function_output;
+  }
+  if (in_mmap && ((addr + bsize) > map_end))
+  {
+    ret = -ENOENT;
+    LOG_WARNING("Not a memalloc block: block at %p extends past mmap end (%p). "
+                "size=%zu. Error code: %d.\n",
+                (void *)block,
+                (void *)map_end,
+                bsize,
+                ret);
+    goto function_output;
+  }
+
+  if (block->magic != MAGIC_NUMBER)
+  {
+    ret = -ENOENT;
+    LOG_WARNING("Not a memalloc block: magic mismatch at %p (0x%" PRIxPTR
+                " vs 0x%" PRIxPTR "). Error code: %d.\n",
+                (void *)block,
+                block->magic,
+                (uintptr_t)MAGIC_NUMBER,
+                ret);
+    goto function_output;
+  }
+
+  if (in_heap && (block->canary != CANARY_VALUE))
   {
     ret = -EPROTO;
-    LOG_ERROR("Corrupted header at %p: 0x%" PRIxPTR " vs 0x%" PRIxPTR " ."
-              "Error code: %d.\n",
-              (void *)block,
-              block->canary,
-              CANARY_VALUE,
-              ret);
+    LOG_WARNING("Memalloc block corrupted: header canary mismatch at %p "
+                "(0x%" PRIxPTR " vs 0x%" PRIxPTR "). Error code: %d.\n",
+                (void *)block,
+                block->canary,
+                (uintptr_t)CANARY_VALUE,
+                ret);
     goto function_output;
   }
 
-  canary_addr = (uintptr_t)block + block->size - sizeof(uintptr_t);
-  data_canary = (uintptr_t *)canary_addr;
+  tail_addr = addr + bsize - sizeof(uintptr_t);
+  tail      = (uintptr_t *)tail_addr;
 
-  if (*data_canary != CANARY_VALUE && (int)in_heap)
+  if (in_heap)
   {
-    ret = -EOVERFLOW;
-    LOG_ERROR("Data overflow detected at %p (canary: 0x%" PRIxPTR "). "
-              "Error code: %d.\n",
-              (void *)block,
-              *data_canary,
-              ret);
-    goto function_output;
+    if (*tail != CANARY_VALUE)
+    {
+      ret = -EOVERFLOW;
+      LOG_WARNING("Memalloc block corrupted: data canary mismatch at %p "
+                  "(0x%" PRIxPTR "). Error code: %d.\n",
+                  (void *)block,
+                  *tail,
+                  ret);
+      goto function_output;
+    }
+  }
+  else
+  {
+    if (tail_addr >= map_end)
+    {
+      ret = -ENOENT;
+      LOG_WARNING("Not a memalloc block: trailing canary out of mmap bounds at "
+                  "%p. Error code: %d.\n",
+                  (void *)block,
+                  ret);
+      goto function_output;
+    }
+
+    if (*tail != CANARY_VALUE)
+    {
+      ret = -EOVERFLOW;
+      LOG_WARNING("Memalloc block corrupted (mmap): data canary mismatch at %p "
+                  "(0x%" PRIxPTR "). Error code: %d.\n",
+                  (void *)block,
+                  *tail,
+                  ret);
+      goto function_output;
+    }
   }
 
-  if (((uint8_t *)block + block->size) > allocator->heap_end && (int)in_heap)
-  {
-    ret = -EFBIG;
-    LOG_ERROR("Structural overflow at %p (size: %zu). Heap range [%p - %p]. "
-              "Error code: %d.\n",
-              (void *)block,
-              block->size,
-              (void *)allocator->heap_start,
-              (void *)allocator->heap_end,
-              ret);
-    goto function_output;
-  }
+  LOG_INFO("Block validated: addr=%p, size=%zu, region=%s.\n",
+           (void *)block,
+           bsize,
+           in_heap ? "heap" : "mmap");
 
 function_output:
   return ret;
