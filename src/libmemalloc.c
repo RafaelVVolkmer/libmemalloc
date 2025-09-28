@@ -1338,52 +1338,62 @@ static int MEM_validateBlock(mem_allocator_t *const allocator,
 
   mmap_t *map = (mmap_t *)NULL;
 
-  uintptr_t *data_canary = (uintptr_t *)NULL;
-  uintptr_t  canary_addr = 0u;
-
   uintptr_t addr       = 0u;
   uintptr_t heap_start = 0u;
   uintptr_t heap_end   = 0u;
   uintptr_t map_start  = 0u;
   uintptr_t map_end    = 0u;
 
+  size_t hdr_sz    = 0u;
+  size_t min_total = 0u;
+  size_t bsize     = 0u;
+
+  uintptr_t  tail_addr = 0u;
+  uintptr_t *tail      = (uintptr_t *)NULL;
+
   bool in_heap = false;
-  bool found   = false;
+  bool in_mmap = false;
 
   if (UNLIKELY((allocator == NULL) || (block == NULL)))
   {
     ret = -EINVAL;
-    LOG_ERROR("Invalid parameters. Allocator: %p, Block: %p. "
-              "Error code: %d.\n",
+    LOG_ERROR("Invalid parameters. Allocator: %p, Block: %p. Error code: %d.\n",
               (void *)allocator,
               (void *)block,
               ret);
     goto function_output;
   }
 
+  addr       = (uintptr_t)block;
   heap_start = (uintptr_t)allocator->heap_start;
   heap_end   = (uintptr_t)allocator->heap_end;
-  addr       = (uintptr_t)block;
+  hdr_sz     = sizeof(block_header_t);
+  min_total  = (size_t)(hdr_sz + sizeof(uintptr_t));
 
-  if (addr >= heap_start && addr < heap_end)
+  if ((addr >= heap_start) && (addr < heap_end))
   {
     in_heap = true;
-    found   = true;
   }
-
-  for (map = allocator->mmap_list; map && !found; map = map->next)
+  else
   {
-    map_start = (uintptr_t)map->addr;
-    map_end   = map_start + map->size;
+    for (map = allocator->mmap_list; map; map = map->next)
+    {
+      map_start = (uintptr_t)map->addr;
+      map_end   = map_start + map->size;
 
-    found = (bool)(addr >= map_start && addr < map_end);
+      if ((addr >= map_start) && (addr < map_end))
+      {
+        in_mmap = true;
+        break;
+      }
+    }
   }
 
-  if (!found)
+  if (UNLIKELY(!in_heap && !in_mmap))
   {
     ret = -EFAULT;
-    LOG_ERROR("Block %p outside heap [%p ... %p] and mmap regions. "
-              "Error: %d\n",
+    LOG_ERROR("Block %p is outside managed regions. Heap=[%p .. %p]. Error "
+              "code: %d.\n",
               (void *)block,
               (void *)allocator->heap_start,
               (void *)allocator->heap_end,
@@ -1391,44 +1401,176 @@ static int MEM_validateBlock(mem_allocator_t *const allocator,
     goto function_output;
   }
 
-  if (block->canary != CANARY_VALUE && (int)in_heap)
+  if ((addr & (ARCH_ALIGNMENT - 1u)) != 0u)
+  {
+    ret = -ENOENT;
+    LOG_WARNING("Not a memalloc block: misaligned header at %p (alignment=%u). "
+                "Error code: %d.\n",
+                (void *)block,
+                (unsigned)ARCH_ALIGNMENT,
+                ret);
+    goto function_output;
+  }
+
+  if (in_heap)
+  {
+    const uintptr_t user_start = heap_start + allocator->metadata_size;
+
+    if (addr < user_start)
+    {
+      ret = -ENOENT;
+      LOG_WARNING("Not a memalloc block: header at %p lies inside allocator "
+                  "metadata region [%p .. %p). Error code: %d.\n",
+                  (void *)block,
+                  (void *)allocator->heap_start,
+                  (void *)user_start,
+                  ret);
+      goto function_output;
+    }
+
+    if (addr > (heap_end - hdr_sz))
+    {
+      ret = -ENOENT;
+      LOG_WARNING("Not a memalloc block: header at %p truncated at heap end "
+                  "%p. Error code: %d.\n",
+                  (void *)block,
+                  (void *)allocator->heap_end,
+                  ret);
+      goto function_output;
+    }
+  }
+  else
+  {
+    if (addr > (map_end - hdr_sz))
+    {
+      ret = -ENOENT;
+      LOG_WARNING("Not a memalloc block: header at %p truncated inside mmap "
+                  "region [%p .. %p). Error code: %d.\n",
+                  (void *)block,
+                  (void *)map->addr,
+                  (void *)((uint8_t *)map->addr + map->size),
+                  ret);
+      goto function_output;
+    }
+  }
+
+  bsize = block->size;
+
+  if (bsize < min_total)
+  {
+    ret = -ENOENT;
+    LOG_WARNING("Not a memalloc block: too small size at %p (%zu < %zu). Error "
+                "code: %d.\n",
+                (void *)block,
+                bsize,
+                min_total,
+                ret);
+    goto function_output;
+  }
+
+  if ((bsize & (ARCH_ALIGNMENT - 1u)) != 0u)
+  {
+    ret = -ENOENT;
+    LOG_WARNING("Not a memalloc block: size not aligned at %p (%zu, "
+                "alignment=%u). Error code: %d.\n",
+                (void *)block,
+                bsize,
+                (unsigned)ARCH_ALIGNMENT,
+                ret);
+    goto function_output;
+  }
+
+  if (in_heap && ((addr + bsize) > heap_end))
+  {
+    ret = -ENOENT;
+    LOG_WARNING("Not a memalloc block: block at %p extends past heap end (%p). "
+                "size=%zu. Error code: %d.\n",
+                (void *)block,
+                (void *)allocator->heap_end,
+                bsize,
+                ret);
+    goto function_output;
+  }
+  if (in_mmap && ((addr + bsize) > map_end))
+  {
+    ret = -ENOENT;
+    LOG_WARNING("Not a memalloc block: block at %p extends past mmap end (%p). "
+                "size=%zu. Error code: %d.\n",
+                (void *)block,
+                (void *)map_end,
+                bsize,
+                ret);
+    goto function_output;
+  }
+
+  if (block->magic != MAGIC_NUMBER)
+  {
+    ret = -ENOENT;
+    LOG_WARNING("Not a memalloc block: magic mismatch at %p (0x%" PRIxPTR
+                " vs 0x%" PRIxPTR "). Error code: %d.\n",
+                (void *)block,
+                block->magic,
+                (uintptr_t)MAGIC_NUMBER,
+                ret);
+    goto function_output;
+  }
+
+  if (in_heap && (block->canary != CANARY_VALUE))
   {
     ret = -EPROTO;
-    LOG_ERROR("Corrupted header at %p: 0x%" PRIxPTR " vs 0x%" PRIxPTR " ."
-              "Error code: %d.\n",
-              (void *)block,
-              block->canary,
-              CANARY_VALUE,
-              ret);
+    LOG_WARNING("Memalloc block corrupted: header canary mismatch at %p "
+                "(0x%" PRIxPTR " vs 0x%" PRIxPTR "). Error code: %d.\n",
+                (void *)block,
+                block->canary,
+                (uintptr_t)CANARY_VALUE,
+                ret);
     goto function_output;
   }
 
-  canary_addr = (uintptr_t)block + block->size - sizeof(uintptr_t);
-  data_canary = (uintptr_t *)canary_addr;
+  tail_addr = addr + bsize - sizeof(uintptr_t);
+  tail      = (uintptr_t *)tail_addr;
 
-  if (*data_canary != CANARY_VALUE && (int)in_heap)
+  if (in_heap)
   {
-    ret = -EOVERFLOW;
-    LOG_ERROR("Data overflow detected at %p (canary: 0x%" PRIxPTR "). "
-              "Error code: %d.\n",
-              (void *)block,
-              *data_canary,
-              ret);
-    goto function_output;
+    if (*tail != CANARY_VALUE)
+    {
+      ret = -EOVERFLOW;
+      LOG_WARNING("Memalloc block corrupted: data canary mismatch at %p "
+                  "(0x%" PRIxPTR "). Error code: %d.\n",
+                  (void *)block,
+                  *tail,
+                  ret);
+      goto function_output;
+    }
+  }
+  else
+  {
+    if (tail_addr >= map_end)
+    {
+      ret = -ENOENT;
+      LOG_WARNING("Not a memalloc block: trailing canary out of mmap bounds at "
+                  "%p. Error code: %d.\n",
+                  (void *)block,
+                  ret);
+      goto function_output;
+    }
+
+    if (*tail != CANARY_VALUE)
+    {
+      ret = -EOVERFLOW;
+      LOG_WARNING("Memalloc block corrupted (mmap): data canary mismatch at %p "
+                  "(0x%" PRIxPTR "). Error code: %d.\n",
+                  (void *)block,
+                  *tail,
+                  ret);
+      goto function_output;
+    }
   }
 
-  if (((uint8_t *)block + block->size) > allocator->heap_end && (int)in_heap)
-  {
-    ret = -EFBIG;
-    LOG_ERROR("Structural overflow at %p (size: %zu). Heap range [%p - %p]. "
-              "Error code: %d.\n",
-              (void *)block,
-              block->size,
-              (void *)allocator->heap_start,
-              (void *)allocator->heap_end,
-              ret);
-    goto function_output;
-  }
+  LOG_INFO("Block validated: addr=%p, size=%zu, region=%s.\n",
+           (void *)block,
+           bsize,
+           in_heap ? "heap" : "mmap");
 
 function_output:
   return ret;
@@ -1665,6 +1807,9 @@ int MEM_allocatorInit(mem_allocator_t *const allocator)
   size_t pad        = 0u;
   size_t bins_bytes = 0u;
 
+  allocator->last_brk_start = NULL;
+  allocator->last_brk_end   = NULL;
+
   base = MEM_sbrk(0);
   if (base == PTR_ERR(-ENOMEM))
   {
@@ -1822,17 +1967,20 @@ static void *MEM_growUserHeap(mem_allocator_t *const allocator,
 
   MEM_memset(old, 0, (size_t)inc);
 
+  header = (block_header_t *)old;
+
+  header->size   = (size_t)inc;
+  header->free   = 1u;
+  header->marked = 0u;
+
   allocator->heap_end = (uint8_t *)((uint8_t *)old + inc);
 
-  header         = (block_header_t *)old;
-  header->size   = (size_t)inc;
-  header->free   = 0u;
-  header->marked = 1u;
+  allocator->last_brk_start = (uint8_t *)old;
+  allocator->last_brk_end   = (uint8_t *)old + inc;
 
 function_output:
   return old;
 }
-
 /** ============================================================================
  *  @brief      Allocates a page-aligned memory region via mmap and registers it
  *              in the allocator’s mmap list for later freeing.
@@ -2665,6 +2813,9 @@ static void *MEM_allocatorMalloc(mem_allocator_t *const      allocator,
       goto function_output;
     }
 
+    allocator->last_brk_start = (uint8_t *)((uint8_t *)old_brk);
+    allocator->last_brk_end   = (uint8_t *)((uint8_t *)old_brk + total_size);
+
     block = (block_header_t *)old_brk;
 
     block->magic  = MAGIC_NUMBER;
@@ -2947,10 +3098,13 @@ static int MEM_allocatorFree(mem_allocator_t *const allocator,
 
   uint8_t *block_end = (uint8_t *)NULL;
 
+  uint8_t *cur_brk = (uint8_t *)NULL;
+
   intptr_t delta = 0;
 
   size_t shrink_size = 0u;
   size_t freed_size  = 0u;
+  size_t lease       = 0u;
 
   if (UNLIKELY(allocator == NULL || ptr == NULL))
   {
@@ -3004,33 +3158,53 @@ static int MEM_allocatorFree(mem_allocator_t *const allocator,
     goto function_output;
 
   block_end = (uint8_t *)block + block->size;
+
   if (block_end == allocator->heap_end)
   {
-    shrink_size = block->size;
+    cur_brk = (uint8_t *)sbrk(0);
 
-    ret = MEM_removeFreeBlock(allocator, block);
-    if (ret != EXIT_SUCCESS)
-      goto function_output;
-
-    delta = -(intptr_t)shrink_size;
-    LOG_INFO("Shrinking heap by %zu bytes.\n", shrink_size);
-
-    old = MEM_sbrk(delta);
-    if ((intptr_t)old >= 0)
+    if (cur_brk == allocator->heap_end && allocator->last_brk_start != NULL
+        && allocator->last_brk_end != NULL
+        && allocator->last_brk_end == allocator->heap_end)
     {
-      allocator->heap_end = allocator->heap_end + delta;
-      allocator->last_allocated
-        = (block_header_t *)(uintptr_t)allocator->heap_start;
+      lease = (size_t)(allocator->last_brk_end - allocator->last_brk_start);
 
-      LOG_INFO("Heap shrunk by %zu bytes. New heap_end=%p.\n",
-               shrink_size,
-               (void *)allocator->heap_end);
+      if (lease > 0u && block->size >= lease)
+      {
+        ret = MEM_removeFreeBlock(allocator, block);
+        if (ret != EXIT_SUCCESS)
+          goto function_output;
 
-      goto function_output;
-    }
-    else
-    {
-      (void)MEM_insertFreeBlock(allocator, block);
+        shrink_size = lease;
+        delta       = -(intptr_t)shrink_size;
+
+        LOG_INFO("Conservative shrink: returning last lease of %zu bytes.\n",
+                 shrink_size);
+
+        old = MEM_sbrk(delta);
+        if ((intptr_t)old >= 0)
+        {
+          allocator->heap_end       = allocator->heap_end + delta;
+          allocator->last_brk_start = (uint8_t *)NULL;
+          allocator->last_brk_end   = (uint8_t *)NULL;
+          allocator->last_allocated
+            = (block_header_t *)(uintptr_t)allocator->heap_start;
+
+          LOG_INFO("Heap shrunk by %zu bytes. New heap_end=%p.\n",
+                   shrink_size,
+                   (void *)allocator->heap_end);
+
+          goto function_output;
+        }
+        else
+        {
+          (void)MEM_insertFreeBlock(allocator, block);
+          LOG_WARNING("sbrk(-%zu) failed; skipping shrink. errno=%d\n",
+                      shrink_size,
+                      ENOMEM);
+          ret = EXIT_SUCCESS;
+        }
+      }
     }
   }
 
@@ -3040,7 +3214,6 @@ static int MEM_allocatorFree(mem_allocator_t *const allocator,
 function_output:
   return ret;
 }
-
 /** ============================================================================
  *      P R I V A T E  G A R B A G E  C O L L E C T O R  F U N C T I O N S
  * ========================================================================== */
