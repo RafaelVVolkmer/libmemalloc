@@ -1,15 +1,21 @@
 cmake_minimum_required(VERSION 3.15)
 project(libmemalloc C)
-include(FetchContent)
-# enable_language(ASM)
 
 # ----------------------------------------------------------------------------
 # 1. Basic Project Settings
 # ----------------------------------------------------------------------------
+include(FetchContent)
+include(CheckCCompilerFlag)
+include(CheckCSourceCompiles)
+include(ProcessorCount)
+
+# enable_language(ASM)
+
 set(CMAKE_C_STANDARD 23)
 set(CMAKE_C_STANDARD_REQUIRED ON)
-
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+set(CMAKE_INTERPROCEDURAL_OPTIMIZATION_RELEASE ON)
 
 if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Release CACHE STRING "Choose the build type (Debug or Release)." FORCE)
@@ -120,7 +126,7 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
       add_compile_options(${ANALYZER_FLAGS})
     endif()
 
-    if (!VALGRIND_EXECUTABLE)
+    if (NOT VALGRIND_EXECUTABLE)
         set(SANITIZE_FLAGS
             -fsanitize=address
             -fsanitize=undefined
@@ -133,7 +139,6 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
     endif()
 
 
-
     set(CMAKE_EXE_LINKER_FLAGS    "${CMAKE_EXE_LINKER_FLAGS} -Wl,--gc-sections -flto")
     set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,--gc-sections -flto")
   
@@ -144,32 +149,20 @@ elseif(CMAKE_BUILD_TYPE STREQUAL "Release")
         -Ofast
         -Os
 
-        # --- Link Time Optimization ---
-        -flto
-
         # --- Math & Overflow ---
-        -ffast-math
-        -fstrict-overflow
+				-fno-strict-overflow
 
         # --- Frame Pointer & Inlining ---
-        -fomit-frame-pointer
+        -fno-omit-frame-pointer
         -funroll-loops
-
-        # --- Constant Merging ---
-        -fmerge-all-constants
 
         # --- Exceptions & Unwind Tables ---
         -fno-exceptions
         -fno-unwind-tables
 
         # --- Stack & Data Sections ---
-        -fno-stack-protector
         -fdata-sections
         -ffunction-sections
-
-        # --- Memory Hardening ---
-        -D_FORTIFY_SOURCE=2
-        -fstack-clash-protection
 
         # --- Debug Info Removal ---
         -g0
@@ -188,21 +181,32 @@ endif()
 # 5. Global Warning and Strictness Options
 #    (Applied to all build types)
 # ----------------------------------------------------------------------------
+set(_FORTIFY_LVL 2)
+check_c_source_compiles("
+  #include <features.h>
+  #if !defined(__GLIBC__) || (__GLIBC__*100 + __GLIBC_MINOR__) < 235
+  #error FORTIFY3 not available
+  #endif
+  int main(void){return 0;}
+" LIBMEMALLOC_HAVE_GLIBC_235)
+if(LIBMEMALLOC_HAVE_GLIBC_235)
+  set(_FORTIFY_LVL 3)
+endif()
+
+add_compile_options(-U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=${_FORTIFY_LVL})
+
 add_compile_options(
     # --- Hardening / Security ---
     -fstack-protector-strong
-    -D_FORTIFY_SOURCE=2
-    -fpack-struct=1
+		-fstack-clash-protection
+		-fno-delete-null-pointer-checks
+		-fwrapv
     -Wpacked-bitfield-compat
     -Wpacked-not-aligned
     -Waddress-of-packed-member
     -Wpadded
-    -Wno-packed-bitfield-compat
     -Wformat-security
     -Werror=format-security
-
-    # --- Disable any Inline asm ---
-    -fno-asm
 
     # --- Link Time Optimization & Linker Flags ---
     -flto
@@ -215,7 +219,6 @@ add_compile_options(
     -fsigned-char
     -fcond-mismatch
     -fno-common
-    -fwrapv
 
     # --- Optimization & Static Analysis ---
     -fstrict-aliasing
@@ -226,7 +229,6 @@ add_compile_options(
     -Wextra
     -Wpedantic
     -Werror
-    -Wshadow
     -Wshadow=global
     -Wshadow=local
 
@@ -244,7 +246,6 @@ add_compile_options(
     # --- Initialization & Variable Usage ---
     -Wuninitialized
     -Wmaybe-uninitialized
-    -Wno-uninitialized
     -Winit-self
     -Wclobbered
     -Wunused-parameter
@@ -256,7 +257,6 @@ add_compile_options(
     -Wmissing-declarations
     -Wnested-externs
     -Wunused-function
-    -Wno-unused-function
 
     # --- Pointers & Pointer Arithmetic ---
     -Wpointer-arith
@@ -289,7 +289,6 @@ add_compile_options(
     # --- Switch Statements & Case Coverage ---
     -Wswitch-default
     -Wswitch-enum
-    -Wno-switch-default
 
     # --- Duplicate Code & Logical Checks ---
     -Wduplicated-cond
@@ -313,12 +312,81 @@ add_compile_options(
     -Wno-deprecated-declarations
 )
 
+# Cyber-Security Flags
+if (MSVC)
+  add_compile_options(
+    /GS
+    /sdl
+    /guard:cf
+    /Qspectre
+    /W4
+    $<$<COMPILE_LANGUAGE:CXX>:/GR->
+  )
+  add_link_options(
+    /NXCOMPAT
+    /DYNAMICBASE
+  )
+  if (CMAKE_SIZEOF_VOID_P EQUAL 8)
+    add_link_options(/HIGHENTROPYVA)
+  endif()
+endif()
+
+if (UNIX AND NOT APPLE AND NOT MSVC AND CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
+  add_link_options(
+    -Wl,-z,relro
+    -Wl,-z,now
+    -Wl,-z,noexecstack
+    -Wl,-z,separate-code
+    -Wl,--as-needed
+    -Wl,-z,defs
+  )
+endif()
+
+check_c_compiler_flag("-fcf-protection=full" HAVE_CET)
+if(HAVE_CET AND CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64|amd64")
+  add_compile_options(
+		-fcf-protection=full
+		-fno-plt
+	)
+  add_link_options(
+		-Wl,-z,cet-report=error
+		-Wl,-z,shstk
+	)
+endif()
+
+
+check_c_compiler_flag("-mbranch-protection=standard" HAVE_BPROT)
+if(HAVE_BPROT AND CMAKE_SYSTEM_PROCESSOR MATCHES "aarch64")
+  add_compile_options(
+		-mbranch-protection=standard
+	)
+endif()
+
+if(UNIX AND NOT APPLE AND NOT MSVC)
+  add_link_options(
+		-Wl,--build-id=sha1
+	)
+endif()
+
+check_c_compiler_flag("-ftrivial-auto-var-init=pattern" HAVE_TRIVIAL_AUTO_VAR_INIT_PATTERN)
+if (HAVE_TRIVIAL_AUTO_VAR_INIT_PATTERN)
+  add_compile_options($<$<CONFIG:Debug,RelWithDebInfo>:-ftrivial-auto-var-init=pattern>)
+endif()
+
+check_c_compiler_flag("-fzero-call-used-regs=used" HAVE_ZERO_CALL_USED_REGS_USED)
+if (HAVE_ZERO_CALL_USED_REGS_USED)
+  add_compile_options($<$<CONFIG:Debug,RelWithDebInfo>:-fzero-call-used-regs=used>)
+endif()
+
+add_compile_options($<$<STREQUAL:$<TARGET_PROPERTY:TYPE>,EXECUTABLE>:-fPIE>)
+add_link_options($<$<STREQUAL:$<TARGET_PROPERTY:TYPE>,EXECUTABLE>:-pie>)
+
 # ----------------------------------------------------------------------------
 # 6. Include Subdirectories and Enable Testing
 # ----------------------------------------------------------------------------
 add_subdirectory(src)
-add_subdirectory(doxygen)
 
+add_subdirectory(doxygen)
 enable_testing()
 add_subdirectory(tests)
 
@@ -327,7 +395,6 @@ add_subdirectory(tests)
 # ----------------------------------------------------------------------------
 get_filename_component(COMPILER_NAME ${CMAKE_C_COMPILER} NAME)
 
-include(ProcessorCount)
 ProcessorCount(NPROC)
 
 if (NOT WIN32)
