@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 3.15)
 project(libmemalloc C)
+include(CheckLinkerFlag)
+include(CheckIPOSupported)
 
 # ----------------------------------------------------------------------------
 # 1. Basic Project Settings
@@ -58,6 +60,17 @@ endif()
 
 find_program(VALGRIND_EXECUTABLE NAMES valgrind)
 find_package(Doxygen QUIET)
+# Sanitizers: habilitar por padrão só em archs estáveis no CI
+set(_SAN_ARCH_OK FALSE)
+if (CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64|amd64|aarch64|arm64|armv7")
+  set(_SAN_ARCH_OK TRUE)
+endif()
+option(LIBMEMALLOC_ENABLE_SANITIZERS
+  "Enable ASan/UBSan/LSan in Debug when Valgrind is not found" ${_SAN_ARCH_OK})
+message(STATUS "Sanitizers default: ${LIBMEMALLOC_ENABLE_SANITIZERS} for ${CMAKE_SYSTEM_PROCESSOR}")
+
+# -Werror opt-in
+option(LIBMEMALLOC_STRICT "Fail build on any warning (-Werror)" OFF)
 
 # ----------------------------------------------------------------------------
 # 3. Output Directories for Binaries
@@ -126,7 +139,7 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
       add_compile_options(${ANALYZER_FLAGS})
     endif()
 
-    if (NOT VALGRIND_EXECUTABLE)
+    if (LIBMEMALLOC_ENABLE_SANITIZERS AND NOT VALGRIND_EXECUTABLE)
         set(SANITIZE_FLAGS
             -fsanitize=address
             -fsanitize=undefined
@@ -139,8 +152,8 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
     endif()
 
 
-    set(CMAKE_EXE_LINKER_FLAGS    "${CMAKE_EXE_LINKER_FLAGS} -Wl,--gc-sections -flto")
-    set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,--gc-sections -flto")
+    set(CMAKE_EXE_LINKER_FLAGS    "${CMAKE_EXE_LINKER_FLAGS} -Wl,--gc-sections")
+    set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,--gc-sections")
   
 elseif(CMAKE_BUILD_TYPE STREQUAL "Release")
     add_compile_options(
@@ -176,6 +189,29 @@ elseif(CMAKE_BUILD_TYPE STREQUAL "Release")
     set(CMAKE_EXE_LINKER_FLAGS    "${CMAKE_EXE_LINKER_FLAGS}    -Wl,--gc-sections -Wl,-O1 -Wl,-s")
     set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,--gc-sections -Wl,-O1 -Wl,-s")
 endif()
+
+## IPO/LTO só se suportado
+check_ipo_supported(RESULT _IPO_OK OUTPUT _IPO_MSG)
+if (_IPO_OK)
+  set(CMAKE_INTERPROCEDURAL_OPTIMIZATION ON)
+else()
+  message(WARNING "IPO/LTO indisponível: ${_IPO_MSG}")
+endif()
+
+function(add_cflag_if_supported flag)
+  string(REPLACE "-" "_" key "${flag}")
+  check_c_compiler_flag("${flag}" "HAVE_${key}")
+  if(HAVE_${key})
+    add_compile_options("${flag}")
+  endif()
+endfunction()
+
+function(add_ldflag_if_supported flag)
+  check_linker_flag(C "${flag}" "HAVE_LD_${flag}")
+  if(HAVE_LD_${flag})
+    add_link_options("${flag}")
+  endif()
+endfunction()
 
 # ----------------------------------------------------------------------------
 # 5. Global Warning and Strictness Options
@@ -330,54 +366,48 @@ if (MSVC)
     add_link_options(/HIGHENTROPYVA)
   endif()
 endif()
+add_compile_options(
+  -fstack-protector-strong
+)
+
+add_cflag_if_supported(-fstack-clash-protection)
+add_cflag_if_supported(-fno-delete-null-pointer-checks)
+add_cflag_if_supported(-fwrapv)
+add_cflag_if_supported(-fsso-struct=little-endian)
+add_cflag_if_supported(-fsigned-bitfields)
+add_cflag_if_supported(-fsigned-char)
+add_cflag_if_supported(-fcond-mismatch)
 
 if (UNIX AND NOT APPLE AND NOT MSVC AND CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
-  add_link_options(
-    -Wl,-z,relro
-    -Wl,-z,now
-    -Wl,-z,noexecstack
-    -Wl,-z,separate-code
-    -Wl,--as-needed
-    -Wl,-z,defs
-  )
+  add_ldflag_if_supported(-Wl,-z,relro)
+  add_ldflag_if_supported(-Wl,-z,now)
+  add_ldflag_if_supported(-Wl,-z,noexecstack)
+  add_ldflag_if_supported(-Wl,-z,separate-code)
+  add_ldflag_if_supported(-Wl,--as-needed)
+  add_ldflag_if_supported(-Wl,-z,defs)
 endif()
 
+
+# CET/SHSTK (x86_64) apenas se suportado *no compilador e no linker*
 check_c_compiler_flag("-fcf-protection=full" HAVE_CET)
-if(HAVE_CET AND CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64|amd64")
-  add_compile_options(
-		-fcf-protection=full
-		-fno-plt
-	)
-  add_link_options(
-		-Wl,-z,cet-report=error
-		-Wl,-z,shstk
-	)
+if (HAVE_CET AND CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64|amd64")
+  add_cflag_if_supported(-fcf-protection=full)
+  add_cflag_if_supported(-fno-plt)
+  add_ldflag_if_supported(-Wl,-z,cet-report=error)
+  add_ldflag_if_supported(-Wl,-z,shstk)
 endif()
 
-
+# Branch-protection (AArch64)
 check_c_compiler_flag("-mbranch-protection=standard" HAVE_BPROT)
-if(HAVE_BPROT AND CMAKE_SYSTEM_PROCESSOR MATCHES "aarch64")
-  add_compile_options(
-		-mbranch-protection=standard
-	)
+if (HAVE_BPROT AND CMAKE_SYSTEM_PROCESSOR MATCHES "aarch64")
+  add_cflag_if_supported(-mbranch-protection=standard)
 endif()
 
-if(UNIX AND NOT APPLE AND NOT MSVC)
-  add_link_options(
-		-Wl,--build-id=sha1
-	)
-endif()
+# Init de variáveis e limpeza de regs (depende da versão)
+add_cflag_if_supported(-ftrivial-auto-var-init=pattern)
+add_cflag_if_supported(-fzero-call-used-regs=used)
 
-check_c_compiler_flag("-ftrivial-auto-var-init=pattern" HAVE_TRIVIAL_AUTO_VAR_INIT_PATTERN)
-if (HAVE_TRIVIAL_AUTO_VAR_INIT_PATTERN)
-  add_compile_options($<$<CONFIG:Debug,RelWithDebInfo>:-ftrivial-auto-var-init=pattern>)
-endif()
-
-check_c_compiler_flag("-fzero-call-used-regs=used" HAVE_ZERO_CALL_USED_REGS_USED)
-if (HAVE_ZERO_CALL_USED_REGS_USED)
-  add_compile_options($<$<CONFIG:Debug,RelWithDebInfo>:-fzero-call-used-regs=used>)
-endif()
-
+# PIE somente para executáveis
 add_compile_options($<$<STREQUAL:$<TARGET_PROPERTY:TYPE>,EXECUTABLE>:-fPIE>)
 add_link_options($<$<STREQUAL:$<TARGET_PROPERTY:TYPE>,EXECUTABLE>:-pie>)
 
