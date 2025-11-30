@@ -34,8 +34,8 @@ jobs:
           gcc g++ cmake make valgrind doxygen graphviz
 
       - name: Make build script executable
-        run: chmod +x ./build.sh
+        run: chmod +x ./scripts/build.sh
 
       - name: Build & test (${{ env.BUILD_TYPE }})
-        run: ./build.sh ${{ env.BUILD_TYPE }}
+        run: ./scripts/build.sh ${{ env.BUILD_TYPE }}
 

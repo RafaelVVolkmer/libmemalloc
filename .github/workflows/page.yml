@@ -23,8 +23,8 @@ jobs:
 
       - name: Generate docs
         run: |
-          chmod +x ./build.sh
-          ./build.sh release
+          chmod +x ./scripts/build.sh
+          ./scripts/build.sh release
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4

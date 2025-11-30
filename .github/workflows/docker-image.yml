@@ -56,11 +56,11 @@ jobs:
           install: true
 
       - name: Prepare build.sh
-        run: chmod +x ./build.sh
+        run: chmod +x ./scripts/build.sh
 
       - name: Build image (${{ matrix.platform }}, ${{ matrix.build_mode }})
         run: |
-          ./build.sh ${{ matrix.build_mode }} --docker --platform ${{ matrix.platform }}
+          ./scripts/build.sh ${{ matrix.build_mode }} --docker --platform ${{ matrix.platform }}
 
       - name: Inspect image
         run: docker images | grep libmemalloc

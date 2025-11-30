@@ -25,10 +25,10 @@ jobs:
           sudo apt-get install -y clang-format clang-tidy cmake valgrind
 
       - name: Prepare style script
-        run: chmod +x ./style_check.sh
+        run: chmod +x ./scripts/style_check.sh
 
       - name: Run style_check.sh
-        run: ./style_check.sh
+        run: ./scripts/style_check.sh
 
       - name: Upload tidy log
         if: failure()
