@@ -3,16 +3,16 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* Botão "coverage tests" – maior e mais afastado da base */
+/* "coverage tests" button – bigger and further from the bottom edge */
 #cov-pill{
   position: fixed;
   right: 56px;
-  bottom: 40px;        /* ↑ mais padding em relação à base */
+  bottom: 40px;        /* ↑ extra padding from the bottom edge */
   z-index: 9999;
 }
 
 #cov-pill a{
-  /* fallback escuro + integração com doxygen-awesome */
+  /* dark fallback + integration with doxygen-awesome */
   background: #234063;
   border: 1px solid #14273c;
   color: var(--page-background-color, #ffffff);
@@ -23,9 +23,8 @@
   display: inline-flex;
   align-items: center;
 
-  /* maior: mais padding e fonte um pouco maior */
-  padding: .72rem 1.35rem;   /* antes: .60rem 1.15rem */
-  font-size: 16px;           /* antes: 14px */
+  padding: .72rem 1.35rem;
+  font-size: 16px;
   line-height: 1;
   font-weight: 700;
   letter-spacing: .02em;
@@ -43,23 +42,23 @@
   outline-offset: 2px;
 }
 
-/* Tema escuro */
+/* Dark theme */
 html[data-theme="dark"] #cov-pill a{
   background: color-mix(in srgb, var(--primary-dark-color, #1e40af) 35%, black 65%);
   border-color: color-mix(in srgb, var(--primary-dark-color, #1e40af) 65%, black 35%);
   color: #E6E8EE;
 }
 
-/* Telas largas: afasta um pouco mais da lateral e base */
+/* Wide screens: push a bit further from the edge and bottom */
 @media (min-width: 1200px){
   #cov-pill{ right: 72px; bottom: 48px; }
 }
 
-/* Mobile: ligeiramente menor, mas ainda com mais folga da base */
+/* Mobile: slightly smaller, but still with extra bottom spacing */
 @media (max-width: 640px){
   #cov-pill{ right: 18px; bottom: 22px; }
   #cov-pill a{ padding: .58rem 1.10rem; font-size: 14px; }
 }
 
-/* Não mostrar ao imprimir */
+/* Hide when printing */
 @media print{ #cov-pill{ display:none; } }
