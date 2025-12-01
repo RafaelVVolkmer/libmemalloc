@@ -64,7 +64,7 @@
  *              to indicate assertion failures or unexpected runtime errors
  *              detected during execution.
  * ========================================================================== */
-#define EXIT_ERROR  (uint8_t)(1U)
+#define EXIT_ERROR   (uint8_t)(1U)
 
 /** ============================================================================
  *  @def        MAX_VERTICES
@@ -93,7 +93,7 @@
     if (!(expr))                                                             \
     {                                                                        \
       LOG_ERROR("Assertion failed at %s:%d: %s", __FILE__, __LINE__, #expr); \
-      return EXIT_ERROR;                                                    \
+      return EXIT_ERROR;                                                     \
     }                                                                        \
   } while (0)
 

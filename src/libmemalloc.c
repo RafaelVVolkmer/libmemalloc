@@ -97,7 +97,7 @@
 
 /** ============================================================================
  *  @def        CACHE_LINE_SIZE
- *  @brief      Sizee of the CPU cache line in bytes.
+ *  @brief      Size of the CPU cache line in bytes.
  *
  *  @details    This constant defines the cache-line size used for
  *              prefetching and alignment optimizations, ensuring memory
@@ -431,8 +431,8 @@ void *MEM_sbrk(const intptr_t increment);
  *  @retval ret>0:    Valid size class index.
  *  @retval -EINVAL:  @p allocator is NULL, or @p size is zero.
  * ========================================================================== */
-static int MEM_getSizeeClass(mem_allocator_t *const allocator,
-                             const size_t           size);
+static int MEM_getSizeClass(mem_allocator_t *const allocator,
+                            const size_t           size);
 
 /** ============================================================================
  *  @brief  Initializes the memory allocator and its internal structures.
@@ -485,7 +485,7 @@ static int MEM_validateBlock(mem_allocator_t *const allocator,
  *  @brief  Inserts a block into the appropriate free list based on its size.
  *
  *  This function computes the size class index for the given @p block by
- *  calling MEM_getSizeeClass(), then pushes the block onto the head of that
+ *  calling MEM_getSizeClass(), then pushes the block onto the head of that
  *  free list within the allocator. It updates both forward and backward
  *  links to maintain the doubly‐linked list of free blocks.
  *
@@ -496,7 +496,7 @@ static int MEM_validateBlock(mem_allocator_t *const allocator,
  *
  *  @retval EXIT_SUCCESS: @p block successfully inserted.
  *  @retval -EINVAL:      @p allocator or @p block is NULL.
- *  @retval -ENOMEM:      Sizee class calculation failed (request too large).
+ *  @retval -ENOMEM:      Size class calculation failed (request too large).
  * ========================================================================== */
 static int MEM_insertFreeBlock(mem_allocator_t *const allocator,
                                block_header_t *const  block);
@@ -506,7 +506,7 @@ static int MEM_insertFreeBlock(mem_allocator_t *const allocator,
  *
  *  This function unlinks the specified @p block from the free list
  * corresponding to its size class within the allocator. It computes the
- * size‐class index via MEM_getSizeeClass(), validates parameters, then adjusts
+ * size‐class index via MEM_getSizeClass(), validates parameters, then adjusts
  * the neighboring blocks’ fl_next and fl_prev pointers (or the list head) to
  * remove @p block. The block’s own fl_next and fl_prev are then cleared.
  *
@@ -517,7 +517,7 @@ static int MEM_insertFreeBlock(mem_allocator_t *const allocator,
  *
  *  @retval EXIT_SUCCESS: Block removed successfully.
  *  @retval -EINVAL:      @p allocator or @p block is NULL.
- *  @retval -ENOMEM:      Sizee‐class calculation failed.
+ *  @retval -ENOMEM:      Size‐class calculation failed.
  * ========================================================================== */
 static int MEM_removeFreeBlock(mem_allocator_t *const allocator,
                                block_header_t *const  block);
@@ -527,7 +527,7 @@ static int MEM_removeFreeBlock(mem_allocator_t *const allocator,
  * lists.
  *
  *  This function computes the starting size class for the requested @p size via
- *  MEM_getSizeeClass(), then scans each free‐list from that class upward.  For
+ *  MEM_getSizeClass(), then scans each free‐list from that class upward.  For
  * each candidate block, it calls MEM_validateBlock() to ensure integrity, and
  * returns the first block that is marked free and large enough. The found block
  * pointer is stored in @p fit_block.
@@ -575,7 +575,7 @@ static int MEM_findNextFit(mem_allocator_t *const allocator,
  *          in size‐class lists (BEST_FIT).
  *
  *  This function computes the starting size class for the requested @p size via
- *  MEM_getSizeeClass(), then scans each free‐list from that class upward.  It
+ *  MEM_getSizeClass(), then scans each free‐list from that class upward.  It
  *  validates each candidate with MEM_validateBlock() and tracks the smallest
  *  free block that is large enough.  Once a block in any class is chosen, the
  *  search stops.
@@ -588,7 +588,7 @@ static int MEM_findNextFit(mem_allocator_t *const allocator,
  *
  *  @retval EXIT_SUCCESS: Suitable block found successfully.
  *  @retval -EINVAL:      @p allocator or @p best_fit is NULL.
- *  @retval -ENOMEM:      Sizee calculation failed or no suitable block found.
+ *  @retval -ENOMEM:      Size calculation failed or no suitable block found.
  * ========================================================================== */
 static int MEM_findBestFit(mem_allocator_t *const allocator,
                            const size_t           size,
@@ -1703,8 +1703,7 @@ function_output:
  *  @retval ret>0:    Valid size class index.
  *  @retval -EINVAL:  @p allocator is NULL, or @p size is zero.
  * ========================================================================== */
-static int MEM_getSizeeClass(mem_allocator_t *const allocator,
-                             const size_t           size)
+static int MEM_getSizeClass(mem_allocator_t *const allocator, const size_t size)
 {
   int ret = EXIT_SUCCESS;
 
@@ -1736,7 +1735,7 @@ static int MEM_getSizeeClass(mem_allocator_t *const allocator,
 
   if (UNLIKELY(index >= allocator->num_size_classes))
   {
-    LOG_WARNING("Sizee overflow - "
+    LOG_WARNING("Size overflow - "
                 "Requested: %zu bytes | Max class: %zu bytes | "
                 "Clamped to class %zu.\n",
                 size,
@@ -1746,7 +1745,7 @@ static int MEM_getSizeeClass(mem_allocator_t *const allocator,
   }
   else
   {
-    LOG_INFO("Sizee class calculated - "
+    LOG_INFO("Size class calculated - "
              "Requested: %zu bytes | Class: %zu (%zu-%zu bytes).\n",
              size,
              index,
@@ -1764,7 +1763,7 @@ function_output:
  *  @brief  Inserts a block into the appropriate free list based on its size.
  *
  *  This function computes the size class index for the given @p block by
- *  calling MEM_getSizeeClass(), then pushes the block onto the head of that
+ *  calling MEM_getSizeClass(), then pushes the block onto the head of that
  *  free list within the allocator. It updates both forward and backward
  *  links to maintain the doubly‐linked list of free blocks.
  *
@@ -1775,7 +1774,7 @@ function_output:
  *
  *  @retval EXIT_SUCCESS: @p block successfully inserted.
  *  @retval -EINVAL:      @p allocator or @p block is NULL.
- *  @retval -ENOMEM:      Sizee class calculation failed (request too large).
+ *  @retval -ENOMEM:      Size class calculation failed (request too large).
  * ========================================================================== */
 static int MEM_insertFreeBlock(mem_allocator_t *const allocator,
                                block_header_t *const  block)
@@ -1795,7 +1794,7 @@ static int MEM_insertFreeBlock(mem_allocator_t *const allocator,
     goto function_output;
   }
 
-  index = MEM_getSizeeClass(allocator, block->size);
+  index = MEM_getSizeClass(allocator, block->size);
   if (index < 0)
   {
     ret = -ENOMEM;
@@ -1823,7 +1822,7 @@ function_output:
  *
  *  This function unlinks the specified @p block from the free list
  * corresponding to its size class within the allocator. It computes the
- * size‐class index via MEM_getSizeeClass(), validates parameters, then adjusts
+ * size‐class index via MEM_getSizeClass(), validates parameters, then adjusts
  * the neighboring blocks’ fl_next and fl_prev pointers (or the list head) to
  * remove @p block. The block’s own fl_next and fl_prev are then cleared.
  *
@@ -1834,7 +1833,7 @@ function_output:
  *
  *  @retval EXIT_SUCCESS: Block removed successfully.
  *  @retval -EINVAL:      @p allocator or @p block is NULL.
- *  @retval -ENOMEM:      Sizee‐class calculation failed.
+ *  @retval -ENOMEM:      Size‐class calculation failed.
  * ========================================================================== */
 static int MEM_removeFreeBlock(mem_allocator_t *const allocator,
                                block_header_t *const  block)
@@ -1854,7 +1853,7 @@ static int MEM_removeFreeBlock(mem_allocator_t *const allocator,
     goto function_output;
   }
 
-  index = MEM_getSizeeClass(allocator, block->size);
+  index = MEM_getSizeClass(allocator, block->size);
   if (index < 0)
   {
     ret = -ENOMEM;
@@ -2284,7 +2283,7 @@ function_output:
  * lists.
  *
  *  This function computes the starting size class for the requested @p size via
- *  MEM_getSizeeClass(), then scans each free‐list from that class upward.  For
+ *  MEM_getSizeClass(), then scans each free‐list from that class upward.  For
  * each candidate block, it calls MEM_validateBlock() to ensure integrity, and
  * returns the first block that is marked free and large enough. The found block
  * pointer is stored in @p fit_block.
@@ -2322,7 +2321,7 @@ static int MEM_findFirstFit(mem_allocator_t *const allocator,
     goto function_output;
   }
 
-  start_class = MEM_getSizeeClass(allocator, size);
+  start_class = MEM_getSizeClass(allocator, size);
   if (start_class < 0)
   {
     ret = -ENOMEM;
@@ -2447,7 +2446,7 @@ function_output:
  *          in size‐class lists (BEST_FIT).
  *
  *  This function computes the starting size class for the requested @p size via
- *  MEM_getSizeeClass(), then scans each free‐list from that class upward.  It
+ *  MEM_getSizeClass(), then scans each free‐list from that class upward.  It
  *  validates each candidate with MEM_validateBlock() and tracks the smallest
  *  free block that is large enough.  Once a block in any class is chosen, the
  *  search stops.
@@ -2460,7 +2459,7 @@ function_output:
  *
  *  @retval EXIT_SUCCESS: Suitable block found successfully.
  *  @retval -EINVAL:      @p allocator or @p best_fit is NULL.
- *  @retval -ENOMEM:      Sizee calculation failed or no suitable block found.
+ *  @retval -ENOMEM:      Size calculation failed or no suitable block found.
  * ========================================================================== */
 static int MEM_findBestFit(mem_allocator_t *const allocator,
                            const size_t           size,
@@ -2487,7 +2486,7 @@ static int MEM_findBestFit(mem_allocator_t *const allocator,
 
   *best_fit = (block_header_t *)NULL;
 
-  start_class = MEM_getSizeeClass(allocator, size);
+  start_class = MEM_getSizeClass(allocator, size);
   if (start_class < 0)
   {
     ret = -ENOMEM;

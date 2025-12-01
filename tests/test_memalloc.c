@@ -70,7 +70,7 @@
  *              with a recognizable non-zero pattern. Useful for
  *              validating that memory writes and clears occur correctly.
  * ========================================================================== */
-#define FILL_VALUE  (uint8_t)(0xFFU)
+#define FILL_VALUE (uint8_t)(0xFFU)
 
 /** ============================================================================
  *  @def        ARR_LEN
@@ -79,7 +79,7 @@
  *  @details    Specifies the number of elements (10) used by
  *              TEST_testCalloc and other tests that allocate arrays.
  * ========================================================================== */
-#define ARR_LEN     (uint8_t)(10U)
+#define ARR_LEN    (uint8_t)(10U)
 
 /** ============================================================================
  *  @def        CHECK(expr)
@@ -98,7 +98,7 @@
     if (!(expr))                                                             \
     {                                                                        \
       LOG_ERROR("Assertion failed at %s:%d: %s", __FILE__, __LINE__, #expr); \
-      return EXIT_ERROR;                                                    \
+      return EXIT_ERROR;                                                     \
     }                                                                        \
   } while (0)
 

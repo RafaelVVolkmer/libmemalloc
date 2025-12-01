@@ -54,7 +54,7 @@
  *  @details    Defined as a size_t value of 128 bytes,
  *              used for allocations when a fixed-size buffer is required.
  * ========================================================================== */
-#define ALLOC_SIZE  (size_t)(128U)
+#define ALLOC_SIZE (size_t)(128U)
 
 /** ============================================================================
  *  @def        EXIT_ERROR
@@ -83,7 +83,7 @@
     if (!(expr))                                                             \
     {                                                                        \
       LOG_ERROR("Assertion failed at %s:%d: %s", __FILE__, __LINE__, #expr); \
-      return EXIT_ERROR;                                                    \
+      return EXIT_ERROR;                                                     \
     }                                                                        \
   } while (0)
 

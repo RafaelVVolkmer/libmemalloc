@@ -69,7 +69,7 @@
  *  @details    Defines the total number of nodes (5) to be allocated,
  *              initialized, and manipulated during linked list unit tests.
  * ========================================================================== */
-#define MAX_NODES   (uint8_t)(5U)
+#define MAX_NODES  (uint8_t)(5U)
 
 /** ============================================================================
  *  @def        CHECK(expr)
@@ -88,7 +88,7 @@
     if (!(expr))                                                             \
     {                                                                        \
       LOG_ERROR("Assertion failed at %s:%d: %s", __FILE__, __LINE__, #expr); \
-      return EXIT_ERROR;                                                    \
+      return EXIT_ERROR;                                                     \
     }                                                                        \
   } while (0)
 

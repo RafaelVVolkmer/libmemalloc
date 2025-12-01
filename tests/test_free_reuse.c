@@ -43,23 +43,23 @@
 
 /** ============================================================================
  *  @def        LARGE_SZ
- *  @brief      Sizee of large test allocation in units.
+ *  @brief      Size of large test allocation in units.
  *
  *  @details    Defined as a size_t value of 64 to represent the number of
  *              bytes (or elements, depending on context) for large allocations
  *              in test scenarios.
  * ========================================================================== */
-#define LARGE_SZ    (size_t)(64U)
+#define LARGE_SZ   (size_t)(64U)
 
 /** ============================================================================
  *  @def        SMALL_SZ
- *  @brief      Sizee of small test allocation in units.
+ *  @brief      Size of small test allocation in units.
  *
  *  @details    Defined as a size_t value of 32 to represent the number of
  *              bytes (or elements, depending on context) for small allocations
  *              in test scenarios.
  * ========================================================================== */
-#define SMALL_SZ    (size_t)(32U)
+#define SMALL_SZ   (size_t)(32U)
 
 /** ============================================================================
  *  @def        NR_BLOCKS
@@ -68,7 +68,7 @@
  *  @details    Defined as an unsigned integer value of 10 to specify
  *              the size of the arrays used for allocation tracking.
  * ========================================================================== */
-#define NR_BLOCKS   (uint8_t)(10U)
+#define NR_BLOCKS  (uint8_t)(10U)
 
 /** ============================================================================
  *  @def        NR_REUSED
@@ -78,7 +78,7 @@
  *              Specifies how many blocks will be dropped and
  *              later reallocated during GC testing.
  * ========================================================================== */
-#define NR_REUSED   (uint8_t)(NR_BLOCKS / 2U)
+#define NR_REUSED  (uint8_t)(NR_BLOCKS / 2U)
 
 /** ============================================================================
  *  @def        EXIT_ERROR
@@ -107,7 +107,7 @@
     if (!(expr))                                                             \
     {                                                                        \
       LOG_ERROR("Assertion failed at %s:%d: %s", __FILE__, __LINE__, #expr); \
-      return EXIT_ERROR;                                                    \
+      return EXIT_ERROR;                                                     \
     }                                                                        \
   } while (0)
 

@@ -64,7 +64,7 @@
  *              assertion or test step failure within the test suite.
  *              Returned by test functions when a CHECK() fails.
  * ========================================================================== */
-#define EXIT_ERROR  (uint8_t)(1U)
+#define EXIT_ERROR   (uint8_t)(1U)
 
 /** ============================================================================
  *  @def        CHECK(expr)
@@ -83,7 +83,7 @@
     if (!(expr))                                                             \
     {                                                                        \
       LOG_ERROR("Assertion failed at %s:%d: %s", __FILE__, __LINE__, #expr); \
-      return EXIT_ERROR;                                                    \
+      return EXIT_ERROR;                                                     \
     }                                                                        \
   } while (0)
 
@@ -92,14 +92,14 @@
  * ========================================================================== */
 
 /** ============================================================================
- *  @enum   SizeeConstants
+ *  @enum   SizeConstants
  *  @brief  Named constants for each test allocation size.
  *
  *  @details
  *    Maps each ordinal in the `sizes[]` vector to its actual byte value,
  *    so you can refer to `SIZE_FOURTEENTH_ORDER` for the 128-byte case, etc.
  * ========================================================================== */
-typedef enum SizeeConstants
+typedef enum SizeConstants
 {
   SIZE_FIRST_ORDER      = (uint8_t)(1u),   /**< sizes[0]  ==   1 byte   */
   SIZE_SECOND_ORDER     = (uint8_t)(2u),   /**< sizes[1]  ==   2 bytes  */

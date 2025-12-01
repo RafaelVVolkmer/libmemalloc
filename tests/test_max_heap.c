@@ -72,7 +72,7 @@
  *              for memory blocks used during testing. Set to 10UL
  *              as a uint64_t constant to avoid implicit type conversions.
  * ========================================================================== */
-#define BLOCK_SIZE  (uint64_t)(1024U)
+#define BLOCK_SIZE (uint64_t)(1024U)
 
 /** ============================================================================
  *  @def        MAX_BLOCKS
@@ -82,7 +82,7 @@
  *  @details    Provides semantic clarity when using BLOCK_SIZE
  *              as a block count limit instead of a byte size.
  * ========================================================================== */
-#define MAX_BLOCKS  1000
+#define MAX_BLOCKS 1000
 
 /** ============================================================================
  *  @def        CHECK(expr)
@@ -101,7 +101,7 @@
     if (!(expr))                                                             \
     {                                                                        \
       LOG_ERROR("Assertion failed at %s:%d: %s", __FILE__, __LINE__, #expr); \
-      return EXIT_ERROR;                                                    \
+      return EXIT_ERROR;                                                     \
     }                                                                        \
   } while (0)
 

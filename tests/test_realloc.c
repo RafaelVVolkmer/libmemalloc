@@ -111,7 +111,7 @@
  *              assertion or test step failure within the test suite.
  *              Returned by test functions when a CHECK() fails.
  * ========================================================================== */
-#define EXIT_ERROR  (uint8_t)(1U)
+#define EXIT_ERROR   (uint8_t)(1U)
 
 /** ============================================================================
  *  @def        CHECK(expr)
@@ -130,7 +130,7 @@
     if (!(expr))                                                             \
     {                                                                        \
       LOG_ERROR("Assertion failed at %s:%d: %s", __FILE__, __LINE__, #expr); \
-      return EXIT_ERROR;                                                    \
+      return EXIT_ERROR;                                                     \
     }                                                                        \
   } while (0)
 

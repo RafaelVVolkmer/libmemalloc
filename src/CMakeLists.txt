@@ -91,7 +91,7 @@ function(_memalloc_set_output_dirs tgt)
   )
 
   # 3.2. Multi-config (VS/Xcode): add per-config subfolders
-  foreach(cfg Debug Release RelWithDebInfo MinSizeeRel)
+  foreach(cfg Debug Release RelWithDebInfo MinSizeRel)
     string(TOUPPER "${cfg}" CFGU)
     set_target_properties("${tgt}" PROPERTIES
       "ARCHIVE_OUTPUT_DIRECTORY_${CFGU}" "${MEMALLOC_OUTPUT_DIR}/${cfg}"
@@ -263,7 +263,7 @@ if(MEMALLOC_BUILD_TEST_SHARED)
     LIBRARY_OUTPUT_DIRECTORY "${_test_out}"
     RUNTIME_OUTPUT_DIRECTORY "${_test_out}"
   )
-  foreach(cfg Debug Release RelWithDebInfo MinSizeeRel)
+  foreach(cfg Debug Release RelWithDebInfo MinSizeRel)
     string(TOUPPER "${cfg}" CFGU)
     set_target_properties(libmemalloc_shared_test PROPERTIES
       "ARCHIVE_OUTPUT_DIRECTORY_${CFGU}" "${_test_out}/${cfg}"
