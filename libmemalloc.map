@@ -1,0 +1,14 @@
+MEMALLOC_2.0 {
+  global:
+    MEM_alloc;
+    MEM_calloc;
+    MEM_free;
+    MEM_realloc;
+    MEM_memcpy;
+    MEM_memset;
+    MEM_allocFirstFit;
+    MEM_allocNextFit;
+    MEM_allocBestFit;
+  local:
+		*;
+};
