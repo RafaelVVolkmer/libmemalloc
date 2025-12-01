@@ -697,6 +697,8 @@ static bool MEM_stackGrowsDown(void);
 static int MEM_stackBounds(const pthread_t        id,
                            mem_allocator_t *const allocator);
 
+#if defined(GARBACE_COLLECTOR)
+
 /** ============================================================================
  *  @brief  Dedicated thread loop driving mark-and-sweep iterations.
  *
@@ -827,6 +829,8 @@ __GC_COLD static int MEM_runGc(mem_allocator_t *const allocator);
  * MEM_gcSweep().
  * ========================================================================== */
 __GC_COLD static int MEM_stopGc(mem_allocator_t *const allocator);
+
+#endif
 
 /** ============================================================================
  *                  F U N C T I O N S  D E F I N I T I O N S
@@ -3085,9 +3089,12 @@ static int MEM_allocatorFree(mem_allocator_t *const allocator,
 function_output:
   return ret;
 }
+
 /** ============================================================================
  *      P R I V A T E  G A R B A G E  C O L L E C T O R  F U N C T I O N S
  * ========================================================================== */
+
+#if defined(GARBACE_COLLECTOR)
 
 /** ============================================================================
  *  @brief  Reset “marked” flags across all allocated regions.
@@ -3651,6 +3658,8 @@ function_output:
   return ret;
 }
 
+#endif
+
 /** ============================================================================
  *          P U B L I C  F U N C T I O N S  D E F I N I T I O N S
  * ========================================================================== */
@@ -3887,6 +3896,8 @@ int MEM_allocFree(mem_allocator_t *const allocator,
   return ret;
 }
 
+#if defined(GARBACE_COLLECTOR)
+
 /** ============================================================================
  *  @brief  Start or signal the garbage collector thread.
  *
@@ -3926,6 +3937,8 @@ int MEM_disableGc(mem_allocator_t *const allocator)
 
   return ret;
 }
+
+#endif
 
 /** @} */
 

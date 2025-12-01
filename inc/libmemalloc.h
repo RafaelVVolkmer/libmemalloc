@@ -474,6 +474,8 @@ __LIBMEMALLOC_API int MEM_allocFree(mem_allocator_t *const allocator,
  *          G A R B A G E  C O L L E C T O R  F U N C T I O N S
  * ========================================================================== */
 
+#if defined(GARBACE_COLLECTOR)
+
 /** ============================================================================
  *  @brief  Start or signal the garbage collector thread.
  *
@@ -499,6 +501,8 @@ __LIBMEMALLOC_API int MEM_enableGc(mem_allocator_t *const allocator);
  *          negative error code on failure.
  * ========================================================================== */
 __LIBMEMALLOC_API int MEM_disableGc(mem_allocator_t *const allocator);
+
+#endif
 
 /*< C++ Compatibility >*/
 #ifdef __cplusplus
