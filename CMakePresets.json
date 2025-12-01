@@ -1,0 +1,754 @@
+{
+  "version": 8,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 27,
+    "patch": 0
+  },
+
+  "configurePresets": [
+    {
+      "name": "ninja-base",
+      "displayName": "Ninja (base)",
+      "description": "Base configuration using Ninja generator",
+      "hidden": true,
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/${presetName}",
+      "cacheVariables": {
+        "CMAKE_EXPORT_COMPILE_COMMANDS": {
+          "type": "BOOL",
+          "value": true
+        },
+        "BUILD_TESTING": {
+          "type": "BOOL",
+          "value": true
+        },
+        "LIBMEMALLOC_ENABLE_COVERAGE": {
+          "type": "BOOL",
+          "value": false
+        },
+        "LIBMEMALLOC_ENABLE_SANITIZERS": {
+          "type": "STRING",
+          "value": ""
+        }
+      },
+      "environment": {
+        "MY_LIBMEMALLOC_ENV": "dev"
+      },
+      "vendor": {
+        "example.com/ExampleIDE/1.0": {
+          "autoFormat": true
+        }
+      }
+    },
+
+    {
+      "name": "ninja-debug",
+      "inherits": "ninja-base",
+      "displayName": "Ninja Debug (default toolchain)",
+      "description": "Debug build with tests enabled using default toolchain",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": {
+          "type": "STRING",
+          "value": "Debug"
+        }
+      }
+    },
+
+    {
+      "name": "ninja-release",
+      "inherits": "ninja-base",
+      "displayName": "Ninja Release (default toolchain)",
+      "description": "Release build with optimizations using default toolchain",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": {
+          "type": "STRING",
+          "value": "Release"
+        },
+        "BUILD_TESTING": {
+          "type": "BOOL",
+          "value": false
+        },
+        "LIBMEMALLOC_ENABLE_COVERAGE": {
+          "type": "BOOL",
+          "value": false
+        },
+        "LIBMEMALLOC_ENABLE_SANITIZERS": {
+          "type": "STRING",
+          "value": ""
+        }
+      }
+    },
+
+    {
+      "name": "ninja-coverage",
+      "inherits": "ninja-debug",
+      "displayName": "Ninja Debug + Coverage",
+      "description": "Debug build with coverage instrumentation enabled (gcc/clang)",
+      "cacheVariables": {
+        "LIBMEMALLOC_ENABLE_COVERAGE": {
+          "type": "BOOL",
+          "value": true
+        }
+      },
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Linux"
+      }
+    },
+
+    {
+      "name": "ninja-asan-ubsan",
+      "inherits": "ninja-debug",
+      "displayName": "Ninja Debug + ASan/UBSan",
+      "description": "Debug build with AddressSanitizer and UndefinedBehaviorSanitizer",
+      "cacheVariables": {
+        "LIBMEMALLOC_ENABLE_SANITIZERS": {
+          "type": "STRING",
+          "value": "address;undefined"
+        }
+      }
+    },
+
+    {
+      "name": "ninja-gcc-debug",
+      "inherits": "ninja-debug",
+      "displayName": "Ninja Debug (GCC)",
+      "description": "Debug build using GCC toolchain explicitly",
+      "environment": {
+        "CC": "gcc",
+        "CXX": "g++",
+        "MY_LIBMEMALLOC_ENV": "dev-gcc"
+      }
+    },
+
+    {
+      "name": "ninja-gcc-release",
+      "inherits": "ninja-release",
+      "displayName": "Ninja Release (GCC)",
+      "description": "Release build using GCC toolchain explicitly",
+      "environment": {
+        "CC": "gcc",
+        "CXX": "g++",
+        "MY_LIBMEMALLOC_ENV": "dev-gcc"
+      }
+    },
+
+    {
+      "name": "ninja-clang-debug",
+      "inherits": "ninja-debug",
+      "displayName": "Ninja Debug (Clang)",
+      "description": "Debug build using Clang toolchain",
+      "environment": {
+        "CC": "clang",
+        "CXX": "clang++",
+        "MY_LIBMEMALLOC_ENV": "dev-clang"
+      }
+    },
+
+    {
+      "name": "ninja-clang-release",
+      "inherits": "ninja-release",
+      "displayName": "Ninja Release (Clang)",
+      "description": "Release build using Clang toolchain",
+      "environment": {
+        "CC": "clang",
+        "CXX": "clang++",
+        "MY_LIBMEMALLOC_ENV": "dev-clang"
+      }
+    },
+
+    {
+      "name": "ninja-msvc-debug",
+      "inherits": "ninja-debug",
+      "displayName": "Ninja Debug (MSVC)",
+      "description": "Debug build using MSVC with Ninja on Windows",
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Windows"
+      },
+      "environment": {
+        "CC": "cl",
+        "CXX": "cl",
+        "MY_LIBMEMALLOC_ENV": "dev-msvc"
+      }
+    },
+
+    {
+      "name": "ninja-msvc-release",
+      "inherits": "ninja-release",
+      "displayName": "Ninja Release (MSVC)",
+      "description": "Release build using MSVC with Ninja on Windows",
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Windows"
+      },
+      "environment": {
+        "CC": "cl",
+        "CXX": "cl",
+        "MY_LIBMEMALLOC_ENV": "dev-msvc"
+      }
+    },
+
+    {
+      "name": "ninja-zig-debug",
+      "inherits": "ninja-debug",
+      "displayName": "Ninja Debug (Zig cc)",
+      "description": "Debug build using Zig as C toolchain (zig cc)",
+      "environment": {
+        "CC": "zig cc",
+        "CXX": "zig c++",
+        "MY_LIBMEMALLOC_ENV": "dev-zig"
+      }
+    },
+
+    {
+      "name": "ninja-zig-release",
+      "inherits": "ninja-release",
+      "displayName": "Ninja Release (Zig cc)",
+      "description": "Release build using Zig as C toolchain (zig cc)",
+      "environment": {
+        "CC": "zig cc",
+        "CXX": "zig c++",
+        "MY_LIBMEMALLOC_ENV": "dev-zig"
+      }
+    },
+
+    {
+      "name": "ninja-multi",
+      "inherits": "ninja-base",
+      "displayName": "Ninja Multi-Config",
+      "description": "Multi-config build using Ninja Multi-Config generator",
+      "generator": "Ninja Multi-Config",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": {
+          "type": "STRING",
+          "value": ""
+        }
+      }
+    },
+
+    {
+      "name": "make-base",
+      "inherits": "ninja-base",
+      "displayName": "Makefiles (base)",
+      "description": "Base configuration using Unix Makefiles generator",
+      "hidden": true,
+      "generator": "Unix Makefiles",
+      "binaryDir": "${sourceDir}/build/${presetName}"
+    },
+
+    {
+      "name": "make-debug",
+      "inherits": "make-base",
+      "displayName": "Make Debug (default toolchain)",
+      "description": "Debug build using Unix Makefiles with default toolchain",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": {
+          "type": "STRING",
+          "value": "Debug"
+        }
+      }
+    },
+
+    {
+      "name": "make-release",
+      "inherits": "make-base",
+      "displayName": "Make Release (default toolchain)",
+      "description": "Release build using Unix Makefiles with default toolchain",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": {
+          "type": "STRING",
+          "value": "Release"
+        },
+        "BUILD_TESTING": {
+          "type": "BOOL",
+          "value": false
+        },
+        "LIBMEMALLOC_ENABLE_COVERAGE": {
+          "type": "BOOL",
+          "value": false
+        },
+        "LIBMEMALLOC_ENABLE_SANITIZERS": {
+          "type": "STRING",
+          "value": ""
+        }
+      }
+    },
+
+    {
+      "name": "make-gcc-debug",
+      "inherits": "make-debug",
+      "displayName": "Make Debug (GCC)",
+      "description": "Debug build using GCC with Unix Makefiles",
+      "environment": {
+        "CC": "gcc",
+        "CXX": "g++",
+        "MY_LIBMEMALLOC_ENV": "dev-gcc"
+      }
+    },
+
+    {
+      "name": "make-gcc-release",
+      "inherits": "make-release",
+      "displayName": "Make Release (GCC)",
+      "description": "Release build using GCC with Unix Makefiles",
+      "environment": {
+        "CC": "gcc",
+        "CXX": "g++",
+        "MY_LIBMEMALLOC_ENV": "dev-gcc"
+      }
+    },
+
+    {
+      "name": "make-clang-debug",
+      "inherits": "make-debug",
+      "displayName": "Make Debug (Clang)",
+      "description": "Debug build using Clang with Unix Makefiles",
+      "environment": {
+        "CC": "clang",
+        "CXX": "clang++",
+        "MY_LIBMEMALLOC_ENV": "dev-clang"
+      }
+    },
+
+    {
+      "name": "make-clang-release",
+      "inherits": "make-release",
+      "displayName": "Make Release (Clang)",
+      "description": "Release build using Clang with Unix Makefiles",
+      "environment": {
+        "CC": "clang",
+        "CXX": "clang++",
+        "MY_LIBMEMALLOC_ENV": "dev-clang"
+      }
+    },
+
+    {
+      "name": "make-zig-debug",
+      "inherits": "make-debug",
+      "displayName": "Make Debug (Zig cc)",
+      "description": "Debug build using Zig cc with Unix Makefiles",
+      "environment": {
+        "CC": "zig cc",
+        "CXX": "zig c++",
+        "MY_LIBMEMALLOC_ENV": "dev-zig"
+      }
+    },
+
+    {
+      "name": "make-zig-release",
+      "inherits": "make-release",
+      "displayName": "Make Release (Zig cc)",
+      "description": "Release build using Zig cc with Unix Makefiles",
+      "environment": {
+        "CC": "zig cc",
+        "CXX": "zig c++",
+        "MY_LIBMEMALLOC_ENV": "dev-zig"
+      }
+    }
+  ],
+
+  "buildPresets": [
+    {
+      "name": "build-debug",
+      "displayName": "Build Debug (default toolchain, Ninja)",
+      "configurePreset": "ninja-debug"
+    },
+    {
+      "name": "build-release",
+      "displayName": "Build Release (default toolchain, Ninja)",
+      "configurePreset": "ninja-release"
+    },
+    {
+      "name": "build-coverage",
+      "displayName": "Build Coverage (default toolchain, Ninja)",
+      "configurePreset": "ninja-coverage"
+    },
+    {
+      "name": "build-asan-ubsan",
+      "displayName": "Build ASan/UBSan (default toolchain, Ninja)",
+      "configurePreset": "ninja-asan-ubsan"
+    },
+
+    {
+      "name": "build-gcc-debug",
+      "displayName": "Build Debug (GCC, Ninja)",
+      "configurePreset": "ninja-gcc-debug"
+    },
+    {
+      "name": "build-gcc-release",
+      "displayName": "Build Release (GCC, Ninja)",
+      "configurePreset": "ninja-gcc-release"
+    },
+
+    {
+      "name": "build-clang-debug",
+      "displayName": "Build Debug (Clang, Ninja)",
+      "configurePreset": "ninja-clang-debug"
+    },
+    {
+      "name": "build-clang-release",
+      "displayName": "Build Release (Clang, Ninja)",
+      "configurePreset": "ninja-clang-release"
+    },
+
+    {
+      "name": "build-msvc-debug",
+      "displayName": "Build Debug (MSVC, Ninja)",
+      "configurePreset": "ninja-msvc-debug"
+    },
+    {
+      "name": "build-msvc-release",
+      "displayName": "Build Release (MSVC, Ninja)",
+      "configurePreset": "ninja-msvc-release"
+    },
+
+    {
+      "name": "build-zig-debug",
+      "displayName": "Build Debug (Zig cc, Ninja)",
+      "configurePreset": "ninja-zig-debug"
+    },
+    {
+      "name": "build-zig-release",
+      "displayName": "Build Release (Zig cc, Ninja)",
+      "configurePreset": "ninja-zig-release"
+    },
+
+    {
+      "name": "build-make-debug",
+      "displayName": "Build Debug (default toolchain, Make)",
+      "configurePreset": "make-debug"
+    },
+    {
+      "name": "build-make-release",
+      "displayName": "Build Release (default toolchain, Make)",
+      "configurePreset": "make-release"
+    },
+
+    {
+      "name": "build-make-gcc-debug",
+      "displayName": "Build Debug (GCC, Make)",
+      "configurePreset": "make-gcc-debug"
+    },
+    {
+      "name": "build-make-gcc-release",
+      "displayName": "Build Release (GCC, Make)",
+      "configurePreset": "make-gcc-release"
+    },
+
+    {
+      "name": "build-make-clang-debug",
+      "displayName": "Build Debug (Clang, Make)",
+      "configurePreset": "make-clang-debug"
+    },
+    {
+      "name": "build-make-clang-release",
+      "displayName": "Build Release (Clang, Make)",
+      "configurePreset": "make-clang-release"
+    },
+
+    {
+      "name": "build-make-zig-debug",
+      "displayName": "Build Debug (Zig cc, Make)",
+      "configurePreset": "make-zig-debug"
+    },
+    {
+      "name": "build-make-zig-release",
+      "displayName": "Build Release (Zig cc, Make)",
+      "configurePreset": "make-zig-release"
+    }
+  ],
+
+  "testPresets": [
+    {
+      "name": "test-debug",
+      "displayName": "Test Debug (default toolchain, Ninja)",
+      "configurePreset": "ninja-debug",
+      "output": {
+        "outputOnFailure": true
+      },
+      "execution": {
+        "noTestsAction": "error",
+        "stopOnFailure": true
+      }
+    },
+    {
+      "name": "test-coverage",
+      "displayName": "Test Coverage (default toolchain, Ninja)",
+      "configurePreset": "ninja-coverage",
+      "output": {
+        "outputOnFailure": true
+      },
+      "execution": {
+        "noTestsAction": "error",
+        "stopOnFailure": true
+      }
+    },
+    {
+      "name": "test-asan-ubsan",
+      "displayName": "Test ASan/UBSan (default toolchain, Ninja)",
+      "configurePreset": "ninja-asan-ubsan",
+      "output": {
+        "outputOnFailure": true
+      },
+      "execution": {
+        "noTestsAction": "error",
+        "stopOnFailure": true
+      }
+    },
+
+    {
+      "name": "test-gcc-debug",
+      "displayName": "Test Debug (GCC, Ninja)",
+      "configurePreset": "ninja-gcc-debug",
+      "output": {
+        "outputOnFailure": true
+      },
+      "execution": {
+        "noTestsAction": "error",
+        "stopOnFailure": true
+      }
+    },
+
+    {
+      "name": "test-clang-debug",
+      "displayName": "Test Debug (Clang, Ninja)",
+      "configurePreset": "ninja-clang-debug",
+      "output": {
+        "outputOnFailure": true
+      },
+      "execution": {
+        "noTestsAction": "error",
+        "stopOnFailure": true
+      }
+    },
+
+    {
+      "name": "test-msvc-debug",
+      "displayName": "Test Debug (MSVC, Ninja)",
+      "configurePreset": "ninja-msvc-debug",
+      "output": {
+        "outputOnFailure": true
+      },
+      "execution": {
+        "noTestsAction": "error",
+        "stopOnFailure": true
+      }
+    },
+
+    {
+      "name": "test-zig-debug",
+      "displayName": "Test Debug (Zig cc, Ninja)",
+      "configurePreset": "ninja-zig-debug",
+      "output": {
+        "outputOnFailure": true
+      },
+      "execution": {
+        "noTestsAction": "error",
+        "stopOnFailure": true
+      }
+    },
+
+    {
+      "name": "test-make-debug",
+      "displayName": "Test Debug (default toolchain, Make)",
+      "configurePreset": "make-debug",
+      "output": {
+        "outputOnFailure": true
+      },
+      "execution": {
+        "noTestsAction": "error",
+        "stopOnFailure": true
+      }
+    },
+
+    {
+      "name": "test-make-gcc-debug",
+      "displayName": "Test Debug (GCC, Make)",
+      "configurePreset": "make-gcc-debug",
+      "output": {
+        "outputOnFailure": true
+      },
+      "execution": {
+        "noTestsAction": "error",
+        "stopOnFailure": true
+      }
+    },
+
+    {
+      "name": "test-make-clang-debug",
+      "displayName": "Test Debug (Clang, Make)",
+      "configurePreset": "make-clang-debug",
+      "output": {
+        "outputOnFailure": true
+      },
+      "execution": {
+        "noTestsAction": "error",
+        "stopOnFailure": true
+      }
+    },
+
+    {
+      "name": "test-make-zig-debug",
+      "displayName": "Test Debug (Zig cc, Make)",
+      "configurePreset": "make-zig-debug",
+      "output": {
+        "outputOnFailure": true
+      },
+      "execution": {
+        "noTestsAction": "error",
+        "stopOnFailure": true
+      }
+    }
+  ],
+
+  "workflowPresets": [
+    {
+      "name": "workflow-ci-gcc-debug",
+      "displayName": "CI (GCC Debug, Ninja)",
+      "steps": [
+        { "type": "configure", "name": "ninja-gcc-debug" },
+        { "type": "build", "name": "build-gcc-debug" },
+        { "type": "test", "name": "test-gcc-debug" }
+      ]
+    },
+    {
+      "name": "workflow-ci-gcc-release",
+      "displayName": "CI (GCC Release, Ninja)",
+      "steps": [
+        { "type": "configure", "name": "ninja-gcc-release" },
+        { "type": "build", "name": "build-gcc-release" }
+      ]
+    },
+    {
+      "name": "workflow-ci-clang-debug",
+      "displayName": "CI (Clang Debug, Ninja)",
+      "steps": [
+        { "type": "configure", "name": "ninja-clang-debug" },
+        { "type": "build", "name": "build-clang-debug" },
+        { "type": "test", "name": "test-clang-debug" }
+      ]
+    },
+    {
+      "name": "workflow-ci-clang-release",
+      "displayName": "CI (Clang Release, Ninja)",
+      "steps": [
+        { "type": "configure", "name": "ninja-clang-release" },
+        { "type": "build", "name": "build-clang-release" }
+      ]
+    },
+    {
+      "name": "workflow-ci-msvc-debug",
+      "displayName": "CI (MSVC Debug, Ninja)",
+      "steps": [
+        { "type": "configure", "name": "ninja-msvc-debug" },
+        { "type": "build", "name": "build-msvc-debug" },
+        { "type": "test", "name": "test-msvc-debug" }
+      ]
+    },
+    {
+      "name": "workflow-ci-msvc-release",
+      "displayName": "CI (MSVC Release, Ninja)",
+      "steps": [
+        { "type": "configure", "name": "ninja-msvc-release" },
+        { "type": "build", "name": "build-msvc-release" }
+      ]
+    },
+    {
+      "name": "workflow-ci-zig-debug",
+      "displayName": "CI (Zig cc Debug, Ninja)",
+      "steps": [
+        { "type": "configure", "name": "ninja-zig-debug" },
+        { "type": "build", "name": "build-zig-debug" },
+        { "type": "test", "name": "test-zig-debug" }
+      ]
+    },
+    {
+      "name": "workflow-ci-zig-release",
+      "displayName": "CI (Zig cc Release, Ninja)",
+      "steps": [
+        { "type": "configure", "name": "ninja-zig-release" },
+        { "type": "build", "name": "build-zig-release" }
+      ]
+    },
+
+    {
+      "name": "workflow-ci-make-debug",
+      "displayName": "CI (Debug, Make, default toolchain)",
+      "steps": [
+        { "type": "configure", "name": "make-debug" },
+        { "type": "build", "name": "build-make-debug" },
+        { "type": "test", "name": "test-make-debug" }
+      ]
+    },
+    {
+      "name": "workflow-ci-make-release",
+      "displayName": "CI (Release, Make, default toolchain)",
+      "steps": [
+        { "type": "configure", "name": "make-release" },
+        { "type": "build", "name": "build-make-release" }
+      ]
+    },
+    {
+      "name": "workflow-ci-make-gcc-debug",
+      "displayName": "CI (GCC Debug, Make)",
+      "steps": [
+        { "type": "configure", "name": "make-gcc-debug" },
+        { "type": "build", "name": "build-make-gcc-debug" },
+        { "type": "test", "name": "test-make-gcc-debug" }
+      ]
+    },
+    {
+      "name": "workflow-ci-make-gcc-release",
+      "displayName": "CI (GCC Release, Make)",
+      "steps": [
+        { "type": "configure", "name": "make-gcc-release" },
+        { "type": "build", "name": "build-make-gcc-release" }
+      ]
+    },
+    {
+      "name": "workflow-ci-make-clang-debug",
+      "displayName": "CI (Clang Debug, Make)",
+      "steps": [
+        { "type": "configure", "name": "make-clang-debug" },
+        { "type": "build", "name": "build-make-clang-debug" },
+        { "type": "test", "name": "test-make-clang-debug" }
+      ]
+    },
+    {
+      "name": "workflow-ci-make-clang-release",
+      "displayName": "CI (Clang Release, Make)",
+      "steps": [
+        { "type": "configure", "name": "make-clang-release" },
+        { "type": "build", "name": "build-make-clang-release" }
+      ]
+    },
+    {
+      "name": "workflow-ci-make-zig-debug",
+      "displayName": "CI (Zig cc Debug, Make)",
+      "steps": [
+        { "type": "configure", "name": "make-zig-debug" },
+        { "type": "build", "name": "build-make-zig-debug" },
+        { "type": "test", "name": "test-make-zig-debug" }
+      ]
+    },
+    {
+      "name": "workflow-ci-make-zig-release",
+      "displayName": "CI (Zig cc Release, Make)",
+      "steps": [
+        { "type": "configure", "name": "make-zig-release" },
+        { "type": "build", "name": "build-make-zig-release" }
+      ]
+    }
+  ],
+
+  "vendor": {
+    "example.com/ExampleIDE/1.0": {
+      "autoFormat": false
+    }
+  }
+}
