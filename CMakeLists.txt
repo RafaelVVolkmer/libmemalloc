@@ -15,10 +15,12 @@
 #   - Optional: Doxygen, gcovr, valgrind
 #
 # Options (cache):
-#   DOCS_EN     : BOOL  Generate Doxygen site (default: ON)
-#   GCOVR_DOCS  : BOOL  Publish coverage into the docs site (default: ON)
-#   TESTS_EN    : BOOL  Enable test tree (ctest) (default: ON)
-#   ASM_EN      : BOOL  Enable Assembly language (default: OFF)
+#   DOCS_EN                    : BOOL   Generate Doxygen site (default: ON)
+#   GCOVR_DOCS                 : BOOL   Publish coverage into the docs site (default: ON)
+#   TESTS_EN                   : BOOL   Enable test tree (ctest) (default: ON)
+#   ASM_EN                     : BOOL   Enable Assembly language (default: OFF)
+#   LIBMEMALLOC_ENABLE_COVERAGE: BOOL   Enable coverage instrumentation (default: OFF)
+#   LIBMEMALLOC_ENABLE_SANITIZERS: STRING Semicolon-separated sanitizers (e.g. "address;undefined;leak")
 #
 # Notes:
 #   - We let CMake control IPO/LTO via INTERPROCEDURAL_OPTIMIZATION_* (no -flto).
@@ -37,6 +39,14 @@ option(GCOVR_DOCS  "Publish coverage (gcovr) inside the Doxygen site"  ON)
 option(TESTS_EN    "Enable test tree (ctest)"                          ON)
 option(ASM_EN      "Enable Assembly language"                          OFF)
 
+# Coverage & sanitizers options (to be controlled by CMakePresets or manually)
+option(LIBMEMALLOC_ENABLE_COVERAGE
+       "Enable coverage instrumentation (gcov/llvm-cov)"               OFF)
+
+set(LIBMEMALLOC_ENABLE_SANITIZERS ""
+    CACHE STRING
+    "Semicolon-separated sanitizers (e.g. \"address;undefined;leak\")")
+
 # -----------------------------------------------------------------------------
 # 2. Core Settings & Modules
 # -----------------------------------------------------------------------------
@@ -46,7 +56,7 @@ include(CheckCSourceCompiles)
 include(ProcessorCount)
 
 if(TESTS_EN)
-	include(CTest)
+  include(CTest)
 endif()
 
 if(ASM_EN)
@@ -65,11 +75,11 @@ set(CMAKE_INTERPROCEDURAL_OPTIMIZATION_RELEASE ON)
 if(NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release CACHE STRING "Build type" FORCE)
   set_property(CACHE CMAKE_BUILD_TYPE PROPERTY
-																			STRINGS
-																			Debug
-																			Release
-																			RelWithDebInfo
-																			MinSizeeRel)
+               STRINGS
+               Debug
+               Release
+               RelWithDebInfo
+               MinSizeRel)
 endif()
 
 # -----------------------------------------------------------------------------
@@ -82,17 +92,17 @@ set(MIN_MSVC_VERSION  "19.20")
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
   if(CMAKE_C_COMPILER_VERSION VERSION_LESS ${MIN_GCC_VERSION})
     message(FATAL_ERROR "GCC >= ${MIN_GCC_VERSION}"
-						"required (found ${CMAKE_C_COMPILER_VERSION}).")
+                        "required (found ${CMAKE_C_COMPILER_VERSION}).")
   endif()
 elseif(CMAKE_C_COMPILER_ID STREQUAL "Clang")
   if(CMAKE_C_COMPILER_VERSION VERSION_LESS ${MIN_CLANG_VERSION})
     message(FATAL_ERROR "Clang >= ${MIN_CLANG_VERSION}"
-						"required (found ${CMAKE_C_COMPILER_VERSION}).")
+                        "required (found ${CMAKE_C_COMPILER_VERSION}).")
   endif()
 elseif(MSVC)
   if(CMAKE_C_COMPILER_VERSION VERSION_LESS ${MIN_MSVC_VERSION})
     message(FATAL_ERROR "MSVC >= ${MIN_MSVC_VERSION}"
-						"required (found ${CMAKE_C_COMPILER_VERSION}).")
+                        "required (found ${CMAKE_C_COMPILER_VERSION}).")
   endif()
 else()
   message(WARNING "Unrecognized compiler: ${CMAKE_C_COMPILER_ID}")
@@ -112,7 +122,7 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${OUTPUT_BIN_DIR}")
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${OUTPUT_BIN_DIR}")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${OUTPUT_BIN_DIR}")
 
-foreach(cfg Debug Release RelWithDebInfo MinSizeeRel)
+foreach(cfg Debug Release RelWithDebInfo MinSizeRel)
   string(TOUPPER "${cfg}" CFGU)
   set("CMAKE_ARCHIVE_OUTPUT_DIRECTORY_${CFGU}" "${OUTPUT_BIN_DIR}/${cfg}")
   set("CMAKE_LIBRARY_OUTPUT_DIRECTORY_${CFGU}" "${OUTPUT_BIN_DIR}/${cfg}")
@@ -125,44 +135,44 @@ endforeach()
 
 # -- Debug ---------------------------------------------------------------------
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-    add_compile_options(
-        # --- Optimization Level ---
-        -O0
+  add_compile_options(
+    # --- Optimization Level ---
+    -O0
 
-        # --- Debug Symbols & Frame Pointers ---
-        -g3
-        -ggdb
-        -fno-omit-frame-pointer
-        -fvar-tracking-assignments
-        -fdebug-prefix-map=${CMAKE_CURRENT_SOURCE_DIR}/src/=src/
-				-frecord-gcc-switches
+    # --- Debug Symbols & Frame Pointers ---
+    -g3
+    -ggdb
+    -fno-omit-frame-pointer
+    -fvar-tracking-assignments
+    -fdebug-prefix-map=${CMAKE_CURRENT_SOURCE_DIR}/src/=src/
+    -frecord-gcc-switches
 
-        # --- Inlining Control ---
-        -fno-inline
-        -fno-inline-functions
-        -fno-inline-functions-called-once
+    # --- Inlining Control ---
+    -fno-inline
+    -fno-inline-functions
+    -fno-inline-functions-called-once
 
-        # --- Strictness Overrides ---
-        -fno-strict-aliasing
-        -DDEBUG
+    # --- Strictness Overrides ---
+    -fno-strict-aliasing
+    -DDEBUG
 
-        # --- Auxiliary Info ---
-        -aux-info filename
+    # --- Auxiliary Info ---
+    -aux-info filename
+  )
+
+  if (CMAKE_C_COMPILER_ID STREQUAL "Clang"
+      OR (CMAKE_C_COMPILER_ID STREQUAL "GNU"
+          AND CMAKE_C_COMPILER_VERSION VERSION_GREATER_EQUAL "13.0"))
+    option(ENABLE_ANALYZER_DUMPS
+           "Write GCC analyzer dumps to files (not stderr)" OFF)
+
+    set(ANALYZER_FLAGS
+      -fanalyzer
+      -fanalyzer-verbosity=3
     )
 
-		if (CMAKE_C_COMPILER_ID STREQUAL "Clang"
-				OR (CMAKE_C_COMPILER_ID STREQUAL "GNU"
-						AND CMAKE_C_COMPILER_VERSION VERSION_GREATER_EQUAL "13.0"))
-			option(ENABLE_ANALYZER_DUMPS
-							"Write GCC analyzer dumps to files (not stderr)" OFF)
-
-			set(ANALYZER_FLAGS
-				-fanalyzer
-				-fanalyzer-verbosity=3
-			)
-
-			if (ENABLE_ANALYZER_DUMPS)
-				list(APPEND ANALYZER_FLAG
+    if (ENABLE_ANALYZER_DUMPS)
+      list(APPEND ANALYZER_FLAG
         -fanalyzer-fine-grained
         -fanalyzer-call-summaries
         -fanalyzer-transitivity
@@ -180,77 +190,105 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
         -fdump-analyzer-untracked
         -fdump-analyzer-stderr
       )
-			endif()
-
-      add_compile_options(${ANALYZER_FLAGS})
-
     endif()
 
-    if (NOT VALGRIND_EXECUTABLE)
-        set(SANITIZE_FLAGS
-            -fsanitize=address
-            -fsanitize=undefined
-            -fsanitize=leak
-            -fsanitize=alignment
-        )
+    add_compile_options(${ANALYZER_FLAGS})
 
-        add_compile_options(${SANITIZE_FLAGS})
-        add_link_options(${SANITIZE_FLAGS})
+  endif()
+
+  # --- Sanitizers (configurable via LIBMEMALLOC_ENABLE_SANITIZERS) ---
+  if (CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
+    set(SANITIZE_FLAGS "")
+
+    if (LIBMEMALLOC_ENABLE_SANITIZERS)
+      # Example: "address;undefined;leak" -> -fsanitize=address -fsanitize=undefined -fsanitize=leak
+      foreach(_san IN LISTS LIBMEMALLOC_ENABLE_SANITIZERS)
+        list(APPEND SANITIZE_FLAGS "-fsanitize=${_san}")
+      endforeach()
+    elseif (NOT VALGRIND_EXECUTABLE)
+      # Fallback to your previous defaults when no valgrind is available
+      list(APPEND SANITIZE_FLAGS
+        -fsanitize=address
+        -fsanitize=undefined
+        -fsanitize=leak
+        -fsanitize=alignment
+      )
     endif()
 
+    if (SANITIZE_FLAGS)
+      add_compile_options(${SANITIZE_FLAGS})
+      add_link_options(${SANITIZE_FLAGS})
+    endif()
+  endif()
 
-    set(CMAKE_EXE_LINKER_FLAGS
-				"${CMAKE_EXE_LINKER_FLAGS} -Wl,--gc-sections -flto")
-    set(CMAKE_SHARED_LINKER_FLAGS
-				"${CMAKE_SHARED_LINKER_FLAGS} -Wl,--gc-sections -flto")
+  set(CMAKE_EXE_LINKER_FLAGS
+      "${CMAKE_EXE_LINKER_FLAGS} -Wl,--gc-sections -flto")
+  set(CMAKE_SHARED_LINKER_FLAGS
+      "${CMAKE_SHARED_LINKER_FLAGS} -Wl,--gc-sections -flto")
 
 # -- Release -------------------------------------------------------------------
 elseif(CMAKE_BUILD_TYPE STREQUAL "Release")
-    add_compile_options(
-        # --- NDEBUG & Optimization ---
-        -DNDEBUG
-        -Ofast
-        -Os
+  add_compile_options(
+    # --- NDEBUG & Optimization ---
+    -DNDEBUG
+    -Ofast
+    -Os
 
-        # --- Math & Overflow ---
-				-fno-strict-overflow
+    # --- Math & Overflow ---
+    -fno-strict-overflow
 
-        # --- Frame Pointer & Inlining ---
-        -fomit-frame-pointer
-        -funroll-loops
+    # --- Frame Pointer & Inlining ---
+    -fomit-frame-pointer
+    -funroll-loops
 
-        # --- Exceptions & Unwind Tables ---
-        -fno-exceptions
-        -fno-unwind-tables
+    # --- Exceptions & Unwind Tables ---
+    -fno-exceptions
+    -fno-unwind-tables
 
-        # --- Stack & Data Sections ---
-        -fdata-sections
-        -ffunction-sections
+    # --- Stack & Data Sections ---
+    -fdata-sections
+    -ffunction-sections
 
-        # --- Debug Info Removal ---
-        -g0
-        -fno-ident
-        -fvisibility=hidden
+    # --- Debug Info Removal ---
+    -g0
+    -fno-ident
+    -fvisibility=hidden
 
-        # --- Common Flags ---
-        -fno-common
-    )
+    # --- Common Flags ---
+    -fno-common
+  )
 
-    set(CMAKE_EXE_LINKER_FLAGS
-				"${CMAKE_EXE_LINKER_FLAGS}    -Wl,--gc-sections -Wl,-O1 -Wl,-s")
-    set(CMAKE_SHARED_LINKER_FLAGS
-				"${CMAKE_SHARED_LINKER_FLAGS} -Wl,--gc-sections -Wl,-O1 -Wl,-s")
+  set(CMAKE_EXE_LINKER_FLAGS
+      "${CMAKE_EXE_LINKER_FLAGS}    -Wl,--gc-sections -Wl,-O1 -Wl,-s")
+  set(CMAKE_SHARED_LINKER_FLAGS
+      "${CMAKE_SHARED_LINKER_FLAGS} -Wl,--gc-sections -Wl,-O1 -Wl,-s")
+endif()
+
+# --- Coverage flags (LIBMEMALLOC_ENABLE_COVERAGE) -----------------------------
+if (LIBMEMALLOC_ENABLE_COVERAGE)
+  if (CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
+    # Typical gcov/llvm-cov friendly flags
+    add_compile_options(--coverage -fprofile-arcs -ftest-coverage)
+    add_link_options(--coverage -fprofile-arcs -ftest-coverage)
+
+    # LTO/IPO often causes trouble with coverage; disable IPO in this mode
+    set(CMAKE_INTERPROCEDURAL_OPTIMIZATION_RELEASE OFF)
+    message(STATUS "Coverage enabled: disabling IPO for Release builds.")
+  else()
+    message(WARNING
+      "LIBMEMALLOC_ENABLE_COVERAGE is ON, but coverage flags are only set for GCC/Clang.")
+  endif()
 endif()
 
 # -----------------------------------------------------------------------------
 # 6. Global Hardening & Warnings (per-compiler) + Platform Linker Settings
-# ----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 
 set(_FORTIFY_LVL 2)
 check_c_source_compiles("
   #include <features.h>
   #if !defined(__GLIBC__) || (__GLIBC__*100 + __GLIBC_MINOR__) < 235
-		#error FORTIFY3 not available
+    #error FORTIFY3 not available
   #endif
   int main(void){return 0;}
 " LIBMEMALLOC_HAVE_GLIBC_235)
@@ -261,120 +299,120 @@ endif()
 add_compile_options(-U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=${_FORTIFY_LVL})
 
 add_compile_options(
-    # --- Hardening / Security ---
-    -fstack-protector-strong
-		-fstack-clash-protection
-		-fno-delete-null-pointer-checks
-		-fwrapv
-    -Wpacked-bitfield-compat
-    -Wpacked-not-aligned
-    -Waddress-of-packed-member
-    -Wpadded
-    -Wformat-security
-    -Werror=format-security
+  # --- Hardening / Security ---
+  -fstack-protector-strong
+  -fstack-clash-protection
+  -fno-delete-null-pointer-checks
+  -fwrapv
+  -Wpacked-bitfield-compat
+  -Wpacked-not-aligned
+  -Waddress-of-packed-member
+  -Wpadded
+  -Wformat-security
+  -Werror=format-security
 
-    # --- Link Time Optimization & Linker Flags ---
-    -flto
-    -fuse-linker-plugin
-    -Wl,--as-needed
+  # --- Link Time Optimization & Linker Flags ---
+  -flto
+  -fuse-linker-plugin
+  -Wl,--as-needed
 
-    # --- ABI, Data Layout & Conventions ---
-    -fsso-struct=little-endian
-    -fsigned-bitfields
-    -fsigned-char
-    -fcond-mismatch
-    -fno-common
+  # --- ABI, Data Layout & Conventions ---
+  -fsso-struct=little-endian
+  -fsigned-bitfields
+  -fsigned-char
+  -fcond-mismatch
+  -fno-common
 
-    # --- Optimization & Static Analysis ---
-    -fstrict-aliasing
-    -fanalyzer
+  # --- Optimization & Static Analysis ---
+  -fstrict-aliasing
+  -fanalyzer
 
-    # --- Basic Code Quality Warnings ---
-    -Wall
-    -Wextra
-    -Wpedantic
-    -Werror
-    -Wshadow=global
-    -Wshadow=local
+  # --- Basic Code Quality Warnings ---
+  -Wall
+  -Wextra
+  -Wpedantic
+  -Werror
+  -Wshadow=global
+  -Wshadow=local
 
-    # --- Casting & Type Safety ---
-    -Wbad-function-cast
-    -Wcast-function-type
-    -Wcast-align
-    -Wcast-qual
+  # --- Casting & Type Safety ---
+  -Wbad-function-cast
+  -Wcast-function-type
+  -Wcast-align
+  -Wcast-qual
 
-    # --- Numeric Conversions ---
-    -Wconversion
-    -Warith-conversion
-    -Wsign-conversion
+  # --- Numeric Conversions ---
+  -Wconversion
+  -Warith-conversion
+  -Wsign-conversion
 
-    # --- Initialization & Variable Usage ---
-    -Wuninitialized
-    -Wmaybe-uninitialized
-    -Winit-self
-    -Wclobbered
-    -Wunused-parameter
-    -Wunused-result
+  # --- Initialization & Variable Usage ---
+  -Wuninitialized
+  -Wmaybe-uninitialized
+  -Winit-self
+  -Wclobbered
+  -Wunused-parameter
+  -Wunused-result
 
-    # --- Prototypes, Declarations & Linking ---
-    -Wstrict-prototypes
-    -Wmissing-prototypes
-    -Wmissing-declarations
-    -Wnested-externs
-    -Wunused-function
+  # --- Prototypes, Declarations & Linking ---
+  -Wstrict-prototypes
+  -Wmissing-prototypes
+  -Wmissing-declarations
+  -Wnested-externs
+  -Wunused-function
 
-    # --- Pointers & Pointer Arithmetic ---
-    -Wpointer-arith
-    -Waddress
-    -Walloca
-    -Wfree-nonheap-object
-    -Wrestrict
-    -Wnonnull
+  # --- Pointers & Pointer Arithmetic ---
+  -Wpointer-arith
+  -Waddress
+  -Walloca
+  -Wfree-nonheap-object
+  -Wrestrict
+  -Wnonnull
 
-    # --- Format String Checks (printf/scanf) ---
-    -Wformat=2
-    -Wformat-overflow=2
-    -Wformat-truncation=2
-    -Wformat-signedness
-    -Wformat-y2k
-    -Wmissing-format-attribute
+  # --- Format String Checks (printf/scanf) ---
+  -Wformat=2
+  -Wformat-overflow=2
+  -Wformat-truncation=2
+  -Wformat-signedness
+  -Wformat-y2k
+  -Wmissing-format-attribute
 
-    # --- Control Flow & Resource Usage ---
-    -Wunreachable-code
-    -Wsequence-point
-    -Wjump-misses-init
-    -Wstack-usage=8192
-    -Wfloat-equal
-    -Wdouble-promotion
-    -Wwrite-strings
+  # --- Control Flow & Resource Usage ---
+  -Wunreachable-code
+  -Wsequence-point
+  -Wjump-misses-init
+  -Wstack-usage=8192
+  -Wfloat-equal
+  -Wdouble-promotion
+  -Wwrite-strings
 
-    # --- Redundancies & Unused Declarations ---
-    -Wredundant-decls
+  # --- Redundancies & Unused Declarations ---
+  -Wredundant-decls
 
-    # --- Switch Statements & Case Coverage ---
-    -Wswitch-default
-    -Wswitch-enum
+  # --- Switch Statements & Case Coverage ---
+  -Wswitch-default
+  -Wswitch-enum
 
-    # --- Duplicate Code & Logical Checks ---
-    -Wduplicated-cond
-    -Wduplicated-branches
-    -Wlogical-op
+  # --- Duplicate Code & Logical Checks ---
+  -Wduplicated-cond
+  -Wduplicated-branches
+  -Wlogical-op
 
-    # --- Performance & Vectorization Warnings ---
-    -Wunsafe-loop-optimizations
-    -Wvector-operation-performance
+  # --- Performance & Vectorization Warnings ---
+  -Wunsafe-loop-optimizations
+  -Wvector-operation-performance
 
-    # --- Other Useful Warnings ---
-    -Wvla
-    -Wempty-body
-    -Wdate-time
-    -Winvalid-pch
-    -Wtrigraphs
-    -Wundef
-    -Wsuggest-attribute=format
-    -Wsuggest-attribute=noreturn
-    -Wdeprecated
-    -Wno-deprecated-declarations
+  # --- Other Useful Warnings ---
+  -Wvla
+  -Wempty-body
+  -Wdate-time
+  -Winvalid-pch
+  -Wtrigraphs
+  -Wundef
+  -Wsuggest-attribute=format
+  -Wsuggest-attribute=noreturn
+  -Wdeprecated
+  -Wno-deprecated-declarations
 )
 
 if (MSVC)
@@ -404,7 +442,7 @@ if (UNIX AND NOT APPLE AND NOT MSVC AND CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
     -Wl,-z,separate-code
     -Wl,--as-needed
     -Wl,-z,defs
-		-Wl,--build-id=sha1
+    -Wl,--build-id=sha1
   )
 endif()
 
@@ -412,13 +450,13 @@ endif()
 check_c_compiler_flag("-fcf-protection=full" HAVE_CET)
 if(HAVE_CET AND CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64|amd64")
   add_compile_options(
-		-fcf-protection=full
-		-fno-plt
-	)
+    -fcf-protection=full
+    -fno-plt
+  )
   add_link_options(
-		-Wl,-z,cet-report=error
-		-Wl,-z,shstk
-	)
+    -Wl,-z,cet-report=error
+    -Wl,-z,shstk
+  )
 endif()
 
 # AArch64 MTE/BTI
@@ -451,25 +489,25 @@ endif()
 add_compile_options($<$<STREQUAL:$<TARGET_PROPERTY:TYPE>,EXECUTABLE>:-fPIE>)
 add_link_options($<$<STREQUAL:$<TARGET_PROPERTY:TYPE>,EXECUTABLE>:-pie>)
 
-# ----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 # 7. Include Subdirectories and Enable Testing
-# ----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 add_subdirectory(src)
 
 if (TESTS_EN)
-	if (BUILD_TESTING)
-		enable_testing()
-		add_subdirectory(tests)
-	endif()
+  if (BUILD_TESTING)
+    enable_testing()
+    add_subdirectory(tests)
+  endif()
 endif()
 
 if (DOCS_EN)
-	add_subdirectory(doxygen)
+  add_subdirectory(doxygen)
 endif()
 
-# ----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 # 8. Informational Output
-# ----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 get_filename_component(COMPILER_NAME ${CMAKE_C_COMPILER} NAME)
 
 ProcessorCount(NPROC)
@@ -486,51 +524,51 @@ endif()
 
 message(STATUS "")
 message(STATUS
-				"${ANSI_BLUE}"
-				"====================================================================="
-				"${ANSI_RESET}")
+        "${ANSI_BLUE}"
+        "====================================================================="
+        "${ANSI_RESET}")
 message(STATUS
-				"${ANSI_RESET}"
-				"  Project:        "
-				"${ANSI_MAGENTA}${PROJECT_NAME}${ANSI_RESET}")
+        "${ANSI_RESET}"
+        "  Project:        "
+        "${ANSI_MAGENTA}${PROJECT_NAME}${ANSI_RESET}")
 message(STATUS
-				"${ANSI_RESET}"
-				"  Build type:     "
-				"${ANSI_GREEN}${CMAKE_BUILD_TYPE}${ANSI_RESET}")
+        "${ANSI_RESET}"
+        "  Build type:     "
+        "${ANSI_GREEN}${CMAKE_BUILD_TYPE}${ANSI_RESET}")
 message(STATUS
-				"${ANSI_BLUE}"
-				"====================================================================="
-				"${ANSI_RESET}")
+        "${ANSI_BLUE}"
+        "====================================================================="
+        "${ANSI_RESET}")
 message(STATUS
-				"${ANSI_RESET}"
-				"  Compiler:       "
-				"${ANSI_GREEN}${CMAKE_C_COMPILER_ID}"
-				"${COMPILER_NAME}"
-				"V${CMAKE_C_COMPILER_VERSION}${ANSI_RESET}")
+        "${ANSI_RESET}"
+        "  Compiler:       "
+        "${ANSI_GREEN}${CMAKE_C_COMPILER_ID}"
+        "${COMPILER_NAME}"
+        "V${CMAKE_C_COMPILER_VERSION}${ANSI_RESET}")
 message(STATUS
-				"${ANSI_RESET}"
-				"  C Standard:     "
-				"${ANSI_GREEN}C${CMAKE_C_STANDARD}${ANSI_RESET}")
+        "${ANSI_RESET}"
+        "  C Standard:     "
+        "${ANSI_GREEN}C${CMAKE_C_STANDARD}${ANSI_RESET}")
 message(STATUS
-				"${ANSI_RESET}"
-				"  CMake Version:  "
-				"${ANSI_GREEN}${CMAKE_VERSION}${ANSI_RESET}")
+        "${ANSI_RESET}"
+        "  CMake Version:  "
+        "${ANSI_GREEN}${CMAKE_VERSION}${ANSI_RESET}")
 message(STATUS
-				"${ANSI_RESET}"
-				"  Generator:      "
-				"${ANSI_GREEN}${CMAKE_GENERATOR}${ANSI_RESET}")
+        "${ANSI_RESET}"
+        "  Generator:      "
+        "${ANSI_GREEN}${CMAKE_GENERATOR}${ANSI_RESET}")
 message(STATUS
-				"${ANSI_BLUE}"
-				"====================================================================="
-				"${ANSI_RESET}")
+        "${ANSI_BLUE}"
+        "====================================================================="
+        "${ANSI_RESET}")
 message(STATUS
-				"${ANSI_RESET}"
-				"  System arch:    "
-				"${ANSI_GREEN}${CMAKE_SYSTEM_PROCESSOR}${ANSI_RESET}")
+        "${ANSI_RESET}"
+        "  System arch:    "
+        "${ANSI_GREEN}${CMAKE_SYSTEM_PROCESSOR}${ANSI_RESET}")
 message(STATUS
-				"${ANSI_RESET}"
-				"  Host arch:      "
-				"${ANSI_GREEN}${CMAKE_HOST_SYSTEM_PROCESSOR}${ANSI_RESET}")
+        "${ANSI_RESET}"
+        "  Host arch:      "
+        "${ANSI_GREEN}${CMAKE_HOST_SYSTEM_PROCESSOR}${ANSI_RESET}")
 
 if (CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
   execute_process(
@@ -539,25 +577,25 @@ if (CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
     OUTPUT_STRIP_TRAILING_WHITESPACE
   )
   message(STATUS
-					"${ANSI_RESET}"
-					"  Target triple:  "
-					"${ANSI_GREEN}${_TARGET_TRIPLE}${ANSI_RESET}")
+          "${ANSI_RESET}"
+          "  Target triple:  "
+          "${ANSI_GREEN}${_TARGET_TRIPLE}${ANSI_RESET}")
 endif()
 
 message(STATUS
-					"${ANSI_RESET}"
-					"  OS:             "
-					"${ANSI_GREEN}${CMAKE_SYSTEM_NAME}"
-					"(${CMAKE_SYSTEM_VERSION})${ANSI_RESET}")
+        "${ANSI_RESET}"
+        "  OS:             "
+        "${ANSI_GREEN}${CMAKE_SYSTEM_NAME}"
+        "(${CMAKE_SYSTEM_VERSION})${ANSI_RESET}")
 message(STATUS
-				"${ANSI_BLUE}"
-				"====================================================================="
-				"${ANSI_RESET}")
+        "${ANSI_BLUE}"
+        "====================================================================="
+        "${ANSI_RESET}")
 
 # Valgrind
 if (VALGRIND_EXECUTABLE)
 
-  set(_VALGRIND_VER "unknownn")
+  set(_VALGRIND_VER "unknown")
   execute_process(
     COMMAND "${VALGRIND_EXECUTABLE}" --version
     OUTPUT_VARIABLE _vout
@@ -570,27 +608,27 @@ if (VALGRIND_EXECUTABLE)
     set(_vtext "${_vout}${_verr}")
     string(REGEX MATCH "[0-9]+(\\.[0-9]+)+" _VALGRIND_VER "${_vtext}")
     if(_VALGRIND_VER STREQUAL "")
-      set(_VALGRIND_VER "unknownn")
+      set(_VALGRIND_VER "unknown")
     endif()
   endif()
 
   message(STATUS
-					"${ANSI_RESET}"
-					"  Valgrind:       "
-					"${ANSI_GREEN}${VALGRIND_EXECUTABLE}${ANSI_RESET}"
-					" ${ANSI_GREEN}(v${_VALGRIND_VER})${ANSI_RESET}")
+          "${ANSI_RESET}"
+          "  Valgrind:       "
+          "${ANSI_GREEN}${VALGRIND_EXECUTABLE}${ANSI_RESET}"
+          " ${ANSI_GREEN}(v${_VALGRIND_VER})${ANSI_RESET}")
 else()
-    message(STATUS
-					"${ANSI_RESET}"
-					"  Valgrind:       "
-					"${ANSI_RED}<not found>"
-					" (running tests without memcheck)${ANSI_RESET}")
+  message(STATUS
+          "${ANSI_RESET}"
+          "  Valgrind:       "
+          "${ANSI_RED}<not found>"
+          " (running tests without memcheck)${ANSI_RESET}")
 endif()
 
 # Doxygen
 if (DOXYGEN_EXECUTABLE)
 
- set(_DOXY_VER "unknownn")
+  set(_DOXY_VER "unknown")
   execute_process(
     COMMAND "${DOXYGEN_EXECUTABLE}" --version
     OUTPUT_VARIABLE _dout
@@ -603,27 +641,27 @@ if (DOXYGEN_EXECUTABLE)
     set(_dtext "${_dout}${_derr}")
     string(REGEX MATCH "[0-9]+(\\.[0-9]+)+" _DOXY_VER "${_dtext}")
     if(_DOXY_VER STREQUAL "")
-      set(_DOXY_VER "unknownn")
+      set(_DOXY_VER "unknown")
     endif()
   endif()
 
   message(STATUS
-					"${ANSI_RESET}"
-					"  Doxygen:        "
-					"${ANSI_GREEN}${DOXYGEN_EXECUTABLE}${ANSI_RESET}"
-					" ${ANSI_GREEN}(v${_DOXY_VER})${ANSI_RESET}")
+          "${ANSI_RESET}"
+          "  Doxygen:        "
+          "${ANSI_GREEN}${DOXYGEN_EXECUTABLE}${ANSI_RESET}"
+          " ${ANSI_GREEN}(v${_DOXY_VER})${ANSI_RESET}")
 else()
-    message(STATUS
-					"${ANSI_RESET}"
-					"  Doxygen:        "
-					"${ANSI_RED}<not found>"
-					" (skip docs)${ANSI_RESET}")
+  message(STATUS
+          "${ANSI_RESET}"
+          "  Doxygen:        "
+          "${ANSI_RED}<not found>"
+          " (skip docs)${ANSI_RESET}")
 endif()
 
 # Gcovr (llvm-cov backend when using Clang)
 if (GCOVR_EXECUTABLE)
 
-  set(_GCOVR_VER "unknownn")
+  set(_GCOVR_VER "unknown")
   execute_process(
     COMMAND "${GCOVR_EXECUTABLE}" --version
     OUTPUT_VARIABLE _gout
@@ -636,7 +674,7 @@ if (GCOVR_EXECUTABLE)
     set(_gtext "${_gout}${_gerr}")
     string(REGEX MATCH "[0-9]+(\\.[0-9]+)+" _GCOVR_VER "${_gtext}")
     if(_GCOVR_VER STREQUAL "")
-      set(_GCOVR_VER "unknownn")
+      set(_GCOVR_VER "unknown")
     endif()
   endif()
 
@@ -644,7 +682,7 @@ if (GCOVR_EXECUTABLE)
   if(CMAKE_C_COMPILER_ID STREQUAL "Clang")
     find_program(LLVM_COV_EXECUTABLE NAMES llvm-cov)
     if(LLVM_COV_EXECUTABLE)
-      set(_LLVM_COV_VER "unknownn")
+      set(_LLVM_COV_VER "unknown")
       execute_process(
         COMMAND "${LLVM_COV_EXECUTABLE}" --version
         OUTPUT_VARIABLE _lc_out
@@ -657,42 +695,42 @@ if (GCOVR_EXECUTABLE)
         set(_lctext "${_lc_out}${_lc_err}")
         string(REGEX MATCH "[0-9]+(\\.[0-9]+)+" _LLVM_COV_VER "${_lctext}")
         if(_LLVM_COV_VER STREQUAL "")
-          set(_LLVM_COV_VER "unknownn")
+          set(_LLVM_COV_VER "unknown")
         endif()
       endif()
       set(_GCOV_BACKEND_STR
-					"  ${ANSI_RESET}"
-					"[backend: ${ANSI_GREEN}llvm-cov"
-					"gcov v${_LLVM_COV_VER}${ANSI_RESET}]")
+          "  ${ANSI_RESET}"
+          "[backend: ${ANSI_GREEN}llvm-cov"
+          "gcov v${_LLVM_COV_VER}${ANSI_RESET}]")
     endif()
   endif()
 
   message(STATUS
-					"${ANSI_RESET}"
-					"  Gcovr:          "
-					"${ANSI_GREEN}${GCOVR_EXECUTABLE}${ANSI_RESET}"
-					" ${ANSI_GREEN}(v${_GCOVR_VER})${ANSI_RESET}${_GCOV_BACKEND_STR}")
+          "${ANSI_RESET}"
+          "  Gcovr:          "
+          "${ANSI_GREEN}${GCOVR_EXECUTABLE}${ANSI_RESET}"
+          " ${ANSI_GREEN}(v${_GCOVR_VER})${ANSI_RESET}${_GCOV_BACKEND_STR}")
 else()
   message(STATUS
-					"${ANSI_RESET}"
-					"  Gcovr:          "
-					" ${ANSI_RED}<not found>${ANSI_RESET}")
+          "${ANSI_RESET}"
+          "  Gcovr:          "
+          " ${ANSI_RED}<not found>${ANSI_RESET}")
 endif()
 
 message(STATUS
-				"${ANSI_BLUE}"
-				"====================================================================="
-				"${ANSI_RESET}")
+        "${ANSI_BLUE}"
+        "====================================================================="
+        "${ANSI_RESET}")
 message(STATUS
-				"${ANSI_RESET}"
-				"  Parallel Jobs:  "
-				"${ANSI_GREEN}${NPROC}${ANSI_RESET}")
+        "${ANSI_RESET}"
+        "  Parallel Jobs:  "
+        "${ANSI_GREEN}${NPROC}${ANSI_RESET}")
 message(STATUS
-				"${ANSI_RESET}"
-				"  Binaries in:    "
-				"${ANSI_GREEN}${OUTPUT_BIN_DIR}${ANSI_RESET}")
+        "${ANSI_RESET}"
+        "  Binaries in:    "
+        "${ANSI_GREEN}${OUTPUT_BIN_DIR}${ANSI_RESET}")
 message(STATUS
-				"${ANSI_BLUE}"
-				"====================================================================="
-				"${ANSI_RESET}")
+        "${ANSI_BLUE}"
+        "====================================================================="
+        "${ANSI_RESET}")
 message(STATUS "")
