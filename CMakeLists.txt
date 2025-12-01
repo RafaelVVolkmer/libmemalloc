@@ -105,12 +105,19 @@ find_package(Doxygen QUIET)
 # -----------------------------------------------------------------------------
 # 4. Output Folders (normalized to bin/<Config>)
 # -----------------------------------------------------------------------------
-set(OUTPUT_BIN_DIR "${CMAKE_SOURCE_DIR}/bin/${CMAKE_BUILD_TYPE}")
+set(OUTPUT_BIN_DIR "${CMAKE_SOURCE_DIR}/bin")
 file(MAKE_DIRECTORY "${OUTPUT_BIN_DIR}")
 
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${OUTPUT_BIN_DIR}")
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${OUTPUT_BIN_DIR}")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${OUTPUT_BIN_DIR}")
+
+foreach(cfg Debug Release RelWithDebInfo MinSizeRel)
+  string(TOUPPER "${cfg}" CFGU)
+  set("CMAKE_ARCHIVE_OUTPUT_DIRECTORY_${CFGU}" "${OUTPUT_BIN_DIR}/${cfg}")
+  set("CMAKE_LIBRARY_OUTPUT_DIRECTORY_${CFGU}" "${OUTPUT_BIN_DIR}/${cfg}")
+  set("CMAKE_RUNTIME_OUTPUT_DIRECTORY_${CFGU}" "${OUTPUT_BIN_DIR}/${cfg}")
+endforeach()
 
 # -----------------------------------------------------------------------------
 # 5. Build-Type Flags (safe per-compiler)
