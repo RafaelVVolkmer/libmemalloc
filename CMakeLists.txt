@@ -5,6 +5,7 @@ project(libmemalloc C)
 # 1) User Options
 # -----------------------------------------------------------------------------
 option(DOCS_EN     "Generate Doxygen site (subdir doxygen/)"           ON)
+option(GCOVR_DOCS  "Publish coverage (gcovr) inside the Doxygen site"  ON)
 option(TESTS_EN    "Enable test tree (ctest)"                          ON)
 option(ASM_EN      "Enable Assembly language"                          OFF)
 
@@ -65,6 +66,7 @@ else()
 endif()
 
 find_program(VALGRIND_EXECUTABLE NAMES valgrind)
+find_program(GCOVR_EXECUTABLE    NAMES gcovr)
 find_package(Doxygen QUIET)
 
 # ----------------------------------------------------------------------------
@@ -78,7 +80,6 @@ file(MAKE_DIRECTORY "${OUTPUT_BIN_DIR}")
 
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${OUTPUT_BIN_DIR}")
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${OUTPUT_BIN_DIR}")
-
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${OUTPUT_BIN_DIR}")
 
 # -----------------------------------------------------------------------------
@@ -514,6 +515,55 @@ if (DOXYGEN_EXECUTABLE)
   message(STATUS "${ANSI_RESET}  Doxygen:        ${ANSI_GREEN}${DOXYGEN_EXECUTABLE}${ANSI_RESET}  ${ANSI_GREEN}(v${_DOXY_VER})${ANSI_RESET}")
 else()
     message(STATUS "${ANSI_RESET}  Doxygen:        ${ANSI_RED}<not found>  (skip docs)${ANSI_RESET}")
+endif()
+
+# Gcovr (llvm-cov backend when using Clang)
+if (GCOVR_EXECUTABLE)
+
+  set(_GCOVR_VER "unknown")
+  execute_process(
+    COMMAND "${GCOVR_EXECUTABLE}" --version
+    OUTPUT_VARIABLE _gout
+    ERROR_VARIABLE  _gerr
+    RESULT_VARIABLE _gres
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+    ERROR_STRIP_TRAILING_WHITESPACE
+  )
+  if(_gres EQUAL 0)
+    set(_gtext "${_gout}${_gerr}")
+    string(REGEX MATCH "[0-9]+(\\.[0-9]+)+" _GCOVR_VER "${_gtext}")
+    if(_GCOVR_VER STREQUAL "")
+      set(_GCOVR_VER "unknown")
+    endif()
+  endif()
+
+  set(_GCOV_BACKEND_STR "")
+  if(CMAKE_C_COMPILER_ID STREQUAL "Clang")
+    find_program(LLVM_COV_EXECUTABLE NAMES llvm-cov)
+    if(LLVM_COV_EXECUTABLE)
+      set(_LLVM_COV_VER "unknown")
+      execute_process(
+        COMMAND "${LLVM_COV_EXECUTABLE}" --version
+        OUTPUT_VARIABLE _lc_out
+        ERROR_VARIABLE  _lc_err
+        RESULT_VARIABLE _lc_res
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+        ERROR_STRIP_TRAILING_WHITESPACE
+      )
+      if(_lc_res EQUAL 0)
+        set(_lctext "${_lc_out}${_lc_err}")
+        string(REGEX MATCH "[0-9]+(\\.[0-9]+)+" _LLVM_COV_VER "${_lctext}")
+        if(_LLVM_COV_VER STREQUAL "")
+          set(_LLVM_COV_VER "unknown")
+        endif()
+      endif()
+      set(_GCOV_BACKEND_STR "  ${ANSI_RESET}[backend: ${ANSI_GREEN}llvm-cov gcov v${_LLVM_COV_VER}${ANSI_RESET}]")
+    endif()
+  endif()
+
+  message(STATUS "${ANSI_RESET}  Gcovr:          ${ANSI_GREEN}${GCOVR_EXECUTABLE}${ANSI_RESET}  ${ANSI_GREEN}(v${_GCOVR_VER})${ANSI_RESET}${_GCOV_BACKEND_STR}")
+else()
+  message(STATUS "${ANSI_RESET}  Gcovr:          ${ANSI_RED}<not found>${ANSI_RESET}")
 endif()
 
 message(STATUS "${ANSI_BLUE}=====================================================================${ANSI_RESET}")
