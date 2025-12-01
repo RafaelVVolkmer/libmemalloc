@@ -232,7 +232,7 @@ INLINE_SIMPLE_STRUCTS    = NO     # don’t inline simple structs
 TAB_SIZE                 = 4      # code block tab width
 AUTOLINK_SUPPORT         = YES    # automatically link URLs
 MARKDOWN_ID_STYLE        = DOXYGEN # style for generated IDs
-ALIASES                  =        # no custom command aliase
+ALIASES                  =        # no custom command aliases
 
 # ==============================================================================
 # SEARCH & INDEXING

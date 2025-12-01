@@ -42,12 +42,12 @@ libmemalloc is a comprehensive, drop-in C memory management library that elevate
 
 int main(void)
 {
-  int ret = EXIT_SUCESS;
+  int ret = EXIT_SUCCESS;
 
   mem_allocator_t allocator;
 
   ret = MEM_allocatorInit(&allocator);
-  if (ret != EXIT_SUCESS)
+  if (ret != EXIT_SUCCESS)
     return ret;
 
   void *buf1 = MEM_allocMallocFirstFit(&allocator, 1024, "buffer1");
