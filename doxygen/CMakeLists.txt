@@ -1,3 +1,5 @@
+cmake_minimum_required(VERSION 3.24)
+
 if (DOXYGEN_EXECUTABLE)
 
     if(POLICY CMP0135)
