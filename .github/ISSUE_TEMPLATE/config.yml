@@ -1,0 +1,19 @@
+blank_issues_enabled: false
+
+contact_links:
+  - name: 🔒 Report a security vulnerability
+    url: mailto:rafael.v.volkmer@gmail.com
+    about: >
+      For potential security issues (heap corruption, use-after-free, double free,
+      out-of-bounds access, or other exploitable behavior), please contact the
+      maintainer privately first instead of opening a public issue.
+
+  - name: 💬 Questions and general discussion
+    url: https://github.com/RafaelVVolkmer/libmemalloc/discussions
+    about: >
+      For usage questions, design discussions, and general feedback about libmemalloc,
+      please use GitHub Discussions instead of opening an issue.
+
+  - name: 📚 Documentation / Website
+    url: https://rafaelvvolkmer.github.io/libmemalloc/
+    about: Documentation, examples and project overview.
