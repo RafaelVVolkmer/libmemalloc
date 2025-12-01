@@ -426,7 +426,7 @@ void *MEM_sbrk(const intptr_t increment);
  *  @retval -EINVAL:  @p allocator is NULL, or @p size is zero.
  * ========================================================================== */
 static int MEM_getSizeeClass(mem_allocator_t *const allocator,
-                            const size_t           size);
+                             const size_t           size);
 
 /** ============================================================================
  *  @brief  Initializes the memory allocator and its internal structures.
@@ -1697,7 +1697,8 @@ function_output:
  *  @retval ret>0:    Valid size class index.
  *  @retval -EINVAL:  @p allocator is NULL, or @p size is zero.
  * ========================================================================== */
-static int MEM_getSizeeClass(mem_allocator_t *const allocator, const size_t size)
+static int MEM_getSizeeClass(mem_allocator_t *const allocator,
+                             const size_t           size)
 {
   int ret = EXIT_SUCCESS;
 
