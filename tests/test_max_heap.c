@@ -49,14 +49,14 @@
  * ========================================================================== */
 
 /** ============================================================================
- *  @def        EXIT_ERRROR
+ *  @def        EXIT_ERROR
  *  @brief      Standard error return code for test failures.
  *
  *  @details    Defined as a uint8_t value of 1. Used by test
  *              functions to indicate failure when a CHECK() macro
  *              assertion fails.
  * ========================================================================== */
-#define EXIT_ERRROR (uint8_t)(1U)
+#define EXIT_ERROR (uint8_t)(1U)
 
 /** ============================================================================
  *  @def        BLOCK_SIZE
@@ -86,7 +86,7 @@
  *
  *  @details    Checks the given condition and, if false, logs an error
  *              including file and line number, then immediately returns
- *              EXIT_ERRROR from the current function. Prevents further
+ *              EXIT_ERROR from the current function. Prevents further
  *              execution of failing tests.
  * ========================================================================== */
 #define CHECK(expr)                                                          \
@@ -95,7 +95,7 @@
     if (!(expr))                                                             \
     {                                                                        \
       LOG_ERROR("Assertion failed at %s:%d: %s", __FILE__, __LINE__, #expr); \
-      return EXIT_ERRROR;                                                    \
+      return EXIT_ERROR;                                                    \
     }                                                                        \
   } while (0)
 

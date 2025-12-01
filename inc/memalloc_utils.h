@@ -163,7 +163,7 @@ extern "C"
 
   /* Generic fallback */
   #else
-    #error "[ERROR] Unknow Architecture: check 'ARCH_ALIGNMENT'"
+    #error "[ERROR] Unknown Architecture: check 'ARCH_ALIGNMENT'"
   #endif
 #endif
 
@@ -246,7 +246,7 @@ extern "C"
         __attribute__((scalar_storage_order("little-endian"), \
                        aligned(ARCH_ALIGNMENT)))
     #else
-      #error "[ERROR] Unknow Endianness: check '__BYTE_ORDER__'"
+      #error "[ERROR] Unknown Endianness: check '__BYTE_ORDER__'"
     #endif
   #else
     #define __ALIGN

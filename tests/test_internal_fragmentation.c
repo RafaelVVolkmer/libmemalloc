@@ -51,14 +51,14 @@
 #define FILL_PATTERN (uint8_t)(0xAAU)
 
 /** ============================================================================
- *  @def        EXIT_ERRROR
+ *  @def        EXIT_ERROR
  *  @brief      Standard error return code for test failures.
  *
  *  @details    Defined as a uint8_t value of 1 to indicate any
  *              assertion or test step failure within the test suite.
  *              Returned by test functions when a CHECK() fails.
  * ========================================================================== */
-#define EXIT_ERRROR  (uint8_t)(1U)
+#define EXIT_ERROR  (uint8_t)(1U)
 
 /** ============================================================================
  *  @def        CHECK(expr)
@@ -68,7 +68,7 @@
  *
  *  @details    Evaluates the given expression and, if false,
  *              logs an error with file and line information,
- *              then returns EXIT_ERRROR from the current function.
+ *              then returns EXIT_ERROR from the current function.
  *              Ensures immediate test termination on failure.
  * ========================================================================== */
 #define CHECK(expr)                                                          \
@@ -77,7 +77,7 @@
     if (!(expr))                                                             \
     {                                                                        \
       LOG_ERROR("Assertion failed at %s:%d: %s", __FILE__, __LINE__, #expr); \
-      return EXIT_ERRROR;                                                    \
+      return EXIT_ERROR;                                                    \
     }                                                                        \
   } while (0)
 
@@ -86,14 +86,14 @@
  * ========================================================================== */
 
 /** ============================================================================
- *  @enum   SizeConstants
+ *  @enum   SizeeConstants
  *  @brief  Named constants for each test allocation size.
  *
  *  @details
  *    Maps each ordinal in the `sizes[]` vector to its actual byte value,
  *    so you can refer to `SIZE_FOURTEENTH_ORDER` for the 128-byte case, etc.
  * ========================================================================== */
-typedef enum SizeConstants
+typedef enum SizeeConstants
 {
   SIZE_FIRST_ORDER      = (uint8_t)(1u),   /**< sizes[0]  ==   1 byte   */
   SIZE_SECOND_ORDER     = (uint8_t)(2u),   /**< sizes[1]  ==   2 bytes  */
@@ -119,10 +119,10 @@ typedef enum SizeConstants
  *  @fn         TEST_internalFragmentation
  *  @brief      Exercises allocations of varied small sizes.
  *
- *  @return     EXIT_SUCCESS on success, EXIT_ERRROR on failure.
+ *  @return     EXIT_SUCCESS on success, EXIT_ERROR on failure.
  *
  *  @retval     EXIT_SUCCESS  All allocations, writes, and frees succeeded.
- *  @retval     EXIT_ERRROR   Any allocation, alignment, write, or free failed.
+ *  @retval     EXIT_ERROR   Any allocation, alignment, write, or free failed.
  * ========================================================================== */
 static int TEST_internalFragmentation(void);
 
@@ -149,10 +149,10 @@ int main(void)
  *  @fn         TEST_internalFragmentation
  *  @brief      Exercises allocations of varied small sizes.
  *
- *  @return     EXIT_SUCCESS on success, EXIT_ERRROR on failure.
+ *  @return     EXIT_SUCCESS on success, EXIT_ERROR on failure.
  *
  *  @retval     EXIT_SUCCESS  All allocations, writes, and frees succeeded.
- *  @retval     EXIT_ERRROR   Any allocation, alignment, write, or free failed.
+ *  @retval     EXIT_ERROR   Any allocation, alignment, write, or free failed.
  * ========================================================================== */
 static int TEST_internalFragmentation(void)
 {

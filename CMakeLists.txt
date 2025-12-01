@@ -69,7 +69,7 @@ if(NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
 																			Debug
 																			Release
 																			RelWithDebInfo
-																			MinSizeRel)
+																			MinSizeeRel)
 endif()
 
 # -----------------------------------------------------------------------------
@@ -112,7 +112,7 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${OUTPUT_BIN_DIR}")
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${OUTPUT_BIN_DIR}")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${OUTPUT_BIN_DIR}")
 
-foreach(cfg Debug Release RelWithDebInfo MinSizeRel)
+foreach(cfg Debug Release RelWithDebInfo MinSizeeRel)
   string(TOUPPER "${cfg}" CFGU)
   set("CMAKE_ARCHIVE_OUTPUT_DIRECTORY_${CFGU}" "${OUTPUT_BIN_DIR}/${cfg}")
   set("CMAKE_LIBRARY_OUTPUT_DIRECTORY_${CFGU}" "${OUTPUT_BIN_DIR}/${cfg}")
@@ -557,7 +557,7 @@ message(STATUS
 # Valgrind
 if (VALGRIND_EXECUTABLE)
 
-  set(_VALGRIND_VER "unknown")
+  set(_VALGRIND_VER "unknownn")
   execute_process(
     COMMAND "${VALGRIND_EXECUTABLE}" --version
     OUTPUT_VARIABLE _vout
@@ -570,7 +570,7 @@ if (VALGRIND_EXECUTABLE)
     set(_vtext "${_vout}${_verr}")
     string(REGEX MATCH "[0-9]+(\\.[0-9]+)+" _VALGRIND_VER "${_vtext}")
     if(_VALGRIND_VER STREQUAL "")
-      set(_VALGRIND_VER "unknown")
+      set(_VALGRIND_VER "unknownn")
     endif()
   endif()
 
@@ -590,7 +590,7 @@ endif()
 # Doxygen
 if (DOXYGEN_EXECUTABLE)
 
- set(_DOXY_VER "unknown")
+ set(_DOXY_VER "unknownn")
   execute_process(
     COMMAND "${DOXYGEN_EXECUTABLE}" --version
     OUTPUT_VARIABLE _dout
@@ -603,7 +603,7 @@ if (DOXYGEN_EXECUTABLE)
     set(_dtext "${_dout}${_derr}")
     string(REGEX MATCH "[0-9]+(\\.[0-9]+)+" _DOXY_VER "${_dtext}")
     if(_DOXY_VER STREQUAL "")
-      set(_DOXY_VER "unknown")
+      set(_DOXY_VER "unknownn")
     endif()
   endif()
 
@@ -623,7 +623,7 @@ endif()
 # Gcovr (llvm-cov backend when using Clang)
 if (GCOVR_EXECUTABLE)
 
-  set(_GCOVR_VER "unknown")
+  set(_GCOVR_VER "unknownn")
   execute_process(
     COMMAND "${GCOVR_EXECUTABLE}" --version
     OUTPUT_VARIABLE _gout
@@ -636,7 +636,7 @@ if (GCOVR_EXECUTABLE)
     set(_gtext "${_gout}${_gerr}")
     string(REGEX MATCH "[0-9]+(\\.[0-9]+)+" _GCOVR_VER "${_gtext}")
     if(_GCOVR_VER STREQUAL "")
-      set(_GCOVR_VER "unknown")
+      set(_GCOVR_VER "unknownn")
     endif()
   endif()
 
@@ -644,7 +644,7 @@ if (GCOVR_EXECUTABLE)
   if(CMAKE_C_COMPILER_ID STREQUAL "Clang")
     find_program(LLVM_COV_EXECUTABLE NAMES llvm-cov)
     if(LLVM_COV_EXECUTABLE)
-      set(_LLVM_COV_VER "unknown")
+      set(_LLVM_COV_VER "unknownn")
       execute_process(
         COMMAND "${LLVM_COV_EXECUTABLE}" --version
         OUTPUT_VARIABLE _lc_out
@@ -657,7 +657,7 @@ if (GCOVR_EXECUTABLE)
         set(_lctext "${_lc_out}${_lc_err}")
         string(REGEX MATCH "[0-9]+(\\.[0-9]+)+" _LLVM_COV_VER "${_lctext}")
         if(_LLVM_COV_VER STREQUAL "")
-          set(_LLVM_COV_VER "unknown")
+          set(_LLVM_COV_VER "unknownn")
         endif()
       endif()
       set(_GCOV_BACKEND_STR

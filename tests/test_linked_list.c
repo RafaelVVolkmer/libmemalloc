@@ -47,14 +47,14 @@
  * ========================================================================== */
 
 /** ============================================================================
- *  @def        EXIT_ERRROR
+ *  @def        EXIT_ERROR
  *  @brief      Standard error code for test failure scenarios.
  *
  *  @details    Defined as uint8_t value 1. Used as the return code
  *              from test functions when a CHECK() macro detects
  *              a failed assertion or runtime error condition.
  * ========================================================================== */
-#define EXIT_ERRROR (uint8_t)(1U)
+#define EXIT_ERROR (uint8_t)(1U)
 
 /** ============================================================================
  *  @def        MAX_NODES
@@ -73,7 +73,7 @@
  *
  *  @details    Evaluates the given expression, and if the condition fails,
  *              logs an error message with file and line number context,
- *              then returns EXIT_ERRROR to indicate test failure.
+ *              then returns EXIT_ERROR to indicate test failure.
  *              Halts further execution of the current test function.
  * ========================================================================== */
 #define CHECK(expr)                                                          \
@@ -82,7 +82,7 @@
     if (!(expr))                                                             \
     {                                                                        \
       LOG_ERROR("Assertion failed at %s:%d: %s", __FILE__, __LINE__, #expr); \
-      return EXIT_ERRROR;                                                    \
+      return EXIT_ERROR;                                                    \
     }                                                                        \
   } while (0)
 
@@ -131,10 +131,10 @@ static int TEST_printList(node_t *head);
  *  @param[in]  head    Pointer to the head node of the list to print.
  *
  *  @return     EXIT_SUCCESS if the list was printed successfully.
- *              EXIT_ERRROR if the input list is empty.
+ *              EXIT_ERROR if the input list is empty.
  *
  *  @retval     EXIT_SUCCESS  List printed correctly (non-empty list).
- *  @retval     EXIT_ERRROR   Input list was empty (head == NULL).
+ *  @retval     EXIT_ERROR   Input list was empty (head == NULL).
  * ========================================================================== */
 static node_t *TEST_reverseList(node_t *head);
 
@@ -231,10 +231,10 @@ function_output:
  *  @param[in]  head    Pointer to the head node of the list to print.
  *
  *  @return     EXIT_SUCCESS if the list was printed successfully.
- *              EXIT_ERRROR if the input list is empty.
+ *              EXIT_ERROR if the input list is empty.
  *
  *  @retval     EXIT_SUCCESS  List printed correctly (non-empty list).
- *  @retval     EXIT_ERRROR   Input list was empty (head == NULL).
+ *  @retval     EXIT_ERROR   Input list was empty (head == NULL).
  * ========================================================================== */
 static int TEST_printList(node_t *head)
 {
@@ -244,7 +244,7 @@ static int TEST_printList(node_t *head)
 
   if (head == NULL)
   {
-    ret = EXIT_ERRROR;
+    ret = EXIT_ERROR;
     goto function_output;
   }
 

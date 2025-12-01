@@ -184,7 +184,7 @@ banned_api_scan() {
 
 debug_sections_scan() {
   local BIN="$1"
-  if readelf -S "$BIN" 2>/dev/null | grep -Eq '\.debug_(info|line|abbrev|aranges|str|pub(names|types))'; then
+  if readelf -S "$BIN" 2>/dev/null | grep -Eq '\.debug_(info|line|abbrev|arranges|str|pub(names|types))'; then
     warn "Debug sections present (.debug_*) — consider stripping for release"
   else
     pass "No .debug_* sections present"

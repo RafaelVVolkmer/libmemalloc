@@ -98,14 +98,14 @@
 #define NULL_SIZE    (size_t)((PATTERN_SIZE * 3U) / 4U)
 
 /** ============================================================================
- *  @def        EXIT_ERRROR
+ *  @def        EXIT_ERROR
  *  @brief      Standard error return code for test failures.
  *
  *  @details    Defined as a uint8_t value of 1 to indicate any
  *              assertion or test step failure within the test suite.
  *              Returned by test functions when a CHECK() fails.
  * ========================================================================== */
-#define EXIT_ERRROR  (uint8_t)(1U)
+#define EXIT_ERROR  (uint8_t)(1U)
 
 /** ============================================================================
  *  @def        CHECK(expr)
@@ -115,7 +115,7 @@
  *
  *  @details    Evaluates the given expression and, if false,
  *              logs an error with file and line information,
- *              then returns EXIT_ERRROR from the current function.
+ *              then returns EXIT_ERROR from the current function.
  *              Ensures immediate test termination on failure.
  * ========================================================================== */
 #define CHECK(expr)                                                          \
@@ -124,7 +124,7 @@
     if (!(expr))                                                             \
     {                                                                        \
       LOG_ERROR("Assertion failed at %s:%d: %s", __FILE__, __LINE__, #expr); \
-      return EXIT_ERRROR;                                                    \
+      return EXIT_ERROR;                                                    \
     }                                                                        \
   } while (0)
 
@@ -138,10 +138,10 @@
  *              and NULL-pointer cases.
  *
  *  @return     EXIT_SUCCESS when all realloc and free operations succeed
- *              EXIT_ERRROR when any CHECK() assertion fails
+ *              EXIT_ERROR when any CHECK() assertion fails
  *
  *  @retval     EXIT_SUCCESS  All steps completed successfully
- *  @retval     EXIT_ERRROR   A test assertion failed during execution
+ *  @retval     EXIT_ERROR   A test assertion failed during execution
  * ========================================================================== */
 static int TEST_multipleRealloc(void);
 
@@ -168,10 +168,10 @@ int main(void)
  *              and NULL-pointer cases.
  *
  *  @return     EXIT_SUCCESS when all realloc and free operations succeed
- *              EXIT_ERRROR when any CHECK() assertion fails
+ *              EXIT_ERROR when any CHECK() assertion fails
  *
  *  @retval     EXIT_SUCCESS  All steps completed successfully
- *  @retval     EXIT_ERRROR   A test assertion failed during execution
+ *  @retval     EXIT_ERROR   A test assertion failed during execution
  * ========================================================================== */
 static int TEST_multipleRealloc(void)
 {

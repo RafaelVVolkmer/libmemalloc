@@ -51,14 +51,14 @@
  * ========================================================================== */
 
 /** ============================================================================
- *  @def        EXIT_ERRROR
+ *  @def        EXIT_ERROR
  *  @brief      Standard error code returned on test failure.
  *
  *  @details    Defined as uint8_t value 1. Used by all test functions
  *              to indicate assertion failures or unexpected runtime errors
  *              detected during execution.
  * ========================================================================== */
-#define EXIT_ERRROR  (uint8_t)(1U)
+#define EXIT_ERROR  (uint8_t)(1U)
 
 /** ============================================================================
  *  @def        MAX_VERTICES
@@ -78,7 +78,7 @@
  *
  *  @details    If the expression evaluates to false, this macro logs
  *              an error message showing the file and line number,
- *              then immediately returns EXIT_ERRROR from the current function.
+ *              then immediately returns EXIT_ERROR from the current function.
  *              Ensures immediate termination on assertion failure.
  * ========================================================================== */
 #define CHECK(expr)                                                          \
@@ -87,7 +87,7 @@
     if (!(expr))                                                             \
     {                                                                        \
       LOG_ERROR("Assertion failed at %s:%d: %s", __FILE__, __LINE__, #expr); \
-      return EXIT_ERRROR;                                                    \
+      return EXIT_ERROR;                                                    \
     }                                                                        \
   } while (0)
 
@@ -137,7 +137,7 @@ typedef struct __ALIGN Graph
  *  @brief      Allocates and initializes a new graph structure.
  *
  *  @param[in]  allocator   Pointer to the memory allocator context.
- *  @param[in]  vertice     Total number of vertices in the graph.
+ *  @param[in]  vertices     Total number of vertices in the graph.
  *
  *  @return     Pointer to the newly created graph on success,
  *              NULL if any allocation fails.
@@ -146,7 +146,7 @@ typedef struct __ALIGN Graph
  * list.
  *  @retval     NULL      Allocation failure for graph or adjacency array.
  * ========================================================================== */
-static graph_t *TEST_createGraph(uint64_t vertice);
+static graph_t *TEST_createGraph(uint64_t vertices);
 
 /** ============================================================================
  *  @fn         TEST_addEdge
@@ -155,15 +155,15 @@ static graph_t *TEST_createGraph(uint64_t vertice);
  *  @param[in]  allocator   Pointer to the memory allocator context.
  *  @param[in]  graph       Pointer to the target graph structure.
  *  @param[in]  index       Source vertex index where the edge starts.
- *  @param[in]  vertice     Target vertex index where the edge points.
+ *  @param[in]  vertices     Target vertex index where the edge points.
  *
  *  @return     EXIT_SUCCESS if the edge is successfully added,
- *              EXIT_ERRROR if allocation fails or parameters are invalid.
+ *              EXIT_ERROR if allocation fails or parameters are invalid.
  *
  *  @retval     EXIT_SUCCESS  Edge allocated and added to the adjacency list.
- *  @retval     EXIT_ERRROR   Invalid parameters or memory allocation failure.
+ *  @retval     EXIT_ERROR   Invalid parameters or memory allocation failure.
  * ========================================================================== */
-static int TEST_addEdge(graph_t *graph, int index, uint64_t vertice);
+static int TEST_addEdge(graph_t *graph, int index, uint64_t vertices);
 
 /** ============================================================================
  *  @fn         TEST_printGraph
@@ -172,10 +172,10 @@ static int TEST_addEdge(graph_t *graph, int index, uint64_t vertice);
  *  @param[in]  graph   Pointer to the graph to be printed.
  *
  *  @return     EXIT_SUCCESS if graph was printed,
- *              EXIT_ERRROR if the graph pointer is NULL.
+ *              EXIT_ERROR if the graph pointer is NULL.
  *
  *  @retval     EXIT_SUCCESS  Graph printed successfully.
- *  @retval     EXIT_ERRROR   Graph pointer was NULL.
+ *  @retval     EXIT_ERROR   Graph pointer was NULL.
  * ========================================================================== */
 static int TEST_printGraph(graph_t *graph);
 
@@ -188,10 +188,10 @@ static int TEST_printGraph(graph_t *graph);
  *  @param[in]  graph       Pointer to the graph structure to be freed.
  *
  *  @return     EXIT_SUCCESS if all memory was freed successfully,
- *              EXIT_ERRROR if any deallocation step fails.
+ *              EXIT_ERROR if any deallocation step fails.
  *
  *  @retval     EXIT_SUCCESS  Graph and all edges freed without errors.
- *  @retval     EXIT_ERRROR   Failure during one of the deallocations.
+ *  @retval     EXIT_ERROR   Failure during one of the deallocations.
  * ========================================================================== */
 static int TEST_freeGraph(graph_t *graph);
 
@@ -250,7 +250,7 @@ int main(void)
  *  @brief      Allocates and initializes a new graph structure.
  *
  *  @param[in]  allocator   Pointer to the memory allocator context.
- *  @param[in]  vertice     Total number of vertices in the graph.
+ *  @param[in]  vertices     Total number of vertices in the graph.
  *
  *  @return     Pointer to the newly created graph on success,
  *              NULL if any allocation fails.
@@ -259,7 +259,7 @@ int main(void)
  * list.
  *  @retval     NULL      Allocation failure for graph or adjacency array.
  * ========================================================================== */
-static graph_t *TEST_createGraph(uint64_t vertice)
+static graph_t *TEST_createGraph(uint64_t vertices)
 {
   graph_t *graph = (graph_t *)NULL;
 
@@ -269,14 +269,14 @@ static graph_t *TEST_createGraph(uint64_t vertice)
   if (graph == NULL)
     goto function_output;
 
-  graph->num_vertices = vertice;
+  graph->num_vertices = vertices;
 
-  graph->adj = MEM_allocFirstFit(((size_t)vertice * sizeof(edge_t *)));
+  graph->adj = MEM_allocFirstFit(((size_t)vertices * sizeof(edge_t *)));
 
   if (graph->adj == NULL)
     goto function_output;
 
-  for (iterator = 0u; iterator < vertice; iterator++)
+  for (iterator = 0u; iterator < vertices; iterator++)
     graph->adj[iterator] = (edge_t *)NULL;
 
 function_output:
@@ -290,15 +290,15 @@ function_output:
  *  @param[in]  allocator   Pointer to the memory allocator context.
  *  @param[in]  graph       Pointer to the target graph structure.
  *  @param[in]  index       Source vertex index where the edge starts.
- *  @param[in]  vertice     Target vertex index where the edge points.
+ *  @param[in]  vertices     Target vertex index where the edge points.
  *
  *  @return     EXIT_SUCCESS if the edge is successfully added,
- *              EXIT_ERRROR if allocation fails or parameters are invalid.
+ *              EXIT_ERROR if allocation fails or parameters are invalid.
  *
  *  @retval     EXIT_SUCCESS  Edge allocated and added to the adjacency list.
- *  @retval     EXIT_ERRROR   Invalid parameters or memory allocation failure.
+ *  @retval     EXIT_ERROR   Invalid parameters or memory allocation failure.
  * ========================================================================== */
-static int TEST_addEdge(graph_t *graph, int index, uint64_t vertice)
+static int TEST_addEdge(graph_t *graph, int index, uint64_t vertices)
 {
   int ret = EXIT_SUCCESS;
 
@@ -309,7 +309,7 @@ static int TEST_addEdge(graph_t *graph, int index, uint64_t vertice)
   edge = MEM_allocFirstFit(sizeof(edge_t));
   CHECK(edge != NULL);
 
-  edge->to          = vertice;
+  edge->to          = vertices;
   edge->next        = (edge_t *)graph->adj[index];
   graph->adj[index] = edge;
 
@@ -323,10 +323,10 @@ static int TEST_addEdge(graph_t *graph, int index, uint64_t vertice)
  *  @param[in]  graph   Pointer to the graph to be printed.
  *
  *  @return     EXIT_SUCCESS if graph was printed,
- *              EXIT_ERRROR if the graph pointer is NULL.
+ *              EXIT_ERROR if the graph pointer is NULL.
  *
  *  @retval     EXIT_SUCCESS  Graph printed successfully.
- *  @retval     EXIT_ERRROR   Graph pointer was NULL.
+ *  @retval     EXIT_ERROR   Graph pointer was NULL.
  * ========================================================================== */
 static int TEST_printGraph(graph_t *graph)
 {
@@ -360,10 +360,10 @@ static int TEST_printGraph(graph_t *graph)
  *  @param[in]  graph       Pointer to the graph structure to be freed.
  *
  *  @return     EXIT_SUCCESS if all memory was freed successfully,
- *              EXIT_ERRROR if any deallocation step fails.
+ *              EXIT_ERROR if any deallocation step fails.
  *
  *  @retval     EXIT_SUCCESS  Graph and all edges freed without errors.
- *  @retval     EXIT_ERRROR   Failure during one of the deallocations.
+ *  @retval     EXIT_ERROR   Failure during one of the deallocations.
  * ========================================================================== */
 static int TEST_freeGraph(graph_t *graph)
 {

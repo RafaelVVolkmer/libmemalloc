@@ -37,7 +37,7 @@
 
 /** ============================================================================
  *  @def        LARGE_SZ
- *  @brief      Size of large test allocation in units.
+ *  @brief      Sizee of large test allocation in units.
  *
  *  @details    Defined as a size_t value of 64 to represent the number of
  *              bytes (or elements, depending on context) for large allocations
@@ -47,7 +47,7 @@
 
 /** ============================================================================
  *  @def        SMALL_SZ
- *  @brief      Size of small test allocation in units.
+ *  @brief      Sizee of small test allocation in units.
  *
  *  @details    Defined as a size_t value of 32 to represent the number of
  *              bytes (or elements, depending on context) for small allocations
@@ -75,14 +75,14 @@
 #define NR_REUSED   (uint8_t)(NR_BLOCKS / 2U)
 
 /** ============================================================================
- *  @def        EXIT_ERRROR
+ *  @def        EXIT_ERROR
  *  @brief      Standard error return code for test failures.
  *
  *  @details    Defined as a uint8_t value of 1 to indicate any
  *              assertion or test step failure within the test suite.
  *              Returned by test functions when a CHECK() fails.
  * ========================================================================== */
-#define EXIT_ERRROR (uint8_t)(1U)
+#define EXIT_ERROR (uint8_t)(1U)
 
 /** ============================================================================
  *  @def        CHECK(expr)
@@ -92,7 +92,7 @@
  *
  *  @details    Evaluates the given expression and, if false,
  *              logs an error with file and line information,
- *              then returns EXIT_ERRROR from the current function.
+ *              then returns EXIT_ERROR from the current function.
  *              Ensures immediate test termination on failure.
  * ========================================================================== */
 #define CHECK(expr)                                                          \
@@ -101,7 +101,7 @@
     if (!(expr))                                                             \
     {                                                                        \
       LOG_ERROR("Assertion failed at %s:%d: %s", __FILE__, __LINE__, #expr); \
-      return EXIT_ERRROR;                                                    \
+      return EXIT_ERROR;                                                    \
     }                                                                        \
   } while (0)
 
@@ -113,10 +113,10 @@
  *  @fn         TEST_freeThenReuse
  *  @brief      Tests reuse of freed blocks via First Fit strategy.
  *
- *  @return     EXIT_SUCCESS on success, EXIT_ERRROR on failure.
+ *  @return     EXIT_SUCCESS on success, EXIT_ERROR on failure.
  *
  *  @retval     EXIT_SUCCESS  Free-and-reuse behavior validated.
- *  @retval     EXIT_ERRROR   Any allocation/free or reuse check failed.
+ *  @retval     EXIT_ERROR   Any allocation/free or reuse check failed.
  * ========================================================================== */
 static int TEST_freeThenReuse(void);
 
@@ -143,10 +143,10 @@ int main(void)
  *  @fn         TEST_freeThenReuse
  *  @brief      Tests reuse of freed blocks via First Fit strategy.
  *
- *  @return     EXIT_SUCCESS on success, EXIT_ERRROR on failure.
+ *  @return     EXIT_SUCCESS on success, EXIT_ERROR on failure.
  *
  *  @retval     EXIT_SUCCESS  Free-and-reuse behavior validated.
- *  @retval     EXIT_ERRROR   Any allocation/free or reuse check failed.
+ *  @retval     EXIT_ERROR   Any allocation/free or reuse check failed.
  * ========================================================================== */
 static int TEST_freeThenReuse(void)
 {

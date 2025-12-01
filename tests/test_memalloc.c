@@ -19,7 +19,7 @@
  *              - Memory alignment checking
  *
  *              All tests use CHECK() macro for runtime assertions,
- *              and return EXIT_SUCCESS or EXIT_ERRROR.
+ *              and return EXIT_SUCCESS or EXIT_ERROR.
  *
  *  @version    v1.0.00
  *  @date       23.08.2025
@@ -47,14 +47,14 @@
  * ========================================================================== */
 
 /** ============================================================================
- *  @def        EXIT_ERRROR
+ *  @def        EXIT_ERROR
  *  @brief      Standard error return code for test failures.
  *
  *  @details    Defined as a uint8_t value of 1 to indicate any
  *              assertion or test step failure within the test suite.
  *              Returned by test functions when a CHECK() fails.
  * ========================================================================== */
-#define EXIT_ERRROR (uint8_t)(1U)
+#define EXIT_ERROR (uint8_t)(1U)
 
 /** ============================================================================
  *  @def        FILL_VALUE
@@ -83,7 +83,7 @@
  *
  *  @details    Evaluates the given expression and, if false,
  *              logs an error with file and line information,
- *              then returns EXIT_ERRROR from the current function.
+ *              then returns EXIT_ERROR from the current function.
  *              Ensures immediate test termination on failure.
  * ========================================================================== */
 #define CHECK(expr)                                                          \
@@ -92,7 +92,7 @@
     if (!(expr))                                                             \
     {                                                                        \
       LOG_ERROR("Assertion failed at %s:%d: %s", __FILE__, __LINE__, #expr); \
-      return EXIT_ERRROR;                                                    \
+      return EXIT_ERROR;                                                    \
     }                                                                        \
   } while (0)
 
@@ -106,10 +106,10 @@
  *              using MEM_allocMallocFirstFit and MEM_allocFree.
  *
  *  @return     EXIT_SUCCESS on successful alloc + free
- *              EXIT_ERRROR on any failure during test
+ *              EXIT_ERROR on any failure during test
  *
  *  @retval     EXIT_SUCCESS  Pointer allocated, memset applied, and freed
- *  @retval     EXIT_ERRROR   Allocation or free operation failed
+ *  @retval     EXIT_ERROR   Allocation or free operation failed
  * ========================================================================== */
 static int TEST_mallocFree(void);
 
@@ -118,10 +118,10 @@ static int TEST_mallocFree(void);
  *  @brief      Verifies that MEM_allocCalloc zero-initializes an array of ints.
  *
  *  @return     EXIT_SUCCESS if all elements are zero and free succeeds
- *              EXIT_ERRROR if any element is non-zero or free fails
+ *              EXIT_ERROR if any element is non-zero or free fails
  *
  *  @retval     EXIT_SUCCESS  All array elements zero and memory freed
- *  @retval     EXIT_ERRROR   Allocation, zero-check or free operation failed
+ *  @retval     EXIT_ERROR   Allocation, zero-check or free operation failed
  * ========================================================================== */
 static int TEST_testCalloc(void);
 
@@ -130,10 +130,10 @@ static int TEST_testCalloc(void);
  *  @brief      Tests MEM_allocRealloc grows the block and preserves contents.
  *
  *  @return     EXIT_SUCCESS on successful realloc and content check
- *              EXIT_ERRROR on any failure during realloc or strcmp
+ *              EXIT_ERROR on any failure during realloc or strcmp
  *
  *  @retval     EXIT_SUCCESS  Realloc succeeded and original data intact
- *  @retval     EXIT_ERRROR   Reallocation or data verification failed
+ *  @retval     EXIT_ERROR   Reallocation or data verification failed
  * ========================================================================== */
 static int TEST_testRealloc(void);
 
@@ -143,10 +143,10 @@ static int TEST_testRealloc(void);
  *              on ARCH_ALIGNMENT boundary.
  *
  *  @return     EXIT_SUCCESS when pointer is properly aligned and freed
- *              EXIT_ERRROR when alignment or free operation fails
+ *              EXIT_ERROR when alignment or free operation fails
  *
  *  @retval     EXIT_SUCCESS  Pointer aligned and free succeeded
- *  @retval     EXIT_ERRROR   Alignment check or free operation failed
+ *  @retval     EXIT_ERROR   Alignment check or free operation failed
  * ========================================================================== */
 static int TEST_testAlign(void);
 
@@ -185,10 +185,10 @@ int main(void)
  *              using MEM_allocMallocFirstFit and MEM_allocFree.
  *
  *  @return     EXIT_SUCCESS on successful alloc + free
- *              EXIT_ERRROR on any failure during test
+ *              EXIT_ERROR on any failure during test
  *
  *  @retval     EXIT_SUCCESS  Pointer allocated, memset applied, and freed
- *  @retval     EXIT_ERRROR   Allocation or free operation failed
+ *  @retval     EXIT_ERROR   Allocation or free operation failed
  * ========================================================================== */
 static int TEST_mallocFree(void)
 {
@@ -212,10 +212,10 @@ static int TEST_mallocFree(void)
  *  @brief      Verifies that MEM_allocCalloc zero-initializes an array of ints.
  *
  *  @return     EXIT_SUCCESS if all elements are zero and free succeeds
- *              EXIT_ERRROR if any element is non-zero or free fails
+ *              EXIT_ERROR if any element is non-zero or free fails
  *
  *  @retval     EXIT_SUCCESS  All array elements zero and memory freed
- *  @retval     EXIT_ERRROR   Allocation, zero-check or free operation failed
+ *  @retval     EXIT_ERROR   Allocation, zero-check or free operation failed
  * ========================================================================== */
 static int TEST_testCalloc(void)
 {
@@ -244,10 +244,10 @@ static int TEST_testCalloc(void)
  *  @brief      Tests MEM_allocRealloc grows the block and preserves contents.
  *
  *  @return     EXIT_SUCCESS on successful realloc and content check
- *              EXIT_ERRROR on any failure during realloc or strcmp
+ *              EXIT_ERROR on any failure during realloc or strcmp
  *
  *  @retval     EXIT_SUCCESS  Realloc succeeded and original data intact
- *  @retval     EXIT_ERRROR   Reallocation or data verification failed
+ *  @retval     EXIT_ERROR   Reallocation or data verification failed
  * ========================================================================== */
 static int TEST_testRealloc(void)
 {
@@ -278,10 +278,10 @@ static int TEST_testRealloc(void)
  *              on ARCH_ALIGNMENT boundary.
  *
  *  @return     EXIT_SUCCESS when pointer is properly aligned and freed
- *              EXIT_ERRROR when alignment or free operation fails
+ *              EXIT_ERROR when alignment or free operation fails
  *
  *  @retval     EXIT_SUCCESS  Pointer aligned and free succeeded
- *  @retval     EXIT_ERRROR   Alignment check or free operation failed
+ *  @retval     EXIT_ERROR   Alignment check or free operation failed
  * ========================================================================== */
 static int TEST_testAlign(void)
 {

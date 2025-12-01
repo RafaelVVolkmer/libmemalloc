@@ -51,14 +51,14 @@
 #define ALLOC_SIZE  (size_t)(128U)
 
 /** ============================================================================
- *  @def        EXIT_ERRROR
+ *  @def        EXIT_ERROR
  *  @brief      Standard error return code for test failures.
  *
  *  @details    Defined as a uint8_t value of 1 to indicate any
  *              assertion or test step failure within the test suite.
  *              Returned by test functions when a CHECK() fails.
  * ========================================================================== */
-#define EXIT_ERRROR (uint8_t)(1U)
+#define EXIT_ERROR (uint8_t)(1U)
 
 /** ============================================================================
  *  @def        CHECK(expr)
@@ -68,7 +68,7 @@
  *
  *  @details    Evaluates the given expression and, if false,
  *              logs an error with file and line information,
- *              then returns EXIT_ERRROR from the current function.
+ *              then returns EXIT_ERROR from the current function.
  *              Ensures immediate test termination on failure.
  * ========================================================================== */
 #define CHECK(expr)                                                          \
@@ -77,7 +77,7 @@
     if (!(expr))                                                             \
     {                                                                        \
       LOG_ERROR("Assertion failed at %s:%d: %s", __FILE__, __LINE__, #expr); \
-      return EXIT_ERRROR;                                                    \
+      return EXIT_ERROR;                                                    \
     }                                                                        \
   } while (0)
 
@@ -114,10 +114,10 @@ typedef enum Fills
  *  @fn         TEST_multiStrategy
  *  @brief      Aloca e libera blocos usando First, Next e Best Fit.
  *
- *  @return     EXIT_SUCCESS em caso de sucesso, EXIT_ERRROR em falha.
+ *  @return     EXIT_SUCCESS em caso de sucesso, EXIT_ERROR em falha.
  *
  *  @retval     EXIT_SUCCESS  Todas as operações sucederam.
- *  @retval     EXIT_ERRROR   Alguma operação falhou.
+ *  @retval     EXIT_ERROR   Alguma operação falhou.
  * ========================================================================== */
 static int TEST_multiStrategy(void);
 
@@ -145,10 +145,10 @@ int main(void)
  *  @fn         TEST_multiStrategy
  *  @brief      Aloca e libera blocos usando First, Next e Best Fit.
  *
- *  @return     EXIT_SUCCESS em caso de sucesso, EXIT_ERRROR em falha.
+ *  @return     EXIT_SUCCESS em caso de sucesso, EXIT_ERROR em falha.
  *
  *  @retval     EXIT_SUCCESS  Todas as operações sucederam.
- *  @retval     EXIT_ERRROR   Alguma operação falhou.
+ *  @retval     EXIT_ERROR   Alguma operação falhou.
  * ========================================================================== */
 static int TEST_multiStrategy(void)
 {
