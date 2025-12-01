@@ -78,7 +78,6 @@ TAGS
 
 # Linker Output
 *.ilk
-*.map
 *.exp
 
 # Precompiled Headers
@@ -144,7 +143,6 @@ dkms.conf
 *.uvopt
 *.axf
 *.hex
-*.map
 *.bak
 *.d
 *.dep
@@ -159,7 +157,6 @@ dkms.conf
 *.d
 *.o
 *.elf
-*.map
 *.axf
 
 # Eclipse
