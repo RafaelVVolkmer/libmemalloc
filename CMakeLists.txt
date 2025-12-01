@@ -1,13 +1,28 @@
 cmake_minimum_required(VERSION 3.24)
 project(libmemalloc C)
 
+# -----------------------------------------------------------------------------
+# 1) User Options
+# -----------------------------------------------------------------------------
+option(DOCS_EN     "Generate Doxygen site (subdir doxygen/)"           ON)
+option(TESTS_EN    "Enable test tree (ctest)"                          ON)
+option(ASM_EN      "Enable Assembly language"                          OFF)
+
 # ----------------------------------------------------------------------------
-# 1. Basic Project Settings
+# 2) Basic Project Settings
 # ----------------------------------------------------------------------------
 include(FetchContent)
 include(CheckCCompilerFlag)
 include(CheckCSourceCompiles)
 include(ProcessorCount)
+
+if(TESTS_EN)
+	include(CTest)
+endif()
+
+if(ASM_EN)
+  enable_language(ASM)
+endif()
 
 # enable_language(ASM)
 
@@ -22,7 +37,7 @@ if(NOT CMAKE_BUILD_TYPE)
 endif()
 
 # ----------------------------------------------------------------------------
-# 2. Checking dependencies
+# 3) Checking dependencies
 # ----------------------------------------------------------------------------
 set(MIN_GCC_VERSION   "12.2.0")
 set(MIN_CLANG_VERSION "11.0")
@@ -60,7 +75,7 @@ find_program(VALGRIND_EXECUTABLE NAMES valgrind)
 find_package(Doxygen QUIET)
 
 # ----------------------------------------------------------------------------
-# 3. Output Directories for Binaries
+# 4) Output Directories for Binaries
 #    - Archive (static libraries)
 #    - Library (shared libraries)
 #    - Runtime (executables)
@@ -74,7 +89,7 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${OUTPUT_BIN_DIR}")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${OUTPUT_BIN_DIR}")
 
 # -----------------------------------------------------------------------------
-# 4. Build-Type Flags (safe per-compiler)
+# 5) Build-Type Flags (safe per-compiler)
 # -----------------------------------------------------------------------------
 
 # -- Debug ---------------------------------------------------------------------
@@ -192,7 +207,7 @@ elseif(CMAKE_BUILD_TYPE STREQUAL "Release")
 endif()
 
 # -----------------------------------------------------------------------------
-# 5. Global Hardening & Warnings (per-compiler) + Platform Linker Settings
+# 6) Global Hardening & Warnings (per-compiler) + Platform Linker Settings
 # ----------------------------------------------------------------------------
 
 set(_FORTIFY_LVL 2)
@@ -401,16 +416,23 @@ add_compile_options($<$<STREQUAL:$<TARGET_PROPERTY:TYPE>,EXECUTABLE>:-fPIE>)
 add_link_options($<$<STREQUAL:$<TARGET_PROPERTY:TYPE>,EXECUTABLE>:-pie>)
 
 # ----------------------------------------------------------------------------
-# 6. Include Subdirectories and Enable Testing
+# 7) Include Subdirectories and Enable Testing
 # ----------------------------------------------------------------------------
 add_subdirectory(src)
 
-add_subdirectory(doxygen)
-enable_testing()
-add_subdirectory(tests)
+if (TESTS_EN)
+	if (BUILD_TESTING)
+		enable_testing()
+		add_subdirectory(tests)
+	endif()
+endif()
+
+if (DOCS_EN)
+	add_subdirectory(doxygen)
+endif()
 
 # ----------------------------------------------------------------------------
-# 7. Informational Output
+# 8) Informational Output
 # ----------------------------------------------------------------------------
 get_filename_component(COMPILER_NAME ${CMAKE_C_COMPILER} NAME)
 
