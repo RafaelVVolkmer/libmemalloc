@@ -1,17 +1,45 @@
+# -----------------------------------------------------------------------------
+# File: CMakeLists.txt (root)
+# Purpose:
+#   Project entry point for libmemalloc.
+#   - Define user options (docs/tests/coverage/asm)
+#   - Apply safe compiler/linker flags per compiler & build type
+#   - Normalize output folders (bin/<Config>)
+#   - Print a concise environment summary (compiler, doxygen, gcovr, etc.)
+#
+# SPDX-License-Identifier: MIT
+#
+# Requirements:
+#   - CMake >= 3.24
+#   - GCC >= 12.2 / Clang >= 11 / MSVC >= 19.20
+#   - Optional: Doxygen, gcovr, valgrind
+#
+# Options (cache):
+#   DOCS_EN     : BOOL  Generate Doxygen site (default: ON)
+#   GCOVR_DOCS  : BOOL  Publish coverage into the docs site (default: ON)
+#   TESTS_EN    : BOOL  Enable test tree (ctest) (default: ON)
+#   ASM_EN      : BOOL  Enable Assembly language (default: OFF)
+#
+# Notes:
+#   - We let CMake control IPO/LTO via INTERPROCEDURAL_OPTIMIZATION_* (no -flto).
+#   - Warnings and hardening are selected per compiler with generator expressions.
+#   - Output dirs are consistent across single- and multi-config generators.
+# -----------------------------------------------------------------------------
+
 cmake_minimum_required(VERSION 3.24)
 project(libmemalloc C)
 
 # -----------------------------------------------------------------------------
-# 1) User Options
+# 1. User Options
 # -----------------------------------------------------------------------------
 option(DOCS_EN     "Generate Doxygen site (subdir doxygen/)"           ON)
 option(GCOVR_DOCS  "Publish coverage (gcovr) inside the Doxygen site"  ON)
 option(TESTS_EN    "Enable test tree (ctest)"                          ON)
 option(ASM_EN      "Enable Assembly language"                          OFF)
 
-# ----------------------------------------------------------------------------
-# 2) Basic Project Settings
-# ----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
+# 2. Core Settings & Modules
+# -----------------------------------------------------------------------------
 include(FetchContent)
 include(CheckCCompilerFlag)
 include(CheckCSourceCompiles)
@@ -36,12 +64,17 @@ set(CMAKE_INTERPROCEDURAL_OPTIMIZATION_RELEASE ON)
 # Default build type for single-config generators
 if(NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release CACHE STRING "Build type" FORCE)
-  set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS Debug Release RelWithDebInfo MinSizeRel)
+  set_property(CACHE CMAKE_BUILD_TYPE PROPERTY
+																			STRINGS
+																			Debug
+																			Release
+																			RelWithDebInfo
+																			MinSizeRel)
 endif()
 
-# ----------------------------------------------------------------------------
-# 3) Checking dependencies
-# ----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
+# 3. Toolchain Sanity
+# -----------------------------------------------------------------------------
 set(MIN_GCC_VERSION   "12.2.0")
 set(MIN_CLANG_VERSION "11.0")
 set(MIN_MSVC_VERSION  "19.20")
@@ -69,12 +102,9 @@ find_program(VALGRIND_EXECUTABLE NAMES valgrind)
 find_program(GCOVR_EXECUTABLE    NAMES gcovr)
 find_package(Doxygen QUIET)
 
-# ----------------------------------------------------------------------------
-# 4) Output Directories for Binaries
-#    - Archive (static libraries)
-#    - Library (shared libraries)
-#    - Runtime (executables)
-# ----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
+# 4. Output Folders (normalized to bin/<Config>)
+# -----------------------------------------------------------------------------
 set(OUTPUT_BIN_DIR "${CMAKE_SOURCE_DIR}/bin/${CMAKE_BUILD_TYPE}")
 file(MAKE_DIRECTORY "${OUTPUT_BIN_DIR}")
 
@@ -83,7 +113,7 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${OUTPUT_BIN_DIR}")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${OUTPUT_BIN_DIR}")
 
 # -----------------------------------------------------------------------------
-# 5) Build-Type Flags (safe per-compiler)
+# 5. Build-Type Flags (safe per-compiler)
 # -----------------------------------------------------------------------------
 
 # -- Debug ---------------------------------------------------------------------
@@ -116,7 +146,8 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
 		if (CMAKE_C_COMPILER_ID STREQUAL "Clang"
 				OR (CMAKE_C_COMPILER_ID STREQUAL "GNU"
 						AND CMAKE_C_COMPILER_VERSION VERSION_GREATER_EQUAL "13.0"))
-			option(ENABLE_ANALYZER_DUMPS "Write GCC analyzer dumps to files (not stderr)" OFF)
+			option(ENABLE_ANALYZER_DUMPS
+							"Write GCC analyzer dumps to files (not stderr)" OFF)
 
 			set(ANALYZER_FLAGS
 				-fanalyzer
@@ -161,8 +192,10 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
     endif()
 
 
-    set(CMAKE_EXE_LINKER_FLAGS    "${CMAKE_EXE_LINKER_FLAGS} -Wl,--gc-sections -flto")
-    set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,--gc-sections -flto")
+    set(CMAKE_EXE_LINKER_FLAGS
+				"${CMAKE_EXE_LINKER_FLAGS} -Wl,--gc-sections -flto")
+    set(CMAKE_SHARED_LINKER_FLAGS
+				"${CMAKE_SHARED_LINKER_FLAGS} -Wl,--gc-sections -flto")
 
 # -- Release -------------------------------------------------------------------
 elseif(CMAKE_BUILD_TYPE STREQUAL "Release")
@@ -196,12 +229,14 @@ elseif(CMAKE_BUILD_TYPE STREQUAL "Release")
         -fno-common
     )
 
-    set(CMAKE_EXE_LINKER_FLAGS    "${CMAKE_EXE_LINKER_FLAGS}    -Wl,--gc-sections -Wl,-O1 -Wl,-s")
-    set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,--gc-sections -Wl,-O1 -Wl,-s")
+    set(CMAKE_EXE_LINKER_FLAGS
+				"${CMAKE_EXE_LINKER_FLAGS}    -Wl,--gc-sections -Wl,-O1 -Wl,-s")
+    set(CMAKE_SHARED_LINKER_FLAGS
+				"${CMAKE_SHARED_LINKER_FLAGS} -Wl,--gc-sections -Wl,-O1 -Wl,-s")
 endif()
 
 # -----------------------------------------------------------------------------
-# 6) Global Hardening & Warnings (per-compiler) + Platform Linker Settings
+# 6. Global Hardening & Warnings (per-compiler) + Platform Linker Settings
 # ----------------------------------------------------------------------------
 
 set(_FORTIFY_LVL 2)
@@ -410,7 +445,7 @@ add_compile_options($<$<STREQUAL:$<TARGET_PROPERTY:TYPE>,EXECUTABLE>:-fPIE>)
 add_link_options($<$<STREQUAL:$<TARGET_PROPERTY:TYPE>,EXECUTABLE>:-pie>)
 
 # ----------------------------------------------------------------------------
-# 7) Include Subdirectories and Enable Testing
+# 7. Include Subdirectories and Enable Testing
 # ----------------------------------------------------------------------------
 add_subdirectory(src)
 
@@ -426,7 +461,7 @@ if (DOCS_EN)
 endif()
 
 # ----------------------------------------------------------------------------
-# 8) Informational Output
+# 8. Informational Output
 # ----------------------------------------------------------------------------
 get_filename_component(COMPILER_NAME ${CMAKE_C_COMPILER} NAME)
 
@@ -443,17 +478,52 @@ if (NOT WIN32)
 endif()
 
 message(STATUS "")
-message(STATUS "${ANSI_BLUE}=====================================================================${ANSI_RESET}")
-message(STATUS "${ANSI_RESET}  Project:        ${ANSI_MAGENTA}${PROJECT_NAME}${ANSI_RESET}")
-message(STATUS "${ANSI_RESET}  Build type:     ${ANSI_GREEN}${CMAKE_BUILD_TYPE}${ANSI_RESET}")
-message(STATUS "${ANSI_BLUE}=====================================================================${ANSI_RESET}")
-message(STATUS "${ANSI_RESET}  Compiler:       ${ANSI_GREEN}${CMAKE_C_COMPILER_ID} ${COMPILER_NAME} V${CMAKE_C_COMPILER_VERSION}${ANSI_RESET}")
-message(STATUS "${ANSI_RESET}  C Standard:     ${ANSI_GREEN}C${CMAKE_C_STANDARD}${ANSI_RESET}")
-message(STATUS "${ANSI_RESET}  CMake Version:  ${ANSI_GREEN}${CMAKE_VERSION}${ANSI_RESET}")
-message(STATUS "${ANSI_RESET}  Generator:      ${ANSI_GREEN}${CMAKE_GENERATOR}${ANSI_RESET}")
-message(STATUS "${ANSI_BLUE}=====================================================================${ANSI_RESET}")
-message(STATUS "${ANSI_RESET}  System arch:    ${ANSI_GREEN}${CMAKE_SYSTEM_PROCESSOR}${ANSI_RESET}")
-message(STATUS "${ANSI_RESET}  Host arch:      ${ANSI_GREEN}${CMAKE_HOST_SYSTEM_PROCESSOR}${ANSI_RESET}")
+message(STATUS
+				"${ANSI_BLUE}"
+				"====================================================================="
+				"${ANSI_RESET}")
+message(STATUS
+				"${ANSI_RESET}"
+				"  Project:        "
+				"${ANSI_MAGENTA}${PROJECT_NAME}${ANSI_RESET}")
+message(STATUS
+				"${ANSI_RESET}"
+				"  Build type:     "
+				"${ANSI_GREEN}${CMAKE_BUILD_TYPE}${ANSI_RESET}")
+message(STATUS
+				"${ANSI_BLUE}"
+				"====================================================================="
+				"${ANSI_RESET}")
+message(STATUS
+				"${ANSI_RESET}"
+				"  Compiler:       "
+				"${ANSI_GREEN}${CMAKE_C_COMPILER_ID}"
+				"${COMPILER_NAME}"
+				"V${CMAKE_C_COMPILER_VERSION}${ANSI_RESET}")
+message(STATUS
+				"${ANSI_RESET}"
+				"  C Standard:     "
+				"${ANSI_GREEN}C${CMAKE_C_STANDARD}${ANSI_RESET}")
+message(STATUS
+				"${ANSI_RESET}"
+				"  CMake Version:  "
+				"${ANSI_GREEN}${CMAKE_VERSION}${ANSI_RESET}")
+message(STATUS
+				"${ANSI_RESET}"
+				"  Generator:      "
+				"${ANSI_GREEN}${CMAKE_GENERATOR}${ANSI_RESET}")
+message(STATUS
+				"${ANSI_BLUE}"
+				"====================================================================="
+				"${ANSI_RESET}")
+message(STATUS
+				"${ANSI_RESET}"
+				"  System arch:    "
+				"${ANSI_GREEN}${CMAKE_SYSTEM_PROCESSOR}${ANSI_RESET}")
+message(STATUS
+				"${ANSI_RESET}"
+				"  Host arch:      "
+				"${ANSI_GREEN}${CMAKE_HOST_SYSTEM_PROCESSOR}${ANSI_RESET}")
 
 if (CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
   execute_process(
@@ -461,11 +531,21 @@ if (CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
     OUTPUT_VARIABLE _TARGET_TRIPLE
     OUTPUT_STRIP_TRAILING_WHITESPACE
   )
-  message(STATUS "${ANSI_RESET}  Target triple:  ${ANSI_GREEN}${_TARGET_TRIPLE}${ANSI_RESET}")
+  message(STATUS
+					"${ANSI_RESET}"
+					"  Target triple:  "
+					"${ANSI_GREEN}${_TARGET_TRIPLE}${ANSI_RESET}")
 endif()
 
-message(STATUS "${ANSI_RESET}  OS:             ${ANSI_GREEN}${CMAKE_SYSTEM_NAME} (${CMAKE_SYSTEM_VERSION})${ANSI_RESET}")
-message(STATUS "${ANSI_BLUE}=====================================================================${ANSI_RESET}")
+message(STATUS
+					"${ANSI_RESET}"
+					"  OS:             "
+					"${ANSI_GREEN}${CMAKE_SYSTEM_NAME}"
+					"(${CMAKE_SYSTEM_VERSION})${ANSI_RESET}")
+message(STATUS
+				"${ANSI_BLUE}"
+				"====================================================================="
+				"${ANSI_RESET}")
 
 # Valgrind
 if (VALGRIND_EXECUTABLE)
@@ -487,9 +567,17 @@ if (VALGRIND_EXECUTABLE)
     endif()
   endif()
 
-  message(STATUS "${ANSI_RESET}  Valgrind:       ${ANSI_GREEN}${VALGRIND_EXECUTABLE}${ANSI_RESET}  ${ANSI_GREEN}(v${_VALGRIND_VER})${ANSI_RESET}")
+  message(STATUS
+					"${ANSI_RESET}"
+					"  Valgrind:       "
+					"${ANSI_GREEN}${VALGRIND_EXECUTABLE}${ANSI_RESET}"
+					" ${ANSI_GREEN}(v${_VALGRIND_VER})${ANSI_RESET}")
 else()
-    message(STATUS "${ANSI_RESET}  Valgrind:       ${ANSI_RED}<not found>  (running tests without memcheck)${ANSI_RESET}")
+    message(STATUS
+					"${ANSI_RESET}"
+					"  Valgrind:       "
+					"${ANSI_RED}<not found>"
+					" (running tests without memcheck)${ANSI_RESET}")
 endif()
 
 # Doxygen
@@ -512,9 +600,17 @@ if (DOXYGEN_EXECUTABLE)
     endif()
   endif()
 
-  message(STATUS "${ANSI_RESET}  Doxygen:        ${ANSI_GREEN}${DOXYGEN_EXECUTABLE}${ANSI_RESET}  ${ANSI_GREEN}(v${_DOXY_VER})${ANSI_RESET}")
+  message(STATUS
+					"${ANSI_RESET}"
+					"  Doxygen:        "
+					"${ANSI_GREEN}${DOXYGEN_EXECUTABLE}${ANSI_RESET}"
+					" ${ANSI_GREEN}(v${_DOXY_VER})${ANSI_RESET}")
 else()
-    message(STATUS "${ANSI_RESET}  Doxygen:        ${ANSI_RED}<not found>  (skip docs)${ANSI_RESET}")
+    message(STATUS
+					"${ANSI_RESET}"
+					"  Doxygen:        "
+					"${ANSI_RED}<not found>"
+					" (skip docs)${ANSI_RESET}")
 endif()
 
 # Gcovr (llvm-cov backend when using Clang)
@@ -557,17 +653,39 @@ if (GCOVR_EXECUTABLE)
           set(_LLVM_COV_VER "unknown")
         endif()
       endif()
-      set(_GCOV_BACKEND_STR "  ${ANSI_RESET}[backend: ${ANSI_GREEN}llvm-cov gcov v${_LLVM_COV_VER}${ANSI_RESET}]")
+      set(_GCOV_BACKEND_STR
+					"  ${ANSI_RESET}"
+					"[backend: ${ANSI_GREEN}llvm-cov"
+					"gcov v${_LLVM_COV_VER}${ANSI_RESET}]")
     endif()
   endif()
 
-  message(STATUS "${ANSI_RESET}  Gcovr:          ${ANSI_GREEN}${GCOVR_EXECUTABLE}${ANSI_RESET}  ${ANSI_GREEN}(v${_GCOVR_VER})${ANSI_RESET}${_GCOV_BACKEND_STR}")
+  message(STATUS
+					"${ANSI_RESET}"
+					"  Gcovr:          "
+					"${ANSI_GREEN}${GCOVR_EXECUTABLE}${ANSI_RESET}"
+					" ${ANSI_GREEN}(v${_GCOVR_VER})${ANSI_RESET}${_GCOV_BACKEND_STR}")
 else()
-  message(STATUS "${ANSI_RESET}  Gcovr:          ${ANSI_RED}<not found>${ANSI_RESET}")
+  message(STATUS
+					"${ANSI_RESET}"
+					"  Gcovr:          "
+					" ${ANSI_RED}<not found>${ANSI_RESET}")
 endif()
 
-message(STATUS "${ANSI_BLUE}=====================================================================${ANSI_RESET}")
-message(STATUS "${ANSI_RESET}  Parallel Jobs:  ${ANSI_GREEN}${NPROC}${ANSI_RESET}")
-message(STATUS "${ANSI_RESET}  Binaries in:    ${ANSI_GREEN}${OUTPUT_BIN_DIR}${ANSI_RESET}")
-message(STATUS "${ANSI_BLUE}=====================================================================${ANSI_RESET}")
+message(STATUS
+				"${ANSI_BLUE}"
+				"====================================================================="
+				"${ANSI_RESET}")
+message(STATUS
+				"${ANSI_RESET}"
+				"  Parallel Jobs:  "
+				"${ANSI_GREEN}${NPROC}${ANSI_RESET}")
+message(STATUS
+				"${ANSI_RESET}"
+				"  Binaries in:    "
+				"${ANSI_GREEN}${OUTPUT_BIN_DIR}${ANSI_RESET}")
+message(STATUS
+				"${ANSI_BLUE}"
+				"====================================================================="
+				"${ANSI_RESET}")
 message(STATUS "")
