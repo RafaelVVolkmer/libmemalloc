@@ -400,7 +400,6 @@ endif()
 add_compile_options($<$<STREQUAL:$<TARGET_PROPERTY:TYPE>,EXECUTABLE>:-fPIE>)
 add_link_options($<$<STREQUAL:$<TARGET_PROPERTY:TYPE>,EXECUTABLE>:-pie>)
 
-
 # ----------------------------------------------------------------------------
 # 6. Include Subdirectories and Enable Testing
 # ----------------------------------------------------------------------------
@@ -452,13 +451,52 @@ endif()
 message(STATUS "${ANSI_RESET}  OS:             ${ANSI_GREEN}${CMAKE_SYSTEM_NAME} (${CMAKE_SYSTEM_VERSION})${ANSI_RESET}")
 message(STATUS "${ANSI_BLUE}=====================================================================${ANSI_RESET}")
 
+# Valgrind
 if (VALGRIND_EXECUTABLE)
-    message(STATUS "${ANSI_RESET}  Valgrind:       ${ANSI_GREEN}${VALGRIND_EXECUTABLE}${ANSI_RESET}")
+
+  set(_VALGRIND_VER "unknown")
+  execute_process(
+    COMMAND "${VALGRIND_EXECUTABLE}" --version
+    OUTPUT_VARIABLE _vout
+    ERROR_VARIABLE  _verr
+    RESULT_VARIABLE _vres
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+    ERROR_STRIP_TRAILING_WHITESPACE
+  )
+  if(_vres EQUAL 0)
+    set(_vtext "${_vout}${_verr}")
+    string(REGEX MATCH "[0-9]+(\\.[0-9]+)+" _VALGRIND_VER "${_vtext}")
+    if(_VALGRIND_VER STREQUAL "")
+      set(_VALGRIND_VER "unknown")
+    endif()
+  endif()
+
+  message(STATUS "${ANSI_RESET}  Valgrind:       ${ANSI_GREEN}${VALGRIND_EXECUTABLE}${ANSI_RESET}  ${ANSI_GREEN}(v${_VALGRIND_VER})${ANSI_RESET}")
 else()
     message(STATUS "${ANSI_RESET}  Valgrind:       ${ANSI_RED}<not found>  (running tests without memcheck)${ANSI_RESET}")
 endif()
+
+# Doxygen
 if (DOXYGEN_EXECUTABLE)
-    message(STATUS "${ANSI_RESET}  Doxygen:        ${ANSI_GREEN}${DOXYGEN_EXECUTABLE}${ANSI_RESET}")
+
+ set(_DOXY_VER "unknown")
+  execute_process(
+    COMMAND "${DOXYGEN_EXECUTABLE}" --version
+    OUTPUT_VARIABLE _dout
+    ERROR_VARIABLE  _derr
+    RESULT_VARIABLE _dres
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+    ERROR_STRIP_TRAILING_WHITESPACE
+  )
+  if(_dres EQUAL 0)
+    set(_dtext "${_dout}${_derr}")
+    string(REGEX MATCH "[0-9]+(\\.[0-9]+)+" _DOXY_VER "${_dtext}")
+    if(_DOXY_VER STREQUAL "")
+      set(_DOXY_VER "unknown")
+    endif()
+  endif()
+
+  message(STATUS "${ANSI_RESET}  Doxygen:        ${ANSI_GREEN}${DOXYGEN_EXECUTABLE}${ANSI_RESET}  ${ANSI_GREEN}(v${_DOXY_VER})${ANSI_RESET}")
 else()
     message(STATUS "${ANSI_RESET}  Doxygen:        ${ANSI_RED}<not found>  (skip docs)${ANSI_RESET}")
 endif()
