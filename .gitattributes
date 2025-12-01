@@ -53,8 +53,9 @@
 .browserslistrc         text    eol=lf
 .editorconfig           text    eol=lf
 *.npmignore             text    eol=lf
-*.yaml                  text    eol=lf
-*.yml                   text    eol=lf
+*.yaml                  text    eol=lf  linguist-language=YAML
+*.yml                   text    eol=lf	linguist-language=YAML
++*.cff                  text    eol=lf  linguist-language=YAML
 browserslist            text    eol=lf
 Makefile                text    eol=lf
 makefile                text    eol=lf
