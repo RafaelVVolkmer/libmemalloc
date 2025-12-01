@@ -43,6 +43,7 @@ USER appuser
 WORKDIR /app
 
 COPY --chown=appuser:appgroup CMakeLists.txt    ./
+COPY --chown=appuser:appgroup libmemalloc.map   ./
 COPY --chown=appuser:appgroup src/              src/
 COPY --chown=appuser:appgroup inc/              inc/
 COPY --chown=appuser:appgroup tests/            tests/
