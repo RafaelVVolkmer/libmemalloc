@@ -5,7 +5,7 @@
 #
 # - Detects OS (Linux/macOS) and package manager (apt/dnf/pacman/brew)
 # - Checks versions of core tools (cmake, gcc/gcov, clang, valgrind, docker…)
-# - Checks for Rust toolchain (rustc, cargo) and typos (spell checker)
+# - Checks for Rust toolchain (rustc, cargo), typos (spell checker) and reuse
 # - Checks for GitHub CLI (gh) used by repo automation scripts
 # - If something is missing or too old, tries to install/upgrade it
 # - At the end, prints a concise summary of detected versions
@@ -53,6 +53,7 @@ It checks for and optionally installs:
   - C/C++ toolchain: cmake, ninja, gcc/gcov, clang, valgrind, docker
   - Rust toolchain: rustc, cargo
   - Spell checker: typos (installed via 'cargo install typos-cli')
+  - REUSE helper: reuse (installed via pipx if available)
   - GitHub CLI: gh (used by scripts like scripts/labels.sh)
 EOF
   exit 2
@@ -65,24 +66,28 @@ CHECK_ONLY=false
 
 while [ $# -gt 0 ]; do
   case "${1,,}" in
-    --check-only) CHECK_ONLY=true; shift;;
-    -h|--help)    usage;;
-    *)            usage;;
+    --check-only) CHECK_ONLY=true; shift ;;
+    -h|--help)    usage ;;
+    *)            usage ;;
   esac
 done
 
 # ------------------------------------------------------------------------------
-# Minimum versions (adjust as needed)
+# Minimum versions (pinned to current known-good environment)
 # ------------------------------------------------------------------------------
-MIN_CMAKE="3.20.0"
-MIN_GCC="10.0.0"
-MIN_CLANG="14.0.0"
-MIN_VALGRIND="3.18.0"
-MIN_DOCKER="20.10.0"
-MIN_RUSTC="1.80.0"
-MIN_CARGO="1.80.0"
-# typos and gh are required for full tooling, but we don't enforce a specific
-# minimum version here.
+MIN_CMAKE="3.28.3"
+MIN_GCC="13.3.0"
+MIN_CLANG="18.1.3"
+MIN_VALGRIND="3.22.0"
+MIN_DOCKER="28.2.2"
+MIN_RUSTC="1.91.1"
+MIN_CARGO="1.91.1"
+MIN_DOXYGEN="1.9.8"
+MIN_GRAPHVIZ="2.43.0"
+MIN_GIT="2.43.0"
+MIN_GH="2.45.0"
+MIN_TYPOS="1.40.0"
+MIN_REUSE="6.2.0"
 
 # ------------------------------------------------------------------------------
 # Package lists (per package manager)
@@ -168,16 +173,16 @@ check_version() {
   local current="$3"
 
   if [[ -z "$current" ]]; then
-    echo "${RED}[-] $name: not found or could not detect version${RESET}"
+    echo "${RED}[-] ${name}: not found or could not detect version${RESET}"
     ALL_OK=0
     return 1
   fi
 
   if ver_ge "$current" "$min"; then
-    echo "${GREEN}[+] $name $current (>= $min)${RESET}"
+    echo "${GREEN}[+] ${name} ${current} (>= ${min})${RESET}"
     return 0
   else
-    echo "${YELLOW}[!] $name $current (< $min, require >= $min)${RESET}"
+    echo "${YELLOW}[!] ${name} ${current} (< ${min}, require >= ${min})${RESET}"
     ALL_OK=0
     return 1
   fi
@@ -233,12 +238,12 @@ check_all_versions() {
     done
   fi
 
-  if [[ -n "$clang_cmd" ]] && have_cmd "$clang_cmd"; then
+  if [[ -n "${clang_cmd}" ]] && have_cmd "${clang_cmd}"; then
     local clang_ver
     # Examples:
     #   Ubuntu clang version 18.1.3-1ubuntu1
-    #   clang version 17.0.0
-    clang_ver="$("$clang_cmd" --version | head -n1 | sed -E 's/.*clang version ([0-9.]+).*/\1/')"
+    #   clang version 18.1.3
+    clang_ver="$("${clang_cmd}" --version | head -n1 | sed -E 's/.*clang version ([0-9.]+).*/\1/')"
     check_version "clang" "$MIN_CLANG" "$clang_ver"
   else
     echo "${RED}[-] clang: not installed${RESET}"
@@ -248,7 +253,10 @@ check_all_versions() {
   # clang-tidy
   if have_cmd clang-tidy; then
     local tidy_ver
-    tidy_ver="$(clang-tidy --version | head -n1 | awk '{print $NF}')"
+    # Example:
+    #   Ubuntu clang-tidy version 18.1.3-1ubuntu1
+    #   clang-tidy version 18.1.3
+    tidy_ver="$(clang-tidy --version | head -n1 | sed -E 's/.*version ([0-9.]+).*/\1/')"
     check_version "clang-tidy" "$MIN_CLANG" "$tidy_ver"
   else
     echo "${RED}[-] clang-tidy: not installed (or named clang-tidy-XX)${RESET}"
@@ -258,7 +266,10 @@ check_all_versions() {
   # clang-format
   if have_cmd clang-format; then
     local format_ver
-    format_ver="$(clang-format --version | awk '{print $NF}')"
+    # Example:
+    #   Ubuntu clang-format version 18.1.3-1ubuntu1
+    #   clang-format version 18.1.3
+    format_ver="$(clang-format --version | head -n1 | sed -E 's/.*version ([0-9.]+).*/\1/')"
     check_version "clang-format" "$MIN_CLANG" "$format_ver"
   else
     echo "${RED}[-] clang-format: not installed (or named clang-format-XX)${RESET}"
@@ -269,8 +280,8 @@ check_all_versions() {
   if have_cmd doxygen; then
     local doxygen_ver
     doxygen_ver="$(doxygen --version 2>/dev/null || true)"
-    [[ -z "$doxygen_ver" ]] && doxygen_ver="unknown"
-    echo "${GREEN}[+] doxygen $doxygen_ver${RESET}"
+    [[ -z "$doxygen_ver" ]] && doxygen_ver="0"
+    check_version "doxygen" "$MIN_DOXYGEN" "$doxygen_ver"
   else
     echo "${RED}[-] doxygen: not installed${RESET}"
     ALL_OK=0
@@ -280,8 +291,8 @@ check_all_versions() {
   if have_cmd dot; then
     local dot_ver
     dot_ver="$(dot -V 2>&1 | awk '{print $5}' | tr -d '()')"
-    [[ -z "$dot_ver" ]] && dot_ver="unknown"
-    echo "${GREEN}[+] graphviz (dot) $dot_ver${RESET}"
+    [[ -z "$dot_ver" ]] && dot_ver="0"
+    check_version "graphviz (dot)" "$MIN_GRAPHVIZ" "$dot_ver"
   else
     echo "${RED}[-] graphviz (dot): not installed${RESET}"
     ALL_OK=0
@@ -291,22 +302,22 @@ check_all_versions() {
   if have_cmd git; then
     local git_ver
     git_ver="$(git --version | awk '{print $3}')"
-    echo "${GREEN}[+] git $git_ver${RESET}"
+    check_version "git" "$MIN_GIT" "$git_ver"
   else
     echo "${RED}[-] git: not installed${RESET}"
     ALL_OK=0
   fi
 
-  # GitHub CLI (optional but recommended)
+  # GitHub CLI (required for automation scripts)
   if have_cmd gh; then
     local gh_ver
-    # Example: gh version 2.61.0 (2024-10-01)
+    # Example: gh version 2.45.0 (2024-10-01)
     gh_ver="$(gh --version | head -n1 | awk '{print $3}')"
-    [[ -z "$gh_ver" ]] && gh_ver="unknown"
-    echo "${GREEN}[+] gh $gh_ver (GitHub CLI)${RESET}"
+    [[ -z "$gh_ver" ]] && gh_ver="0"
+    check_version "gh" "$MIN_GH" "$gh_ver"
   else
-    echo "${YELLOW}[!] gh (GitHub CLI) not installed — scripts/labels.sh and other GitHub automation will be unavailable${RESET}"
-    # NOTE: we intentionally do NOT flip ALL_OK here; gh is recommended, not mandatory.
+    echo "${RED}[-] gh (GitHub CLI): not installed — scripts/labels.sh and other GitHub automation cannot run${RESET}"
+    ALL_OK=0
   fi
 
   # Valgrind
@@ -363,10 +374,28 @@ check_all_versions() {
   if have_cmd typos; then
     local typos_ver
     typos_ver="$(typos --version 2>/dev/null | awk '{print $2}')"
-    [[ -z "$typos_ver" ]] && typos_ver="unknown"
-    echo "${GREEN}[+] typos $typos_ver${RESET}"
+    [[ -z "$typos_ver" ]] && typos_ver="0"
+    check_version "typos" "$MIN_TYPOS" "$typos_ver"
   else
     echo "${RED}[-] typos: not installed (required for spell checking and style checks)${RESET}"
+    ALL_OK=0
+  fi
+
+  # reuse (SPDX / REUSE compliance helper)
+  if have_cmd reuse; then
+    local reuse_ver_line
+    local reuse_ver
+
+    reuse_ver_line="$(reuse --version 2>/dev/null | head -n1)"
+    reuse_ver="$(printf '%s\n' "$reuse_ver_line" | awk '{print $2}')"
+
+    if [[ -z "$reuse_ver" ]]; then
+      reuse_ver="$(printf '%s\n' "$reuse_ver_line" | grep -Eo '[0-9]+(\.[0-9]+)*' || echo 0)"
+    fi
+
+    check_version "reuse" "$MIN_REUSE" "$reuse_ver"
+  else
+    echo "${RED}[-] reuse: not installed (required for REUSE/SPDX license checks)${RESET}"
     ALL_OK=0
   fi
 
@@ -412,7 +441,7 @@ detect_linux_distro_and_install() {
   else
     echo "${RED}Unsupported Linux distribution (no apt, dnf or pacman found).${RESET}"
     echo "Please install the following tools manually:"
-    printf '  %s\n' "cmake, ninja, gcc, g++, clang, clang-tidy, clang-format, doxygen, graphviz, git, gh, valgrind, docker, rustc, cargo, typos"
+    printf '  %s\n' "cmake, ninja, gcc, g++, clang, clang-tidy, clang-format, doxygen, graphviz, git, gh, valgrind, docker, rustc, cargo, typos, reuse"
     exit 1
   fi
 }
@@ -436,13 +465,44 @@ install_typos_with_cargo() {
   fi
 
   echo "${GREEN}→ Installing typos (spell checker) via cargo…${RESET}"
-  # Use a version compatible with older rustc toolchains (e.g., 1.80+)
-  if cargo install typos-cli --version 1.39.0; then
+  # Use a version compatible with current rustc toolchains (e.g., 1.80+)
+  if cargo install typos-cli --version "${MIN_TYPOS}"; then
     echo "${GREEN}[+] typos successfully installed.${RESET}"
   else
-    echo "${RED}[-] Failed to install typos via cargo (typos-cli 1.39.0).${RESET}"
+    echo "${RED}[-] Failed to install typos via cargo (typos-cli ${MIN_TYPOS}).${RESET}"
     echo "    Please check your Rust toolchain and try manually with:"
-    echo "      cargo install typos-cli --version 1.39.0"
+    echo "      cargo install typos-cli --version ${MIN_TYPOS}"
+    ALL_OK=0
+    return 1
+  fi
+}
+
+# ------------------------------------------------------------------------------
+# Install reuse via pipx (optional helper)
+# ------------------------------------------------------------------------------
+install_reuse_with_pipx() {
+  # If reuse is already present, nothing to do.
+  if have_cmd reuse; then
+    echo "${GREEN}[+] reuse already installed.${RESET}"
+    return 0
+  fi
+
+  if ! have_cmd pipx; then
+    echo "${YELLOW}[!] pipx not found; cannot auto-install reuse.${RESET}"
+    echo "    Install pipx (e.g. 'apt install pipx' or 'python3 -m pip install --user pipx')"
+    echo "    and then run:"
+    echo "      pipx install reuse"
+    ALL_OK=0
+    return 1
+  fi
+
+  echo "${GREEN}→ Installing reuse via pipx…${RESET}"
+  if pipx install reuse; then
+    echo "${GREEN}[+] reuse successfully installed via pipx.${RESET}"
+  else
+    echo "${RED}[-] Failed to install reuse via pipx.${RESET}"
+    echo "    Please check your Python/pipx setup and try manually with:"
+    echo "      pipx install reuse"
     ALL_OK=0
     return 1
   fi
@@ -510,7 +570,11 @@ main() {
   install_typos_with_cargo
 
   echo
-  echo "${GREEN}→ Step 4: Re-checking toolchain after installation…${RESET}"
+  echo "${GREEN}→ Step 4: Ensuring reuse (REUSE/SPDX helper) is available…${RESET}"
+  install_reuse_with_pipx
+
+  echo
+  echo "${GREEN}→ Step 5: Re-checking toolchain after installation…${RESET}"
   check_all_versions
 
   if [[ "$ALL_OK" -eq 1 ]]; then
