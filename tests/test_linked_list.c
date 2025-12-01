@@ -151,16 +151,11 @@ int main(void)
   node_t *iter = (node_t *)NULL;
   node_t *next = (node_t *)NULL;
 
-  mem_allocator_t allocator;
-
   size_t iterator = 0u;
-
-  ret = MEM_allocatorInit(&allocator);
-  CHECK(ret == EXIT_SUCCESS);
 
   for (iterator = 1u; iterator <= MAX_NODES; ++iterator)
   {
-    node = MEM_allocMallocFirstFit(&allocator, sizeof(node_t), "node");
+    node = MEM_allocFirstFit(sizeof(node_t));
     CHECK(node != NULL);
 
     node->data = iterator;
@@ -182,7 +177,7 @@ int main(void)
   for (iter = head; iter;)
   {
     next = iter->next;
-    ret  = MEM_allocFree(&allocator, (void *)iter, "node");
+    ret  = MEM_free((void *)iter);
     CHECK(ret == EXIT_SUCCESS);
     iter = next;
   }

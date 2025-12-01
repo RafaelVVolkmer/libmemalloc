@@ -198,6 +198,180 @@
  * ========================================================================== */
 
 /** ============================================================================
+ *  @struct  block_header_t
+ *
+ *  @brief   Represents the header for a memory block.
+ *
+ *  @details This structure manages metadata for each block
+ *           within the heap, including size, status, and
+ *           debugging information.
+ *
+ *  @par Fields:
+ *    @li @b magic    – Magic number for integrity check
+ *    @li @b size     – Total block size (includes header, data, and canary)
+ *    @li @b free     – 1 if block is free, 0 if allocated
+ *    @li @b marked   – Garbage collector mark flag
+ *    @li @b file     – Source file of allocation (for debugging)
+ *    @li @b line     – Line number of allocation (for debugging)
+ *    @li @b canary   – Canary value for buffer-overflow detection
+ *    @li @b next     – Pointer to the next block
+ *    @li @b prev     – Pointer to the previous block
+ *    @li @b fl_next  – Pointer to the next block on free list
+ *    @li @b fl_prev  – Pointer to the previous block on free list
+ * ========================================================================== */
+typedef struct __ALIGN BlockHeader
+{
+  uintptr_t magic; /**< Magic number for integrity check */
+  size_t    size;  /**< Total block size (includes header, data, and canary) */
+
+  uint32_t free;   /**< 1 if block is free, 0 if allocated */
+  uint32_t marked; /**< Garbage collector mark flag */
+
+  const char *file;         /**< Source file of allocation (for debugging) */
+  uint64_t    line;         /**< Line number of allocation (for debugging) */
+
+  uintptr_t canary;         /**< Canary value for buffer-overflow detection */
+
+  struct BlockHeader *next; /**< Pointer to the next block */
+  struct BlockHeader *prev; /**< Pointer to the previous block */
+
+  struct BlockHeader *fl_next; /**< Pointer to the next block on free list */
+  struct BlockHeader
+    *fl_prev; /**< Pointer to the previous block on free list */
+} block_header_t;
+
+/** ============================================================================
+ *  @struct     mem_arena_t
+ *  @brief      Represents a memory arena with its own free lists.
+ *
+ *  @details    This structure manages a group of free lists (bins)
+ *              and tracks the top chunk in the heap for allocation
+ *              strategies like top chunk extension. Each arena can
+ *              hold multiple size classes to optimize allocation
+ *              and minimize fragmentation.
+ *
+ *  @par Fields:
+ *    @li @b bins      – Array of free lists (one per size class)
+ *    @li @b top_chunk – Top free block in the heap (for fast extension)
+ *    @li @b num_bins  – Number of size classes (bins) managed by this arena
+ * ========================================================================== */
+typedef struct __ALIGN MemArena
+{
+  size_t num_bins;            /**< Number of bins in this arena */
+
+  block_header_t **bins;      /**< Array of pointers to bin heads */
+  block_header_t  *top_chunk; /**< Pointer to the top (wilderness) chunk */
+} mem_arena_t;
+
+/** ============================================================================
+ *  @struct     mmap_t
+ *  @brief      Tracks memory-mapped regions for large allocations.
+ *
+ *  @details    Each node records the base address and size of
+ *              an mmap() allocation, forming a linked list
+ *              maintained by the allocator.
+ *
+ *  @par Fields:
+ *    @li @b addr – Base address returned by mmap()
+ *    @li @b size – Total mapped region size (rounded to pages)
+ *    @li @b next – Next region in allocator’s mmap list
+ * ========================================================================== */
+typedef struct __ALIGN MmapBlock
+{
+  void  *addr;            /**< Base address returned by mmap() */
+  size_t size;            /**< Total mapped region size (rounded to pages) */
+
+  struct MmapBlock *next; /**< Next region in the allocator’s mmap list */
+} mmap_t;
+
+/** ============================================================================
+ *  @struct     gc_thread_t
+ *  @brief      Orchestrates the background mark-and-sweep garbage collector.
+ *
+ *  @details    The structure encapsulates all state and
+ *              synchronization needed to run the garbage collector in its own
+ *              thread. Once started, the GC thread will periodically wake up,
+ *              scan the heap and any mapped regions for unreachable objects,
+ *              reclaim them, and then sleep again. The structure holds the
+ *              timing parameters, the thread handle, and the primitives used
+ *              to signal the collector to start or stop its work.
+ *
+ *  @par Fields:
+ *    @li @b gc_thread        – Handle to the GC pthread
+ *    @li @b main_thread      – Handle to the application’s main pthread
+ *    @li @b gc_running       – Whether the GC thread is active and should run
+ *    @li @b gc_exit          – Signal for the GC thread to exit
+ *    @li @b gc_interval_ms   – Interval between GC cycles, in milliseconds
+ *    @li @b gc_thread_started – Flag indicating the GC thread has been created
+ *    @li @b gc_cond          – Condition variable to signal GC thread
+ *    @li @b gc_lock          – Mutex for synchronizing GC start/stop
+ * ========================================================================== */
+typedef struct __ALIGN GcThread
+{
+  pthread_t gc_thread;        /**< GC thread handle */
+  pthread_t main_thread;      /**< Main thread handle */
+
+  bool gc_running;            /**< Flag indicating GC is running */
+  bool gc_exit;               /**< Flag to signal GC shutdown */
+
+  uint16_t gc_thread_started; /**< Indicates whether GC thread has started */
+
+  uint32_t gc_interval_ms;    /**< Interval between GC cycles (ms) */
+
+  pthread_cond_t  gc_cond;    /**< Condition variable for GC signaling */
+  pthread_mutex_t gc_lock;    /**< Mutex protecting the condition */
+} gc_thread_t;
+
+/** ============================================================================
+ *  @struct     mem_allocator_t
+ *  @brief      Manages dynamic memory allocation.
+ *
+ *  @details    This structure manages the heap, including free
+ *              lists for memory blocks, garbage collection, and
+ *              allocation strategies.
+ *
+ *  @par Fields:
+ *    @li @b heap_start       – Base of the user heap region
+ *    @li @b heap_end         – Current end of the heap
+ *    @li @b metadata_size    – Bytes reserved for bins and arenas
+ *    @li @b stack_top        – Upper bound of application stack
+ *    @li @b stack_bottom     – Lower bound of application stack
+ *    @li @b last_allocated   – Last block returned (NEXT_FIT)
+ *    @li @b num_size_classes – Total size classes available
+ *    @li @b num_arenas       – Number of arena partitions
+ *    @li @b arenas           – Array of arena metadata
+ *    @li @b mmap_list        – Linked list of mmap’d regions
+ *    @li @b free_lists       – Segregated free lists by size class
+ *    @li @b last_brk_start   – Start address of the last sbrk(+) lease
+ *    @li @b last_brk_end     – End (exclusive) of the last sbrk(+) lease
+ *    @li @b gc_thread        – Garbage collector controller
+ * ========================================================================== */
+typedef struct __ALIGN MemoryAllocator
+{
+  uint8_t *heap_start;             /**< Base of the user heap region */
+  uint8_t *heap_end;               /**< Current end of the heap */
+
+  size_t metadata_size;            /**< Bytes reserved for bins and arenas */
+
+  uintptr_t *stack_top;            /**< Upper bound of application stack */
+  uintptr_t *stack_bottom;         /**< Lower bound of application stack */
+
+  size_t num_size_classes;         /**< Total size classes available */
+  size_t num_arenas;               /**< Number of arena partitions */
+
+  block_header_t  *last_allocated; /**< Last block returned (NEXT_FIT) */
+  block_header_t **free_lists;     /**< Segregated free lists by size class */
+
+  mem_arena_t *arenas;             /**< Array of arena metadata */
+  mmap_t      *mmap_list;          /**< Linked list of mmap’d regions */
+
+  uint8_t *last_brk_start; /**< Start address of the last sbrk(+) lease */
+  uint8_t *last_brk_end;   /**< End (exclusive) of the last sbrk(+) lease */
+
+  gc_thread_t gc_thread;   /**< Garbage collector controller */
+} mem_allocator_t;
+
+/** ============================================================================
  *  @typedef  find_fn_t
  *  @brief    Type for functions that locate a suitable free block.
  *
@@ -253,6 +427,28 @@ void *MEM_sbrk(const intptr_t increment);
  * ========================================================================== */
 static int MEM_getSizeClass(mem_allocator_t *const allocator,
                             const size_t           size);
+
+/** ============================================================================
+ *  @brief  Initializes the memory allocator and its internal structures.
+ *
+ *  This function prepares the allocator’s heap by:
+ *    - Reading and aligning the initial program break to ARCH_ALIGNMENT.
+ *    - Allocating the arena array and free‐list bins via MEM_growUserHeap().
+ *    - Zeroing out the free‐list bins.
+ *    - Initializing the allocator fields (heap_start, heap_end, free_lists).
+ *    - Setting up the garbage‐collector thread state and its mutex/cond.
+ *    - Capturing the current thread’s stack bounds via MEM_stackBounds().
+ *    - (If under Valgrind) creating a mempool for the allocator.
+ *
+ *  @param[in]  allocator Pointer to a mem_allocator_t instance to initialize.
+ *
+ *  @return Integer status code indicating initialization result.
+ *
+ *  @retval EXIT_SUCCESS: Allocator initialized successfully.
+ *  @retval -EINVAL:      Invalid @p allocator pointer.
+ *  @retval -ENOMEM:      Heap alignment or arena/bin allocation failed.
+ * ========================================================================== */
+static int MEM_allocatorInit(mem_allocator_t *const allocator);
 
 /** ============================================================================
  *  @brief  Validates the integrity and boundaries of a memory block.
@@ -478,7 +674,7 @@ static void *MEM_growUserHeap(mem_allocator_t *const allocator,
  *
  *  This function rounds up @p total_size to a multiple of the system page size,
  *  invokes mmap() to obtain an anonymous read/write region, then allocates
- *  an mmap_t metadata node via MEM_allocatorMalloc() and links it into
+ *  an mmap_t metadata node via MEM_allocOp() and links it into
  *  allocator->mmap_list.  It initializes a block_header_t and trailing canary
  *  in the mapped region to integrate with the allocator’s debugging and GC.
  *
@@ -502,7 +698,7 @@ static void *MEM_mapAlloc(mem_allocator_t *const allocator,
  *
  *  This function searches the allocator’s mmap_list for an entry matching
  *  @p addr, calls munmap() to unmap the region, unlinks the corresponding
- *  mmap_t metadata node, and frees it via MEM_allocatorFree().  Errors during
+ *  mmap_t metadata node, and frees it via MEM_freeOp().  Errors during
  *  munmap are returned; if metadata freeing fails, an error is logged but
  *  success is returned.
  *
@@ -525,7 +721,7 @@ static int MEM_mapFree(mem_allocator_t *const allocator, void *const addr);
  *  growth) or mmap (for large requests > MMAP_THRESHOLD).  It uses the
  *  given @p strategy (FIRST_FIT, NEXT_FIT, BEST_FIT) to locate a free block,
  *  grows the heap if necessary, splits a larger block to fit exactly, and
- *  records debugging metadata (source file, line, variable name).  For mmap
+ *  records debugging metadata (source file, line).  For mmap
  *  allocations it rounds up to page size and tracks the region in the
  * allocator.
  *
@@ -533,7 +729,6 @@ static int MEM_mapFree(mem_allocator_t *const allocator, void *const addr);
  *  @param[in]  size      Number of bytes requested.
  *  @param[in]  file      Source file name for debugging metadata.
  *  @param[in]  line      Source line number for debugging metadata.
- *  @param[in]  var_name  Variable name for tracking.
  *  @param[in]  strategy  Allocation strategy.
  *
  *  @return Pointer to the start of the allocated user region (just past
@@ -547,13 +742,12 @@ static int MEM_mapFree(mem_allocator_t *const allocator, void *const addr);
  *                    (e.g. mmap_t node) failed.
  *  @retval -EIO:     mmap() I/O error for large allocations.
  * ========================================================================== */
-static void *MEM_allocatorMalloc(mem_allocator_t *const      allocator,
+static void *MEM_allocOp(mem_allocator_t *const      allocator,
                                  const size_t                size,
                                  const char *const           file,
                                  const int                   line,
-                                 const char *const           var_name,
                                  const allocation_strategy_t strategy)
-  __LIBMEMALLOC_MALLOC;
+  __LIBMEMALLOC_INTERNAL_MALLOC;
 
 /** ============================================================================
  *  @brief  Reallocates memory with safety checks.
@@ -570,7 +764,6 @@ static void *MEM_allocatorMalloc(mem_allocator_t *const      allocator,
  *  @param[in]  new_size  New requested size in bytes.
  *  @param[in]  file      Source file name for debugging metadata.
  *  @param[in]  line      Source line number for debugging metadata.
- *  @param[in]  var_name  Variable name for tracking.
  *  @param[in]  strategy  Allocation strategy to use.
  *
  *  @return Pointer to the reallocated memory region (which may be the same
@@ -582,28 +775,26 @@ static void *MEM_allocatorMalloc(mem_allocator_t *const      allocator,
  *  @retval -ENOMEM:  Out of memory (allocation or free failure).
  *  @retval -EIO:     I/O error for large mmap-based allocations.
  * ========================================================================== */
-static void *MEM_allocatorRealloc(mem_allocator_t *const      allocator,
+static void *MEM_reallocOp(mem_allocator_t *const      allocator,
                                   void *const                 ptr,
                                   const size_t                new_size,
                                   const char *const           file,
                                   const int                   line,
-                                  const char *const           var_name,
                                   const allocation_strategy_t strategy)
-  __LIBMEMALLOC_REALLOC;
+  __LIBMEMALLOC_INTERNAL_REALLOC;
 
 /** ============================================================================
  *  @brief  Allocates and zero‐initializes memory.
  *
  *  This function behaves like calloc(), allocating at least @p size bytes of
- *  zeroed memory via MEM_allocatorMalloc() and then setting all bytes to zero.
- *  It records debugging metadata (source file, line, variable name) and uses
+ *  zeroed memory via MEM_allocOp() and then setting all bytes to zero.
+ *  It records debugging metadata (source file, line) and uses
  *  the given @p strategy for allocation.
  *
  *  @param[in]  allocator Pointer to the mem_allocator_t context.
  *  @param[in]  size      Number of bytes to allocate.
  *  @param[in]  file      Source file name for debugging metadata.
  *  @param[in]  line      Source line number for debugging metadata.
- *  @param[in]  var_name  Variable name for tracking.
  *  @param[in]  strategy  Allocation strategy to use.
  *
  *  @return Pointer to the start of the allocated zeroed region;
@@ -614,18 +805,17 @@ static void *MEM_allocatorRealloc(mem_allocator_t *const      allocator,
  *  @retval -ENOMEM:  Out of memory: allocation failed.
  *  @retval -EIO:     I/O error for large mmap‐based allocations.
  * ========================================================================== */
-static void *MEM_allocatorCalloc(mem_allocator_t *const      allocator,
+static void *MEM_callocOp(mem_allocator_t *const      allocator,
                                  const size_t                size,
                                  const char *const           file,
                                  const int                   line,
-                                 const char *const           var_name,
                                  const allocation_strategy_t strategy)
-  __LIBMEMALLOC_MALLOC;
+  __LIBMEMALLOC_INTERNAL_MALLOC;
 
 /** ============================================================================
  *  @brief  Releases allocated memory back to the heap.
  *
- *  This function frees a pointer previously returned by MEM_allocatorMalloc().
+ *  This function frees a pointer previously returned by MEM_allocOp().
  *  It supports both heap‐based and mmap‐based allocations:
  *    - For mmap regions, it delegates to MEM_mapFree() to unmap and remove
  metadata.
@@ -638,7 +828,6 @@ static void *MEM_allocatorCalloc(mem_allocator_t *const      allocator,
  *  @param[in]  ptr       Pointer to memory to free.
  *  @param[in]  file      Source file name for debugging metadata.
  *  @param[in]  line      Source line number for debugging metadata.
- *  @param[in]  var_name  Variable name for tracking.
  *
  *  @return Integer status code.
  *
@@ -654,11 +843,10 @@ static void *MEM_allocatorCalloc(mem_allocator_t *const      allocator,
  *                        MEM_removeFreeBlock(), MEM_mergeBlocks(),
  *                        or MEM_insertFreeBlock().
  * ========================================================================== */
-static int MEM_allocatorFree(mem_allocator_t *const allocator,
+static int MEM_freeOp(mem_allocator_t *const allocator,
                              void *const            ptr,
                              const char *const      file,
-                             const int              line,
-                             const char *const      var_name);
+                             const int              line);
 
 /** ============================================================================
  *  @brief  Determine at runtime whether the stack grows downward
@@ -772,13 +960,13 @@ __GC_HOT static int MEM_gcMark(mem_allocator_t *const allocator);
  *    - It iterates over every block in the heap:
  *        • Logs each block’s free and marked status.
  *        • If a block is allocated (free==0) but unmarked, calls
- *          MEM_allocatorFree() on its payload pointer to reclaim it.
+ *          MEM_freeOp() on its payload pointer to reclaim it.
  *        • Clears each block’s marked flag.
  *    - It then traverses allocator->mmap_list via a pointer-to-pointer scan:
  *        • Logs each mmap’d region’s status.
  *        • If an mmap’d block is unmarked and not already free, unlinks
  *          the mmap_t node, calls munmap() on the region, and frees its
- *          metadata header via MEM_allocatorFree().
+ *          metadata header via MEM_freeOp().
  *        • Otherwise, clears the block’s marked flag and advances to the next
  * node.
  *
@@ -788,7 +976,7 @@ __GC_HOT static int MEM_gcMark(mem_allocator_t *const allocator);
  *
  *  @retval EXIT_SUCCESS: All unreachable blocks reclaimed successfully.
  *  @retval -EINVAL:      @p allocator is NULL.
- *  @retval ret<0:        Errors returned by MEM_allocatorFree(),
+ *  @retval ret<0:        Errors returned by MEM_freeOp(),
  *                        munmap(), or internal validation functions.
  * ========================================================================== */
 __GC_HOT static int MEM_gcSweep(mem_allocator_t *const allocator);
@@ -831,6 +1019,47 @@ __GC_COLD static int MEM_runGc(mem_allocator_t *const allocator);
 __GC_COLD static int MEM_stopGc(mem_allocator_t *const allocator);
 
 #endif
+
+/** ============================================================================
+ *              	P R I V A T E  G L O B A L  V A R I A B L E S
+ * ========================================================================== */
+
+/** ============================================================================
+ *  @var        g_allocator
+ *  @brief      Process-wide default allocator instance.
+ *
+ *  @details    Statically allocated allocator used when the API is called
+ *              without an explicit @c mem_allocator_t handle. This instance
+ *              is initialized exactly once (see @c g_alocator_inited) and then
+ *              reused for all subsequent allocation requests routed through
+ *              the “global” path.
+ *
+ *  @note       File-scope @c static grants internal linkage: the symbol is
+ *              private to this translation unit.
+ *
+ *  @par Thread-Safety
+ *              Initialization must be synchronized so only one thread performs
+ *              it (e.g., via @c pthread_once or equivalent). Normal allocator
+ *              operations should rely on the allocator’s internal locking.
+ *
+ *  @see        MEM_allocatorInit(), MEM_allocOp(), MEM_free(), MEM_realloc()
+ * ========================================================================== */
+static mem_allocator_t g_allocator;
+
+/** ============================================================================
+ *  @var        g_alocator_inited
+ *  @brief      One-time initialization guard for @c g_allocator.
+ *
+ *  @details    Boolean-like flag controlling lazy init of the global allocator.
+ *              A value of 0 means “not initialized”; 1 means “initialized”.
+ *              It should be set to 1 only after a successful call to
+ *              @c MEM_allocatorInit(&g_allocator).
+ *
+ *  @warning    This flag is a plain @c int and is not atomic. In multi-threaded
+ *              contexts, protect initialization with proper synchronization
+ *              (e.g., @c pthread_once, a mutex, or atomic CAS) to avoid races.
+ * ========================================================================== */
+static bool g_alocator_inited = false;
 
 /** ============================================================================
  *                  F U N C T I O N S  D E F I N I T I O N S
@@ -1665,7 +1894,7 @@ function_output:
  *  @retval -EINVAL:      Invalid @p allocator pointer.
  *  @retval -ENOMEM:      Heap alignment or arena/bin allocation failed.
  * ========================================================================== */
-int MEM_allocatorInit(mem_allocator_t *const allocator)
+static int MEM_allocatorInit(mem_allocator_t *const allocator)
 {
   int ret = EXIT_SUCCESS;
 
@@ -1681,6 +1910,8 @@ int MEM_allocatorInit(mem_allocator_t *const allocator)
 
   size_t pad        = 0u;
   size_t bins_bytes = 0u;
+
+	g_alocator_inited = true;
 
   allocator->last_brk_start = NULL;
   allocator->last_brk_end   = NULL;
@@ -1862,7 +2093,7 @@ function_output:
  *
  *  This function rounds up @p total_size to a multiple of the system page size,
  *  invokes mmap() to obtain an anonymous read/write region, then allocates
- *  an mmap_t metadata node via MEM_allocatorMalloc() and links it into
+ *  an mmap_t metadata node via MEM_allocOp() and links it into
  *  allocator->mmap_list.  It initializes a block_header_t and trailing canary
  *  in the mapped region to integrate with the allocator’s debugging and GC.
  *
@@ -1921,11 +2152,10 @@ static void *MEM_mapAlloc(mem_allocator_t *const allocator,
     goto function_output;
   }
 
-  map_block = MEM_allocatorMalloc(allocator,
-                                  sizeof(mmap_t),
-                                  __FILE__,
+  map_block = MEM_allocOp(allocator,
+                          sizeof(mmap_t),
+                          __FILE__,
                                   __LINE__,
-                                  "mmap_meta",
                                   FIRST_FIT);
   if (map_block == NULL)
   {
@@ -1953,7 +2183,6 @@ static void *MEM_mapAlloc(mem_allocator_t *const allocator,
   header->next     = (block_header_t *)NULL;
   header->file     = (const char *)NULL;
   header->line     = 0u;
-  header->var_name = (const char *)NULL;
 
   canary_addr  = (uintptr_t)ptr + map_size - sizeof(uintptr_t);
   data_canary  = (uintptr_t *)canary_addr;
@@ -1971,7 +2200,7 @@ function_output:
  *
  *  This function searches the allocator’s mmap_list for an entry matching
  *  @p addr, calls munmap() to unmap the region, unlinks the corresponding
- *  mmap_t metadata node, and frees it via MEM_allocatorFree().  Errors during
+ *  mmap_t metadata node, and frees it via MEM_freeOp().  Errors during
  *  munmap are returned; if metadata freeing fails, an error is logged but
  *  success is returned.
  *
@@ -2024,11 +2253,10 @@ static int MEM_mapFree(mem_allocator_t *const allocator, void *const addr)
       to_free  = *map_ref;
       *map_ref = to_free->next;
 
-      ret = MEM_allocatorFree(allocator,
+      ret = MEM_freeOp(allocator,
                               (void *)to_free,
                               __FILE__,
-                              __LINE__,
-                              "mmap_meta");
+                              __LINE__);
       if (ret != EXIT_SUCCESS)
       {
         LOG_ERROR("Mmap metadata free failed: %zu bytes. "
@@ -2405,7 +2633,6 @@ static int MEM_splitBlock(mem_allocator_t *const allocator,
   new_block->marked   = 0u;
   new_block->file     = (const char *)NULL;
   new_block->line     = 0ull;
-  new_block->var_name = (const char *)NULL;
   new_block->prev     = block;
   new_block->next     = block->next;
 
@@ -2574,7 +2801,7 @@ function_output:
  *  growth) or mmap (for large requests > MMAP_THRESHOLD).  It uses the
  *  given @p strategy (FIRST_FIT, NEXT_FIT, BEST_FIT) to locate a free block,
  *  grows the heap if necessary, splits a larger block to fit exactly, and
- *  records debugging metadata (source file, line, variable name).  For mmap
+ *  records debugging metadata (source file, line).  For mmap
  *  allocations it rounds up to page size and tracks the region in the
  * allocator.
  *
@@ -2582,7 +2809,6 @@ function_output:
  *  @param[in]  size      Number of bytes requested.
  *  @param[in]  file      Source file name for debugging metadata.
  *  @param[in]  line      Source line number for debugging metadata.
- *  @param[in]  var_name  Variable name for tracking.
  *  @param[in]  strategy  Allocation strategy.
  *
  *  @return Pointer to the start of the allocated user region (just past
@@ -2596,12 +2822,11 @@ function_output:
  *                    (e.g. mmap_t node) failed.
  *  @retval -EIO:     mmap() I/O error for large allocations.
  * ========================================================================== */
-static void *MEM_allocatorMalloc(mem_allocator_t *const      allocator,
-                                 const size_t                size,
-                                 const char *const           file,
-                                 const int                   line,
-                                 const char *const           var_name,
-                                 const allocation_strategy_t strategy)
+static void *MEM_allocOp(mem_allocator_t *const      allocator,
+                         const size_t                size,
+                         const char *const           file,
+                         const int                   line,
+                         const allocation_strategy_t strategy)
 {
   void *user_ptr = (void *)NULL;
 
@@ -2666,7 +2891,6 @@ static void *MEM_allocatorMalloc(mem_allocator_t *const      allocator,
 
     block->file     = file;
     block->line     = (uint64_t)line;
-    block->var_name = var_name;
 
     LOG_INFO("Mmap used for alloc: %p (%zu bytes).\n", raw_mmap, size);
     user_ptr = (uint8_t *)raw_mmap + sizeof(block_header_t);
@@ -2732,7 +2956,6 @@ static void *MEM_allocatorMalloc(mem_allocator_t *const      allocator,
 
   block->file     = file;
   block->line     = (uint64_t)line;
-  block->var_name = var_name;
 
   user_ptr = (void *)((uint8_t *)block + sizeof(block_header_t));
 
@@ -2765,7 +2988,6 @@ null_pointer:
  *  @param[in]  new_size  New requested size in bytes.
  *  @param[in]  file      Source file name for debugging metadata.
  *  @param[in]  line      Source line number for debugging metadata.
- *  @param[in]  var_name  Variable name for tracking.
  *  @param[in]  strategy  Allocation strategy to use.
  *
  *  @return Pointer to the reallocated memory region (which may be the same
@@ -2777,12 +2999,11 @@ null_pointer:
  *  @retval -ENOMEM:  Out of memory (allocation or free failure).
  *  @retval -EIO:     I/O error for large mmap-based allocations.
  * ========================================================================== */
-static void *MEM_allocatorRealloc(mem_allocator_t *const      allocator,
+static void *MEM_reallocOp(mem_allocator_t *const      allocator,
                                   void *const                 ptr,
                                   const size_t                new_size,
                                   const char *const           file,
                                   const int                   line,
-                                  const char *const           var_name,
                                   const allocation_strategy_t strategy)
 {
   int ret = EXIT_SUCCESS;
@@ -2808,11 +3029,10 @@ static void *MEM_allocatorRealloc(mem_allocator_t *const      allocator,
 
   if (ptr == NULL)
   {
-    new_ptr = MEM_allocatorMalloc(allocator,
+    new_ptr = MEM_allocOp(allocator,
                                   new_size,
                                   file,
                                   line,
-                                  var_name,
                                   strategy);
     goto function_output;
   }
@@ -2837,7 +3057,7 @@ static void *MEM_allocatorRealloc(mem_allocator_t *const      allocator,
   }
 
   new_ptr
-    = MEM_allocatorMalloc(allocator, new_size, file, line, var_name, strategy);
+    = MEM_allocOp(allocator, new_size, file, line, strategy);
   if (new_ptr != NULL)
   {
     if (MEM_memcpy(new_ptr, ptr, old_size) != new_ptr)
@@ -2846,7 +3066,7 @@ static void *MEM_allocatorRealloc(mem_allocator_t *const      allocator,
       goto function_output;
     }
 
-    ret = MEM_allocatorFree(allocator, ptr, file, line, var_name);
+    ret = MEM_freeOp(allocator, ptr, file, line);
     if (ret != EXIT_SUCCESS)
       goto function_output;
 
@@ -2865,15 +3085,14 @@ function_output:
  *  @brief  Allocates and zero‐initializes memory.
  *
  *  This function behaves like calloc(), allocating at least @p size bytes of
- *  zeroed memory via MEM_allocatorMalloc() and then setting all bytes to zero.
- *  It records debugging metadata (source file, line, variable name) and uses
+ *  zeroed memory via MEM_allocOp() and then setting all bytes to zero.
+ *  It records debugging metadata (source file, line) and uses
  *  the given @p strategy for allocation.
  *
  *  @param[in]  allocator Pointer to the mem_allocator_t context.
  *  @param[in]  size      Number of bytes to allocate.
  *  @param[in]  file      Source file name for debugging metadata.
  *  @param[in]  line      Source line number for debugging metadata.
- *  @param[in]  var_name  Variable name for tracking.
  *  @param[in]  strategy  Allocation strategy to use.
  *
  *  @return Pointer to the start of the allocated zeroed region;
@@ -2884,11 +3103,10 @@ function_output:
  *  @retval -ENOMEM:  Out of memory: allocation failed.
  *  @retval -EIO:     I/O error for large mmap‐based allocations.
  * ========================================================================== */
-static void *MEM_allocatorCalloc(mem_allocator_t *const      allocator,
+static void *MEM_callocOp(mem_allocator_t *const      allocator,
                                  const size_t                size,
                                  const char *const           file,
                                  const int                   line,
-                                 const char *const           var_name,
                                  const allocation_strategy_t strategy)
 {
   void *ptr = (void *)NULL;
@@ -2910,7 +3128,7 @@ static void *MEM_allocatorCalloc(mem_allocator_t *const      allocator,
     goto function_output;
   }
 
-  ptr = MEM_allocatorMalloc(allocator, size, file, line, var_name, strategy);
+  ptr = MEM_allocOp(allocator, size, file, line, strategy);
   if (ptr == NULL)
     goto function_output;
 
@@ -2929,7 +3147,7 @@ function_output:
 /** ============================================================================
  *  @brief  Releases allocated memory back to the heap.
  *
- *  This function frees a pointer previously returned by MEM_allocatorMalloc().
+ *  This function frees a pointer previously returned by MEM_allocOp().
  *  It supports both heap‐based and mmap‐based allocations:
  *    - For mmap regions, it delegates to MEM_mapFree() to unmap and remove
  metadata.
@@ -2942,7 +3160,6 @@ function_output:
  *  @param[in]  ptr       Pointer to memory to free.
  *  @param[in]  file      Source file name for debugging metadata.
  *  @param[in]  line      Source line number for debugging metadata.
- *  @param[in]  var_name  Variable name for tracking.
  *
  *  @return Integer status code.
  *
@@ -2958,11 +3175,10 @@ function_output:
  *                        MEM_removeFreeBlock(), MEM_mergeBlocks(),
  *                        or MEM_insertFreeBlock().
  * ========================================================================== */
-static int MEM_allocatorFree(mem_allocator_t *const allocator,
+static int MEM_freeOp(mem_allocator_t *const allocator,
                              void *const            ptr,
                              const char *const      file,
-                             const int              line,
-                             const char *const      var_name)
+                             const int              line)
 {
   int ret = EXIT_SUCCESS;
 
@@ -3026,7 +3242,6 @@ static int MEM_allocatorFree(mem_allocator_t *const allocator,
   block->marked   = 0u;
   block->file     = file;
   block->line     = (uint64_t)line;
-  block->var_name = var_name;
 
   ret = MEM_mergeBlocks(allocator, block);
   if (ret != EXIT_SUCCESS)
@@ -3323,13 +3538,13 @@ function_output:
  *    - It iterates over every block in the heap:
  *        • Logs each block’s free and marked status.
  *        • If a block is allocated (free==0) but unmarked, calls
- *          MEM_allocatorFree() on its payload pointer to reclaim it.
+ *          MEM_freeOp() on its payload pointer to reclaim it.
  *        • Clears each block’s marked flag.
  *    - It then traverses allocator->mmap_list via a pointer-to-pointer scan:
  *        • Logs each mmap’d region’s status.
  *        • If an mmap’d block is unmarked and not already free, unlinks
  *          the mmap_t node, calls munmap() on the region, and frees its
- *          metadata header via MEM_allocatorFree().
+ *          metadata header via MEM_freeOp().
  *        • Otherwise, clears the block’s marked flag and advances to the next
  * node.
  *
@@ -3339,7 +3554,7 @@ function_output:
  *
  *  @retval EXIT_SUCCESS: All unreachable blocks reclaimed successfully.
  *  @retval -EINVAL:      @p allocator is NULL.
- *  @retval ret<0:        Errors returned by MEM_allocatorFree(),
+ *  @retval ret<0:        Errors returned by MEM_freeOp(),
  *                        munmap(), or internal validation functions.
  * ========================================================================== */
 static int MEM_gcSweep(mem_allocator_t *const allocator)
@@ -3400,7 +3615,7 @@ static int MEM_gcSweep(mem_allocator_t *const allocator)
                  (void *)((uint8_t *)block + sizeof(block_header_t)),
                  block->size);
         user_ptr = (uint8_t *)block + sizeof(*block);
-        MEM_allocatorFree(allocator, user_ptr, __FILE__, __LINE__, "g");
+        MEM_freeOp(allocator, user_ptr, __FILE__, __LINE__);
         block->free = 1;
       }
 
@@ -3439,11 +3654,10 @@ static int MEM_gcSweep(mem_allocator_t *const allocator)
                map->size);
 
       munmap(map->addr, map->size);
-      MEM_allocatorFree(allocator,
+      MEM_freeOp(allocator,
                         (void *)map,
                         __FILE__,
-                        __LINE__,
-                        "mmap_meta");
+                        __LINE__);
     }
     else
     {
@@ -3660,6 +3874,7 @@ function_output:
 
 #endif
 
+
 /** ============================================================================
  *          P U B L I C  F U N C T I O N S  D E F I N I T I O N S
  * ========================================================================== */
@@ -3667,233 +3882,281 @@ function_output:
 /** ============================================================================
  *  @brief  Allocates memory using the FIRST_FIT strategy.
  *
- *  This function locks the GC mutex, invokes MEM_allocatorMalloc() with
+ *  This function locks the GC mutex, invokes MEM_allocOp() with
  *  FIRST_FIT strategy, automatically supplying __FILE__, __LINE__, and variable
  *  name for debugging, then unlocks the mutex.
  *
- *  @param[in]  allocator Memory allocator context.
  *  @param[in]  size      Number of bytes requested.
- *  @param[in]  var       Variable name for debugging.
  *
  *  @return Pointer to the allocated user memory on success,
  *          or an error‐encoded pointer (via PTR_ERR()) on failure.
  * ========================================================================== */
-void *MEM_allocMallocFirstFit(mem_allocator_t *const allocator,
-                              const size_t           size,
-                              const char *const      var)
+void *MEM_allocFirstFit(const size_t size)
 {
-  void *ret = (void *)NULL;
+  void *ret_addr = (void *)NULL;
+
+  int ret_init = EXIT_SUCCESS;
 
   gc_thread_t *gc_thread = (gc_thread_t *)NULL;
 
-  gc_thread = &allocator->gc_thread;
+  if (!g_alocator_inited)
+  {
+    MEM_memset(&g_allocator, 0, sizeof(mem_allocator_t));
+
+    ret_init = MEM_allocatorInit(&g_allocator);
+    if (ret_init != EXIT_SUCCESS)
+      goto function_output;
+  }
+
+  gc_thread = &g_allocator.gc_thread;
 
   pthread_mutex_lock(&gc_thread->gc_lock);
-  ret
-    = MEM_allocatorMalloc(allocator, size, __FILE__, __LINE__, var, FIRST_FIT);
+  ret_addr = MEM_allocOp(&g_allocator, size, __FILE__, __LINE__, FIRST_FIT);
   pthread_mutex_unlock(&gc_thread->gc_lock);
 
-  return ret;
+function_output:
+  return ret_addr;
 }
 
 /** ============================================================================
  *  @brief  Allocates memory using the BEST_FIT strategy.
  *
- *  This function locks the GC mutex, invokes MEM_allocatorMalloc() with
+ *  This function locks the GC mutex, invokes MEM_allocOp() with
  *  BEST_FIT strategy, automatically supplying __FILE__, __LINE__, and variable
  *  name for debugging, then unlocks the mutex.
  *
- *  @param[in]  allocator Memory allocator context.
  *  @param[in]  size      Number of bytes requested.
- *  @param[in]  var       Variable name for debugging.
  *
  *  @return Pointer to the allocated user memory on success,
  *          or an error‐encoded pointer (via PTR_ERR()) on failure.
  * ========================================================================== */
-void *MEM_allocMallocBestFit(mem_allocator_t *const allocator,
-                             const size_t           size,
-                             const char *const      var)
+void *MEM_allocBestFit(const size_t size)
 {
-  void *ret = (void *)NULL;
+  void *ret_addr = (void *)NULL;
+
+  int ret_init = EXIT_SUCCESS;
 
   gc_thread_t *gc_thread = (gc_thread_t *)NULL;
 
-  gc_thread = &allocator->gc_thread;
+  if (!g_alocator_inited)
+  {
+    MEM_memset(&g_allocator, 0, sizeof(mem_allocator_t));
+
+    ret_init = MEM_allocatorInit(&g_allocator);
+    if (ret_init != EXIT_SUCCESS)
+      goto function_output;
+  }
+
+  gc_thread = &g_allocator.gc_thread;
 
   pthread_mutex_lock(&gc_thread->gc_lock);
-  ret = MEM_allocatorMalloc(allocator, size, __FILE__, __LINE__, var, BEST_FIT);
+  ret_addr = MEM_allocOp(&g_allocator, size, __FILE__, __LINE__, BEST_FIT);
   pthread_mutex_unlock(&gc_thread->gc_lock);
 
-  return ret;
+function_output:
+  return ret_addr;
 }
 
 /** ============================================================================
  *  @brief  Allocates memory using the NEXT_FIT strategy.
  *
- *  This function locks the GC mutex, invokes MEM_allocatorMalloc() with
+ *  This function locks the GC mutex, invokes MEM_allocOp() with
  *  NEXT_FIT strategy, automatically supplying __FILE__, __LINE__, and variable
  *  name for debugging, then unlocks the mutex.
  *
- *  @param[in]  allocator Memory allocator context.
  *  @param[in]  size      Number of bytes requested.
- *  @param[in]  var       Variable name for debugging.
  *
  *  @return Pointer to the allocated user memory on success,
  *          or an error‐encoded pointer (via PTR_ERR()) on failure.
  * ========================================================================== */
-void *MEM_allocMallocNextFit(mem_allocator_t *const allocator,
-                             const size_t           size,
-                             const char *const      var)
+void *MEM_allocNextFit(const size_t size)
 {
-  void *ret = (void *)NULL;
+  void *ret_addr = (void *)NULL;
+
+  int ret_init = EXIT_SUCCESS;
 
   gc_thread_t *gc_thread = (gc_thread_t *)NULL;
 
-  gc_thread = &allocator->gc_thread;
+  if (!g_alocator_inited)
+  {
+    MEM_memset(&g_allocator, 0, sizeof(mem_allocator_t));
+
+    ret_init = MEM_allocatorInit(&g_allocator);
+    if (ret_init != EXIT_SUCCESS)
+      goto function_output;
+  }
+
+  gc_thread = &g_allocator.gc_thread;
 
   pthread_mutex_lock(&gc_thread->gc_lock);
-  ret = MEM_allocatorMalloc(allocator, size, __FILE__, __LINE__, var, NEXT_FIT);
+  ret_addr = MEM_allocOp(&g_allocator, size, __FILE__, __LINE__, NEXT_FIT);
   pthread_mutex_unlock(&gc_thread->gc_lock);
 
-  return ret;
+function_output:
+  return ret_addr;
 }
 
 /** ============================================================================
  *  @brief  Allocates memory using the specified strategy.
  *
- *  This function locks the GC mutex, invokes MEM_allocatorMalloc() with the
+ *  This function locks the GC mutex, invokes MEM_allocOp() with the
  *  given @p strategy, automatically supplying __FILE__, __LINE__, and variable
  *  name for debugging, then unlocks the mutex.
  *
- *  @param[in]  allocator Memory allocator context.
  *  @param[in]  size      Number of bytes requested
- *  @param[in]  var       Variable name for debugging.
  *  @param[in]  strategy  Allocation strategy.
  *
  *  @return Pointer to the allocated user memory on success,
  *          or an error‐encoded pointer (via PTR_ERR()) on failure.
  * ========================================================================== */
-void *MEM_allocMalloc(mem_allocator_t *const      allocator,
-                      const size_t                size,
-                      const char *const           var,
-                      const allocation_strategy_t strategy)
+void *MEM_alloc(const size_t size, const allocation_strategy_t strategy)
 {
-  void *ret = (void *)NULL;
+  void *ret_addr = (void *)NULL;
+
+  int ret_init = EXIT_SUCCESS;
 
   gc_thread_t *gc_thread = (gc_thread_t *)NULL;
 
-  gc_thread = &allocator->gc_thread;
+  if (!g_alocator_inited)
+  {
+    MEM_memset(&g_allocator, 0, sizeof(mem_allocator_t));
+
+    ret_init = MEM_allocatorInit(&g_allocator);
+    if (ret_init != EXIT_SUCCESS)
+      goto function_output;
+  }
+
+  gc_thread = &g_allocator.gc_thread;
 
   pthread_mutex_lock(&gc_thread->gc_lock);
-  ret = MEM_allocatorMalloc(allocator, size, __FILE__, __LINE__, var, strategy);
+  ret_addr = MEM_allocOp(&g_allocator, size, __FILE__, __LINE__, strategy);
   pthread_mutex_unlock(&gc_thread->gc_lock);
 
-  return ret;
+function_output:
+  return ret_addr;
 }
 
 /** ============================================================================
  *  @brief  Allocates and zero‐initializes memory using the specified strategy.
  *
- *  This function locks the GC mutex, invokes MEM_allocatorCalloc() with the
+ *  This function locks the GC mutex, invokes MEM_callocOp() with the
  *  given @p strategy, automatically supplying __FILE__, __LINE__, and variable
  *  name for debugging, then unlocks the mutex.
  *
- *  @param[in]  allocator Memory allocator context.
  *  @param[in]  size      Number of bytes requested.
  *  @param[in]  var       Variable name for debugging.
- *  @param[in]  strategy  Allocation strategy.
  *
  *  @return Pointer to the allocated zeroed memory on success,
  *          or an error‐encoded pointer (via PTR_ERR()) on failure.
  * ========================================================================== */
-void *MEM_allocCalloc(mem_allocator_t *const      allocator,
-                      const size_t                size,
-                      const char *const           var,
-                      const allocation_strategy_t strategy)
+void *MEM_calloc(const size_t size, const allocation_strategy_t strategy)
 {
-  void *ret = (void *)NULL;
+  void *ret_addr = (void *)NULL;
+
+  int ret_init = EXIT_SUCCESS;
 
   gc_thread_t *gc_thread = (gc_thread_t *)NULL;
 
-  gc_thread = &allocator->gc_thread;
+  if (!g_alocator_inited)
+  {
+    MEM_memset(&g_allocator, 0, sizeof(mem_allocator_t));
+
+    ret_init = MEM_allocatorInit(&g_allocator);
+    if (ret_init != EXIT_SUCCESS)
+      goto function_output;
+  }
+
+  gc_thread = &g_allocator.gc_thread;
 
   pthread_mutex_lock(&gc_thread->gc_lock);
-  ret = MEM_allocatorCalloc(allocator, size, __FILE__, __LINE__, var, strategy);
+  ret_addr = MEM_callocOp(&g_allocator, size, __FILE__, __LINE__, strategy);
   pthread_mutex_unlock(&gc_thread->gc_lock);
 
-  return ret;
+function_output:
+  return ret_addr;
 }
 
 /** ============================================================================
  *  @brief  Reallocates memory with safety checks using the specified strategy.
  *
- *  This function locks the GC mutex, invokes MEM_allocatorRealloc() with the
+ *  This function locks the GC mutex, invokes MEM_reallocOp() with the
  *  given @p strategy, automatically supplying __FILE__, __LINE__, and variable
  *  name for debugging, then unlocks the mutex.
  *
- *  @param[in]  allocator Memory allocator context.
  *  @param[in]  ptr       Pointer to existing memory.
  *  @param[in]  new_size  New requested size.
- *  @param[in]  var       Variable name for debugging.
  *  @param[in]  strategy  Allocation strategy.
  *
  *  @return Pointer to the reallocated memory on success (may be same as @p
  * ptr), or an error‐encoded pointer (via PTR_ERR()) on failure.
  * ========================================================================== */
-void *MEM_allocRealloc(mem_allocator_t *const      allocator,
-                       void *const                 ptr,
-                       const size_t                new_size,
-                       const char *const           var,
-                       const allocation_strategy_t strategy)
+void *MEM_realloc(void *const                 ptr,
+                  const size_t                new_size,
+                  const allocation_strategy_t strategy)
 {
-  void *ret = (void *)NULL;
+  void *ret_addr = (void *)NULL;
+
+  int ret_init = EXIT_SUCCESS;
 
   gc_thread_t *gc_thread = (gc_thread_t *)NULL;
 
-  gc_thread = &allocator->gc_thread;
+  if (!g_alocator_inited)
+  {
+    MEM_memset(&g_allocator, 0, sizeof(mem_allocator_t));
+
+    ret_init = MEM_allocatorInit(&g_allocator);
+    if (ret_init != EXIT_SUCCESS)
+      goto function_output;
+  }
+
+  gc_thread = &g_allocator.gc_thread;
 
   pthread_mutex_lock(&gc_thread->gc_lock);
-  ret = MEM_allocatorRealloc(allocator,
-                             ptr,
-                             new_size,
-                             __FILE__,
-                             __LINE__,
-                             var,
-                             strategy);
+  ret_addr =
+    MEM_reallocOp(&g_allocator, ptr, new_size, __FILE__, __LINE__, strategy);
   pthread_mutex_unlock(&gc_thread->gc_lock);
 
-  return ret;
+function_output:
+  return ret_addr;
 }
 
 /** ============================================================================
  *  @brief  Releases allocated memory back to the heap.
  *
- *  This function locks the GC mutex, invokes MEM_allocatorFree() with
+ *  This function locks the GC mutex, invokes MEM_freeOp() with
  *  automatically supplied __FILE__, __LINE__, and variable name for debugging,
  *  then unlocks the mutex.
  *
- *  @param[in]  allocator Memory allocator context.
  *  @param[in]  ptr       Pointer to memory to free.
- *  @param[in]  var       Variable name for debugging.
  *
  *  @return EXIT_SUCCESS on success,
  *          negative error code on failure.
  * ========================================================================== */
-int MEM_allocFree(mem_allocator_t *const allocator,
-                  void *const            ptr,
-                  const char *const      var)
+int MEM_free(void *const ptr)
 {
-  int ret = EXIT_SUCCESS;
+  int ret_addr = EXIT_SUCCESS;
+
+  int ret_init = EXIT_SUCCESS;
 
   gc_thread_t *gc_thread = (gc_thread_t *)NULL;
 
-  gc_thread = &allocator->gc_thread;
+  if (!g_alocator_inited)
+  {
+    MEM_memset(&g_allocator, 0, sizeof(mem_allocator_t));
+
+    ret_init = MEM_allocatorInit(&g_allocator);
+    if (ret_init != EXIT_SUCCESS)
+      goto function_output;
+  }
+
+  gc_thread = &g_allocator.gc_thread;
 
   pthread_mutex_lock(&gc_thread->gc_lock);
-  ret = MEM_allocatorFree(allocator, ptr, __FILE__, __LINE__, var);
+  ret_addr = MEM_freeOp(&g_allocator, ptr, __FILE__, __LINE__);
   pthread_mutex_unlock(&gc_thread->gc_lock);
 
-  return ret;
+function_output:
+  return ret_addr;
 }
 
 #if defined(GARBACE_COLLECTOR)

@@ -177,26 +177,22 @@ static int TEST_multipleRealloc(void)
 {
   int ret = EXIT_SUCCESS;
 
-  mem_allocator_t allocator;
-
   void *ptr_0 = NULL;
   void *ptr_1 = NULL;
   void *ptr_2 = NULL;
   void *ptr_3 = NULL;
 
-  CHECK(MEM_allocatorInit(&allocator) == EXIT_SUCCESS);
+  ptr_0 = MEM_allocFirstFit(INITIAL_SIZE);
 
-  ptr_0 = MEM_allocMallocFirstFit(&allocator, INITIAL_SIZE, "p");
+  ptr_1 = MEM_realloc(ptr_0, GROWN_SIZE, FIRST_FIT);
 
-  ptr_1 = MEM_allocRealloc(&allocator, ptr_0, GROWN_SIZE, "p2", FIRST_FIT);
+  ptr_2 = MEM_realloc(ptr_1, SHRUNK_SIZE, FIRST_FIT);
 
-  ptr_2 = MEM_allocRealloc(&allocator, ptr_1, SHRUNK_SIZE, "p3", FIRST_FIT);
+  CHECK(MEM_free(ptr_2) == EXIT_SUCCESS);
 
-  CHECK(MEM_allocFree(&allocator, ptr_2, "p3") == EXIT_SUCCESS);
+  ptr_3 = MEM_realloc(NULL, NULL_SIZE, FIRST_FIT);
 
-  ptr_3 = MEM_allocRealloc(&allocator, NULL, NULL_SIZE, "pn", FIRST_FIT);
-
-  CHECK(MEM_allocFree(&allocator, ptr_3, "pn") == EXIT_SUCCESS);
+  CHECK(MEM_free(ptr_3) == EXIT_SUCCESS);
 
   return ret;
 }

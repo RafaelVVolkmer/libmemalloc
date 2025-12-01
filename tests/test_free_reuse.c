@@ -13,8 +13,7 @@
  *  @version    v1.0.00
  *  @date       23.08.2025
  *  @author     Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
- * ============================================================================
- */
+ * ========================================================================== */
 
 /** ============================================================================
  *                      P R I V A T E  I N C L U D E S
@@ -156,24 +155,21 @@ static int TEST_freeThenReuse(void)
   void *blocks[NR_BLOCKS];
   void *reused[NR_REUSED];
 
-  mem_allocator_t allocator;
-
   size_t iterator     = 0u;
   size_t iterator_aux = 0u;
 
-  ret = MEM_allocatorInit(&allocator);
   CHECK(ret == EXIT_SUCCESS);
 
   for (iterator = 0u; iterator < NR_BLOCKS; ++iterator)
   {
-    blocks[iterator] = MEM_allocMallocFirstFit(&allocator, LARGE_SZ, "blk");
+    blocks[iterator] = MEM_allocFirstFit(LARGE_SZ);
     CHECK(blocks[iterator] != NULL);
     MEM_memset(blocks[iterator], (int)iterator, LARGE_SZ);
   }
 
   for (iterator = 0u; iterator < NR_BLOCKS; iterator += 2u)
   {
-    ret = MEM_allocFree(&allocator, blocks[iterator], "blk");
+    ret = MEM_free(blocks[iterator]);
     CHECK(ret == EXIT_SUCCESS);
     blocks[iterator] = NULL;
   }
@@ -181,20 +177,20 @@ static int TEST_freeThenReuse(void)
   for (iterator = 0u, iterator_aux  = 0u; iterator < NR_REUSED;
        ++iterator, iterator_aux    += 2u)
   {
-    reused[iterator] = MEM_allocMallocFirstFit(&allocator, SMALL_SZ, "reuse");
+    reused[iterator] = MEM_allocFirstFit(SMALL_SZ);
     CHECK(reused[iterator] != NULL);
     MEM_memset(reused[iterator], 0x55, SMALL_SZ);
   }
 
   for (iterator = 1u; iterator < NR_BLOCKS; iterator += 2u)
   {
-    ret = MEM_allocFree(&allocator, blocks[iterator], "blk");
+    ret = MEM_free(blocks[iterator]);
     CHECK(ret == EXIT_SUCCESS);
   }
 
   for (iterator = 0u; iterator < NR_REUSED; ++iterator)
   {
-    ret = MEM_allocFree(&allocator, reused[iterator], "reuse");
+    ret = MEM_free(reused[iterator]);
     CHECK(ret == EXIT_SUCCESS);
   }
 

@@ -12,8 +12,7 @@
  *  @version    v1.0.00
  *  @date       23.08.2025
  *  @author     Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
- * ============================================================================
- */
+ * ========================================================================== */
 
 /** ============================================================================
  *                      P R I V A T E  I N C L U D E S
@@ -115,18 +114,13 @@ static int TEST_doubleFree(void)
 
   void *ptr = (void *)NULL;
 
-  mem_allocator_t allocator;
-
-  ret = MEM_allocatorInit(&allocator);
-  CHECK(ret == EXIT_SUCCESS);
-
-  ptr = MEM_allocMallocFirstFit(&allocator, 64, "dfree");
+  ptr = MEM_allocFirstFit(64);
   CHECK(ptr != NULL);
 
-  ret = MEM_allocFree(&allocator, ptr, "dfree");
+  ret = MEM_free(ptr);
   CHECK(ret == EXIT_SUCCESS);
 
-  ret = MEM_allocFree(&allocator, ptr, "dfree");
+  ret = MEM_free(ptr);
   CHECK(ret != EXIT_SUCCESS);
 
   return EXIT_SUCCESS;

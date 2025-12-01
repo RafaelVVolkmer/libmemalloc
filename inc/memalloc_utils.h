@@ -305,7 +305,7 @@ extern "C"
 #endif
 
 /** ============================================================================
- *  @def        __LIBMEMALLOC_MALLOC
+ *  @def        __LIBMEMALLOC_INTERNAL_MALLOC
  *  @brief      Annotates allocator functions that return
  *              newly allocated memory.
  *
@@ -317,15 +317,72 @@ extern "C"
  *              return value should not be ignored. Otherwise,
  *              expands to nothing.
  * ========================================================================== */
-#if defined(__GNUC__) || defined(__clang__)
-  #define __LIBMEMALLOC_MALLOC \
-    __attribute__((malloc, alloc_size(2), warn_unused_result))
-#else
-  #define __LIBMEMALLOC_MALLOC
+#ifndef __LIBMEMALLOC_INTERNAL_MALLOC
+  #if defined(__GNUC__) || defined(__clang__)
+    #define __LIBMEMALLOC_INTERNAL_MALLOC \
+      __attribute__((malloc,              \
+                     alloc_size(2),       \
+                     warn_unused_result,  \
+                     returns_nonnull,     \
+                     zero_call_used_regs("all")))
+  #else
+    #define __LIBMEMALLOC_INTERNAL_MALLOC
+  #endif
+#endif
+
+/** ============================================================================
+ *  @def        __LIBMEMALLOC_MALLOC
+ *  @brief      Annotates allocator functions that return
+ *              newly allocated memory.
+ *
+ *  @details    When supported by the compiler (GCC/Clang),
+ *              expands to __attribute__((malloc, alloc_size(1),
+ *              warn_unused_result)) which tells the compiler
+ *              the function behaves like malloc, that the 2nd
+ *              parameter is the allocation size, and that the
+ *              return value should not be ignored. Otherwise,
+ *              expands to nothing.
+ * ========================================================================== */
+#ifndef __LIBMEMALLOC_MALLOC
+  #if defined(__GNUC__) || defined(__clang__)
+    #define __LIBMEMALLOC_MALLOC         \
+      __attribute__((malloc,             \
+                     alloc_size(1),      \
+                     warn_unused_result, \
+                     returns_nonnull,    \
+                     zero_call_used_regs("all")))
+  #else
+    #define __LIBMEMALLOC_MALLOC
+  #endif
 #endif
 
 /** ============================================================================
  *  @def        __LIBMEMALLOC_REALLOC
+ *  @brief      Annotates reallocator functions that may return
+ *              a pointer to resized memory.
+ *
+ *  @details    When supported by the compiler (GCC/Clang),
+ *              expands to __attribute__((alloc_size(2),
+ *              warn_unused_result)) which tells the compiler
+ *              that the 3rd parameter specifies the new size
+ *              of the allocation and that the return value
+ *              should not be ignored. Otherwise, expands to nothing.
+ * ========================================================================== */
+#ifndef __LIBMEMALLOC_REALLOC
+  #if defined(__GNUC__) || defined(__clang__)
+    #define __LIBMEMALLOC_REALLOC        \
+      __attribute__((malloc,             \
+                     alloc_size(2),      \
+                     warn_unused_result, \
+                     returns_nonnull,    \
+                     zero_call_used_regs("all")))
+  #else
+    #define __LIBMEMALLOC_REALLOC
+  #endif
+#endif
+
+/** ============================================================================
+ *  @def        __LIBMEMALLOC_INTERNAL_REALLOC
  *  @brief      Annotates reallocator functions that may return
  *              a pointer to resized memory.
  *
@@ -336,11 +393,17 @@ extern "C"
  *              of the allocation and that the return value
  *              should not be ignored. Otherwise, expands to nothing.
  * ========================================================================== */
-#if defined(__GNUC__) || defined(__clang__)
-  #define __LIBMEMALLOC_REALLOC \
-    __attribute__((malloc, alloc_size(3), warn_unused_result))
-#else
-  #define __LIBMEMALLOC_REALLOC
+#ifndef __LIBMEMALLOC_INTERNAL_REALLOC
+  #if defined(__GNUC__) || defined(__clang__)
+    #define __LIBMEMALLOC_INTERNAL_REALLOC \
+      __attribute__((malloc,               \
+                     alloc_size(3),        \
+                     warn_unused_result,   \
+                     returns_nonnull,      \
+                     zero_call_used_regs("all")))
+  #else
+    #define __LIBMEMALLOC_INTERNAL_REALLOC
+  #endif
 #endif
 
 /** ============================================================================

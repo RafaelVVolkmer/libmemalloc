@@ -169,8 +169,6 @@ static int TEST_internalFragmentation(void)
         [10] = SIZE_ELEVENTH_ORDER,   [11] = SIZE_TWELFTH_ORDER,
         [12] = SIZE_THIRTEENTH_ORDER, [13] = SIZE_TWELFTH_ORDER };
 
-  mem_allocator_t allocator;
-
   size_t size     = 0u;
   size_t byte     = 0u;
   size_t iterator = 0u;
@@ -178,13 +176,10 @@ static int TEST_internalFragmentation(void)
 
   count = (size_t)(sizeof(sizes) / sizeof(sizes[0]));
 
-  ret = MEM_allocatorInit(&allocator);
-  CHECK(ret == EXIT_SUCCESS);
-
   for (iterator = 0u; iterator < count; ++iterator)
   {
     size = (size_t)sizes[iterator];
-    ptr  = MEM_allocMallocFirstFit(&allocator, size, "frag");
+    ptr  = MEM_allocFirstFit(size);
     CHECK(ptr != NULL);
 
     CHECK(((uintptr_t)ptr % ARCH_ALIGNMENT) == 0u);
@@ -192,7 +187,7 @@ static int TEST_internalFragmentation(void)
     for (byte = 0u; byte < size; ++byte)
       ptr[byte] = FILL_PATTERN;
 
-    ret = MEM_allocFree(&allocator, ptr, "frag");
+    ret = MEM_free(ptr);
     CHECK(ret == EXIT_SUCCESS);
   }
 

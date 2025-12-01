@@ -66,7 +66,7 @@
  *              for memory blocks used during testing. Set to 10UL
  *              as a uint64_t constant to avoid implicit type conversions.
  * ========================================================================== */
-#define BLOCK_SIZE  (uint64_t)(10UL)
+#define BLOCK_SIZE  (uint64_t)(1024U)
 
 /** ============================================================================
  *  @def        MAX_BLOCKS
@@ -76,7 +76,7 @@
  *  @details    Provides semantic clarity when using BLOCK_SIZE
  *              as a block count limit instead of a byte size.
  * ========================================================================== */
-#define MAX_BLOCKS  BLOCK_SIZE
+#define MAX_BLOCKS  1000
 
 /** ============================================================================
  *  @def        CHECK(expr)
@@ -111,17 +111,12 @@ int main(void)
 
   void *ptrs[MAX_BLOCKS];
 
-  mem_allocator_t allocator;
-
   size_t count    = 0u;
   size_t iterator = 0u;
 
-  ret = MEM_allocatorInit(&allocator);
-  CHECK(ret == EXIT_SUCCESS);
-
   while (count < MAX_BLOCKS)
   {
-    ptr = MEM_allocMallocFirstFit(&allocator, BLOCK_SIZE, "ptr");
+    ptr = MEM_allocFirstFit(BLOCK_SIZE);
     if (ptr == NULL)
       break;
 
@@ -134,7 +129,7 @@ int main(void)
 
   for (iterator = 0; iterator < count; ++iterator)
   {
-    ret = MEM_allocFree(&allocator, ptrs[iterator], "ptr");
+    ret = MEM_free(ptrs[iterator]);
     CHECK(ret == EXIT_SUCCESS);
   }
 

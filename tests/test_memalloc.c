@@ -101,19 +101,6 @@
  * ========================================================================== */
 
 /** ============================================================================
- *  @fn         TEST_testInit
- *  @brief      Verifies that MEM_allocatorInit initializes the allocator
- *              context correctly.
- *
- *  @return     EXIT_SUCCESS when initialization succeeds
- *              EXIT_ERRROR when initialization fails
- *
- *  @retval     EXIT_SUCCESS  Initialization completed successfully
- *  @retval     EXIT_ERRROR   Initialization returned an error
- * ========================================================================== */
-static int TEST_testInit(void);
-
-/** ============================================================================
  *  @fn         TEST_mallocFree
  *  @brief      Tests allocation and deallocation of a single pointer
  *              using MEM_allocMallocFirstFit and MEM_allocFree.
@@ -171,9 +158,6 @@ int main(void)
 {
   int ret = EXIT_SUCCESS;
 
-  ret = TEST_testInit( );
-  CHECK(ret == EXIT_SUCCESS);
-
   ret = TEST_mallocFree( );
   CHECK(ret == EXIT_SUCCESS);
 
@@ -196,29 +180,6 @@ int main(void)
  * ========================================================================== */
 
 /** ============================================================================
- *  @fn         TEST_testInit
- *  @brief      Verifies that MEM_allocatorInit initializes the allocator
- *              context correctly.
- *
- *  @return     EXIT_SUCCESS when initialization succeeds
- *              EXIT_ERRROR when initialization fails
- *
- *  @retval     EXIT_SUCCESS  Initialization completed successfully
- *  @retval     EXIT_ERRROR   Initialization returned an error
- * ========================================================================== */
-static int TEST_testInit(void)
-{
-  int ret = EXIT_SUCCESS;
-
-  mem_allocator_t allocator;
-
-  ret = MEM_allocatorInit(&allocator);
-  CHECK(ret == EXIT_SUCCESS);
-
-  return ret;
-}
-
-/** ============================================================================
  *  @fn         TEST_mallocFree
  *  @brief      Tests allocation and deallocation of a single pointer
  *              using MEM_allocMallocFirstFit and MEM_allocFree.
@@ -235,17 +196,12 @@ static int TEST_mallocFree(void)
 
   void *ptr = NULL;
 
-  mem_allocator_t allocator;
-
-  ret = MEM_allocatorInit(&allocator);
-  CHECK(ret == EXIT_SUCCESS);
-
-  ptr = MEM_allocMallocFirstFit(&allocator, sizeof(void *), "ptr");
+  ptr = MEM_allocFirstFit(sizeof(void *));
   CHECK(ptr != NULL);
 
   memset(ptr, FILL_VALUE, sizeof(void *));
 
-  ret = MEM_allocFree(&allocator, ptr, "ptr");
+  ret = MEM_free(ptr);
   CHECK(ret == EXIT_SUCCESS);
 
   return ret;
@@ -267,15 +223,9 @@ static int TEST_testCalloc(void)
 
   int *arr = NULL;
 
-  mem_allocator_t allocator;
-
   size_t iterator = 0u;
 
-  ret = MEM_allocatorInit(&allocator);
-
-  CHECK(ret == EXIT_SUCCESS);
-
-  arr = MEM_allocCalloc(&allocator, (ARR_LEN * sizeof(int)), "arr", FIRST_FIT);
+  arr = MEM_calloc((ARR_LEN * sizeof(int)), FIRST_FIT);
   CHECK(arr != NULL);
 
   for (iterator = 0u; iterator < ARR_LEN; iterator++)
@@ -283,7 +233,7 @@ static int TEST_testCalloc(void)
     CHECK(arr[iterator] == 0);
   }
 
-  ret = MEM_allocFree(&allocator, arr, "arr");
+  ret = MEM_free(arr);
   CHECK(ret == EXIT_SUCCESS);
 
   return ret;
@@ -306,23 +256,17 @@ static int TEST_testRealloc(void)
   char *ptr_0 = NULL;
   char *ptr_1 = NULL;
 
-  mem_allocator_t allocator;
-
-  ret = MEM_allocatorInit(&allocator);
-  CHECK(ret == EXIT_SUCCESS);
-
-  ptr_0 = MEM_allocMallocFirstFit(&allocator, ARR_LEN, "ptr_0");
+  ptr_0 = MEM_allocFirstFit(ARR_LEN);
   CHECK(ptr_0 != NULL);
 
   strcpy(ptr_0, "hi");
 
-  ptr_1
-    = MEM_allocRealloc(&allocator, ptr_0, (2u * ARR_LEN), "ptr_1", FIRST_FIT);
+  ptr_1 = MEM_realloc(ptr_0, (2u * ARR_LEN), FIRST_FIT);
   CHECK(ptr_1 != NULL);
 
   CHECK(strcmp(ptr_1, "hi") == EXIT_SUCCESS);
 
-  ret = MEM_allocFree(&allocator, ptr_1, "ptr_1");
+  ret = MEM_free(ptr_1);
   CHECK(ret == EXIT_SUCCESS);
 
   return ret;
@@ -341,21 +285,14 @@ static int TEST_testRealloc(void)
  * ========================================================================== */
 static int TEST_testAlign(void)
 {
-  int ret = EXIT_SUCCESS;
-
   void *ptr = NULL;
 
-  mem_allocator_t allocator;
-
-  ret = MEM_allocatorInit(&allocator);
-  CHECK(ret == EXIT_SUCCESS);
-
-  ptr = MEM_allocMallocFirstFit(&allocator, sizeof(void *), "ptr");
+  ptr = MEM_allocFirstFit(sizeof(void *));
   CHECK(ptr != NULL);
 
   CHECK(((uintptr_t)ptr % ARCH_ALIGNMENT) == 0u);
 
-  return MEM_allocFree(&allocator, ptr, "ptr");
+  return MEM_free(ptr);
 }
 
 /*< end of file >*/

@@ -154,32 +154,27 @@ static int TEST_multiStrategy(void)
 {
   int ret = EXIT_SUCCESS;
 
-  mem_allocator_t allocator;
-
   void *ptr = NULL;
 
-  ret = MEM_allocatorInit(&allocator);
-  CHECK(ret == EXIT_SUCCESS);
-
-  ptr = MEM_allocMallocFirstFit(&allocator, ALLOC_SIZE, "ms1");
+  ptr = MEM_allocFirstFit(ALLOC_SIZE);
   CHECK((intptr_t)ptr >= 0);
   MEM_memset(ptr, FIRST_FILL, ALLOC_SIZE);
 
-  ret = MEM_allocFree(&allocator, ptr, "ms1");
+  ret = MEM_free(ptr);
   CHECK(ret == EXIT_SUCCESS);
 
-  ptr = MEM_allocMallocNextFit(&allocator, ALLOC_SIZE, "ms2");
+  ptr = MEM_allocNextFit(ALLOC_SIZE);
   CHECK((intptr_t)ptr >= 0);
   MEM_memset(ptr, SECOND_FILL, ALLOC_SIZE);
 
-  ret = MEM_allocFree(&allocator, ptr, "ms2");
+  ret = MEM_free(ptr);
   CHECK(ret == EXIT_SUCCESS);
 
-  ptr = MEM_allocMallocBestFit(&allocator, ALLOC_SIZE, "ms3");
+  ptr = MEM_allocBestFit(ALLOC_SIZE);
   CHECK((intptr_t)ptr >= 0);
 
   MEM_memset(ptr, THIRD_FILL, ALLOC_SIZE);
-  ret = MEM_allocFree(&allocator, ptr, "ms3");
+  ret = MEM_free(ptr);
   CHECK(ret == EXIT_SUCCESS);
 
   return EXIT_SUCCESS;

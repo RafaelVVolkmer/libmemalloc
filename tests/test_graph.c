@@ -146,7 +146,7 @@ typedef struct __ALIGN Graph
  * list.
  *  @retval     NULL      Allocation failure for graph or adjacency array.
  * ========================================================================== */
-static graph_t *TEST_createGraph(mem_allocator_t *allocator, uint64_t vertice);
+static graph_t *TEST_createGraph(uint64_t vertice);
 
 /** ============================================================================
  *  @fn         TEST_addEdge
@@ -163,10 +163,7 @@ static graph_t *TEST_createGraph(mem_allocator_t *allocator, uint64_t vertice);
  *  @retval     EXIT_SUCCESS  Edge allocated and added to the adjacency list.
  *  @retval     EXIT_ERRROR   Invalid parameters or memory allocation failure.
  * ========================================================================== */
-static int TEST_addEdge(mem_allocator_t *allocator,
-                        graph_t         *graph,
-                        int              index,
-                        uint64_t         vertice);
+static int TEST_addEdge(graph_t *graph, int index, uint64_t vertice);
 
 /** ============================================================================
  *  @fn         TEST_printGraph
@@ -196,7 +193,7 @@ static int TEST_printGraph(graph_t *graph);
  *  @retval     EXIT_SUCCESS  Graph and all edges freed without errors.
  *  @retval     EXIT_ERRROR   Failure during one of the deallocations.
  * ========================================================================== */
-static int TEST_freeGraph(mem_allocator_t *allocator, graph_t *graph);
+static int TEST_freeGraph(graph_t *graph);
 
 /** ============================================================================
  *                          M A I N  F U N C T I O N
@@ -208,40 +205,37 @@ int main(void)
 
   graph_t *graph = (graph_t *)NULL;
 
-  mem_allocator_t allocator;
-
-  ret = MEM_allocatorInit(&allocator);
   CHECK(ret == EXIT_SUCCESS);
 
-  graph = TEST_createGraph(&allocator, MAX_VERTICES);
+  graph = TEST_createGraph(MAX_VERTICES);
   CHECK(graph != NULL);
 
-  ret = TEST_addEdge(&allocator, graph, 0, 1);
+  ret = TEST_addEdge(graph, 0, 1);
   CHECK(ret == EXIT_SUCCESS);
 
-  ret = TEST_addEdge(&allocator, graph, 0, 4);
+  ret = TEST_addEdge(graph, 0, 4);
   CHECK(ret == EXIT_SUCCESS);
 
-  ret = TEST_addEdge(&allocator, graph, 1, 2);
+  ret = TEST_addEdge(graph, 1, 2);
   CHECK(ret == EXIT_SUCCESS);
 
-  ret = TEST_addEdge(&allocator, graph, 1, 3);
+  ret = TEST_addEdge(graph, 1, 3);
   CHECK(ret == EXIT_SUCCESS);
 
-  ret = TEST_addEdge(&allocator, graph, 1, 4);
+  ret = TEST_addEdge(graph, 1, 4);
   CHECK(ret == EXIT_SUCCESS);
 
-  ret = TEST_addEdge(&allocator, graph, 2, 3);
+  ret = TEST_addEdge(graph, 2, 3);
   CHECK(ret == EXIT_SUCCESS);
 
-  ret = TEST_addEdge(&allocator, graph, 3, 4);
+  ret = TEST_addEdge(graph, 3, 4);
   CHECK(ret == EXIT_SUCCESS);
 
   printf("Graph adjacency list:\n");
   ret = TEST_printGraph(graph);
   CHECK(ret == EXIT_SUCCESS);
 
-  ret = TEST_freeGraph(&allocator, graph);
+  ret = TEST_freeGraph(graph);
   CHECK(ret == EXIT_SUCCESS);
 
   return ret;
@@ -265,21 +259,20 @@ int main(void)
  * list.
  *  @retval     NULL      Allocation failure for graph or adjacency array.
  * ========================================================================== */
-static graph_t *TEST_createGraph(mem_allocator_t *allocator, uint64_t vertice)
+static graph_t *TEST_createGraph(uint64_t vertice)
 {
   graph_t *graph = (graph_t *)NULL;
 
   size_t iterator = 0u;
 
-  graph = MEM_allocMallocFirstFit(allocator, sizeof(graph_t), "Graph");
+  graph = MEM_allocFirstFit(sizeof(graph_t));
   if (graph == NULL)
     goto function_output;
 
   graph->num_vertices = vertice;
 
-  graph->adj = MEM_allocMallocFirstFit(allocator,
-                                       ((size_t)vertice * sizeof(edge_t *)),
-                                       "adj");
+  graph->adj = MEM_allocFirstFit(((size_t)vertice * sizeof(edge_t *)));
+
   if (graph->adj == NULL)
     goto function_output;
 
@@ -305,18 +298,15 @@ function_output:
  *  @retval     EXIT_SUCCESS  Edge allocated and added to the adjacency list.
  *  @retval     EXIT_ERRROR   Invalid parameters or memory allocation failure.
  * ========================================================================== */
-static int TEST_addEdge(mem_allocator_t *allocator,
-                        graph_t         *graph,
-                        int              index,
-                        uint64_t         vertice)
+static int TEST_addEdge(graph_t *graph, int index, uint64_t vertice)
 {
   int ret = EXIT_SUCCESS;
 
   edge_t *edge = (edge_t *)NULL;
 
-  CHECK(allocator != NULL || graph != NULL);
+  CHECK(graph != NULL);
 
-  edge = MEM_allocMallocFirstFit(allocator, sizeof(edge_t), "Edge");
+  edge = MEM_allocFirstFit(sizeof(edge_t));
   CHECK(edge != NULL);
 
   edge->to          = vertice;
@@ -375,7 +365,7 @@ static int TEST_printGraph(graph_t *graph)
  *  @retval     EXIT_SUCCESS  Graph and all edges freed without errors.
  *  @retval     EXIT_ERRROR   Failure during one of the deallocations.
  * ========================================================================== */
-static int TEST_freeGraph(mem_allocator_t *allocator, graph_t *graph)
+static int TEST_freeGraph(graph_t *graph)
 {
   int ret = EXIT_SUCCESS;
 
@@ -391,17 +381,17 @@ static int TEST_freeGraph(mem_allocator_t *allocator, graph_t *graph)
     {
       next = edge->next;
 
-      ret = MEM_allocFree(allocator, (void *)edge, "Edge");
+      ret = MEM_free((void *)edge);
       CHECK(ret == EXIT_SUCCESS);
 
       edge = next;
     }
   }
 
-  ret = MEM_allocFree(allocator, (void *)graph->adj, "adj");
+  ret = MEM_free((void *)graph->adj);
   CHECK(ret == EXIT_SUCCESS);
 
-  ret = MEM_allocFree(allocator, (void *)graph, "Graph");
+  ret = MEM_free((void *)graph);
   CHECK(ret == EXIT_SUCCESS);
 
   return ret;
