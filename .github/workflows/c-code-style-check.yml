@@ -15,14 +15,26 @@ jobs:
   lint:
     name: Lint & Format
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Install clang-format & clang-tidy
+      - name: Install tooling (clang, cmake, valgrind, Rust)
         run: |
           sudo apt-get update
-          sudo apt-get install -y clang-format clang-tidy cmake valgrind
+          sudo apt-get install -y \
+            clang-format \
+            clang-tidy \
+            cmake \
+            valgrind \
+            rustc \
+            cargo
+
+      - name: Install typos (spell checker)
+        run: |
+          cargo install typos-cli --locked
+          echo "$HOME/.cargo/bin" >> "$GITHUB_PATH"
 
       - name: Prepare style script
         run: chmod +x ./scripts/style_check.sh
