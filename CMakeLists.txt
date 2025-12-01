@@ -73,9 +73,11 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${OUTPUT_BIN_DIR}")
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${OUTPUT_BIN_DIR}")
 
-# ----------------------------------------------------------------------------
-# 4. Build-Type Specific Compiler Flags
-# ----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
+# 4. Build-Type Flags (safe per-compiler)
+# -----------------------------------------------------------------------------
+
+# -- Debug ---------------------------------------------------------------------
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
     add_compile_options(
         # --- Optimization Level ---
@@ -87,6 +89,7 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
         -fno-omit-frame-pointer
         -fvar-tracking-assignments
         -fdebug-prefix-map=${CMAKE_CURRENT_SOURCE_DIR}/src/=src/
+				-frecord-gcc-switches
 
         # --- Inlining Control ---
         -fno-inline
@@ -101,11 +104,18 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
         -aux-info filename
     )
 
-    if (CMAKE_C_COMPILER_ID STREQUAL "Clang"
-        OR (CMAKE_C_COMPILER_ID STREQUAL "GNU"
-            AND CMAKE_C_COMPILER_VERSION VERSION_GREATER_EQUAL "13.0"))
-      set(ANALYZER_FLAGS
-        -fanalyzer-verbosity=5
+		if (CMAKE_C_COMPILER_ID STREQUAL "Clang"
+				OR (CMAKE_C_COMPILER_ID STREQUAL "GNU"
+						AND CMAKE_C_COMPILER_VERSION VERSION_GREATER_EQUAL "13.0"))
+			option(ENABLE_ANALYZER_DUMPS "Write GCC analyzer dumps to files (not stderr)" OFF)
+
+			set(ANALYZER_FLAGS
+				-fanalyzer
+				-fanalyzer-verbosity=3
+			)
+
+			if (ENABLE_ANALYZER_DUMPS)
+				list(APPEND ANALYZER_FLAG
         -fanalyzer-fine-grained
         -fanalyzer-call-summaries
         -fanalyzer-transitivity
@@ -123,7 +133,10 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
         -fdump-analyzer-untracked
         -fdump-analyzer-stderr
       )
+			endif()
+
       add_compile_options(${ANALYZER_FLAGS})
+
     endif()
 
     if (NOT VALGRIND_EXECUTABLE)
@@ -141,7 +154,8 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
 
     set(CMAKE_EXE_LINKER_FLAGS    "${CMAKE_EXE_LINKER_FLAGS} -Wl,--gc-sections -flto")
     set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,--gc-sections -flto")
-  
+
+# -- Release -------------------------------------------------------------------
 elseif(CMAKE_BUILD_TYPE STREQUAL "Release")
     add_compile_options(
         # --- NDEBUG & Optimization ---
@@ -153,7 +167,7 @@ elseif(CMAKE_BUILD_TYPE STREQUAL "Release")
 				-fno-strict-overflow
 
         # --- Frame Pointer & Inlining ---
-        -fno-omit-frame-pointer
+        -fomit-frame-pointer
         -funroll-loops
 
         # --- Exceptions & Unwind Tables ---
@@ -177,15 +191,15 @@ elseif(CMAKE_BUILD_TYPE STREQUAL "Release")
     set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,--gc-sections -Wl,-O1 -Wl,-s")
 endif()
 
+# -----------------------------------------------------------------------------
+# 5. Global Hardening & Warnings (per-compiler) + Platform Linker Settings
 # ----------------------------------------------------------------------------
-# 5. Global Warning and Strictness Options
-#    (Applied to all build types)
-# ----------------------------------------------------------------------------
+
 set(_FORTIFY_LVL 2)
 check_c_source_compiles("
   #include <features.h>
   #if !defined(__GLIBC__) || (__GLIBC__*100 + __GLIBC_MINOR__) < 235
-  #error FORTIFY3 not available
+		#error FORTIFY3 not available
   #endif
   int main(void){return 0;}
 " LIBMEMALLOC_HAVE_GLIBC_235)
@@ -312,7 +326,6 @@ add_compile_options(
     -Wno-deprecated-declarations
 )
 
-# Cyber-Security Flags
 if (MSVC)
   add_compile_options(
     /GS
@@ -331,6 +344,7 @@ if (MSVC)
   endif()
 endif()
 
+# ELF linker hardening (non-Apple, non-MSVC)
 if (UNIX AND NOT APPLE AND NOT MSVC AND CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
   add_link_options(
     -Wl,-z,relro
@@ -339,9 +353,11 @@ if (UNIX AND NOT APPLE AND NOT MSVC AND CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
     -Wl,-z,separate-code
     -Wl,--as-needed
     -Wl,-z,defs
+		-Wl,--build-id=sha1
   )
 endif()
 
+# CET (x86_64) when supported
 check_c_compiler_flag("-fcf-protection=full" HAVE_CET)
 if(HAVE_CET AND CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64|amd64")
   add_compile_options(
@@ -354,18 +370,20 @@ if(HAVE_CET AND CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64|amd64")
 	)
 endif()
 
-
+# AArch64 MTE/BTI
 check_c_compiler_flag("-mbranch-protection=standard" HAVE_BPROT)
-if(HAVE_BPROT AND CMAKE_SYSTEM_PROCESSOR MATCHES "aarch64")
-  add_compile_options(
-		-mbranch-protection=standard
-	)
-endif()
-
-if(UNIX AND NOT APPLE AND NOT MSVC)
-  add_link_options(
-		-Wl,--build-id=sha1
-	)
+check_c_compiler_flag("-march=armv8.5-a+memtag"      HAVE_ARM_MEMTAG)
+check_c_compiler_flag("-march=armv8.5-a+mte"         HAVE_ARM_MTE)
+if(CMAKE_SYSTEM_PROCESSOR MATCHES "aarch64|AARCH64")
+  if(HAVE_BPROT)
+    if(HAVE_ARM_MEMTAG)
+      add_compile_options(-mbranch-protection=standard -march=armv8.5-a+memtag)
+    elseif(HAVE_ARM_MTE)
+      add_compile_options(-mbranch-protection=standard -march=armv8.5-a+mte)
+    else()
+      add_compile_options(-mbranch-protection=standard)
+    endif()
+  endif()
 endif()
 
 check_c_compiler_flag("-ftrivial-auto-var-init=pattern" HAVE_TRIVIAL_AUTO_VAR_INIT_PATTERN)
@@ -378,8 +396,10 @@ if (HAVE_ZERO_CALL_USED_REGS_USED)
   add_compile_options($<$<CONFIG:Debug,RelWithDebInfo>:-fzero-call-used-regs=used>)
 endif()
 
+# PIE for executables (libs are PIC via POSITION_INDEPENDENT_CODE)
 add_compile_options($<$<STREQUAL:$<TARGET_PROPERTY:TYPE>,EXECUTABLE>:-fPIE>)
 add_link_options($<$<STREQUAL:$<TARGET_PROPERTY:TYPE>,EXECUTABLE>:-pie>)
+
 
 # ----------------------------------------------------------------------------
 # 6. Include Subdirectories and Enable Testing
