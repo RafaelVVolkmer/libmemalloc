@@ -1,7 +1,14 @@
 cmake_minimum_required(VERSION 3.18)
 
+# ------------------------------------------------------------------------------
+# 1. Honor BUILD_TESTING early
+# ------------------------------------------------------------------------------
+if(NOT BUILD_TESTING)
+  return()
+endif()
+
 # -------------------------------------------------------------------------
-# 1. Collect all test sources (*.c) in tests/
+# 2. Collect all test sources (*.c) in tests/
 # -------------------------------------------------------------------------
 file(GLOB TEST_SRCS "${CMAKE_SOURCE_DIR}/tests/*.c")
 
