@@ -1,9 +1,10 @@
+# SPDX-FileCopyrightText: 2024-2025 Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
+# SPDX-License-Identifier: MIT
+
 # ------------------------------------------------------------------------------
 # File: doxygen/CMakeLists.txt (cmake/docs.cmake)
 # Purpose: Generate Doxygen site styled with doxygen-awesome and optionally
 #          inject a "Tests Coverage" link/pill into the pages.
-#
-# SPDX-License-Identifier: MIT
 #
 # Requirements:
 #   - CMake >= 3.20 (FetchContent); prefer 3.24+ for CMP0135

@@ -1,10 +1,11 @@
+# SPDX-FileCopyrightText: 2024-2025 Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
+# SPDX-License-Identifier: MIT
+
 # ------------------------------------------------------------------------------
 # File: tests/CMakeLists.txt   (or cmake/memalloc-tests.cmake)
 # Purpose:
 #   Build and register unit tests for libmemalloc, with optional sanitizers,
 #   wrappers (Valgrind/GDB) and coverage reports (gcovr).
-#
-# SPDX-License-Identifier: MIT
 #
 # Requirements:
 #   - CMake >= 3.18

@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2024-2025 Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
+# SPDX-License-Identifier: MIT
+
 # -----------------------------------------------------------------------------
 # File: CMakeLists.txt (root)
 # Purpose:
@@ -6,8 +9,6 @@
 #   - Apply safe compiler/linker flags per compiler & build type
 #   - Normalize output folders (bin/<Config>)
 #   - Print a concise environment summary (compiler, doxygen, gcovr, etc.)
-#
-# SPDX-License-Identifier: MIT
 #
 # Requirements:
 #   - CMake >= 3.24

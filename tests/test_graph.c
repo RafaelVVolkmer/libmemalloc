@@ -1,3 +1,9 @@
+/*
+ * SPDX-FileCopyrightText: 2024-2025 Rafael V. Volkmer
+ * SPDX-FileCopyrightText: <rafael.v.volkmer@gmail.com>
+ * SPDX-License-Identifier: MIT
+ */
+
 /** ============================================================================
  *  @ingroup    Libmemalloc
  *

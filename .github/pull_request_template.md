@@ -1,12 +1,6 @@
 <!--
-Pull Request template for libmemalloc
-
-This file lives in .github/PULL_REQUEST_TEMPLATE/pull_request_template.md
-It does NOT support YAML front matter (unlike ISSUE_TEMPLATE),
-so any metadata must stay in comments like this.
-
-DCO format example:
-Signed-off-by: Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
+SPDX-FileCopyrightText: 2024-2025 Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
+SPDX-License-Identifier: MIT
 -->
 
 ## 📝 Summary

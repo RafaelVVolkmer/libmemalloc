@@ -1,3 +1,8 @@
+<!--
+SPDX-FileCopyrightText: 2024-2025 Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
+SPDX-License-Identifier: MIT
+-->
+
 ---
 name: 📚 Documentation Issue
 about: Report a problem or missing piece in the documentation

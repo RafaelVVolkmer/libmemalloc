@@ -1,11 +1,12 @@
+# SPDX-FileCopyrightText: 2024-2025 Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
+# SPDX-License-Identifier: MIT
+
 # ------------------------------------------------------------------------------
 # File: src/CMakeLists.txt (or cmake/memalloc-lib.cmake)
 # Purpose:
 #   Build the official static/shared "memalloc" libraries and, optionally,
 #   a test-only shared library that can be instrumented (e.g. for coverage)
 #   without touching the official artifacts.
-#
-# SPDX-License-Identifier: MIT
 #
 # Requirements:
 #   - CMake >= 3.18 (generator expressions & per-config output dirs used here)
