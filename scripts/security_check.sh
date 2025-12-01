@@ -3,7 +3,27 @@
 # SPDX-FileCopyrightText: 2024-2025 Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
 # SPDX-License-Identifier: MIT
 
-set -uo pipefail
+# ==============================================================================
+# security_check.sh — ELF hardening / security audit helper for libmemalloc
+#
+# - Audits one or more libmemalloc targets (.a, .so, or executables)
+# - Checks common hardening features: PIE, RELRO, NX, SSP, FORTIFY, W^X, etc.
+# - Warns about banned libc APIs (gets/strcpy/sprintf/...).
+# - Optionally runs a self-test against an intentionally "bad" ELF.
+#
+# Usage:
+#   ./scripts/security_check.sh [--verbose] [--strict] [--self-test] <target> [target2 ...]
+#
+#   --verbose     Show extra diagnostics and external tool summaries.
+#   --strict      Treat WARN as FAIL in the final summary (CI-friendly).
+#   --self-test   Compile/audit a known-bad probe ELF to validate checks.
+#
+# This script is intended to be run on:
+#   - libmemalloc.a / libmemalloc.so built with the hardened build flags; or
+#   - a final executable that links libmemalloc.
+# ==============================================================================
+
+set -u
 
 export LC_ALL=C LANG=C
 
@@ -11,29 +31,34 @@ VERBOSE=0
 STRICT=0
 SELFTEST=0
 
+# ------------------------------------------------------------------------------
+# Argument parsing
+# ------------------------------------------------------------------------------
 while [[ $# -gt 0 ]]; do
   case "$1" in
-    -v|--verbose) VERBOSE=1 ;;
-    --strict)     STRICT=1 ;;
-    --self-test|--selftest) SELFTEST=1 ;;
-    --) shift; break ;;
-    -*) echo "Unknown option: $1" ; exit 2 ;;
-    *)  break ;;
+    -v|--verbose)            VERBOSE=1 ;;
+    --strict)                STRICT=1 ;;
+    --self-test|--selftest)  SELFTEST=1 ;;
+    --)                      shift; break ;;
+    -*)                      echo "Unknown option: $1" >&2 ; exit 2 ;;
+    *)                       break ;;
   esac
   shift
 done
 
-if [[ $# -ne 1 ]]; then
-  echo "Usage: $0 [--verbose] [--strict] [--self-test] <path-to-libmemalloc.(a|so)|executable>"
+if [[ $# -lt 1 ]]; then
+  echo "Usage: $0 [--verbose] [--strict] [--self-test] <path> [path2 ...]" >&2
   exit 2
 fi
 
-TARGET="$1"
-[[ -e "$TARGET" ]] || { echo "File not found: $TARGET"; exit 2; }
+TARGETS=("$@")
 
+# ------------------------------------------------------------------------------
+# Toolchain sanity
+# ------------------------------------------------------------------------------
 CC=${CC:-cc}
 for tool in readelf objdump file grep awk sed ar nm "$CC"; do
-  command -v "$tool" >/dev/null || { echo "'$tool' not found in PATH"; exit 2; }
+  command -v "$tool" >/dev/null 2>&1 || { echo "'$tool' not found in PATH" >&2; exit 2; }
 done
 
 ROOT="$(pwd)"
@@ -43,19 +68,28 @@ mkdir -p "$WORKDIR"
 cleanup(){ rm -rf "$WORKDIR"; }
 trap cleanup EXIT INT TERM
 
+# ==============================================================================
+# Compiler feature / flag detection helpers
+# ==============================================================================
+
 has_flag() {
-  echo 'int main(void){return 0;}' | "$CC" -Werror -x c - $1 -o /dev/null >/dev/null 2>&1
+  echo 'int main(void){return 0;}' \
+    | "$CC" -Werror -x c - "$1" -o /dev/null >/dev/null 2>&1
 }
 
 detect_std_flag() {
   for f in -std=c23 -std=c2x -std=gnu2x -std=gnu17; do
-    if has_flag "$f"; then echo "$f"; return; fi
+    if has_flag "$f"; then
+      echo "$f"
+      return
+    fi
   done
   echo ""
 }
 
 detect_fortify_level() {
-  if echo 'int main(void){return 0;}' | "$CC" -O2 -D_FORTIFY_SOURCE=3 -x c - -o /dev/null >/dev/null 2>&1; then
+  if echo 'int main(void){return 0;}' \
+       | "$CC" -O2 -D_FORTIFY_SOURCE=3 -x c - -o /dev/null >/dev/null 2>&1; then
     echo 3
   else
     echo 2
@@ -72,6 +106,7 @@ has_flag -ftrivial-auto-var-init=pattern && CFLAGS+=" -ftrivial-auto-var-init=pa
 has_flag -fzero-call-used-regs=used     && CFLAGS+=" -fzero-call-used-regs=used"
 has_flag -fcf-protection=full           && CFLAGS+=" -fcf-protection=full"
 has_flag -fno-plt                       && CFLAGS+=" -fno-plt"
+
 if has_flag -mbranch-protection=standard; then
   case "$(uname -m)" in
     aarch64|arm64) CFLAGS+=" -mbranch-protection=standard" ;;
@@ -79,6 +114,34 @@ if has_flag -mbranch-protection=standard; then
 fi
 
 SONAME_POLICY="${SONAME_POLICY:-}"
+
+# ==============================================================================
+# Reporting helpers (colors, counters)
+# ==============================================================================
+
+green()  { printf "\033[32m%s\033[0m\n" "$*"; }
+red()    { printf "\033[31m%s\033[0m\n" "$*"; }
+yellow() { printf "\033[33m%s\033[0m\n" "$*"; }
+info()   { [[ $VERBOSE -eq 1 ]] && printf "\033[36m%s\033[0m\n" "$*"; }
+
+PASS_CNT=0
+FAIL_CNT=0
+WARN_CNT=0
+
+pass()  { green  " [PASS] $*"; ((PASS_CNT++)); }
+_fail() { red    " [FAIL] $*"; ((FAIL_CNT++)); }
+warn() {
+  if (( STRICT )); then
+    _fail "(strict) $*"
+  else
+    yellow " [WARN] $*"
+    ((WARN_CNT++))
+  fi
+}
+
+# ==============================================================================
+# FORTIFY probe compilation (used when targets are libraries)
+# ==============================================================================
 
 cat > "$WORKDIR/fortify_probe.c" <<'EOF'
 #include <string.h>
@@ -136,49 +199,18 @@ int main(void)
 }
 EOF
 
-"$CC" $CFLAGS -c "$WORKDIR/fortify_probe.c" -o "$WORKDIR/fortify_probe.o"
+"$CC" $CFLAGS -c "$WORKDIR/fortify_probe.c" -o "$WORKDIR/fortify_probe.o" 2>/dev/null || true
 
-OUT_EXE=""
-case "$TARGET" in
-  *.a)
-    "$CC" $CFLAGS "$WORKDIR/fortify_probe.o" \
-      -Wl,--whole-archive "$TARGET" -Wl,--no-whole-archive \
-      -o "$WORKDIR/fortify_with_lib" $LDFLAGS
-    OUT_EXE="$WORKDIR/fortify_with_lib"
-    ;;
-  *.so)
-    "$CC" $CFLAGS "$WORKDIR/fortify_probe.o" "$TARGET" \
-      -o "$WORKDIR/fortify_with_lib" $LDFLAGS
-    OUT_EXE="$WORKDIR/fortify_with_lib"
-    ;;
-  *)
-    # TARGET is already an executable: do not build a probe
-    :
-    ;;
-esac
-
-if [[ -n "$OUT_EXE" && ! -x "$OUT_EXE" ]]; then
-  warn "Não consegui linkar o executável de probe contra '$TARGET' (checks via probe limitados)."
-  OUT_EXE=""
-fi
-
-green()  { printf "\033[32m%s\033[0m\n" "$*"; }
-red()    { printf "\033[31m%s\033[0m\n" "$*"; }
-yellow() { printf "\033[33m%s\033[0m\n" "$*"; }
-info()   { [[ $VERBOSE -eq 1 ]] && printf "\033[36m%s\033[0m\n" "$*"; }
-
-PASS_CNT=0; FAIL_CNT=0; WARN_CNT=0
-pass(){ green  " [PASS] $*"; ((PASS_CNT++)); }
-_fail(){ red    " [FAIL] $*"; ((FAIL_CNT++)); }
-warn(){
-  if (( STRICT )); then _fail "(strict) $*"; else yellow " [WARN] $*"; ((WARN_CNT++)); fi
-}
+# ==============================================================================
+# Low-level checks (banned APIs, debug info, RELRO/GOT, retpoline, SONAME)
+# ==============================================================================
 
 banned_api_scan() {
   local BIN="$1"
   local banned='(^|[^[:alnum:]_])(gets|strcpy|strcat|sprintf|vsprintf|stpcpy|mktemp|tmpnam|tempnam)($|[^[:alnum:]_])'
- 	if objdump -T "$BIN" 2>/dev/null | grep -Eq "${banned}" \
-    	|| objdump -t "$BIN" 2>/dev/null | grep -Eq "${banned}"; then
+
+  if objdump -T "$BIN" 2>/dev/null | grep -Eq "${banned}" \
+     || objdump -t "$BIN" 2>/dev/null | grep -Eq "${banned}"; then
     _fail "Banned libc API referenced/exported (gets/strcpy/strcat/sprintf/...)"
   else
     pass "No banned libc APIs referenced/exported"
@@ -196,16 +228,21 @@ debug_sections_scan() {
 
 gotplt_relro_check() {
   local BIN="$1"
-  if readelf -lW "$BIN" | grep -q 'GNU_RELRO' && readelf -d "$BIN" 2>/dev/null | grep -q 'BIND_NOW'; then
-    pass ".got.plt protected by FULL RELRO"
+  if readelf -lW "$BIN" | grep -q 'GNU_RELRO'; then
+    if readelf -d "$BIN" 2>/dev/null | grep -q 'BIND_NOW'; then
+      pass ".got.plt protected by FULL RELRO"
+    else
+      warn ".got.plt may be writable at startup (not FULL RELRO)"
+    fi
   else
-    warn ".got.plt may be writable at startup (not FULL RELRO)"
+    _fail "No RELRO"
   fi
 }
 
 soname_policy_check() {
   local BIN="$1" want="$2"
   [[ -n "$want" ]] || return 0
+
   if readelf -h "$BIN" | grep -q 'Type:.*DYN' && ! readelf -lW "$BIN" | grep -q 'Requesting program interpreter'; then
     local soname
     soname="$(readelf -d "$BIN" 2>/dev/null | awk -F'[][]' '/SONAME/{print $2}')"
@@ -231,38 +268,42 @@ retpoline_check() {
 external_tools_summaries() {
   local BIN="$1"
   if [[ $VERBOSE -eq 1 ]]; then
-    if command -v hardening-check >/dev/null; then
+    if command -v hardening-check >/dev/null 2>&1; then
       info "hardening-check:"
-      hardening-check "$BIN" | sed 's/^/  /'
+      hardening-check "$BIN" 2>/dev/null | sed 's/^/  /' || true
     fi
-    if command -v checksec >/dev/null; then
+    if command -v checksec >/dev/null 2>&1; then
       info "checksec --file:"
-      checksec --file="$BIN" | sed 's/^/  /'
+      checksec --file="$BIN" 2>/dev/null | sed 's/^/  /' || true
     fi
   fi
 }
+
+# ==============================================================================
+# Main ELF audit logic
+# ==============================================================================
 
 audit_elf() {
   local BIN="$1"
 
   local ftype
-  ftype=$(file -b "$BIN" 2>/dev/null || true)
+  ftype=$(file -b "$BIN" 2>/dev/null || echo "")
   if [[ $ftype != ELF* ]]; then
     info "[skip] not an ELF: $BIN (type: $ftype)"
     return 0
   fi
 
   local TYPE MACHINE LMACHINE
-  TYPE=$(readelf -h "$BIN" | awk -F: '/Type:/{gsub(/^[ \t]+/,"",$2); print $2}')
-  MACHINE=$(readelf -h "$BIN" | awk -F: '/Machine:/{gsub(/^[ \t]+/,"",$2); print $2}')
+  TYPE=$(readelf -h "$BIN" 2>/dev/null | awk -F: '/Type:/{gsub(/^[ \t]+/,"",$2); print $2}')
+  MACHINE=$(readelf -h "$BIN" 2>/dev/null | awk -F: '/Machine:/{gsub(/^[ \t]+/,"",$2); print $2}')
   LMACHINE=$(printf "%s" "$MACHINE" | tr '[:upper:]' '[:lower:]')
 
   local HAS_INTERP=0
-  if readelf -lW "$BIN" | grep -q 'Requesting program interpreter'; then
+  if readelf -lW "$BIN" 2>/dev/null | grep -q 'Requesting program interpreter'; then
     HAS_INTERP=1
   fi
 
-  # PIE
+  # --- PIE --------------------------------------------------------------------
   if [[ $HAS_INTERP -eq 1 && "$TYPE" == *"DYN"* ]]; then
     pass "PIE enabled (ET_DYN + PT_INTERP)"
   elif [[ $HAS_INTERP -eq 1 && "$TYPE" == *"EXEC"* ]]; then
@@ -271,8 +312,8 @@ audit_elf() {
     pass "PIE not applicable (not a dynamic executable)"
   fi
 
-  # RELRO
-  if readelf -lW "$BIN" | grep -q 'GNU_RELRO'; then
+  # --- RELRO ------------------------------------------------------------------
+  if readelf -lW "$BIN" 2>/dev/null | grep -q 'GNU_RELRO'; then
     if readelf -d "$BIN" 2>/dev/null | grep -q 'BIND_NOW'; then
       pass "FULL RELRO (-z relro -z now)"
     else
@@ -282,9 +323,9 @@ audit_elf() {
     _fail "No RELRO"
   fi
 
-  # NX
+  # --- NX / GNU_STACK ---------------------------------------------------------
   local STACK_LINE
-  STACK_LINE=$(readelf -lW "$BIN" | awk '/GNU_STACK/{print}')
+  STACK_LINE=$(readelf -lW "$BIN" 2>/dev/null | awk '/GNU_STACK/{print}')
   if [[ -n "$STACK_LINE" ]]; then
     if echo "$STACK_LINE" | grep -q 'E'; then
       _fail "GNU_STACK is executable (no NX)"
@@ -295,21 +336,21 @@ audit_elf() {
     warn "No GNU_STACK header (NX heuristic inconclusive)"
   fi
 
-  # Stack protector
+  # --- Stack protector --------------------------------------------------------
   if readelf -sW "$BIN" 2>/dev/null | grep -Eq '__stack_chk_fail|__stack_chk_guard'; then
     pass "Stack protector in use (__stack_chk_*)"
   else
     warn "No evidence of stack protector"
   fi
 
-  # FORTIFY
+  # --- FORTIFY ----------------------------------------------------------------
   if readelf -sW "$BIN" 2>/dev/null | grep -Eiq '(_chk@|__.*_chk)'; then
     pass "FORTIFY detected (*_chk functions present)"
   else
-    warn "No *_chk detected (may be normal)"
+    warn "No *_chk detected (may be normal depending on build flags)"
   fi
 
-  # RPATH/RUNPATH
+  # --- RPATH / RUNPATH --------------------------------------------------------
   if readelf -d "$BIN" 2>/dev/null | grep -q '(RPATH)'; then
     _fail "RPATH present"
   else
@@ -320,23 +361,23 @@ audit_elf() {
     fi
   fi
 
-  # TEXTREL
+  # --- TEXTREL ----------------------------------------------------------------
   if readelf -d "$BIN" 2>/dev/null | grep -q 'TEXTREL'; then
     _fail "TEXTREL detected"
   else
     pass "No TEXTREL"
   fi
 
-  # Build-ID
+  # --- Build-ID ---------------------------------------------------------------
   if readelf -n "$BIN" 2>/dev/null | grep -q 'Build ID'; then
     pass "Build-ID present"
   else
     warn "No Build-ID (recommend -Wl,--build-id)"
   fi
 
-  # CET/BTI notes
+  # --- CET / BTI notes --------------------------------------------------------
   local NOTES
-  NOTES=$(readelf -n "$BIN" 2>/dev/null || true)
+  NOTES=$(readelf -n "$BIN" 2>/dev/null || echo "")
   if [[ "$LMACHINE" == *"x86-64"* ]]; then
     if echo "$NOTES" | grep -Eq 'IBT|SHSTK'; then
       pass "CET (IBT/SHSTK) advertised"
@@ -352,17 +393,18 @@ audit_elf() {
     fi
   fi
 
-  # W^X
+  # --- W^X --------------------------------------------------------------------
   local LOADS
-  LOADS="$(readelf -lW "$BIN" | awk '/LOAD/{print}')"
+  LOADS="$(readelf -lW "$BIN" 2>/dev/null | awk '/LOAD/{print}')"
   if echo "$LOADS" | grep -Eq 'RWE|RW[^ ]*E'; then
     _fail "RWX segment found (W^X violation)"
   else
     pass "W^X ok (no RWX segments)"
   fi
 
-  # SONAME for .so
-  if readelf -h "$BIN" | grep -q 'Type:.*DYN' && ! readelf -lW "$BIN" | grep -q 'Requesting program interpreter'; then
+  # --- SONAME for shared libraries -------------------------------------------
+  if readelf -h "$BIN" 2>/dev/null | grep -q 'Type:.*DYN' \
+     && ! readelf -lW "$BIN" 2>/dev/null | grep -q 'Requesting program interpreter'; then
     if readelf -d "$BIN" 2>/dev/null | grep -q '(SONAME)'; then
       pass "SONAME present"
     else
@@ -370,17 +412,20 @@ audit_elf() {
     fi
   fi
 
-  # Hidden unless verbose: interp & NEEDED
+  # --- Interp / NEEDED summary (optional) ------------------------------------
   if [[ $VERBOSE -eq 1 && $HAS_INTERP -eq 1 ]]; then
     local interp
-    interp="$(readelf -lW "$BIN" | awk -F'[][]' '/Requesting program interpreter/{print $2}' | sed 's/.*: //')"
+    interp="$(readelf -lW "$BIN" 2>/dev/null \
+      | awk -F'[][]' '/Requesting program interpreter/{print $2}' \
+      | sed 's/.*: //')"
     info "interp: $interp"
   fi
+
   local needed n
   needed="$(readelf -d "$BIN" 2>/dev/null | awk -F'[][]' '/NEEDED/{print $2}')"
   if [[ -n "$needed" ]]; then
     [[ $VERBOSE -eq 1 ]] && info "NEEDED: $needed"
-    n=$(echo "$needed" | wc -l | tr -d ' ')
+    n=$(echo "$needed" | sed '/^$/d' | wc -l | tr -d ' ')
     if (( n > 8 )); then
       warn "Too many dependencies ($n); check for unnecessary linkage"
     else
@@ -390,10 +435,12 @@ audit_elf() {
     pass "No dynamic dependencies declared"
   fi
 
-  # Exports & versioning (only .so)
-  if readelf -h "$BIN" | grep -q 'Type:.*DYN' && ! readelf -lW "$BIN" | grep -q 'Requesting program interpreter'; then
+  # --- Exports & versioning (for .so) ----------------------------------------
+  if readelf -h "$BIN" 2>/dev/null | grep -q 'Type:.*DYN' \
+     && ! readelf -lW "$BIN" 2>/dev/null | grep -q 'Requesting program interpreter'; then
     local exported count
-    exported="$(readelf --dyn-syms "$BIN" 2>/dev/null | awk '$4=="FUNC" && $5=="GLOBAL" && $7=="DEFAULT"{print $8}')"
+    exported="$(readelf --dyn-syms "$BIN" 2>/dev/null \
+      | awk '$4=="FUNC" && $5=="GLOBAL" && $7=="DEFAULT"{print $8}')"
     count=$(echo "$exported" | sed '/^$/d' | wc -l | tr -d ' ')
     if (( count > 50 )); then
       warn "Too many exported functions ($count) — use -fvisibility=hidden / version script"
@@ -416,6 +463,10 @@ audit_elf() {
   external_tools_summaries "$BIN"
 }
 
+# ==============================================================================
+# Archive (.a) scanning for FORTIFY and banned APIs
+# ==============================================================================
+
 archive_scan() {
   local ARCH="$1"
   [[ "${ARCH##*.}" == "a" ]] || return 0
@@ -423,19 +474,21 @@ archive_scan() {
   local ABS_ARCH
   ABS_ARCH="$(cd "$(dirname "$ARCH")" && pwd)/$(basename "$ARCH")"
 
-  local TMP; TMP="$(mktemp -d)"
-  ( cd "$TMP" && ar x "$ABS_ARCH" )
+  local TMP
+  TMP="$(mktemp -d)"
+  ( cd "$TMP" && ar x "$ABS_ARCH" >/dev/null 2>&1 )
 
   local had=0
   local line
   local found=0
   while IFS= read -r line; do
     found=1
-    if readelf -sW "$line" | grep -q '__stack_chk_fail'; then
+    if readelf -sW "$line" 2>/dev/null | grep -q '__stack_chk_fail'; then
       printf "  [info] %s references __stack_chk_fail\n" "$(basename "$line")"
       had=1
     fi
-    if objdump -t "$line" 2>/dev/null | grep -Eq '(^|[^[:alnum:]_])(gets|strcpy|strcat|sprintf|vsprintf|stpcpy|mktemp|tmpnam|tempnam)($|[^[:alnum:]_])'; then
+    if objdump -t "$line" 2>/dev/null \
+         | grep -Eq '(^|[^[:alnum:]_])(gets|strcpy|strcat|sprintf|vsprintf|stpcpy|mktemp|tmpnam|tempnam)($|[^[:alnum:]_])'; then
       printf "  [warn] %s references banned libc API\n" "$(basename "$line")"
     fi
   done < <(find "$TMP" -maxdepth 1 -type f -name '*.o' -print)
@@ -449,15 +502,21 @@ archive_scan() {
   rm -rf "$TMP"
 }
 
+# ==============================================================================
+# Self-test mode: build/audit a deliberately "bad" ELF
+# ==============================================================================
+
 run_self_test() {
   local saveP=$PASS_CNT saveW=$WARN_CNT saveF=$FAIL_CNT
-  PASS_CNT=0; WARN_CNT=0; FAIL_CNT=0
+  PASS_CNT=0
+  WARN_CNT=0
+  FAIL_CNT=0
 
   local BAD="$WORKDIR/bad.c" OUT="$WORKDIR/bad_elf"
   cat > "$BAD" <<'C'
 #include <stdio.h>
 #include <string.h>
-int main(){
+int main(void){
   char b[4];
   strcpy(b,"this will overflow");
   puts("bad");
@@ -467,39 +526,88 @@ C
   "$CC" -O0 -U_FORTIFY_SOURCE -fno-stack-protector -fno-pic "$BAD" \
         -Wl,-z,norelro -Wl,-z,lazy -Wl,-z,execstack -o "$OUT" 2>/dev/null || true
 
- if [[ -x "$OUT" ]]; then
-   echo "[self-test] auditing intentionally bad ELF (expected FAIL/WARN below)"
-   audit_elf "$OUT"
- else
-   info "[self-test] falha ao compilar o ELF ruim; autoteste pulado"
- fi
+  if [[ -x "$OUT" ]]; then
+    echo "[self-test] auditing intentionally bad ELF (FAIL/WARN expected below)"
+    audit_elf "$OUT"
+  else
+    info "[self-test] failed to compile intentionally bad ELF; self-test skipped"
+  fi
   echo "[self-test] summary (bad ELF): ${PASS_CNT} PASS, ${WARN_CNT} WARN, ${FAIL_CNT} FAIL (expected)"
 
-  PASS_CNT=$saveP; WARN_CNT=$saveW; FAIL_CNT=$saveF
+  PASS_CNT=$saveP
+  WARN_CNT=$saveW
+  FAIL_CNT=$saveF
 }
 
 (( SELFTEST )) && run_self_test
 
-bins=()
-[[ -n "$OUT_EXE" ]] && bins+=("$OUT_EXE")
+# ==============================================================================
+# Main execution: iterate over all targets, build probes and audit
+# ==============================================================================
 
-if [[ "$TARGET" != *.a ]]; then
-  bins+=("$TARGET")
-fi
+for TARGET in "${TARGETS[@]}"; do
+  if [[ ! -e "$TARGET" ]]; then
+    _fail "File not found: $TARGET"
+    continue
+  fi
 
-for b in "${bins[@]}"; do
-  audit_elf "$b"
+  echo
+  echo "==================================================================="
+  echo " Auditing: $TARGET"
+  echo "==================================================================="
+
+  OUT_EXE=""
+
+  case "$TARGET" in
+    *.a)
+      OUT_EXE="$WORKDIR/fortify_with_$(basename "$TARGET" .a)"
+      "$CC" $CFLAGS "$WORKDIR/fortify_probe.o" \
+        -Wl,--whole-archive "$TARGET" -Wl,--no-whole-archive \
+        -o "$OUT_EXE" $LDFLAGS 2>/dev/null || true
+      ;;
+    *.so)
+      OUT_EXE="$WORKDIR/fortify_with_$(basename "$TARGET" .so)"
+      "$CC" $CFLAGS "$WORKDIR/fortify_probe.o" "$TARGET" \
+        -o "$OUT_EXE" $LDFLAGS 2>/dev/null || true
+      ;;
+    *)
+      # executable: nothing to link, audit directly
+      ;;
+  esac
+
+  if [[ -n "$OUT_EXE" && ! -x "$OUT_EXE" ]]; then
+    warn "Could not link probe executable against '$TARGET' (probe-based FORTIFY checks will be limited)."
+    OUT_EXE=""
+  fi
+
+  # First audit the probe-exe (if any), then the target itself
+  if [[ -n "$OUT_EXE" ]]; then
+    echo
+    echo "  --- Probe executable linked against $TARGET ---"
+    audit_elf "$OUT_EXE"
+  fi
+
+  echo
+  echo "  --- Direct audit of $TARGET ---"
+  audit_elf "$TARGET"
+
+  # For archives, also scan members
+  [[ "$TARGET" == *.a ]] && archive_scan "$TARGET"
 done
 
-[[ "$TARGET" == *.a ]] && archive_scan "$TARGET"
+# ==============================================================================
+# Final summary
+# ==============================================================================
 
 echo
 if (( FAIL_CNT > 0 )); then
-  red   "Summary: ${PASS_CNT} PASS, ${WARN_CNT} WARN, ${FAIL_CNT} FAIL"; exit 1
+  red   "Summary: ${PASS_CNT} PASS, ${WARN_CNT} WARN, ${FAIL_CNT} FAIL"
+  exit 1
 fi
 if (( WARN_CNT > 0 )); then
   if (( STRICT )); then
-    red   "Summary (strict): ${PASS_CNT} PASS, ${WARN_CNT} WARN -> FAIL"; exit 1
+    red   "Summary (strict): ${PASS_CNT} PASS, ${WARN_CNT} WARN -> FAIL"
+    exit 1
   else
     yellow "Summary: ${PASS_CNT} PASS, ${WARN_CNT} WARN, ${FAIL_CNT} FAIL"
   fi
