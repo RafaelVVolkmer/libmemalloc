@@ -45,32 +45,23 @@ set(MIN_GCC_VERSION   "12.2.0")
 set(MIN_CLANG_VERSION "11.0")
 set(MIN_MSVC_VERSION  "19.20")
 
-if (CMAKE_C_COMPILER_ID STREQUAL "GNU")
-  if (CMAKE_C_COMPILER_VERSION VERSION_LESS ${MIN_GCC_VERSION})
-    message(FATAL_ERROR
-      "[ERROR]: GCC ${MIN_GCC_VERSION} or newer is required.\n"
-      "Detected version: ${CMAKE_C_COMPILER_VERSION}."
-    )
+if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
+  if(CMAKE_C_COMPILER_VERSION VERSION_LESS ${MIN_GCC_VERSION})
+    message(FATAL_ERROR "GCC >= ${MIN_GCC_VERSION}"
+						"required (found ${CMAKE_C_COMPILER_VERSION}).")
   endif()
-
-elseif (CMAKE_C_COMPILER_ID STREQUAL "Clang")
-  if (CMAKE_C_COMPILER_VERSION VERSION_LESS ${MIN_CLANG_VERSION})
-    message(FATAL_ERROR
-      "[ERROR]: Clang ${MIN_CLANG_VERSION} or newer is required.\n"
-      "Detected version: ${CMAKE_C_COMPILER_VERSION}."
-    )
+elseif(CMAKE_C_COMPILER_ID STREQUAL "Clang")
+  if(CMAKE_C_COMPILER_VERSION VERSION_LESS ${MIN_CLANG_VERSION})
+    message(FATAL_ERROR "Clang >= ${MIN_CLANG_VERSION}"
+						"required (found ${CMAKE_C_COMPILER_VERSION}).")
   endif()
-
-elseif (CMAKE_C_COMPILER_ID STREQUAL "MSVC")
-  if (CMAKE_C_COMPILER_VERSION VERSION_LESS ${MIN_MSVC_VERSION})
-    message(FATAL_ERROR
-      "[ERROR]: MSVC ${MIN_MSVC_VERSION} or newer is required.\n"
-      "Detected version: ${CMAKE_C_COMPILER_VERSION}."
-    )
+elseif(MSVC)
+  if(CMAKE_C_COMPILER_VERSION VERSION_LESS ${MIN_MSVC_VERSION})
+    message(FATAL_ERROR "MSVC >= ${MIN_MSVC_VERSION}"
+						"required (found ${CMAKE_C_COMPILER_VERSION}).")
   endif()
-
 else()
-  message(WARNING "[WARNING]: Unrecognized compiler (${CMAKE_C_COMPILER_ID})")
+  message(WARNING "Unrecognized compiler: ${CMAKE_C_COMPILER_ID}")
 endif()
 
 find_program(VALGRIND_EXECUTABLE NAMES valgrind)
