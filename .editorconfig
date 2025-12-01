@@ -1,0 +1,55 @@
+# .editorconfig - libmemalloc
+# Keep formatting consistent across all editors/IDEs for this project.
+
+root = true
+
+# Default settings for all files
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+indent_style = tab
+indent_size = 2
+
+# C and C++ source/header files
+[*.{c,h,cpp,hpp}]
+indent_style = tab
+indent_size = 2
+
+# Assembly files
+[*.{s,S,asm}]
+indent_style = tab
+indent_size = 2
+
+# CMake main file
+[CMakeLists.txt]
+indent_style = tab
+indent_size = 2
+
+# CMake modules
+[*.cmake]
+indent_style = tab
+indent_size = 2
+
+# Shell scripts
+[*.sh]
+indent_style = tab
+indent_size = 2
+
+# YAML / JSON / JSON5 configuration files
+# (spaces are more common and play nicer with many tools)
+[*.{yml,yaml,json}]
+indent_style = space
+indent_size = 2
+
+# Markdown files
+# Don't trim trailing whitespace because it can be meaningful (line breaks)
+[*.md]
+trim_trailing_whitespace = false
+
+# Makefiles
+# Make requires real TAB characters for indentation
+[Makefile]
+indent_style = tab
+indent_size = 2
