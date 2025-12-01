@@ -2,7 +2,8 @@
  *  @addtogroup Libmemalloc
  *  @{
  *
- *  @brief      Architecture, alignment, and attribute utilities for libmemalloc.
+ *  @brief      Architecture, alignment, and attribute utilities for
+ * libmemalloc.
  *
  *  @file       memalloc_utils.h
  *
@@ -175,7 +176,7 @@ extern "C"
  *  @details    Uses bitwise operations to align the value to the
  *              nearest multiple of the current architecture's alignment.
  * ========================================================================== */
-#define ALIGN(val_) (((val_) + (ARCH_ALIGNMENT - 1U)) & ~(ARCH_ALIGNMENT - 1U))
+#define ALIGN(val_)   (((val_) + (ARCH_ALIGNMENT - 1U)) & ~(ARCH_ALIGNMENT - 1U))
 
 /** ============================================================================
  *  @def        PTR_ERR
@@ -237,13 +238,13 @@ extern "C"
 #ifndef __ALIGN
   #if defined(__GNUC__) || defined(__clang__)
     #if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
-      #define __ALIGN   \
-        __attribute__(( \
-          scalar_storage_order("big-endian"), aligned(ARCH_ALIGNMENT)))
+      #define __ALIGN                                      \
+        __attribute__((scalar_storage_order("big-endian"), \
+                       aligned(ARCH_ALIGNMENT)))
     #elif __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
-      #define __ALIGN   \
-        __attribute__(( \
-          scalar_storage_order("little-endian"), aligned(ARCH_ALIGNMENT)))
+      #define __ALIGN                                         \
+        __attribute__((scalar_storage_order("little-endian"), \
+                       aligned(ARCH_ALIGNMENT)))
     #else
       #error "[ERROR] Unknow Endianness: check '__BYTE_ORDER__'"
     #endif

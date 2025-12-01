@@ -189,8 +189,9 @@ __LIBMEMALLOC_API void *MEM_allocNextFit(const size_t size)
  *  @return Pointer to the allocated user memory on success,
  *          or an error‐encoded pointer (via PTR_ERR()) on failure.
  * ========================================================================== */
-__LIBMEMALLOC_API void *MEM_alloc(
-  const size_t size, const allocation_strategy_t strategy) __LIBMEMALLOC_MALLOC;
+__LIBMEMALLOC_API void *MEM_alloc(const size_t                size,
+                                  const allocation_strategy_t strategy)
+  __LIBMEMALLOC_MALLOC;
 
 /** ============================================================================
  *  @brief  Allocates and zero‐initializes memory using the specified strategy.
@@ -205,8 +206,9 @@ __LIBMEMALLOC_API void *MEM_alloc(
  *  @return Pointer to the allocated zeroed memory on success,
  *          or an error‐encoded pointer (via PTR_ERR()) on failure.
  * ========================================================================== */
-__LIBMEMALLOC_API void *MEM_calloc(
-  const size_t size, const allocation_strategy_t strategy) __LIBMEMALLOC_MALLOC;
+__LIBMEMALLOC_API void *MEM_calloc(const size_t                size,
+                                   const allocation_strategy_t strategy)
+  __LIBMEMALLOC_MALLOC;
 
 /** ============================================================================
  *  @brief  Reallocates memory with safety checks using the specified strategy.

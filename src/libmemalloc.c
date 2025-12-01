@@ -221,19 +221,19 @@
  * ========================================================================== */
 typedef struct __ALIGN BlockHeader
 {
-  uintptr_t magic; /**< Magic number for integrity check */
-  size_t    size;  /**< Total block size (includes header, data, and canary) */
+  uintptr_t magic;  /**< Magic number for integrity check */
+  size_t    size;   /**< Total block size (includes header, data, and canary) */
 
-  uint32_t free;   /**< 1 if block is free, 0 if allocated */
-  uint32_t marked; /**< Garbage collector mark flag */
+  uint32_t free;    /**< 1 if block is free, 0 if allocated */
+  uint32_t marked;  /**< Garbage collector mark flag */
 
-  const char *file;         /**< Source file of allocation (for debugging) */
-  uint64_t    line;         /**< Line number of allocation (for debugging) */
+  const char *file; /**< Source file of allocation (for debugging) */
+  uint64_t    line; /**< Line number of allocation (for debugging) */
 
-  uintptr_t canary;         /**< Canary value for buffer-overflow detection */
+  uintptr_t canary; /**< Canary value for buffer-overflow detection */
 
-  struct BlockHeader *next; /**< Pointer to the next block */
-  struct BlockHeader *prev; /**< Pointer to the previous block */
+  struct BlockHeader *next;    /**< Pointer to the next block */
+  struct BlockHeader *prev;    /**< Pointer to the previous block */
 
   struct BlockHeader *fl_next; /**< Pointer to the next block on free list */
   struct BlockHeader
@@ -743,10 +743,10 @@ static int MEM_mapFree(mem_allocator_t *const allocator, void *const addr);
  *  @retval -EIO:     mmap() I/O error for large allocations.
  * ========================================================================== */
 static void *MEM_allocOp(mem_allocator_t *const      allocator,
-                                 const size_t                size,
-                                 const char *const           file,
-                                 const int                   line,
-                                 const allocation_strategy_t strategy)
+                         const size_t                size,
+                         const char *const           file,
+                         const int                   line,
+                         const allocation_strategy_t strategy)
   __LIBMEMALLOC_INTERNAL_MALLOC;
 
 /** ============================================================================
@@ -776,11 +776,11 @@ static void *MEM_allocOp(mem_allocator_t *const      allocator,
  *  @retval -EIO:     I/O error for large mmap-based allocations.
  * ========================================================================== */
 static void *MEM_reallocOp(mem_allocator_t *const      allocator,
-                                  void *const                 ptr,
-                                  const size_t                new_size,
-                                  const char *const           file,
-                                  const int                   line,
-                                  const allocation_strategy_t strategy)
+                           void *const                 ptr,
+                           const size_t                new_size,
+                           const char *const           file,
+                           const int                   line,
+                           const allocation_strategy_t strategy)
   __LIBMEMALLOC_INTERNAL_REALLOC;
 
 /** ============================================================================
@@ -806,10 +806,10 @@ static void *MEM_reallocOp(mem_allocator_t *const      allocator,
  *  @retval -EIO:     I/O error for large mmap‐based allocations.
  * ========================================================================== */
 static void *MEM_callocOp(mem_allocator_t *const      allocator,
-                                 const size_t                size,
-                                 const char *const           file,
-                                 const int                   line,
-                                 const allocation_strategy_t strategy)
+                          const size_t                size,
+                          const char *const           file,
+                          const int                   line,
+                          const allocation_strategy_t strategy)
   __LIBMEMALLOC_INTERNAL_MALLOC;
 
 /** ============================================================================
@@ -844,9 +844,9 @@ static void *MEM_callocOp(mem_allocator_t *const      allocator,
  *                        or MEM_insertFreeBlock().
  * ========================================================================== */
 static int MEM_freeOp(mem_allocator_t *const allocator,
-                             void *const            ptr,
-                             const char *const      file,
-                             const int              line);
+                      void *const            ptr,
+                      const char *const      file,
+                      const int              line);
 
 /** ============================================================================
  *  @brief  Determine at runtime whether the stack grows downward
@@ -1911,7 +1911,7 @@ static int MEM_allocatorInit(mem_allocator_t *const allocator)
   size_t pad        = 0u;
   size_t bins_bytes = 0u;
 
-	g_alocator_inited = true;
+  g_alocator_inited = true;
 
   allocator->last_brk_start = NULL;
   allocator->last_brk_end   = NULL;
@@ -2152,11 +2152,8 @@ static void *MEM_mapAlloc(mem_allocator_t *const allocator,
     goto function_output;
   }
 
-  map_block = MEM_allocOp(allocator,
-                          sizeof(mmap_t),
-                          __FILE__,
-                                  __LINE__,
-                                  FIRST_FIT);
+  map_block
+    = MEM_allocOp(allocator, sizeof(mmap_t), __FILE__, __LINE__, FIRST_FIT);
   if (map_block == NULL)
   {
     munmap(ptr, map_size);
@@ -2175,14 +2172,14 @@ static void *MEM_mapAlloc(mem_allocator_t *const allocator,
 
   header = (block_header_t *)ptr;
 
-  header->magic    = MAGIC_NUMBER;
-  header->size     = map_size;
-  header->free     = 0u;
-  header->marked   = 1u;
-  header->prev     = (block_header_t *)NULL;
-  header->next     = (block_header_t *)NULL;
-  header->file     = (const char *)NULL;
-  header->line     = 0u;
+  header->magic  = MAGIC_NUMBER;
+  header->size   = map_size;
+  header->free   = 0u;
+  header->marked = 1u;
+  header->prev   = (block_header_t *)NULL;
+  header->next   = (block_header_t *)NULL;
+  header->file   = (const char *)NULL;
+  header->line   = 0u;
 
   canary_addr  = (uintptr_t)ptr + map_size - sizeof(uintptr_t);
   data_canary  = (uintptr_t *)canary_addr;
@@ -2253,10 +2250,7 @@ static int MEM_mapFree(mem_allocator_t *const allocator, void *const addr)
       to_free  = *map_ref;
       *map_ref = to_free->next;
 
-      ret = MEM_freeOp(allocator,
-                              (void *)to_free,
-                              __FILE__,
-                              __LINE__);
+      ret = MEM_freeOp(allocator, (void *)to_free, __FILE__, __LINE__);
       if (ret != EXIT_SUCCESS)
       {
         LOG_ERROR("Mmap metadata free failed: %zu bytes. "
@@ -2627,14 +2621,14 @@ static int MEM_splitBlock(mem_allocator_t *const allocator,
 
   new_block = (block_header_t *)((uintptr_t)block + total_size);
 
-  new_block->magic    = MAGIC_NUMBER;
-  new_block->size     = remaining_size;
-  new_block->free     = 1u;
-  new_block->marked   = 0u;
-  new_block->file     = (const char *)NULL;
-  new_block->line     = 0ull;
-  new_block->prev     = block;
-  new_block->next     = block->next;
+  new_block->magic  = MAGIC_NUMBER;
+  new_block->size   = remaining_size;
+  new_block->free   = 1u;
+  new_block->marked = 0u;
+  new_block->file   = (const char *)NULL;
+  new_block->line   = 0ull;
+  new_block->prev   = block;
+  new_block->next   = block->next;
 
   if (block->next)
     block->next->prev = new_block;
@@ -2889,8 +2883,8 @@ static void *MEM_allocOp(mem_allocator_t *const      allocator,
     data_canary  = (uintptr_t *)canary_addr;
     *data_canary = CANARY_VALUE;
 
-    block->file     = file;
-    block->line     = (uint64_t)line;
+    block->file = file;
+    block->line = (uint64_t)line;
 
     LOG_INFO("Mmap used for alloc: %p (%zu bytes).\n", raw_mmap, size);
     user_ptr = (uint8_t *)raw_mmap + sizeof(block_header_t);
@@ -2954,8 +2948,8 @@ static void *MEM_allocOp(mem_allocator_t *const      allocator,
   if (ret != EXIT_SUCCESS)
     goto function_output;
 
-  block->file     = file;
-  block->line     = (uint64_t)line;
+  block->file = file;
+  block->line = (uint64_t)line;
 
   user_ptr = (void *)((uint8_t *)block + sizeof(block_header_t));
 
@@ -3000,11 +2994,11 @@ null_pointer:
  *  @retval -EIO:     I/O error for large mmap-based allocations.
  * ========================================================================== */
 static void *MEM_reallocOp(mem_allocator_t *const      allocator,
-                                  void *const                 ptr,
-                                  const size_t                new_size,
-                                  const char *const           file,
-                                  const int                   line,
-                                  const allocation_strategy_t strategy)
+                           void *const                 ptr,
+                           const size_t                new_size,
+                           const char *const           file,
+                           const int                   line,
+                           const allocation_strategy_t strategy)
 {
   int ret = EXIT_SUCCESS;
 
@@ -3029,11 +3023,7 @@ static void *MEM_reallocOp(mem_allocator_t *const      allocator,
 
   if (ptr == NULL)
   {
-    new_ptr = MEM_allocOp(allocator,
-                                  new_size,
-                                  file,
-                                  line,
-                                  strategy);
+    new_ptr = MEM_allocOp(allocator, new_size, file, line, strategy);
     goto function_output;
   }
 
@@ -3056,8 +3046,7 @@ static void *MEM_reallocOp(mem_allocator_t *const      allocator,
     goto function_output;
   }
 
-  new_ptr
-    = MEM_allocOp(allocator, new_size, file, line, strategy);
+  new_ptr = MEM_allocOp(allocator, new_size, file, line, strategy);
   if (new_ptr != NULL)
   {
     if (MEM_memcpy(new_ptr, ptr, old_size) != new_ptr)
@@ -3104,10 +3093,10 @@ function_output:
  *  @retval -EIO:     I/O error for large mmap‐based allocations.
  * ========================================================================== */
 static void *MEM_callocOp(mem_allocator_t *const      allocator,
-                                 const size_t                size,
-                                 const char *const           file,
-                                 const int                   line,
-                                 const allocation_strategy_t strategy)
+                          const size_t                size,
+                          const char *const           file,
+                          const int                   line,
+                          const allocation_strategy_t strategy)
 {
   void *ptr = (void *)NULL;
   ;
@@ -3176,9 +3165,9 @@ function_output:
  *                        or MEM_insertFreeBlock().
  * ========================================================================== */
 static int MEM_freeOp(mem_allocator_t *const allocator,
-                             void *const            ptr,
-                             const char *const      file,
-                             const int              line)
+                      void *const            ptr,
+                      const char *const      file,
+                      const int              line)
 {
   int ret = EXIT_SUCCESS;
 
@@ -3238,10 +3227,10 @@ static int MEM_freeOp(mem_allocator_t *const allocator,
   VALGRIND_MEMPOOL_FREE(allocator, ptr);
 #endif
 
-  block->free     = 1u;
-  block->marked   = 0u;
-  block->file     = file;
-  block->line     = (uint64_t)line;
+  block->free   = 1u;
+  block->marked = 0u;
+  block->file   = file;
+  block->line   = (uint64_t)line;
 
   ret = MEM_mergeBlocks(allocator, block);
   if (ret != EXIT_SUCCESS)
@@ -3458,10 +3447,10 @@ static int MEM_gcMark(mem_allocator_t *const allocator)
   stack_bottom = allocator->stack_bottom;
   stack_top    = allocator->stack_top;
 
-#ifdef RUNNING_ON_VALGRIND
+  #ifdef RUNNING_ON_VALGRIND
   VALGRIND_MAKE_MEM_DEFINED((void *)stack_bottom,
                             (size_t)((char *)stack_top - (char *)stack_bottom));
-#endif
+  #endif
 
   MEM_setInitialMarks(allocator);
 
@@ -3654,10 +3643,7 @@ static int MEM_gcSweep(mem_allocator_t *const allocator)
                map->size);
 
       munmap(map->addr, map->size);
-      MEM_freeOp(allocator,
-                        (void *)map,
-                        __FILE__,
-                        __LINE__);
+      MEM_freeOp(allocator, (void *)map, __FILE__, __LINE__);
     }
     else
     {
@@ -3873,7 +3859,6 @@ function_output:
 }
 
 #endif
-
 
 /** ============================================================================
  *          P U B L I C  F U N C T I O N S  D E F I N I T I O N S
@@ -4112,8 +4097,8 @@ void *MEM_realloc(void *const                 ptr,
   gc_thread = &g_allocator.gc_thread;
 
   pthread_mutex_lock(&gc_thread->gc_lock);
-  ret_addr =
-    MEM_reallocOp(&g_allocator, ptr, new_size, __FILE__, __LINE__, strategy);
+  ret_addr
+    = MEM_reallocOp(&g_allocator, ptr, new_size, __FILE__, __LINE__, strategy);
   pthread_mutex_unlock(&gc_thread->gc_lock);
 
 function_output:
