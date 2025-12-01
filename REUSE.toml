@@ -1,0 +1,52 @@
+# REUSE.toml — Licensing metadata for libmemalloc
+#
+# This file follows the REUSE Specification:
+#   https://reuse.software/spec/
+#
+# Goal:
+#   - Declare that the main libmemalloc code is licensed under MIT.
+#   - Cover typical source / build infrastructure files.
+#   - You can override or refine this later for docs, examples or
+#     third-party code.
+#
+# Notes:
+#   - "version" refers to the REUSE.toml schema version (currently 1).
+#   - Each [[annotations]] block associates license info with one or
+#     more paths (files or globs) relative to the repository root.
+#   - Additional annotations can be added for files with different
+#     licenses (e.g. third_party/, docs/, assets/, etc.).
+
+version = 1
+
+# --------------------------------------------------------------------
+# Main project code and build system (MIT)
+# --------------------------------------------------------------------
+[[annotations]]
+path = [
+  "src/**",
+  "inc/**",
+  "tests/**",
+  "scripts/**",
+  "cmake/**",
+  "CMakeLists.txt",
+  "CMakePresets.json",
+  ".github/**",
+  "typos.toml",
+  "REUSE.toml"
+]
+
+# Use "aggregate" so in-file SPDX headers and this file are combined.
+# That way, REUSE will see both, instead of this overriding headers.
+precedence = "aggregate"
+
+SPDX-FileCopyrightText = [
+  "2024-2025 Rafael V. Volkmer <rafael.v.volkmer@gmail.com>"
+]
+
+# Adjust this if libmemalloc ever changes its main license.
+SPDX-License-Identifier = "MIT"
+
+[[annotations]]
+path = [ "third_party/**", "external/**" ]
+precedence = "override"
+SPDX-License-Identifier = "NOASSERTION"
