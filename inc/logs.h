@@ -81,6 +81,8 @@ typedef enum LogLevel
  *  @def        _POSIX_C_SOURCE
  *  @brief      Expose POSIX extensions for clock_gettime and
  *              pthread mutex initializer.
+ *  @note       This macro should be defined before including system headers
+ *              in translation units that require POSIX extensions.
  * ========================================================================== */
 #ifndef _POSIX_C_SOURCE
   #define _POSIX_C_SOURCE 200809UL
@@ -88,24 +90,48 @@ typedef enum LogLevel
 
 /** ============================================================================
  *  @def        LOG_PRINTF
- *  @brief      Compiler-specific printf abstraction.
+ *  @brief      Compiler-specific printf abstraction (variadic).
+ *
+ *  Uses __builtin_fprintf when available; falls back to fprintf otherwise.
+ *  Intended usage matches fprintf:
+ *
+ *      LOG_PRINTF(stream, "fmt %d\n", value);
  * ========================================================================== */
-#if defined(__GNUC__)
-  #define LOG_PRINTF(file, format, ...) \
-    __builtin_fprintf((FILE *)(file), (format), ##__VA_ARGS__)
+#if defined(__has_builtin)
+  #if __has_builtin(__builtin_fprintf)
+    #define LOG_PRINTF(...) __builtin_fprintf(__VA_ARGS__)
+  #else
+    #define LOG_PRINTF(...) fprintf(__VA_ARGS__)
+  #endif
 #else
-  #define LOG_PRINTF(file, ...) fprintf(file, __VA_ARGS__)
+  #if defined(__GNUC__)
+    #define LOG_PRINTF(...) __builtin_fprintf(__VA_ARGS__)
+  #else
+    #define LOG_PRINTF(...) fprintf(__VA_ARGS__)
+  #endif
 #endif
 
 /** ============================================================================
  *  @def        LOG_VPRINTF
  *  @brief      Compiler-specific vprintf abstraction.
+ *
+ *  Uses __builtin_vfprintf when available; falls back to vfprintf otherwise.
+ *  Intended usage matches vfprintf:
+ *
+ *      LOG_VPRINTF(stream, "fmt %d\n", args);
  * ========================================================================== */
-#if defined(__GNUC__)
-  #define LOG_VPRINTF(file, format, args) \
-    __builtin_vfprintf((FILE *)(file), (format), (args))
+#if defined(__has_builtin)
+  #if __has_builtin(__builtin_vfprintf)
+    #define LOG_VPRINTF(...) __builtin_vfprintf(__VA_ARGS__)
+  #else
+    #define LOG_VPRINTF(...) vfprintf(__VA_ARGS__)
+  #endif
 #else
-  #define LOG_VPRINTF(file, fmt, args) vfprintf(file, fmt, args)
+  #if defined(__GNUC__)
+    #define LOG_VPRINTF(...) __builtin_vfprintf(__VA_ARGS__)
+  #else
+    #define LOG_VPRINTF(...) vfprintf(__VA_ARGS__)
+  #endif
 #endif
 
 /** ============================================================================
@@ -130,12 +156,26 @@ typedef enum LogLevel
 
 /** ============================================================================
  *  @def        ATTR_PRINTF
- *  @brief      Macro to apply GCC printf-style format checking on custom
- * functions.
+ *  @brief      Macro to apply printf-style format checking on custom
+ *              functions when supported by the compiler.
+ *
+ *  Expands to GCC/Clang's __attribute__((format(printf, ...))) when
+ *  available, otherwise to nothing.
  * ========================================================================== */
 #ifndef ATTR_PRINTF
-  #define ATTR_PRINTF(fmt_idx, var_idx) \
-    __attribute__((format(printf, fmt_idx, var_idx)))
+  #if defined(__has_attribute)
+    #if __has_attribute(format)
+      #define ATTR_PRINTF(fmt_idx, var_idx) \
+        __attribute__((format(printf, fmt_idx, var_idx)))
+    #else
+      #define ATTR_PRINTF(fmt_idx, var_idx)
+    #endif
+  #elif defined(__GNUC__)
+    #define ATTR_PRINTF(fmt_idx, var_idx) \
+      __attribute__((format(printf, fmt_idx, var_idx)))
+  #else
+    #define ATTR_PRINTF(fmt_idx, var_idx)
+  #endif
 #endif
 
 /** ============================================================================
@@ -170,7 +210,7 @@ typedef enum LogLevel
  *  @param[in]  ...     Arguments corresponding to @p fmt.
  *
  *  @return Integer status code indicating initialization result.
-
+ *
  *  @retval EXIT_SUCCESS: Message was successfully logged.
  *  @retval -EIO:         The specified @p level is more verbose than LOG_LEVEL.
  * ========================================================================== */
@@ -211,7 +251,7 @@ static inline int LOG_output(log_level_t level,
  *  @param[in]  ...     Arguments corresponding to @p fmt.
  *
  *  @return Integer status code indicating initialization result.
-
+ *
  *  @retval EXIT_SUCCESS: Message was successfully logged.
  *  @retval -EIO:         The specified @p level is more verbose than LOG_LEVEL.
  * ========================================================================== */
@@ -280,60 +320,60 @@ function_output:
 }
 
 /** ============================================================================
- *  @def        LOG_ERROR(fmt, ...)
+ *  @def        LOG_ERROR(...)
  *  @brief      Logs an error message (red).
+ *
+ *  Usage:
+ *      LOG_ERROR("Message\n");
+ *      LOG_ERROR("Message: %d\n", code);
  * ========================================================================== */
-#define LOG_ERROR(fmt, ...)   \
+#define LOG_ERROR(...)        \
   LOG_output(LOG_LEVEL_ERROR, \
              COLOR_RED,       \
              PREFIX_ERROR,    \
              __FILE__,        \
              __func__,        \
              __LINE__,        \
-             fmt,             \
-             ##__VA_ARGS__)
+             __VA_ARGS__)
 
 /** ============================================================================
- *  @def        LOG_WARNING(fmt, ...)
+ *  @def        LOG_WARNING(...)
  *  @brief      Logs a warning message (yellow).
  * ========================================================================== */
-#define LOG_WARNING(fmt, ...)   \
+#define LOG_WARNING(...)        \
   LOG_output(LOG_LEVEL_WARNING, \
              COLOR_YELLOW,      \
              PREFIX_WARNING,    \
              __FILE__,          \
              __func__,          \
              __LINE__,          \
-             fmt,               \
-             ##__VA_ARGS__)
+             __VA_ARGS__)
 
 /** ============================================================================
- *  @def        LOG_INFO(fmt, ...)
+ *  @def        LOG_INFO(...)
  *  @brief      Logs an info message (blue).
  * ========================================================================== */
-#define LOG_INFO(fmt, ...)   \
+#define LOG_INFO(...)        \
   LOG_output(LOG_LEVEL_INFO, \
              COLOR_BLUE,     \
              PREFIX_INFO,    \
              __FILE__,       \
              __func__,       \
              __LINE__,       \
-             fmt,            \
-             ##__VA_ARGS__)
+             __VA_ARGS__)
 
 /** ============================================================================
- *  @def        LOG_DEBUG(fmt, ...)
+ *  @def        LOG_DEBUG(...)
  *  @brief      Logs a debug message (green).
  * ========================================================================== */
-#define LOG_DEBUG(fmt, ...)   \
+#define LOG_DEBUG(...)        \
   LOG_output(LOG_LEVEL_DEBUG, \
              COLOR_GREEN,     \
              PREFIX_DEBUG,    \
              __FILE__,        \
              __func__,        \
              __LINE__,        \
-             fmt,             \
-             ##__VA_ARGS__)
+             __VA_ARGS__)
 
 /* < C++ Compatibility End > */
 #ifdef __cplusplus
