@@ -124,6 +124,8 @@ WORKDIR /out
 COPY --from=builder /app/bin/${BUILD_MODE}/libmemalloc.so .
 COPY --from=builder /app/bin/${BUILD_MODE}/libmemalloc.a  .
 
+CMD ["true"]
+
 # ---------------------------------------------------------------------------
 # Stage 4: Export artifacts + docs (used by build.sh --docker Release)
 # ---------------------------------------------------------------------------
@@ -148,3 +150,5 @@ COPY --from=builder /app/doxygen/doxygen-awesome/html/ docs/html/
 
 # Export project logo used by the site
 COPY --from=builder /app/readme/libmemalloc.svg         docs/html/
+
+CMD ["true"]
