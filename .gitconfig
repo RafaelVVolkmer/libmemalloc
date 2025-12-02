@@ -9,6 +9,8 @@
     lg1 = log --graph --decorate --date=relative \
               --format='%C(auto)%h %C(bold)%ad%Creset %C(auto)%an%d %Creset%s'
 
+    tag = !.githooks/post-tag
+
 [diff]
     algorithm = histogram
     colorMoved = default

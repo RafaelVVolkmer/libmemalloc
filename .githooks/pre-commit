@@ -1,0 +1,209 @@
+#!/usr/bin/env bash
+
+# SPDX-FileCopyrightText: 2024-2025 Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
+# SPDX-License-Identifier: MIT
+
+# ==============================================================================
+# pre-commit — staged formatting + hygiene + style/compliance checks
+#
+# - Ensures scripts/*.sh are executable
+# - Runs clang-format -i only on staged C/H files and re-stages them
+# - Enforces TODO/FIXME to reference an issue in added lines
+# - Requires new text files to carry an SPDX-License-Identifier header
+# - Delegates full style, spell-check and REUSE validation to
+#   scripts/style_check.sh
+#
+# Intended to be used as a pre-commit hook, either via:
+#   .git/hooks/pre-commit
+# or with:
+#   core.hooksPath = .githooks
+# ==============================================================================
+
+set -euo pipefail
+
+# ------------------------------------------------------------------------------
+# Colors
+# ------------------------------------------------------------------------------
+RED=$'\033[31m'
+GREEN=$'\033[32m'
+YELLOW=$'\033[33m'
+RESET=$'\033[0m'
+
+# ------------------------------------------------------------------------------
+# Helpers
+# ------------------------------------------------------------------------------
+have_cmd() {
+  command -v "$1" >/dev/null 2>&1
+}
+
+need_cmd() {
+  local cmd="$1" msg="$2"
+  if ! have_cmd "$cmd"; then
+    echo "[pre-commit] ${RED}${cmd} not found in PATH (${msg}).${RESET}"
+    exit 1
+  fi
+}
+
+is_text_file() {
+  local f="$1"
+
+  [ -f "${f}" ] || return 1
+
+  if have_cmd file; then
+    file --brief --mime-type "${f}" 2>/dev/null | grep -q '^text/'
+  else
+    # Fallback heuristic when `file` is not available
+    case "${f}" in
+      *.c|*.h|*.sh|*.bash|*.zsh|*.md|*.txt|*.yml|*.yaml|*.toml|*.json|*.cfg|*.conf)
+        return 0
+        ;;
+      *)
+        return 1
+        ;;
+    esac
+  fi
+}
+
+# ------------------------------------------------------------------------------
+# Short-circuit: only run if scripts/ exists
+# ------------------------------------------------------------------------------
+if [ ! -d "scripts" ]; then
+  echo "[pre-commit] ${YELLOW}No scripts/ directory detected, skipping checks.${RESET}"
+  exit 0
+fi
+
+if [ ! -f "scripts/style_check.sh" ]; then
+  echo "[pre-commit] ${RED}scripts/style_check.sh not found. Cannot run style pipeline.${RESET}"
+  exit 1
+fi
+
+echo "[pre-commit] ${YELLOW}Running staged formatting and style/compliance checks…${RESET}"
+
+# Best-effort: ensure shell scripts are executable
+chmod +x scripts/*.sh 2>/dev/null || true
+
+# ------------------------------------------------------------------------------
+# 1) Run clang-format only on staged C/H files
+# ------------------------------------------------------------------------------
+CHANGED_C_FILES="$(git diff --cached --name-only -- '*.c' '*.h' || true)"
+
+if [ -n "${CHANGED_C_FILES}" ]; then
+  need_cmd clang-format "required to auto-format staged C/H files"
+
+  echo "[pre-commit] ${YELLOW}Running clang-format on staged C/H files…${RESET}"
+  for f in ${CHANGED_C_FILES}; do
+    [ -f "${f}" ] || continue
+    clang-format -i "${f}"
+    git add "${f}"
+  done
+fi
+# ------------------------------------------------------------------------------
+# 2) TODO/FIXME must reference an issue in added lines
+#    Looks only at added lines in the staged diff (files added/modified),
+#    and ignores changes inside .githooks/ (hook maintenance).
+# ------------------------------------------------------------------------------
+ADDED_LINES="$(git diff --cached -U0 --diff-filter=AM || true)"
+
+if [ -n "${ADDED_LINES}" ]; then
+  TODO_VIOLATIONS=0
+  current_file=""
+
+  while IFS= read -r line; do
+    case "${line}" in
+      "+++ "*)
+        # File header line: "+++ b/path" or "+++ /dev/null"
+        case "${line}" in
+          '+++ b/'*)
+            current_file="${line#+++ b/}"
+            ;;
+          *)
+            current_file=""
+            ;;
+        esac
+        ;;
+      "@@"*)
+        # Hunk header, ignore
+        ;;
+      +*)
+        # Added line (but not +++ header, which was handled above)
+        # If we don't know the file yet, skip.
+        [ -z "${current_file}" ] && continue
+
+        # Ignore hooks themselves (you can extend this list if needed)
+        case "${current_file}" in
+          .githooks/*)
+            continue
+            ;;
+        esac
+
+        # Strip leading '+' for checks
+        local_line="${line#?}"
+
+        # Look for TODO/FIXME markers
+        if echo "${local_line}" | grep -Eq '\b(TODO|FIXME)\b'; then
+          # Require some issue-style reference
+          if ! echo "${local_line}" | grep -Eq '(#[0-9]{1,6}|GH-[0-9]+|[Ii]ssue[[:space:]]*[0-9]+)'; then
+            echo "[pre-commit] ${RED}TODO/FIXME without issue reference:${RESET}"
+            echo "             ${local_line}"
+            TODO_VIOLATIONS=1
+          fi
+        fi
+        ;;
+      *)
+        # Context / removed / meta lines → ignore
+        ;;
+    esac
+  done <<< "${ADDED_LINES}"
+
+  if [ "${TODO_VIOLATIONS}" -ne 0 ]; then
+    echo
+    echo "[pre-commit] ${RED}Rejecting commit due to untracked TODO/FIXME markers.${RESET}"
+    echo "[pre-commit] Add an issue reference (e.g. '#123', 'GH-42', 'issue 7') or remove the marker."
+    exit 1
+  fi
+fi
+
+# ------------------------------------------------------------------------------
+# 3) New files must carry an SPDX-License-Identifier header
+#    This block uses SPDX strings, so tell REUSE to ignore it as content.
+# ------------------------------------------------------------------------------
+# REUSE-IgnoreStart
+NEW_FILES="$(git diff --cached --name-only --diff-filter=A || true)"
+
+if [ -n "${NEW_FILES}" ]; then
+  SPDX_VIOLATIONS=0
+
+  for f in ${NEW_FILES}; do
+    # Skip non-regular or non-text files (binaries, images, etc.)
+    is_text_file "${f}" || continue
+
+    if ! grep -q "SPDX-License-Identifier:" "${f}" 2>/dev/null; then
+      echo "[pre-commit] ${RED}New file '${f}' is missing an SPDX-License-Identifier header.${RESET}"
+      echo "[pre-commit] Add something like at the top of the file:"
+      echo "  // SPDX-License-Identifier: MIT"
+      echo "or"
+      echo "  # SPDX-License-Identifier: MIT"
+      SPDX_VIOLATIONS=1
+    fi
+  done
+
+  if [ "${SPDX_VIOLATIONS}" -ne 0 ]; then
+    echo
+    echo "[pre-commit] ${RED}Rejecting commit due to missing SPDX headers in new files.${RESET}"
+    exit 1
+  fi
+fi
+# REUSE-IgnoreEnd
+
+# ------------------------------------------------------------------------------
+# 4) Run full style pipeline (clang-tidy, clang-format --dry-run, typos, REUSE)
+# ------------------------------------------------------------------------------
+echo "[pre-commit] ${YELLOW}Running scripts/style_check.sh…${RESET}"
+
+if ! ./scripts/style_check.sh; then
+  echo "[pre-commit] ${RED}Style or compliance checks failed. Aborting commit.${RESET}"
+  exit 1
+fi
+
+echo "[pre-commit] ${GREEN}All pre-commit checks passed successfully.${RESET}"
+exit 0

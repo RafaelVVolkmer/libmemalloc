@@ -1,0 +1,70 @@
+#!/usr/bin/env bash
+
+# SPDX-FileCopyrightText: 2024-2025 Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
+# SPDX-License-Identifier: MIT
+
+# ==============================================================================
+# post-checkout — sanity hints after checkouts that touch build/tooling
+#
+# Git calls this hook as:
+#   post-checkout <old-ref> <new-ref> <flag>
+#
+# - Compares old-ref and new-ref to detect changes in:
+#     * CMakeLists.txt
+#     * CMakePresets.json
+#     * scripts/**
+# - If any of these changed, prints a reminder to run:
+#     ./scripts/bootstrap.sh
+#     ./scripts/build.sh debug
+#
+# This hook is advisory only and never aborts the checkout.
+#
+# Intended to be used with:
+#   core.hooksPath = .githooks
+# ==============================================================================
+
+set -euo pipefail
+
+OLD_REF="${1:-}"
+NEW_REF="${2:-}"
+FLAG="${3:-}"   # unused, kept for signature compatibility
+
+RED=$'\033[31m'
+GREEN=$'\033[32m'
+YELLOW=$'\033[33m'
+RESET=$'\033[0m'
+
+have_cmd() {
+  command -v "$1" >/dev/null 2>&1
+}
+
+if ! have_cmd git; then
+  exit 0
+fi
+
+[ -z "${OLD_REF}" ] && exit 0
+[ -z "${NEW_REF}" ] && exit 0
+
+CHANGED="$(git diff --name-only "${OLD_REF}" "${NEW_REF}" 2>/dev/null || true)"
+
+if printf '%s\n' "${CHANGED}" | grep -Eq '^(CMakeLists\.txt|CMakePresets\.json|scripts/)'; then
+  echo
+  echo "[post-checkout] ${YELLOW}Build/tooling-related files changed after checkout.${RESET}"
+  echo "                Detected changes under CMake files or scripts/ between:"
+  echo "                  ${OLD_REF} -> ${NEW_REF}"
+  echo
+  echo "                Suggested follow-up:"
+  if [ -x "./scripts/bootstrap.sh" ]; then
+    echo "                  • ./scripts/bootstrap.sh"
+  else
+    echo "                  • (scripts/bootstrap.sh not found or not executable)"
+  fi
+  if [ -x "./scripts/build.sh" ]; then
+    echo "                  • ./scripts/build.sh debug"
+  else
+    echo "                  • (scripts/build.sh not found or not executable)"
+  fi
+  echo
+fi
+
+exit 0
