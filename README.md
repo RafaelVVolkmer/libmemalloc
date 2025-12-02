@@ -71,78 +71,6 @@ You link the `.a` or `.so`, include `libmemalloc.h`, and use these functions dir
 
 ---
 
-# 🗂️ Repository Layout
-
-```text
-libmemalloc/                              # Root of the project
-├── .github/                                # GitHub configuration (issues, CI, contributing)
-│   ├── ISSUE_TEMPLATE/                       # Predefined issue templates
-│   │   ├── config.yml                          # Global config for issue templates
-│   │   ├── bug_repot.md                        # Template for bug reports
-│   │   ├── doc_issue.md                        # Template for documentation issues
-│   │   ├── feature_request.md                  # Template for feature requests
-│   │   └── question_help.md                    # Template for questions / support
-│   ├── workflows/                            # GitHub Actions workflows
-│   │   ├── c-build.yml                         # CI: build and test C project
-│   │   ├── c-code-style-check.yml              # CI: clang-tidy / format / style checks
-│   │   ├── docker-image.yml                    # CI: build and push Docker image
-│   │   └── page.yml                            # CI: publish docs / GitHub Pages
-│   ├── CONTRIBUTING.md                       # Guidelines for contributors
-│   ├── CODEOWNERS                            # Default reviewers / owners by path
-│   └── pull_request_template.md              # Boilerplate text for new PRs
-├── bin/                                    # Build artifacts (libraries, test binaries)
-│   ├── Release/                              # Release builds (optimized, hardened)
-│   └── Debug/                                # Debug builds (symbols, extra checks)
-├── build/                                  # CMake build tree (generated)
-├── docs/                                   # Generated documentation site (Doxygen export)
-├── doxygen/                                # Doxygen configuration & customization
-│   ├── coverage_link/                        # Coverage badge/link integration
-│   │   ├── coverage-link.js                    # JS to inject coverage link into docs
-│   │   ├── coverage-pill.css                   # Styles for coverage pill/badge
-│   │   └── footer.html                         # Custom footer fragment for Doxygen pages
-│   ├── CMakeLists.txt                        # CMake rules to drive Doxygen
-│   ├── Doxyfile.in                           # Template Doxyfile configured by CMake
-│   └── doxygen.md                            # Extra doc pages / introduction
-├── inc/                                    # Public and shared headers
-│   ├── libmemalloc.h                         # Main public API (MEM_* allocator functions)
-│   ├── logs.h                                # Logging macros / configuration
-│   └── memalloc_util.h                       # Internal/shared utility declarations
-├── LICENSES/                               # REUSE/SPDX-compatible license texts
-│   └── MIT.txt                               # MIT license text used by the project
-├── readme/                                 # Assets used in README / docs
-│   └── libmemalloc.svg                       # Project logo
-├── scripts/                                # Dev helper scripts
-│   ├── bootstrap.sh                          # Environment / dependency check & setup
-│   ├── build.sh                              # One-touch build + tests + docs (local/Docker)
-│   ├── security_check.sh                     # ELF hardening / security audit for artifacts
-│   └── style_check.sh                        # Style pipeline (clang-tidy/format, typos, reuse)
-├── src/                                    # Library implementation
-│   ├── CMakeLists.txt                        # Build rules for libmemalloc library
-│   └── libmemalloc.c                         # Core allocator implementation
-├── tests/                                  # Unit / integration tests
-│   ├── CMakeLists.txt                        # Build rules for tests
-│   └── test_*.c                              # Individual test sources (behaviour/coverage)
-├── .clang-format                           # Source formatting rules
-├── .clang-tidy                             # Static analysis configuration
-├── .gitattributes                          # Git attributes (EOL, linguist, etc.)
-├── .gitignore                              # Files/directories ignored by Git
-├── CMakeLists.txt                          # Top-level CMake entry point
-├── CMakePresets.json                       # Saved CMake configure/build presets
-├── Dockerfile                              # Containerized build/test environment
-├── .dockerignore                           # Files ignored when building Docker images
-├── REUSE.toml                              # REUSE / SPDX compliance configuration
-├── typos.toml                              # Configuration for typos (spell checker)
-├── README.md                               # Main project documentation
-├── LICENSE                                 # Project license reference
-├── CHANGELOG.md                            # Human-readable change log
-├── SECURITY.md                             # Security policy and reporting instructions
-└── CODE_OF_CONDUCT.md                      # Community code of conduct
-```
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
----
-
 # 🧭 Recommended Workflow
 
 Typical flow to work with `libmemalloc`:
@@ -251,141 +179,6 @@ This removes `bin/`, `build/`, `docs/` and `doxygen/doxygen-awesome`, giving you
 
 ---
 
-# 🛠️ Helper Scripts
-
-## `scripts/bootstrap.sh`
-
-Environment / dependency helper. It:
-
-- detects OS and package manager,
-- checks for tool versions (CMake, compilers, gcov, Docker, Rust, etc.),
-- can optionally try to install missing tools when supported.
-
-Typical usage:
-
-- **Check-only mode** (safe on any machine):
-
-```bash
-./scripts/bootstrap.sh --check-only
-```
-
-- **Install mode** (on a dev box you control):
-
-```bash
-./scripts/bootstrap.sh
-```
-
-## `scripts/build.sh`
-
-One-touch build / test / docs helper.
-
-Capabilities:
-
-- Local or Docker build
-- **Release** or **Debug** modes
-- Runs `ctest`
-- Generates Doxygen docs (Release only)
-- Optional verbose mode for Doxygen output
-
-Examples:
-
-- Local Release (default path):
-
-```bash
-./scripts/build.sh release
-```
-
-- Local Debug:
-
-```bash
-./scripts/build.sh debug
-```
-
-- Docker Release:
-
-```bash
-./scripts/build.sh --docker release
-```
-
-- Docker Debug:
-
-```bash
-./scripts/build.sh --docker debug
-```
-
-- Clear build artifacts:
-
-```bash
-./scripts/build.sh --clear
-```
-
-## `scripts/style_check.sh`
-
-Style and consistency pipeline. It runs:
-
-- `clang-tidy` (according to `.clang-tidy`),
-- `clang-format` (`--dry-run --Werror`, using `.clang-format`),
-- `typos` (spell checker via `typos.toml`),
-- `reuse lint` (SPDX/REUSE compliance).
-
-Usage:
-
-```bash
-./scripts/style_check.sh
-```
-
-The script fails if:
-
-- any required tool is missing, or  
-- any of the checks report issues.
-
-It is a good candidate for CI or pre-push hooks.
-
-## `scripts/security_check.sh`
-
-ELF hardening / security audit helper. It can inspect multiple targets in one go, for example:
-
-```bash
-./scripts/security_check.sh ./bin/Release/libmemalloc.a ./bin/Release/libmemalloc.so
-```
-
-Main checks include:
-
-- **PIE** (Position Independent Executable),
-- **RELRO** (`-z relro`, `-z now`),
-- **NX** (`GNU_STACK` non-executable),
-- **Stack protector** (`__stack_chk_*`),
-- **FORTIFY_SOURCE** (`*_chk` symbols),
-- **RPATH / RUNPATH**,
-- **TEXTREL**,
-- **Build-ID**,
-- **CET / BTI** (when applicable),
-- **W^X** (no RWX segments),
-- SONAME presence (shared libraries),
-- excessive exports,
-- references to banned libc APIs (`gets`, `strcpy`, `sprintf`, ...),
-- presence of debug sections in release builds.
-
-For `.a` and `.so` targets, the script also builds a small **FORTIFY probe executable** that links against the library and audits both the probe and the library itself.
-
-Extra options:
-
-- Verbose + strict (treat WARN as FAIL):
-
-```bash
-./scripts/security_check.sh --verbose --strict ./bin/Release/libmemalloc.so
-```
-
-At the end it prints a summary, e.g.:
-
-    Summary: 18 PASS, 2 WARN, 0 FAIL
-
-In CI, `--strict` is recommended.
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
----
-
 # 📦 Using libmemalloc in Your Code
 
 Below is a minimal example of using the new API (`MEM_alloc` / `MEM_free` etc.).  
@@ -440,17 +233,39 @@ The exact semantics and configuration options of the API are documented in the D
 
 ---
 
+# 🪝 Local Git hooks
+
+This repository ships a set of local Git hooks under `.githooks/` to keep
+commits, style and security checks consistent during development.
+
+Enabling them is a one-time setup per clone:
+
+```bash
+# 1) Make sure all hook scripts are executable
+chmod +x .githooks/*
+
+# 2) Tell Git to use .githooks/ as the hooks directory for this repo
+git config core.hooksPath .githooks
+```
+
+From that point on, Git will automatically run the hooks in .githooks/ instead
+of .git/hooks/
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+---
+
 # 💻 Tech Stack and Environment
 
 | **Category**              | **Technologies and Tools**                                                                                                                                                                                                 |
 |---------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| **Programming Languages** | C                                                                                                                                                                                                                           |
-| **Build System**          | CMake                                                                                                                                                                                                                       |
-| **Version Control**       | Git, GitHub                                                                                                                                                                                                                |
-| **Documentation**         | Doxygen, Markdown                                                                                                                                                                                                          |
-| **Support Tools**         | Docker                                                                                                                                                                                                                     |
-| **Operating System**      | Ubuntu (tested), generic UNIX-like environments                                                                                                                                                                            |
-| **Editor / IDE**          | Neovim (author’s setup), but any C toolchain-friendly editor works                                                                                                                                                         |
+| **Programming Languages** |  [![C](https://img.shields.io/badge/C-white?style=for-the-badge&logo=c&logoColor=%23A8B9CC&labelColor=rgba(0,0,0,0)&color=rgba(0,0,0,0))](https://en.cppreference.com/w/c/language.html) |
+| **Build System**          | [![CMake](https://img.shields.io/badge/CMake-white?style=for-the-badge&logo=cmake&logoColor=%23064F8C&labelColor=rgba(0,0,0,0)&color=rgba(0,0,0,0)&cacheSeconds=3600)](https://cmake.org) |
+| **Version Control**       | [![Git](https://img.shields.io/badge/Git-white?style=for-the-badge&logo=git&logoColor=%23F05032&logoSize=32&labelColor=rgba(0,0,0,0)&color=rgba(0,0,0,0)&cacheSeconds=3600)](https://git-scm.com) [![GitHub](https://img.shields.io/badge/GitHub-white?style=for-the-badge&logo=github&logoColor=%23181717&logoSize=32&labelColor=rgba(0,0,0,0)&color=rgba(0,0,0,0)&cacheSeconds=3600)](https://github.com) |
+| **Documentation**         | [![Markdown](https://img.shields.io/badge/Markdown-white.svg?style=for-the-badge&logo=markdown&logoColor=%23000000&logoSize=32&labelColor=rgba(0,0,0,0)&color=rgba(0,0,0,0)&cacheSeconds=3600)](https://www.markdownguide.org) [![Doxygen](https://img.shields.io/badge/Doxygen-white?style=for-the-badge&logo=doxygen&logoColor=%232C4AA8&logoSize=32&labelColor=rgba(0,0,0,0)&color=rgba(0,0,0,0)&cacheSeconds=3600)](https://doxygen.nl) |
+| **Support Tools**         | [![Docker](https://img.shields.io/badge/Docker-white?style=for-the-badge&logo=docker&logoColor=%232496ED&logoSize=32&labelColor=rgba(0,0,0,0)&color=rgba(0,0,0,0)&cacheSeconds=3600)](https://www.docker.com) |
+| **Operating System**      |  [![Arch Linux](https://img.shields.io/badge/Arch_Linux-white?style=for-the-badge&logo=archlinux&logoColor=%231793D1&logoSize=32&labelColor=rgba(0,0,0,0)&color=rgba(0,0,0,0)&cacheSeconds=3600)](https://archlinux.org) |
+| **Editor / IDE**          | [![Neovim](https://img.shields.io/badge/Neovim-white?style=for-the-badge&logo=neovim&logoColor=%2357A143&logoSize=32&labelColor=rgba(0,0,0,0)&color=rgba(0,0,0,0)&cacheSeconds=3600)](https://neovim.io) |
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -465,8 +280,11 @@ The exact semantics and configuration options of the API are documented in the D
 | C++ Pointers and Dynamic Memory Management                                 | Michael C. Daconta, 1993    |
 | Efficient Memory Programming                                               | David Loshin, 1999          |
 | Memory Management                                                          | Bill Blunden, 2002          |
+| Modern Operating Systems                                                   | Andrew S. Tanenbaum, 2014   |
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+---
 
 [maintainability-shield]: https://qlty.sh/gh/RafaelVVolkmer/projects/libmemalloc/badges/maintainability.svg?style=flat-square
 [maintainability-url]:   https://qlty.sh/gh/RafaelVVolkmer/projects/libmemalloc
