@@ -17,8 +17,6 @@
 #   ./scripts/bootstrap.sh [--check-only]
 #
 #   --check-only  Only check tools/versions, do not install anything
-#
-# SPDX-License-Identifier: MIT
 # ==============================================================================
 
 set -euo pipefail

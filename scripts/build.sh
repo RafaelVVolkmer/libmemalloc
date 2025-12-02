@@ -10,8 +10,6 @@
 # - Runs CTest
 # - Generates Doxygen site (quiet by default) and moves it to ./docs
 # - Quiet mode only for the Doxygen step (toggle with --verbose)
-#
-# SPDX-License-Identifier: MIT
 # ==============================================================================
 
 set -euo pipefail

@@ -10,8 +10,6 @@
 # - Checks formatting with clang-format (dry-run, Werror)
 # - Runs typos (spell checker) with project config
 # - Runs reuse lint for SPDX/REUSE compliance
-#
-# SPDX-License-Identifier: MIT
 # ==============================================================================
 
 set -euo pipefail
