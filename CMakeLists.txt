@@ -447,17 +447,59 @@ if (UNIX AND NOT APPLE AND NOT MSVC AND CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
   )
 endif()
 
-# CET (x86_64) when supported
-check_c_compiler_flag("-fcf-protection=full" HAVE_CET)
-if(HAVE_CET AND CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64|amd64")
-  add_compile_options(
-    -fcf-protection=full
-    -fno-plt
-  )
-  add_link_options(
-    -Wl,-z,cet-report=error
-    -Wl,-z,shstk
-  )
+# -----------------------------------------------------------------------------
+# CET control: AUTO (default), ON, OFF
+# -----------------------------------------------------------------------------
+set(LIBMEMALLOC_CET "AUTO" CACHE STRING
+    "Control CET hardening: AUTO (detect), ON (force), OFF (disable)")
+
+set_property(CACHE LIBMEMALLOC_CET PROPERTY STRINGS AUTO ON OFF)
+
+# -----------------------------------------------------------------------------
+# CET (x86_64) when fully supported by toolchain (compiler + linker + crt)
+# -----------------------------------------------------------------------------
+if(UNIX AND NOT APPLE AND NOT MSVC
+   AND CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64|amd64"
+   AND CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
+
+  # LIBMEMALLOC_CET: AUTO / ON / OFF
+  if(LIBMEMALLOC_CET STREQUAL "OFF")
+    message(STATUS "CET: forced OFF")
+  else()
+    set(_CET_SAVE_REQ_FLAGS "${CMAKE_REQUIRED_FLAGS}")
+    set(CMAKE_REQUIRED_FLAGS
+        "${CMAKE_REQUIRED_FLAGS} -fcf-protection=full -fno-plt -Wl,-z,shstk -Wl,-z,cet-report=error")
+
+    check_c_source_compiles(
+      "int main(void) { return 0; }"
+      LIBMEMALLOC_HAVE_CET_FULL
+    )
+
+    set(CMAKE_REQUIRED_FLAGS "${_CET_SAVE_REQ_FLAGS}")
+
+    if(LIBMEMALLOC_CET STREQUAL "ON")
+      if(NOT LIBMEMALLOC_HAVE_CET_FULL)
+        message(FATAL_ERROR "CET forced ON but toolchain does not support full CET (IBT/SHSTK).")
+      endif()
+    endif()
+
+    if(LIBMEMALLOC_CET STREQUAL "ON"
+       OR (LIBMEMALLOC_CET STREQUAL "AUTO" AND LIBMEMALLOC_HAVE_CET_FULL))
+      message(STATUS "CET: enabling -fcf-protection=full, -fno-plt, -z shstk")
+      add_compile_options(
+        -fcf-protection=full
+        -fno-plt
+      )
+      add_link_options(
+        -Wl,-z,cet-report=error
+        -Wl,-z,shstk
+      )
+    elseif(LIBMEMALLOC_CET STREQUAL "AUTO")
+      message(STATUS "CET: toolchain does not support full CET (IBT/SHSTK) - disabling")
+    endif()
+  endif()
+else()
+  message(STATUS "CET: not applicable for this platform/compiler")
 endif()
 
 # AArch64 MTE/BTI
