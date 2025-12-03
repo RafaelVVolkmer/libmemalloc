@@ -399,7 +399,7 @@ add_compile_options(
   -Wpacked-bitfield-compat
   -Wpacked-not-aligned
   -Waddress-of-packed-member
-  -Wpadded
+  # -Wpadded
   -Wformat-security
   -Werror=format-security
 
