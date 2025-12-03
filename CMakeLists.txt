@@ -502,21 +502,44 @@ else()
   message(STATUS "CET: not applicable for this platform/compiler")
 endif()
 
-# AArch64 MTE/BTI
+# -----------------------------------------------------------------------------
+# AArch64 MTE/BTI hardening (mostly for real armv8.5+ hardware)
+# -----------------------------------------------------------------------------
+set(LIBMEMALLOC_AARCH64_HARDEN "AUTO" CACHE STRING
+    "AArch64 hardening: AUTO (branch-protection only), OFF, MEMTAG, MTE")
+set_property(CACHE LIBMEMALLOC_AARCH64_HARDEN PROPERTY STRINGS AUTO OFF MEMTAG MTE)
+
 check_c_compiler_flag("-mbranch-protection=standard" HAVE_BPROT)
 check_c_compiler_flag("-march=armv8.5-a+memtag"      HAVE_ARM_MEMTAG)
 check_c_compiler_flag("-march=armv8.5-a+mte"         HAVE_ARM_MTE)
+
 if(CMAKE_SYSTEM_PROCESSOR MATCHES "aarch64|AARCH64")
-  if(HAVE_BPROT)
-    if(HAVE_ARM_MEMTAG)
-      add_compile_options(-mbranch-protection=standard -march=armv8.5-a+memtag)
-    elseif(HAVE_ARM_MTE)
-      add_compile_options(-mbranch-protection=standard -march=armv8.5-a+mte)
-    else()
+  if(LIBMEMALLOC_AARCH64_HARDEN STREQUAL "OFF")
+    message(STATUS "AArch64 hardening: disabled (LIBMEMALLOC_AARCH64_HARDEN=OFF)")
+  else()
+    if(HAVE_BPROT)
       add_compile_options(-mbranch-protection=standard)
+      message(STATUS "AArch64 hardening: -mbranch-protection=standard enabled")
+    endif()
+
+    if(LIBMEMALLOC_AARCH64_HARDEN STREQUAL "MEMTAG")
+      if(HAVE_ARM_MEMTAG)
+        add_compile_options(-march=armv8.5-a+memtag)
+        message(STATUS "AArch64 hardening: -march=armv8.5-a+memtag enabled")
+      else()
+        message(WARNING "AArch64 MEMTAG requested, but toolchain does not support -march=armv8.5-a+memtag")
+      endif()
+    elseif(LIBMEMALLOC_AARCH64_HARDEN STREQUAL "MTE")
+      if(HAVE_ARM_MTE)
+        add_compile_options(-march=armv8.5-a+mte)
+        message(STATUS "AArch64 hardening: -march=armv8.5-a+mte enabled")
+      else()
+        message(WARNING "AArch64 MTE requested, but toolchain does not support -march=armv8.5-a+mte")
+      endif()
     endif()
   endif()
 endif()
+
 
 check_c_compiler_flag("-ftrivial-auto-var-init=pattern" HAVE_TRIVIAL_AUTO_VAR_INIT_PATTERN)
 if (HAVE_TRIVIAL_AUTO_VAR_INIT_PATTERN)
