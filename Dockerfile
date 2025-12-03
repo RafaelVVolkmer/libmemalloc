@@ -10,6 +10,15 @@ ARG BASE_IMG=debian:bookworm-slim
 
 FROM ${BASE_IMG} AS base
 
+ARG BUILDPLATFORM
+ARG TARGETPLATFORM
+ARG TARGETARCH
+ARG TARGETVARIANT
+ARG BUILD_MODE=Release
+
+ENV BUILDPLATFORM=${BUILDPLATFORM}
+ENV TARGETPLATFORM=${TARGETPLATFORM}
+
 ENV DEBIAN_FRONTEND=noninteractive
 
 # Create dedicated unprivileged user/group (UID/GID can be overridden at build time)

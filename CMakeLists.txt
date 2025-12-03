@@ -131,7 +131,85 @@ foreach(cfg Debug Release RelWithDebInfo MinSizeRel)
 endforeach()
 
 # -----------------------------------------------------------------------------
-# 5. Build-Type Flags (safe per-compiler)
+# 5. Emulation Detection
+# -----------------------------------------------------------------------------
+
+#
+# detect_qemu() — detects ANY form of QEMU:
+# - Docker buildx multi-arch (BUILDPLATFORM ≠ TARGETPLATFORM)
+# - qemu-user (qemu-arm, qemu-aarch64, qemu-riscv64, etc.)
+# - qemu-system VMs (TCG, KVM)
+# - binfmt_misc user-mode emulation
+#
+function(detect_qemu out_var out_ver out_bin)
+    set(IS_QEMU FALSE)
+    set(QEMU_BIN "unknown")
+    set(QEMU_VER "unknown")
+
+    # --- Method 1: Docker Buildx cross-platform ------------------------------
+		if(DEFINED ENV{BUILDPLATFORM}
+			AND DEFINED ENV{TARGETPLATFORM}
+			AND NOT "$ENV{TARGETPLATFORM}" MATCHES "^[a-z0-9]+/[a-z0-9]+(/[a-z0-9]+)?$")
+		elseif(DEFINED ENV{BUILDPLATFORM} AND DEFINED ENV{TARGETPLATFORM}
+					AND NOT "$ENV{BUILDPLATFORM}" STREQUAL "$ENV{TARGETPLATFORM}")
+				set(IS_QEMU TRUE)
+		endif()
+
+
+    # --- Method 2: qemu-user static interpreter detection --------------------
+    # If the program was invoked under qemu-user-static, the interpreter is visible.
+    file(READ "/proc/self/maps" SELF_MAPS ERROR_QUIET)
+    if(SELF_MAPS MATCHES "qemu-[a-z0-9_-]+-static")
+        set(IS_QEMU TRUE)
+        string(REGEX MATCH "qemu-[a-z0-9_-]+-static" QEMU_BIN "${SELF_MAPS}")
+    endif()
+
+    # --- Method 3: detect virtualization via systemd-detect-virt -------------
+    find_program(SDV_BIN systemd-detect-virt)
+    if(SDV_BIN)
+        execute_process(
+            COMMAND ${SDV_BIN} --vm
+            OUTPUT_VARIABLE VM_OUT
+            OUTPUT_STRIP_TRAILING_WHITESPACE
+            ERROR_QUIET
+        )
+        if(VM_OUT MATCHES "qemu|kvm|tcg")
+            set(IS_QEMU TRUE)
+        endif()
+    endif()
+
+    # --- Method 4: detect QEMU fingerprints in /proc/cpuinfo -----------------
+    if(EXISTS "/proc/cpuinfo")
+        file(READ "/proc/cpuinfo" CPUINFO)
+        if(CPUINFO MATCHES "QEMU|TCG|QEMU Virtual CPU|QEMU Processor")
+            set(IS_QEMU TRUE)
+        endif()
+    endif()
+
+    # Find QEMU version (best effort)
+    if(NOT QEMU_BIN STREQUAL "unknown")
+        find_program(QEMU_EXEC NAMES ${QEMU_BIN})
+        if(QEMU_EXEC)
+            execute_process(
+                COMMAND ${QEMU_EXEC} --version
+                OUTPUT_VARIABLE RAW
+                OUTPUT_STRIP_TRAILING_WHITESPACE
+                ERROR_QUIET
+            )
+            if(RAW)
+                string(REGEX MATCH "[0-9]+(\\.[0-9]+)+" QEMU_VER "${RAW}")
+            endif()
+        endif()
+    endif()
+
+    # Export results
+    set(${out_var} ${IS_QEMU} PARENT_SCOPE)
+    set(${out_ver} ${QEMU_VER} PARENT_SCOPE)
+    set(${out_bin} ${QEMU_BIN} PARENT_SCOPE)
+endfunction()
+
+# -----------------------------------------------------------------------------
+# 6. Build-Type Flags (safe per-compiler)
 # -----------------------------------------------------------------------------
 
 # -- Debug ---------------------------------------------------------------------
@@ -197,30 +275,43 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
 
   endif()
 
-  # --- Sanitizers (configurable via LIBMEMALLOC_ENABLE_SANITIZERS) ---
-  if (CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
-    set(SANITIZE_FLAGS "")
+	# --- Sanitizers (configurable via LIBMEMALLOC_ENABLE_SANITIZERS) ---
+	if (CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
 
-    if (LIBMEMALLOC_ENABLE_SANITIZERS)
-      # Example: "address;undefined;leak" -> -fsanitize=address -fsanitize=undefined -fsanitize=leak
-      foreach(_san IN LISTS LIBMEMALLOC_ENABLE_SANITIZERS)
-        list(APPEND SANITIZE_FLAGS "-fsanitize=${_san}")
-      endforeach()
-    elseif (NOT VALGRIND_EXECUTABLE)
-      # Fallback to your previous defaults when no valgrind is available
-      list(APPEND SANITIZE_FLAGS
-        -fsanitize=address
-        -fsanitize=undefined
-        -fsanitize=leak
-        -fsanitize=alignment
-      )
-    endif()
+			set(SANITIZE_FLAGS "")
 
-    if (SANITIZE_FLAGS)
-      add_compile_options(${SANITIZE_FLAGS})
-      add_link_options(${SANITIZE_FLAGS})
-    endif()
-  endif()
+			# QEMU → sanitizers off
+			if (IS_QEMU)
+					message(STATUS "Sanitizers forcibly disabled (running under QEMU).")
+
+			elseif (LIBMEMALLOC_ENABLE_SANITIZERS)
+					foreach(_san IN LISTS LIBMEMALLOC_ENABLE_SANITIZERS)
+							list(APPEND SANITIZE_FLAGS "-fsanitize=${_san}")
+					endforeach()
+
+			elseif (NOT VALGRIND_EXECUTABLE)
+					# fallback ASan/UBSan
+					list(APPEND SANITIZE_FLAGS
+							-fsanitize=address
+							-fsanitize=undefined
+							-fsanitize=leak
+							-fsanitize=alignment
+					)
+			endif()
+
+			if (SANITIZE_FLAGS)
+					if (CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64|amd64")
+							add_compile_options(${SANITIZE_FLAGS})
+							add_link_options(${SANITIZE_FLAGS})
+							message(STATUS "Sanitizers enabled: ${SANITIZE_FLAGS}")
+					else()
+							message(STATUS
+								"Sanitizers skipped on ${CMAKE_SYSTEM_PROCESSOR} "
+								"(runtime issues known with ASan on this arch/emulation).")
+					endif()
+			endif()
+
+	endif()
 
   set(CMAKE_EXE_LINKER_FLAGS
       "${CMAKE_EXE_LINKER_FLAGS} -Wl,--gc-sections -flto")
@@ -282,7 +373,7 @@ if (LIBMEMALLOC_ENABLE_COVERAGE)
 endif()
 
 # -----------------------------------------------------------------------------
-# 6. Global Hardening & Warnings (per-compiler) + Platform Linker Settings
+# 7. Global Hardening & Warnings (per-compiler) + Platform Linker Settings
 # -----------------------------------------------------------------------------
 
 set(_FORTIFY_LVL 2)
@@ -448,16 +539,13 @@ if (UNIX AND NOT APPLE AND NOT MSVC AND CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
 endif()
 
 # -----------------------------------------------------------------------------
-# CET control: AUTO (default), ON, OFF
+# 8. CET control: AUTO (default), ON, OFF
 # -----------------------------------------------------------------------------
 set(LIBMEMALLOC_CET "AUTO" CACHE STRING
     "Control CET hardening: AUTO (detect), ON (force), OFF (disable)")
 
 set_property(CACHE LIBMEMALLOC_CET PROPERTY STRINGS AUTO ON OFF)
 
-# -----------------------------------------------------------------------------
-# CET (x86_64) when fully supported by toolchain (compiler + linker + crt)
-# -----------------------------------------------------------------------------
 if(UNIX AND NOT APPLE AND NOT MSVC
    AND CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64|amd64"
    AND CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
@@ -503,7 +591,7 @@ else()
 endif()
 
 # -----------------------------------------------------------------------------
-# AArch64 MTE/BTI hardening (mostly for real armv8.5+ hardware)
+# 9. AArch64 MTE/BTI hardening (mostly for real armv8.5+ hardware)
 # -----------------------------------------------------------------------------
 set(LIBMEMALLOC_AARCH64_HARDEN "AUTO" CACHE STRING
     "AArch64 hardening: AUTO (branch-protection only), OFF, MEMTAG, MTE")
@@ -540,7 +628,9 @@ if(CMAKE_SYSTEM_PROCESSOR MATCHES "aarch64|AARCH64")
   endif()
 endif()
 
-
+# -----------------------------------------------------------------------------
+# 10. Other hardening / safety features
+# -----------------------------------------------------------------------------
 check_c_compiler_flag("-ftrivial-auto-var-init=pattern" HAVE_TRIVIAL_AUTO_VAR_INIT_PATTERN)
 if (HAVE_TRIVIAL_AUTO_VAR_INIT_PATTERN)
   add_compile_options($<$<CONFIG:Debug,RelWithDebInfo>:-ftrivial-auto-var-init=pattern>)
@@ -556,7 +646,7 @@ add_compile_options($<$<STREQUAL:$<TARGET_PROPERTY:TYPE>,EXECUTABLE>:-fPIE>)
 add_link_options($<$<STREQUAL:$<TARGET_PROPERTY:TYPE>,EXECUTABLE>:-pie>)
 
 # -----------------------------------------------------------------------------
-# 7. Include Subdirectories and Enable Testing
+# 11. Include Subdirectories and Enable Testing
 # -----------------------------------------------------------------------------
 add_subdirectory(src)
 
@@ -572,7 +662,7 @@ if (DOCS_EN)
 endif()
 
 # -----------------------------------------------------------------------------
-# 8. Informational Output
+# 12. Informational Output
 # -----------------------------------------------------------------------------
 get_filename_component(COMPILER_NAME ${CMAKE_C_COMPILER} NAME)
 
@@ -782,6 +872,20 @@ else()
           "  Gcovr:          "
           " ${ANSI_RED}<not found>${ANSI_RESET}")
 endif()
+message(STATUS
+        "${ANSI_BLUE}"
+        "====================================================================="
+        "${ANSI_RESET}")
+# QEMU
+detect_qemu(IS_QEMU QEMU_VERSION QEMU_BIN)
+
+if(IS_QEMU)
+	message(STATUS "  QEMU:           "
+								"${ANSI_GREEN}QEMU emulation${ANSI_RESET}")
+else()
+	message(STATUS "  QEMU:           "
+								"${ANSI_GREEN}native hardware${ANSI_RESET}")
+	endif()
 
 message(STATUS
         "${ANSI_BLUE}"
