@@ -1,0 +1,15 @@
+# SPDX-FileCopyrightText: 2024-2025 Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
+# SPDX-License-Identifier: MIT
+
+exit-level = "WARN"
+
+ignore = [
+  "CIS-DI-0010",  # avoid latest (we allow in dev)
+]
+
+warn = [
+  "CIS-DI-0014",  # unnecessary privileges (warn only)
+]
+
+[registry]
+  insecure = false

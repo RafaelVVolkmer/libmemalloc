@@ -1,0 +1,32 @@
+# SPDX-FileCopyrightText: 2024-2025 Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
+# SPDX-License-Identifier: MIT
+
+# Ignore temporary files and editor backups
+*~
+.#*
+*.swp
+.DS_Store
+
+# Ignore build directories
+build/
+dist/
+bin/
+obj/
+
+# Ignore version control specific files
+.git/
+.svn/
+.hg/
+
+# Ignore IDE specific files
+.vscode/
+.idea/
+*.iml
+*.iws
+*.ipr
+
+# Ignore documentation files if not needed in the image
+docs/
+
+# Ignore WSL identifier
+**/*.Identifier

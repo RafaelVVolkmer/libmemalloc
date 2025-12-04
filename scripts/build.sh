@@ -23,6 +23,8 @@ DOCS_DIR="${REPO_ROOT}/docs"
 DOXYGEN_DIR="${REPO_ROOT}/doxygen/doxygen-awesome"
 BIN_DIR=""
 
+DOCKERFILE_REPO="${REPO_ROOT}/docker/Dockerfile"
+
 # ------------------------------------------------------------------------------
 # Colors
 # ------------------------------------------------------------------------------
@@ -131,7 +133,7 @@ fi
 # ------------------------------------------------------------------------------
 if $DOCKER; then
   echo
-  echo "${GREEN}→  Build Docker image (${BUILD_TYPE}) for ${PLATFORMS}${RESET}"
+  echo "${GREEN}→  Build Docker image (${BUILD_TYPE}) using ${DOCKERFILE_REPO}${RESET}"
   echo
 
   IMAGE_TAG="libmemalloc:${BUILD_TYPE,,}"
@@ -159,6 +161,7 @@ if $DOCKER; then
     --platform "$PLATFORMS" \
     --load \
     --tag "$IMAGE_TAG" \
+		--file "$DOCKERFILE_REPO" \
     "$REPO_ROOT"
 
   CONTAINER_ID=$(docker create "$IMAGE_TAG")

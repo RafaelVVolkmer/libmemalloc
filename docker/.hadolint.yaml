@@ -1,0 +1,14 @@
+# SPDX-FileCopyrightText: 2024-2025 Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
+# SPDX-License-Identifier: MIT
+
+ignored:
+  - DL3018   # pin versions for apt-get install
+  - DL3008   # use pinned apt versions
+  - DL4006   # set SHELL (sometimes false-positive)
+
+failure-threshold: error
+
+override:
+  error:
+    - DL3002 # Avoid apt-get upgrade
+    - DL3025 # DO NOT install package via pip without version
