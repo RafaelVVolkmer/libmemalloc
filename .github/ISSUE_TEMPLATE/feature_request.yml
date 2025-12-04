@@ -1,0 +1,169 @@
+# SPDX-FileCopyrightText: 2024-2025 Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
+# SPDX-License-Identifier: MIT
+
+name: "💡 Feature request"
+description: "Suggest an idea or improvement for libmemalloc."
+title: "[FEAT] "
+labels: ["enhancement"]
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## 📝 Description
+        Provide a clear and concise description of the feature you would like to see.
+        Focus on the problem or limitation first.
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Feature Description
+      placeholder: "Describe the problem and the missing functionality."
+    validations:
+      required: true
+
+  - type: markdown
+    attributes:
+      value: |
+        ---
+        ## 🎯 Motivation / Use Case
+
+  - type: textarea
+    id: motivation
+    attributes:
+      label: Motivation / Use Case
+      placeholder: "Explain why this feature matters."
+    validations:
+      required: true
+
+  - type: markdown
+    attributes:
+      value: |
+        ---
+        ## 💡 Proposed Solution
+
+  - type: textarea
+    id: proposed_solution
+    attributes:
+      label: Proposed Solution
+      placeholder: "New API? Behavior changes? New strategy?"
+      render: markdown
+
+  - type: textarea
+    id: example_api
+    attributes:
+      label: Example API usage (optional)
+      render: c
+      placeholder: |
+        // pseudo-code example
+
+  - type: markdown
+    attributes:
+      value: |
+        ---
+        ## 🏗️ Build / Toolchain Environment (optional)
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Build / Toolchain Environment
+      description: "Only if relevant."
+      value: |
+        - libmemalloc version:
+        - Build type:
+        - Architecture:
+        - OS:
+        - Compiler:
+        - C standard:
+        - Build method:
+
+  - type: markdown
+    attributes:
+      value: |
+        ---
+        ## ⚙️ Current libmemalloc Configuration
+
+  - type: textarea
+    id: current_config
+    attributes:
+      label: Current Configuration
+      value: |
+        - Allocation strategy:
+        - GC:
+        - Logging:
+        - Compile-time options:
+
+  - type: markdown
+    attributes:
+      value: |
+        ---
+        ## 🔄 Alternatives Considered
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives Considered
+      placeholder: "Describe alternatives and trade-offs."
+
+  - type: markdown
+    attributes:
+      value: |
+        ---
+        ## 🔁 API / ABI Impact (expected)
+
+  - type: checkboxes
+    id: api_impact
+    attributes:
+      label: API/ABI Impact
+      options:
+        - label: No API changes
+        - label: API extension
+        - label: Breaking change
+
+  - type: textarea
+    id: api_details
+    attributes:
+      label: API / ABI Details
+      placeholder: "New types? Migration path?"
+
+  - type: markdown
+    attributes:
+      value: |
+        ---
+        ## 🚀 Performance Expectations
+
+  - type: checkboxes
+    id: performance_target
+    attributes:
+      label: Performance Target
+      options:
+        - label: Not performance related
+        - label: Targets performance improvements
+
+  - type: textarea
+    id: performance_details
+    attributes:
+      label: Performance details
+      placeholder: "Latency? Throughput? Memory usage? Under what workload?"
+
+  - type: markdown
+    attributes:
+      value: |
+        ---
+        ## 📎 Additional Context
+
+  - type: textarea
+    id: additional_context
+    attributes:
+      label: Additional Context
+      placeholder: "Links, diagrams, notes, references…"
+
+  - type: input
+    id: signed_off_by
+    attributes:
+      label: "✍️ Signed-off-by (optional)"
+      description: "Enter your DCO signature if contributing patches."
+      placeholder: "Signed-off-by: <Your Name> <your.email@example.com>"
+    validations:
+      required: false
