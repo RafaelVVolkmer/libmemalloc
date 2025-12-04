@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['c_20example_0',['- C Example',['../index.html#autotoc_md5',1,'']]],
+  ['c_20example_0',['📦 C Example',['../index.html#autotoc_md5',1,'']]],
   ['cache_5fline_5fsize_1',['CACHE_LINE_SIZE',['../libmemalloc_8c.html#af89f60b07247176687889ade776c8e10',1,'libmemalloc.c']]],
   ['canary_2',['canary',['../structblock__header__t.html#a4bf7eef55074b8afa0aa5533d2da5d06',1,'block_header_t']]],
   ['color_5fblue_3',['COLOR_BLUE',['../group___logs.html#ga23c70d699a5a775bc2e1ebeb8603f630',1,'logs.h']]],

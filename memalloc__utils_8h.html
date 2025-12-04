@@ -1,0 +1,214 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=9"/>
+<meta name="generator" content="Doxygen 1.9.8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<!-- BEGIN opengraph metadata -->
+<meta property="og:title" content="Doxygen Awesome" />
+<meta property="og:image" content="https://repository-images.githubusercontent.com/348492097/4f16df80-88fb-11eb-9d31-4015ff22c452" />
+<meta property="og:description" content="Custom CSS theme for doxygen html-documentation with lots of customization parameters." />
+<meta property="og:url" content="https://jothepro.github.io/doxygen-awesome-css/" />
+<!-- END opengraph metadata -->
+<!-- BEGIN twitter metadata -->
+<meta name="twitter:image:src" content="https://repository-images.githubusercontent.com/348492097/4f16df80-88fb-11eb-9d31-4015ff22c452" />
+<meta name="twitter:title" content="Doxygen Awesome" />
+<meta name="twitter:description" content="Custom CSS theme for doxygen html-documentation with lots of customization parameters." />
+<!-- END twitter metadata -->
+<title>libmemalloc: inc/memalloc_utils.h File Reference</title>
+<link href="tabs.css" rel="stylesheet" type="text/css"/>
+<link rel="icon" type="image/svg+xml" href="logo.drawio.svg"/>
+<script type="text/javascript" src="jquery.js"></script>
+<script type="text/javascript" src="dynsections.js"></script>
+<script type="text/javascript" src="doxygen-awesome-darkmode-toggle.js"></script>
+<script type="text/javascript" src="doxygen-awesome-fragment-copy-button.js"></script>
+<script type="text/javascript" src="doxygen-awesome-paragraph-link.js"></script>
+<script type="text/javascript" src="doxygen-awesome-interactive-toc.js"></script>
+<script type="text/javascript" src="doxygen-awesome-tabs.js"></script>
+<script type="text/javascript" src="toggle-alternative-theme.js"></script>
+<script type="text/javascript">
+    DoxygenAwesomeFragmentCopyButton.init()
+    DoxygenAwesomeDarkModeToggle.init()
+    DoxygenAwesomeParagraphLink.init()
+    DoxygenAwesomeInteractiveToc.init()
+    DoxygenAwesomeTabs.init()
+</script>
+<link href="navtree.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="resize.js"></script>
+<script type="text/javascript" src="navtreedata.js"></script>
+<script type="text/javascript" src="navtree.js"></script>
+<link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+<link href="doxygen.css" rel="stylesheet" type="text/css" />
+<link href="doxygen-awesome.css" rel="stylesheet" type="text/css"/>
+<link href="custom.css" rel="stylesheet" type="text/css"/>
+<link href="doxygen-awesome-sidebar-only.css" rel="stylesheet" type="text/css"/>
+<link href="doxygen-awesome-sidebar-only-darkmode-toggle.css" rel="stylesheet" type="text/css"/>
+<link href="coverage-pill.css" rel="stylesheet" type="text/css"/>
+</head>
+<body>
+<!-- https://tholman.com/github-corners/ -->
+<a href="https://github.com/jothepro/doxygen-awesome-css" class="github-corner" title="View source on GitHub" target="_blank" rel="noopener noreferrer">
+    <svg viewBox="0 0 250 250" width="40" height="40" style="position: absolute; top: 0; border: 0; right: 0; z-index: 99;" aria-hidden="true">
+    <path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a><style>.github-corner:hover .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes octocat-wave{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-25deg)}40%,80%{transform:rotate(10deg)}}@media (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner .octo-arm{animation:octocat-wave 560ms ease-in-out}}</style>
+<div id="top"><!-- do not remove this div, it is closed by doxygen! -->
+<div id="titlearea">
+<table cellspacing="0" cellpadding="0">
+ <tbody>
+ <tr style="height: 56px;">
+  <td id="projectlogo"><img alt="Logo" src="libmemalloc.svg"/></td>
+  <td id="projectalign" style="padding-left: 0.5em;">
+   <div id="projectname">libmemalloc
+   &#160;<span id="projectnumber">v2.0.00</span>
+   </div>
+   <div id="projectbrief">Modern Memory Allocator</div>
+  </td>
+ </tr>
+ </tbody>
+</table>
+<div id="theme-selection">
+ <label for="theme-select">Theme:</label>
+ <select id="theme-select">
+  <option value="theme-default">Default</option>
+  <option value="theme-round">Round</option>
+  <option value="theme-robot">Robot</option>
+ </select>
+</div>
+</div>
+<!-- end header part -->
+<!-- Generated by Doxygen 1.9.8 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&amp;dn=expat.txt MIT */
+var searchBox = new SearchBox("searchBox", "search/",'.html');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&amp;dn=expat.txt MIT */
+$(function() {
+  initMenu('',true,false,'search.php','Search');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */
+</script>
+<div id="main-nav"></div>
+</div><!-- top -->
+<div id="side-nav" class="ui-resizable side-nav-resizable">
+  <div id="nav-tree">
+    <div id="nav-tree-contents">
+      <div id="nav-sync" class="sync"></div>
+    </div>
+  </div>
+  <div id="splitbar" style="-moz-user-select:none;" 
+       class="ui-resizable-handle">
+  </div>
+</div>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&amp;dn=expat.txt MIT */
+$(document).ready(function(){initNavTree('memalloc__utils_8h.html',''); initResizable(); });
+/* @license-end */
+</script>
+<div id="doc-content">
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<div id="MSearchResults">
+<div class="SRPage">
+<div id="SRIndex">
+<div id="SRResults"></div>
+<div class="SRStatus" id="Loading">Loading...</div>
+<div class="SRStatus" id="Searching">Searching...</div>
+<div class="SRStatus" id="NoMatches">No Matches</div>
+</div>
+</div>
+</div>
+</div>
+
+<div class="header">
+  <div class="summary">
+<a href="#define-members">Macros</a>  </div>
+  <div class="headertitle"><div class="title">memalloc_utils.h File Reference<div class="ingroups"><a class="el" href="group___libmemalloc.html">Libmemalloc</a></div></div></div>
+</div><!--header-->
+<div class="contents">
+<div class="textblock"><div class="dynheader">
+This graph shows which files directly or indirectly include this file:</div>
+<div class="dyncontent">
+<div class="center"><!-- SVG 0 --></div>
+</div>
+</div>
+<p><a href="memalloc__utils_8h_source.html">Go to the source code of this file.</a></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="define-members" name="define-members"></a>
+Macros</h2></td></tr>
+<tr class="memitem:ga6fe2b41e8a49eb133afc79eadf03a289" id="r_ga6fe2b41e8a49eb133afc79eadf03a289"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___libmemalloc.html#ga6fe2b41e8a49eb133afc79eadf03a289">ALIGN</a>(val_)&#160;&#160;&#160;(((val_) + (ARCH_ALIGNMENT - 1U)) &amp; ~(ARCH_ALIGNMENT - 1U))</td></tr>
+<tr class="memdesc:ga6fe2b41e8a49eb133afc79eadf03a289"><td class="mdescLeft">&#160;</td><td class="mdescRight">Aligns a given value to the nearest memory boundary.  <br /></td></tr>
+<tr class="separator:ga6fe2b41e8a49eb133afc79eadf03a289"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga10d2d9517329749b0a3d54cf95adc491" id="r_ga10d2d9517329749b0a3d54cf95adc491"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___libmemalloc.html#ga10d2d9517329749b0a3d54cf95adc491">PTR_ERR</a>(ptr_)&#160;&#160;&#160;((void *)((intptr_t)(ptr_)))</td></tr>
+<tr class="memdesc:ga10d2d9517329749b0a3d54cf95adc491"><td class="mdescLeft">&#160;</td><td class="mdescRight">Encodes a negative error code as an error pointer.  <br /></td></tr>
+<tr class="separator:ga10d2d9517329749b0a3d54cf95adc491"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gab530abfacb1e55f2317fe51a1dfc9f61" id="r_gab530abfacb1e55f2317fe51a1dfc9f61"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___libmemalloc.html#gab530abfacb1e55f2317fe51a1dfc9f61">__LIBMEMALLOC_API</a></td></tr>
+<tr class="memdesc:gab530abfacb1e55f2317fe51a1dfc9f61"><td class="mdescLeft">&#160;</td><td class="mdescRight">Defines the default visibility attribute for exported symbols.  <br /></td></tr>
+<tr class="separator:gab530abfacb1e55f2317fe51a1dfc9f61"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaabc39bf362e54cf3bb45d3dfe4933ccb" id="r_gaabc39bf362e54cf3bb45d3dfe4933ccb"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___libmemalloc.html#gaabc39bf362e54cf3bb45d3dfe4933ccb">__ALIGN</a></td></tr>
+<tr class="memdesc:gaabc39bf362e54cf3bb45d3dfe4933ccb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Defines structure alignment and enforces the target byte order.  <br /></td></tr>
+<tr class="separator:gaabc39bf362e54cf3bb45d3dfe4933ccb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga6c30d490cd2302ff05d355f3ec844c1f" id="r_ga6c30d490cd2302ff05d355f3ec844c1f"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___libmemalloc.html#ga6c30d490cd2302ff05d355f3ec844c1f">__UNUSED</a></td></tr>
+<tr class="memdesc:ga6c30d490cd2302ff05d355f3ec844c1f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Marks a symbol as potentially unused.  <br /></td></tr>
+<tr class="separator:ga6c30d490cd2302ff05d355f3ec844c1f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga0f87f19f941b9a5843c969926ff03174" id="r_ga0f87f19f941b9a5843c969926ff03174"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___libmemalloc.html#ga0f87f19f941b9a5843c969926ff03174">__GC_HOT</a></td></tr>
+<tr class="memdesc:ga0f87f19f941b9a5843c969926ff03174"><td class="mdescLeft">&#160;</td><td class="mdescRight">Marks garbage-collector functions as “hot” (performance critical).  <br /></td></tr>
+<tr class="separator:ga0f87f19f941b9a5843c969926ff03174"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gab9da8f4b500180e347293fb86ac4dd3a" id="r_gab9da8f4b500180e347293fb86ac4dd3a"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___libmemalloc.html#gab9da8f4b500180e347293fb86ac4dd3a">__GC_COLD</a></td></tr>
+<tr class="memdesc:gab9da8f4b500180e347293fb86ac4dd3a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Marks garbage-collector functions as “cold” (infrequently used).  <br /></td></tr>
+<tr class="separator:gab9da8f4b500180e347293fb86ac4dd3a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga958c679d31760dcc44f535b5562037fb" id="r_ga958c679d31760dcc44f535b5562037fb"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___libmemalloc.html#ga958c679d31760dcc44f535b5562037fb">__LIBMEMALLOC_INTERNAL_MALLOC</a></td></tr>
+<tr class="memdesc:ga958c679d31760dcc44f535b5562037fb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Annotates allocator functions that return newly allocated memory.  <br /></td></tr>
+<tr class="separator:ga958c679d31760dcc44f535b5562037fb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaf415f4394a90cbf3b58ffb43c1d26122" id="r_gaf415f4394a90cbf3b58ffb43c1d26122"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___libmemalloc.html#gaf415f4394a90cbf3b58ffb43c1d26122">__LIBMEMALLOC_MALLOC</a></td></tr>
+<tr class="memdesc:gaf415f4394a90cbf3b58ffb43c1d26122"><td class="mdescLeft">&#160;</td><td class="mdescRight">Annotates allocator functions that return newly allocated memory.  <br /></td></tr>
+<tr class="separator:gaf415f4394a90cbf3b58ffb43c1d26122"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gab2ea557d67d841f4f1a765a7ebb2ec4c" id="r_gab2ea557d67d841f4f1a765a7ebb2ec4c"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___libmemalloc.html#gab2ea557d67d841f4f1a765a7ebb2ec4c">__LIBMEMALLOC_REALLOC</a></td></tr>
+<tr class="memdesc:gab2ea557d67d841f4f1a765a7ebb2ec4c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Annotates reallocator functions that may return a pointer to resized memory.  <br /></td></tr>
+<tr class="separator:gab2ea557d67d841f4f1a765a7ebb2ec4c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga5162cbf57d05fe29d9084f08417325bc" id="r_ga5162cbf57d05fe29d9084f08417325bc"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___libmemalloc.html#ga5162cbf57d05fe29d9084f08417325bc">__LIBMEMALLOC_INTERNAL_REALLOC</a></td></tr>
+<tr class="memdesc:ga5162cbf57d05fe29d9084f08417325bc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Annotates reallocator functions that may return a pointer to resized memory.  <br /></td></tr>
+<tr class="separator:ga5162cbf57d05fe29d9084f08417325bc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga726a81234917417872f8b6983f0b1723" id="r_ga726a81234917417872f8b6983f0b1723"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___libmemalloc.html#ga726a81234917417872f8b6983f0b1723">LIKELY</a>(cond_)&#160;&#160;&#160;(!!(cond_))</td></tr>
+<tr class="memdesc:ga726a81234917417872f8b6983f0b1723"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compiler hint for likely branch prediction.  <br /></td></tr>
+<tr class="separator:ga726a81234917417872f8b6983f0b1723"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga5bfed12b93697d60b5004107b6fd71ab" id="r_ga5bfed12b93697d60b5004107b6fd71ab"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___libmemalloc.html#ga5bfed12b93697d60b5004107b6fd71ab">UNLIKELY</a>(cond_)&#160;&#160;&#160;(!!(x))</td></tr>
+<tr class="memdesc:ga5bfed12b93697d60b5004107b6fd71ab"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compiler hint for unlikely branch prediction.  <br /></td></tr>
+<tr class="separator:ga5bfed12b93697d60b5004107b6fd71ab"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga0183c21a72e26e83adee6c20b06a433c" id="r_ga0183c21a72e26e83adee6c20b06a433c"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___libmemalloc.html#ga0183c21a72e26e83adee6c20b06a433c">PREFETCH_R</a>(addr_)&#160;&#160;&#160;((void)0)</td></tr>
+<tr class="memdesc:ga0183c21a72e26e83adee6c20b06a433c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Read prefetch hint.  <br /></td></tr>
+<tr class="separator:ga0183c21a72e26e83adee6c20b06a433c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gabac2d7e1cbb0ef3dc015d8d0569c445f" id="r_gabac2d7e1cbb0ef3dc015d8d0569c445f"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___libmemalloc.html#gabac2d7e1cbb0ef3dc015d8d0569c445f">PREFETCH_W</a>(addr_)&#160;&#160;&#160;((void)0)</td></tr>
+<tr class="memdesc:gabac2d7e1cbb0ef3dc015d8d0569c445f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Write prefetch hint.  <br /></td></tr>
+<tr class="separator:gabac2d7e1cbb0ef3dc015d8d0569c445f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gadc6522eebe178a317ee307ae723f548e" id="r_gadc6522eebe178a317ee307ae723f548e"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___libmemalloc.html#gadc6522eebe178a317ee307ae723f548e">ASSUME_ALIGNED</a>(ptr_,  align_)&#160;&#160;&#160;(align_)</td></tr>
+<tr class="memdesc:gadc6522eebe178a317ee307ae723f548e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Tell the compiler the pointer has a fixed alignment.  <br /></td></tr>
+<tr class="separator:gadc6522eebe178a317ee307ae723f548e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Provides architecture-aware alignment definitions, symbol visibility attributes, and compiler optimization hints used throughout libmemalloc. Ensures consistent alignment, attribute semantics, and performance annotations across multiple target architectures and toolchains.</p>
+<dl class="section version"><dt>Version</dt><dd>v1.0.00 </dd></dl>
+<dl class="section date"><dt>Date</dt><dd>29.09.2025 </dd></dl>
+<dl class="section author"><dt>Author</dt><dd>Rafael V. Volkmer <a href="#" onclick="location.href='mai'+'lto:'+'raf'+'ae'+'l.v'+'.v'+'olk'+'me'+'r@g'+'ma'+'il.'+'co'+'m'; return false;">rafae<span class="obfuscator">.nosp@m.</span>l.v.<span class="obfuscator">.nosp@m.</span>volkm<span class="obfuscator">.nosp@m.</span>er@g<span class="obfuscator">.nosp@m.</span>mail.<span class="obfuscator">.nosp@m.</span>com</a> </dd></dl>
+</div></div><!-- contents -->
+</div><!-- doc-content -->
+<!--
+SPDX-FileCopyrightText: 2024-2025 Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
+SPDX-License-Identifier: MIT
+-->
+<!-- Included at the end of all pages -->
+<link rel="stylesheet" href="coverage-pill.css" />
+<script src="coverage-link.js"></script>

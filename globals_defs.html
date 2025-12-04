@@ -46,6 +46,7 @@
 <link href="custom.css" rel="stylesheet" type="text/css"/>
 <link href="doxygen-awesome-sidebar-only.css" rel="stylesheet" type="text/css"/>
 <link href="doxygen-awesome-sidebar-only-darkmode-toggle.css" rel="stylesheet" type="text/css"/>
+<link href="coverage-pill.css" rel="stylesheet" type="text/css"/>
 </head>
 <body>
 <!-- https://tholman.com/github-corners/ -->
@@ -60,7 +61,7 @@
   <td id="projectlogo"><img alt="Logo" src="libmemalloc.svg"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">libmemalloc
-   &#160;<span id="projectnumber">v4.0.00</span>
+   &#160;<span id="projectnumber">v2.0.00</span>
    </div>
    <div id="projectbrief">Modern Memory Allocator</div>
   </td>
@@ -136,21 +137,22 @@ $(document).ready(function(){initNavTree('globals_defs.html',''); initResizable(
 <div class="textblock">Here is a list of all macros with links to the files they belong to:</div>
 
 <h3><a id="index__5F" name="index__5F"></a>- _ -</h3><ul>
-<li>__ALIGN&#160;:&#160;<a class="el" href="group___libmemalloc.html#gaabc39bf362e54cf3bb45d3dfe4933ccb">libmemalloc.h</a></li>
-<li>__GC_COLD&#160;:&#160;<a class="el" href="libmemalloc_8c.html#ab9da8f4b500180e347293fb86ac4dd3a">libmemalloc.c</a></li>
-<li>__GC_HOT&#160;:&#160;<a class="el" href="libmemalloc_8c.html#a0f87f19f941b9a5843c969926ff03174">libmemalloc.c</a></li>
-<li>__LIBMEMALLOC_API&#160;:&#160;<a class="el" href="group___libmemalloc.html#gab530abfacb1e55f2317fe51a1dfc9f61">libmemalloc.h</a></li>
-<li>__LIBMEMALLOC_MALLOC&#160;:&#160;<a class="el" href="group___libmemalloc.html#gaf415f4394a90cbf3b58ffb43c1d26122">libmemalloc.h</a></li>
-<li>__LIBMEMALLOC_REALLOC&#160;:&#160;<a class="el" href="group___libmemalloc.html#gab2ea557d67d841f4f1a765a7ebb2ec4c">libmemalloc.h</a></li>
-<li>__UNUSED&#160;:&#160;<a class="el" href="libmemalloc_8c.html#a6c30d490cd2302ff05d355f3ec844c1f">libmemalloc.c</a></li>
-<li>_GNU_SOURCE&#160;:&#160;<a class="el" href="libmemalloc_8c.html#a369266c24eacffb87046522897a570d5">libmemalloc.c</a></li>
+<li>__ALIGN&#160;:&#160;<a class="el" href="group___libmemalloc.html#gaabc39bf362e54cf3bb45d3dfe4933ccb">memalloc_utils.h</a></li>
+<li>__GC_COLD&#160;:&#160;<a class="el" href="group___libmemalloc.html#gab9da8f4b500180e347293fb86ac4dd3a">memalloc_utils.h</a></li>
+<li>__GC_HOT&#160;:&#160;<a class="el" href="group___libmemalloc.html#ga0f87f19f941b9a5843c969926ff03174">memalloc_utils.h</a></li>
+<li>__LIBMEMALLOC_API&#160;:&#160;<a class="el" href="group___libmemalloc.html#gab530abfacb1e55f2317fe51a1dfc9f61">memalloc_utils.h</a></li>
+<li>__LIBMEMALLOC_INTERNAL_MALLOC&#160;:&#160;<a class="el" href="group___libmemalloc.html#ga958c679d31760dcc44f535b5562037fb">memalloc_utils.h</a></li>
+<li>__LIBMEMALLOC_INTERNAL_REALLOC&#160;:&#160;<a class="el" href="group___libmemalloc.html#ga5162cbf57d05fe29d9084f08417325bc">memalloc_utils.h</a></li>
+<li>__LIBMEMALLOC_MALLOC&#160;:&#160;<a class="el" href="group___libmemalloc.html#gaf415f4394a90cbf3b58ffb43c1d26122">memalloc_utils.h</a></li>
+<li>__LIBMEMALLOC_REALLOC&#160;:&#160;<a class="el" href="group___libmemalloc.html#gab2ea557d67d841f4f1a765a7ebb2ec4c">memalloc_utils.h</a></li>
+<li>__UNUSED&#160;:&#160;<a class="el" href="group___libmemalloc.html#ga6c30d490cd2302ff05d355f3ec844c1f">memalloc_utils.h</a></li>
 <li>_POSIX_C_SOURCE&#160;:&#160;<a class="el" href="group___logs.html#ga3024ccd4a9af5109d24e6c57565d74a1">logs.h</a></li>
 </ul>
 
 
 <h3><a id="index_a" name="index_a"></a>- a -</h3><ul>
-<li>ALIGN&#160;:&#160;<a class="el" href="group___libmemalloc.html#gabe7f8cd9a0ce69b71567a3870415be66">libmemalloc.h</a></li>
-<li>ASSUME_ALIGNED&#160;:&#160;<a class="el" href="libmemalloc_8c.html#a7b23e1e7799e0c6fecc8b93d98963857">libmemalloc.c</a></li>
+<li>ALIGN&#160;:&#160;<a class="el" href="group___libmemalloc.html#ga6fe2b41e8a49eb133afc79eadf03a289">memalloc_utils.h</a></li>
+<li>ASSUME_ALIGNED&#160;:&#160;<a class="el" href="group___libmemalloc.html#gadc6522eebe178a317ee307ae723f548e">memalloc_utils.h</a></li>
 <li>ATTR_PRINTF&#160;:&#160;<a class="el" href="group___logs.html#ga51406614a2e1af065a0d938952ed91c4">logs.h</a></li>
 </ul>
 
@@ -181,14 +183,14 @@ $(document).ready(function(){initNavTree('globals_defs.html',''); initResizable(
 
 
 <h3><a id="index_l" name="index_l"></a>- l -</h3><ul>
-<li>LIKELY&#160;:&#160;<a class="el" href="libmemalloc_8c.html#affde14445f49f65ff4f5b592e44ee71a">libmemalloc.c</a></li>
-<li>LOG_DEBUG&#160;:&#160;<a class="el" href="group___logs.html#gac06cfc686322558f590c50eab8622ebd">logs.h</a></li>
-<li>LOG_ERROR&#160;:&#160;<a class="el" href="group___logs.html#gae6fc70e87e424e7083c63696b8fb9e78">logs.h</a></li>
-<li>LOG_INFO&#160;:&#160;<a class="el" href="group___logs.html#gae69d735f8291bd2aff230fe6ffb4d4b3">logs.h</a></li>
+<li>LIKELY&#160;:&#160;<a class="el" href="group___libmemalloc.html#ga726a81234917417872f8b6983f0b1723">memalloc_utils.h</a></li>
+<li>LOG_DEBUG&#160;:&#160;<a class="el" href="group___logs.html#ga754b3d074e0af4ad3c7b918dd77ecb2d">logs.h</a></li>
+<li>LOG_ERROR&#160;:&#160;<a class="el" href="group___logs.html#gad4a9117ce894e3319e903142347a0f63">logs.h</a></li>
+<li>LOG_INFO&#160;:&#160;<a class="el" href="group___logs.html#ga378e28bfcb78d17285210d6bbb70a083">logs.h</a></li>
 <li>LOG_LEVEL&#160;:&#160;<a class="el" href="libmemalloc_8c.html#a0b87e0d3bf5853bcbb0b66a7c48fdc05">libmemalloc.c</a>, <a class="el" href="group___logs.html#ga0b87e0d3bf5853bcbb0b66a7c48fdc05">logs.h</a></li>
-<li>LOG_PRINTF&#160;:&#160;<a class="el" href="group___logs.html#gab8a4b84aac717ad2a4f709618e472578">logs.h</a></li>
-<li>LOG_VPRINTF&#160;:&#160;<a class="el" href="group___logs.html#ga4b06fcce8e4ed7ef2ff200ed77fd029b">logs.h</a></li>
-<li>LOG_WARNING&#160;:&#160;<a class="el" href="group___logs.html#gafde44945335adc0c0ae2986fea13438f">logs.h</a></li>
+<li>LOG_PRINTF&#160;:&#160;<a class="el" href="group___logs.html#ga5aa27f5c35e2662288aef5a13ea22918">logs.h</a></li>
+<li>LOG_VPRINTF&#160;:&#160;<a class="el" href="group___logs.html#gaff257b9b72de986f4e287a922ab85201">logs.h</a></li>
+<li>LOG_WARNING&#160;:&#160;<a class="el" href="group___logs.html#gafef5ff03ea272d388345cf47148953d4">logs.h</a></li>
 </ul>
 
 
@@ -204,26 +206,25 @@ $(document).ready(function(){initNavTree('globals_defs.html',''); initResizable(
 
 
 <h3><a id="index_p" name="index_p"></a>- p -</h3><ul>
-<li>PREFETCH_R&#160;:&#160;<a class="el" href="libmemalloc_8c.html#a937b54fe2d596b5a36db031247d6e3ff">libmemalloc.c</a></li>
-<li>PREFETCH_W&#160;:&#160;<a class="el" href="libmemalloc_8c.html#a043df21bea6aed34695ff666c0dfd0fd">libmemalloc.c</a></li>
+<li>PREFETCH_R&#160;:&#160;<a class="el" href="group___libmemalloc.html#ga0183c21a72e26e83adee6c20b06a433c">memalloc_utils.h</a></li>
+<li>PREFETCH_W&#160;:&#160;<a class="el" href="group___libmemalloc.html#gabac2d7e1cbb0ef3dc015d8d0569c445f">memalloc_utils.h</a></li>
 <li>PREFIX_DEBUG&#160;:&#160;<a class="el" href="group___logs.html#ga3526aa23d5fc21b8ef58b438612b678a">logs.h</a></li>
 <li>PREFIX_ERROR&#160;:&#160;<a class="el" href="group___logs.html#ga6f184204e09bbd4969858ada1e45d3ff">logs.h</a></li>
 <li>PREFIX_INFO&#160;:&#160;<a class="el" href="group___logs.html#ga02530f5c05fcd35c2d1d6f42ba5f10e4">logs.h</a></li>
 <li>PREFIX_WARNING&#160;:&#160;<a class="el" href="group___logs.html#gaa24bbed6b4248ab887cb19d3e99ccbc6">logs.h</a></li>
-<li>PTR_ERR&#160;:&#160;<a class="el" href="group___libmemalloc.html#gad279cb341b8fafacaef5650243902eee">libmemalloc.h</a></li>
+<li>PTR_ERR&#160;:&#160;<a class="el" href="group___libmemalloc.html#ga10d2d9517329749b0a3d54cf95adc491">memalloc_utils.h</a></li>
 </ul>
 
 
 <h3><a id="index_u" name="index_u"></a>- u -</h3><ul>
-<li>UNLIKELY&#160;:&#160;<a class="el" href="libmemalloc_8c.html#ab10d0a221f4d7a706701b806c8135fd7">libmemalloc.c</a></li>
+<li>UNLIKELY&#160;:&#160;<a class="el" href="group___libmemalloc.html#ga5bfed12b93697d60b5004107b6fd71ab">memalloc_utils.h</a></li>
 </ul>
 </div><!-- contents -->
 </div><!-- doc-content -->
-<!-- start footer part -->
-<div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
-  <ul>
-    <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.8 </li>
-  </ul>
-</div>
-</body>
-</html>
+<!--
+SPDX-FileCopyrightText: 2024-2025 Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
+SPDX-License-Identifier: MIT
+-->
+<!-- Included at the end of all pages -->
+<link rel="stylesheet" href="coverage-pill.css" />
+<script src="coverage-link.js"></script>

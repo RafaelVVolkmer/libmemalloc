@@ -25,8 +25,8 @@
 var NAVTREE =
 [
   [ "libmemalloc", "index.html", [
-    [ "- Library Description", "index.html#autotoc_md3", null ],
-    [ "- C Example", "index.html#autotoc_md5", null ],
+    [ "🚀 Library Description", "index.html#autotoc_md3", null ],
+    [ "📦 C Example", "index.html#autotoc_md5", null ],
     [ "Topics", "topics.html", "topics" ],
     [ "Classes", "annotated.html", [
       [ "Class List", "annotated.html", "annotated_dup" ],
@@ -41,6 +41,7 @@ var NAVTREE =
       [ "File Members", "globals.html", [
         [ "All", "globals.html", null ],
         [ "Functions", "globals_func.html", null ],
+        [ "Variables", "globals_vars.html", null ],
         [ "Typedefs", "globals_type.html", null ],
         [ "Enumerations", "globals_enum.html", null ],
         [ "Enumerator", "globals_eval.html", null ],

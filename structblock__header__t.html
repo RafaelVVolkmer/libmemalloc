@@ -46,6 +46,7 @@
 <link href="custom.css" rel="stylesheet" type="text/css"/>
 <link href="doxygen-awesome-sidebar-only.css" rel="stylesheet" type="text/css"/>
 <link href="doxygen-awesome-sidebar-only-darkmode-toggle.css" rel="stylesheet" type="text/css"/>
+<link href="coverage-pill.css" rel="stylesheet" type="text/css"/>
 </head>
 <body>
 <!-- https://tholman.com/github-corners/ -->
@@ -60,7 +61,7 @@
   <td id="projectlogo"><img alt="Logo" src="libmemalloc.svg"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">libmemalloc
-   &#160;<span id="projectnumber">v4.0.00</span>
+   &#160;<span id="projectnumber">v2.0.00</span>
    </div>
    <div id="projectbrief">Modern Memory Allocator</div>
   </td>
@@ -136,14 +137,12 @@ $(document).ready(function(){initNavTree('structblock__header__t.html',''); init
   <div class="summary">
 <a href="#pub-attribs">Public Attributes</a> &#124;
 <a href="structblock__header__t-members.html">List of all members</a>  </div>
-  <div class="headertitle"><div class="title">block_header_t Struct Reference<div class="ingroups"><a class="el" href="group___libmemalloc.html">Libmemalloc</a></div></div></div>
+  <div class="headertitle"><div class="title">block_header_t Struct Reference</div></div>
 </div><!--header-->
 <div class="contents">
 
 <p>Represents the header for a memory block.  
  <a href="structblock__header__t.html#details">More...</a></p>
-
-<p><code>#include &lt;<a class="el" href="libmemalloc_8h_source.html">libmemalloc.h</a>&gt;</code></p>
 <div class="dynheader">
 Collaboration diagram for block_header_t:</div>
 <div class="dyncontent">
@@ -160,8 +159,6 @@ Public Attributes</h2></td></tr>
 <tr class="separator:a1887e332e1371bc734d1d18178630587"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a654b34f813df916058d9cc1ee256f027" id="r_a654b34f813df916058d9cc1ee256f027"><td class="memItemLeft" align="right" valign="top">uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structblock__header__t.html#a654b34f813df916058d9cc1ee256f027">marked</a></td></tr>
 <tr class="separator:a654b34f813df916058d9cc1ee256f027"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a980672b953020cecfd1dcc7e5bfaee16" id="r_a980672b953020cecfd1dcc7e5bfaee16"><td class="memItemLeft" align="right" valign="top">const char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structblock__header__t.html#a980672b953020cecfd1dcc7e5bfaee16">var_name</a></td></tr>
-<tr class="separator:a980672b953020cecfd1dcc7e5bfaee16"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7800923f2b82407895d9bea9038bcd7c" id="r_a7800923f2b82407895d9bea9038bcd7c"><td class="memItemLeft" align="right" valign="top">const char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structblock__header__t.html#a7800923f2b82407895d9bea9038bcd7c">file</a></td></tr>
 <tr class="separator:a7800923f2b82407895d9bea9038bcd7c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad109a8f3a52c7e56e8e28cd49a171865" id="r_ad109a8f3a52c7e56e8e28cd49a171865"><td class="memItemLeft" align="right" valign="top">uint64_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structblock__header__t.html#ad109a8f3a52c7e56e8e28cd49a171865">line</a></td></tr>
@@ -185,7 +182,6 @@ Public Attributes</h2></td></tr>
 <li><b>size</b> – Total block size (includes header, data, and canary) </li>
 <li><b>free</b> – 1 if block is free, 0 if allocated </li>
 <li><b>marked</b> – Garbage collector mark flag </li>
-<li><b>var_name</b> – Variable name (for debugging) </li>
 <li><b>file</b> – Source file of allocation (for debugging) </li>
 <li><b>line</b> – Line number of allocation (for debugging) </li>
 <li><b>canary</b> – Canary value for buffer-overflow detection </li>
@@ -361,32 +357,15 @@ Public Attributes</h2></td></tr>
 
 </div>
 </div>
-<a id="a980672b953020cecfd1dcc7e5bfaee16" name="a980672b953020cecfd1dcc7e5bfaee16"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a980672b953020cecfd1dcc7e5bfaee16">&#9670;&#160;</a></span>var_name</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">const char* block_header_t::var_name</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Variable name (for debugging) </p>
-
-</div>
-</div>
 <hr/>The documentation for this struct was generated from the following file:<ul>
-<li>/home/runner/work/libmemalloc/libmemalloc/inc/<a class="el" href="libmemalloc_8h_source.html">libmemalloc.h</a></li>
+<li>src/<a class="el" href="libmemalloc_8c.html">libmemalloc.c</a></li>
 </ul>
 </div><!-- contents -->
 </div><!-- doc-content -->
-<!-- start footer part -->
-<div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
-  <ul>
-    <li class="navelem"><a class="el" href="structblock__header__t.html">block_header_t</a></li>
-    <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.8 </li>
-  </ul>
-</div>
-</body>
-</html>
+<!--
+SPDX-FileCopyrightText: 2024-2025 Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
+SPDX-License-Identifier: MIT
+-->
+<!-- Included at the end of all pages -->
+<link rel="stylesheet" href="coverage-pill.css" />
+<script src="coverage-link.js"></script>

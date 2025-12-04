@@ -1,4 +1,4 @@
-digraph "/home/runner/work/libmemalloc/libmemalloc/src"
+digraph "src"
 {
  // LATEX_PDF_SIZE
   bgcolor="transparent";

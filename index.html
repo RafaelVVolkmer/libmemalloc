@@ -46,6 +46,7 @@
 <link href="custom.css" rel="stylesheet" type="text/css"/>
 <link href="doxygen-awesome-sidebar-only.css" rel="stylesheet" type="text/css"/>
 <link href="doxygen-awesome-sidebar-only-darkmode-toggle.css" rel="stylesheet" type="text/css"/>
+<link href="coverage-pill.css" rel="stylesheet" type="text/css"/>
 </head>
 <body>
 <!-- https://tholman.com/github-corners/ -->
@@ -60,7 +61,7 @@
   <td id="projectlogo"><img alt="Logo" src="libmemalloc.svg"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">libmemalloc
-   &#160;<span id="projectnumber">v4.0.00</span>
+   &#160;<span id="projectnumber">v2.0.00</span>
    </div>
    <div id="projectbrief">Modern Memory Allocator</div>
   </td>
@@ -136,76 +137,159 @@ $(document).ready(function(){initNavTree('index.html',''); initResizable(); });
   <div class="headertitle"><div class="title">libmemalloc </div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><p><a class="anchor" id="md__2home_2runner_2work_2libmemalloc_2libmemalloc_2doxygen_2doxygen"></a> <a class="anchor" id="readme-top"></a></p>
+<div class="textblock"><p><a class="anchor" id="md_doxygen_2doxygen"></a></p>
+<p><a class="anchor" id="readme-top"></a></p>
 <div align="center"></div><div align="center"> <a href="https://github.com/RafaelVVolkmer/libmemalloc/graphs/contributors"><img src="https://img.shields.io/github/contributors/RafaelVVolkmer/libmemalloc.svg?style=flat-square" alt="Contributors" style="pointer-events: none;" class="inline"/></a> <a href="https://github.com/RafaelVVolkmer/libmemalloc/network/members"><img src="https://img.shields.io/github/forks/RafaelVVolkmer/libmemalloc.svg?style=flat-square" alt="Forks" style="pointer-events: none;" class="inline"/></a> <a href="https://github.com/RafaelVVolkmer/libmemalloc/stargazers"><img src="https://img.shields.io/github/stars/RafaelVVolkmer/libmemalloc.svg?style=flat-square" alt="Stargazers" style="pointer-events: none;" class="inline"/></a> <a href="https://github.com/RafaelVVolkmer/libmemalloc/issues"><img src="https://img.shields.io/github/issues/RafaelVVolkmer/libmemalloc.svg?style=flat-square" alt="Issues" style="pointer-events: none;" class="inline"/></a> <a href="https://github.com/RafaelVVolkmer/libmemalloc/blob/main/LICENSE.txt"><img src="https://img.shields.io/github/license/RafaelVVolkmer/libmemalloc.svg?style=flat-square" alt="ULicense" style="pointer-events: none;" class="inline"/></a> <a href="https://www.linkedin.com/in/rafaelvvolkmer"><img src="https://img.shields.io/badge/-LinkedIn-black.svg?style=flat-square&amp;logo=linkedin&amp;colorB=555" alt="LinkedIn" style="pointer-events: none;" class="inline"/></a></div><div align="center"></div><hr  />
 <div align="center"> <img src="libmemalloc.svg" alt="libmemalloc logo" style="pointer-events: none;" width="55%" class="inline"/> </div><hr  />
 <div align="center"> by: Rafael V. Volkmer - @RafaelVVolkmer - <a href="#" onclick="location.href='mai'+'lto:'+'raf'+'ae'+'l.v'+'.v'+'olk'+'me'+'r@g'+'ma'+'il.'+'co'+'m'; return false;">rafae<span class="obfuscator">.nosp@m.</span>l.v.<span class="obfuscator">.nosp@m.</span>volkm<span class="obfuscator">.nosp@m.</span>er@g<span class="obfuscator">.nosp@m.</span>mail.<span class="obfuscator">.nosp@m.</span>com</a> </div><hr  />
 <h1><a class="anchor" id="autotoc_md3"></a>
-- Library Description</h1>
-<p>libmemalloc is a comprehensive, drop-in C memory management library that elevates your application’s heap to a fully introspectable, high-performance subsystem. It offers three tunable allocation strategies—First-Fit, Next-Fit (with optional “last allocated” pointer tracking), and Best-Fit—enabling you to balance speed, fragmentation, or memory footprint on each call. Small allocations are serviced via segregated free lists organized into configurable size classes for constant-time inserts and removals, while large requests (≥ 128 KiB) automatically bypass sbrk in favor of mmap to minimize fragmentation and leverage OS paging efficiencies. An optional background mark-and-sweep garbage collector can be activated to transparently reclaim unreachable blocks, eliminating manual free() calls in scenarios where automatic cleanup is preferred. Every block is protected by magic numbers and footer canaries to detect header corruption or buffer overflows at runtime. Internal locking guarantees thread safety in multithreaded environments, and seamless Valgrind integration annotates a dedicated MemPool for precise leak and fragmentation reporting. With configurable log verbosity (ERROR, WARN, INFO, DEBUG), live allocation maps, fragmentation metrics, and on-demand diagnostics, libmemalloc gives you unparalleled visibility into your program’s memory behavior. Integration couldn’t be simpler: link against the provided static (.a) or shared (.so) library, include <a class="el" href="libmemalloc_8h.html">libmemalloc.h</a>, and replace your standard malloc/free calls with the intuitive MEM_* API to transform your heap—no other source modifications required.</p>
+🚀 Library Description</h1>
+<p><code>libmemalloc</code> is a focused, drop-in replacement for the standard C allocator that turns your heap into a high-visibility, high-reliability subsystem.</p>
+<p>Instead of opaque <code>malloc</code>/<code>free</code> calls, you get a small, well-defined API under the <code>MEM_</code> prefix:</p>
+<ul>
+<li>Core allocation:<ul>
+<li><code>MEM_alloc</code></li>
+<li><code>MEM_calloc</code></li>
+<li><code>MEM_realloc</code></li>
+<li><code>MEM_free</code></li>
+</ul>
+</li>
+<li>Custom memory operations:<ul>
+<li><code>MEM_memcpy</code></li>
+<li><code>MEM_memset</code></li>
+</ul>
+</li>
+<li>Strategy-specific helpers:<ul>
+<li><code>MEM_allocFirstFit</code></li>
+<li><code>MEM_allocNextFit</code></li>
+<li><code>MEM_allocBestFit</code></li>
+</ul>
+</li>
+</ul>
+<p>Under the hood, the allocator uses:</p>
+<ul>
+<li><b>Segregated free lists</b> organized into size classes for (amortized) O(1) insert/remove.</li>
+<li>Automatic promotion of large blocks to **<code>mmap(2)</code>** regions to reduce fragmentation.</li>
+<li>Dynamic heap growth / shrink using **<code>sbrk(2)</code>** for regular blocks.</li>
+<li>Optional background <b>mark-and-sweep GC</b> mode to reclaim unreachable memory in GC-friendly workloads.</li>
+<li><b>Magic values and canaries</b> around each block to detect overruns and header corruption.</li>
+<li><b>Internal locking</b> to remain safe in multithreaded programs.</li>
+<li>Integration points for tools like Valgrind and external profilers.</li>
+</ul>
+<p>The public surface is kept small and stable, and the shared library is exported through a linker version script (<code>MEMALLOC_2.0</code>) so that only the intended symbols are visible to consumers.</p>
+<p>To use it, you simply link the <code>.a</code> or <code>.so</code>, include <code><a class="el" href="libmemalloc_8h.html">libmemalloc.h</a></code>, and swap your <code>malloc</code>/<code>free</code> calls for <code>MEM_*</code> equivalents.</p>
 <hr  />
- <h1><a class="anchor" id="autotoc_md5"></a>
-- C Example</h1>
-<div class="fragment"><div class="line"><span class="preprocessor">#include &quot;<a class="code" href="libmemalloc_8h.html">libmemalloc.h</a>&quot;</span></div>
+<h1><a class="anchor" id="autotoc_md5"></a>
+📦 C Example</h1>
+<p>A minimal example using the current public API (no explicit allocator struct or init):</p>
+<div class="fragment"><div class="line"><span class="preprocessor">#include &lt;stdio.h&gt;</span></div>
+<div class="line"><span class="preprocessor">#include &lt;string.h&gt;</span>         <span class="comment">/* only for printf formats, not memcpy/memset */</span></div>
+<div class="line"><span class="preprocessor">#include &quot;<a class="code" href="libmemalloc_8h.html">libmemalloc.h</a>&quot;</span>    <span class="comment">/* provides MEM_* declarations */</span></div>
 <div class="line"> </div>
 <div class="line"><span class="keywordtype">int</span> main(<span class="keywordtype">void</span>)</div>
 <div class="line">{</div>
-<div class="line">  <span class="keywordtype">int</span> ret = EXIT_SUCESS;</div>
+<div class="line">    <span class="comment">/* 1) Default allocation using MEM_alloc */</span></div>
+<div class="line">    <span class="keywordtype">int</span> *values = <a class="code hl_function" href="group___libmemalloc.html#gac731edabed78872194a188209e4435fc">MEM_alloc</a>(10 * <span class="keyword">sizeof</span> *values);</div>
+<div class="line">    <span class="keywordflow">if</span> (values == NULL) {</div>
+<div class="line">        fprintf(stderr, <span class="stringliteral">&quot;MEM_alloc failed\n&quot;</span>);</div>
+<div class="line">        <span class="keywordflow">return</span> 1;</div>
+<div class="line">    }</div>
 <div class="line"> </div>
-<div class="line">  <a class="code hl_struct" href="structmem__allocator__t.html">mem_allocator_t</a> allocator;</div>
+<div class="line">    <span class="comment">/* 2) Zero-initialized array with MEM_calloc */</span></div>
+<div class="line">    <span class="keywordtype">int</span> *zeros = <a class="code hl_function" href="group___libmemalloc.html#ga27be8a5fc93952695fd2f8b977c49cb1">MEM_calloc</a>(5, <span class="keyword">sizeof</span> *zeros);</div>
+<div class="line">    <span class="keywordflow">if</span> (zeros == NULL) {</div>
+<div class="line">        fprintf(stderr, <span class="stringliteral">&quot;MEM_calloc failed\n&quot;</span>);</div>
+<div class="line">        <a class="code hl_function" href="group___libmemalloc.html#ga74f580f9ee49f663360ac5ba6a727bc3">MEM_free</a>(values);</div>
+<div class="line">        <span class="keywordflow">return</span> 1;</div>
+<div class="line">    }</div>
 <div class="line"> </div>
-<div class="line">  ret = <a class="code hl_function" href="group___libmemalloc.html#ga29b089596d8875787349365defca54e3">MEM_allocatorInit</a>(&amp;allocator);</div>
-<div class="line">  <span class="keywordflow">if</span> (ret != EXIT_SUCESS)</div>
-<div class="line">    <span class="keywordflow">return</span> ret;</div>
+<div class="line">    <span class="comment">/* 3) Initialize memory using MEM_memset */</span></div>
+<div class="line">    <span class="comment">/*    Set all &#39;values&#39; entries to 42 in two steps:</span></div>
+<div class="line"><span class="comment">     *    - fill with zero</span></div>
+<div class="line"><span class="comment">     *    - then write the contents explicitly</span></div>
+<div class="line"><span class="comment">     */</span></div>
+<div class="line">    <a class="code hl_function" href="group___libmemalloc.html#gacfe1e6a057174df954033f59117b9cde">MEM_memset</a>(values, 0, 10 * <span class="keyword">sizeof</span> *values);</div>
+<div class="line">    <span class="keywordflow">for</span> (<span class="keywordtype">int</span> i = 0; i &lt; 10; ++i)</div>
+<div class="line">        values[i] = 42 + i;</div>
 <div class="line"> </div>
-<div class="line">  <span class="keywordtype">void</span> *buf1 = <a class="code hl_function" href="group___libmemalloc.html#ga974e87377bc908b49153828daf968d7d">MEM_allocMallocFirstFit</a>(&amp;allocator, 1024, <span class="stringliteral">&quot;buffer1&quot;</span>);</div>
-<div class="line">  <span class="keywordflow">if</span> (!buf1)</div>
-<div class="line">    <span class="keywordflow">return</span> ret;</div>
+<div class="line">    <span class="comment">/* 4) Copy memory with MEM_memcpy */</span></div>
+<div class="line">    <span class="keywordtype">int</span> *copy = <a class="code hl_function" href="group___libmemalloc.html#gac731edabed78872194a188209e4435fc">MEM_alloc</a>(10 * <span class="keyword">sizeof</span> *copy);</div>
+<div class="line">    <span class="keywordflow">if</span> (copy == NULL) {</div>
+<div class="line">        fprintf(stderr, <span class="stringliteral">&quot;MEM_alloc for copy failed\n&quot;</span>);</div>
+<div class="line">        <a class="code hl_function" href="group___libmemalloc.html#ga74f580f9ee49f663360ac5ba6a727bc3">MEM_free</a>(zeros);</div>
+<div class="line">        <a class="code hl_function" href="group___libmemalloc.html#ga74f580f9ee49f663360ac5ba6a727bc3">MEM_free</a>(values);</div>
+<div class="line">        <span class="keywordflow">return</span> 1;</div>
+<div class="line">    }</div>
+<div class="line">    <a class="code hl_function" href="group___libmemalloc.html#gaf0f38e83f3601cb880ea1feeb6deaf93">MEM_memcpy</a>(copy, values, 10 * <span class="keyword">sizeof</span> *copy);</div>
 <div class="line"> </div>
-<div class="line">  <a class="code hl_function" href="group___libmemalloc.html#ga3cab92042cc5e42c0b275df4628f604c">MEM_allocFree</a>(&amp;allocator, buf1, <span class="stringliteral">&quot;buffer1&quot;</span>);</div>
+<div class="line">    printf(<span class="stringliteral">&quot;copy[3] = %d\n&quot;</span>, copy[3]);</div>
 <div class="line"> </div>
-<div class="line">  <span class="keywordtype">void</span> *buf2 = <a class="code hl_function" href="group___libmemalloc.html#ga8188c29f62d50e0ac2817c97a5725eb2">MEM_allocMallocBestFit</a>(&amp;allocator, 2048, <span class="stringliteral">&quot;buffer2&quot;</span>);</div>
-<div class="line">  <span class="keywordflow">if</span> (!buf2)</div>
-<div class="line">    <span class="keywordflow">return</span> ret;</div>
+<div class="line">    <span class="comment">/* 5) Strategy-specific allocations */</span></div>
+<div class="line">    <span class="keywordtype">char</span> *buf_ff = <a class="code hl_function" href="group___libmemalloc.html#ga44952545cf4a9d026d650d6d9d2658f2">MEM_allocFirstFit</a>(1024);   <span class="comment">/* fast, simple placement */</span></div>
+<div class="line">    <span class="keywordtype">char</span> *buf_nf = <a class="code hl_function" href="group___libmemalloc.html#gae4e2ace6db68eba981e8be207cd3aed3">MEM_allocNextFit</a>(512);     <span class="comment">/* reuse last search position */</span></div>
+<div class="line">    <span class="keywordtype">char</span> *buf_bf = <a class="code hl_function" href="group___libmemalloc.html#gae39aa1242b547974626068d47aac7e77">MEM_allocBestFit</a>(2048);    <span class="comment">/* reduce fragmentation */</span></div>
 <div class="line"> </div>
-<div class="line">  <a class="code hl_function" href="group___libmemalloc.html#ga3cab92042cc5e42c0b275df4628f604c">MEM_allocFree</a>(&amp;allocator, buf2, <span class="stringliteral">&quot;buffer2&quot;</span>);</div>
+<div class="line">    <span class="keywordflow">if</span> (!buf_ff || !buf_nf || !buf_bf) {</div>
+<div class="line">        fprintf(stderr, <span class="stringliteral">&quot;strategy-specific allocation failed\n&quot;</span>);</div>
+<div class="line">        <a class="code hl_function" href="group___libmemalloc.html#ga74f580f9ee49f663360ac5ba6a727bc3">MEM_free</a>(copy);</div>
+<div class="line">        <a class="code hl_function" href="group___libmemalloc.html#ga74f580f9ee49f663360ac5ba6a727bc3">MEM_free</a>(zeros);</div>
+<div class="line">        <a class="code hl_function" href="group___libmemalloc.html#ga74f580f9ee49f663360ac5ba6a727bc3">MEM_free</a>(values);</div>
+<div class="line">        <a class="code hl_function" href="group___libmemalloc.html#ga74f580f9ee49f663360ac5ba6a727bc3">MEM_free</a>(buf_ff);</div>
+<div class="line">        <a class="code hl_function" href="group___libmemalloc.html#ga74f580f9ee49f663360ac5ba6a727bc3">MEM_free</a>(buf_nf);</div>
+<div class="line">        <a class="code hl_function" href="group___libmemalloc.html#ga74f580f9ee49f663360ac5ba6a727bc3">MEM_free</a>(buf_bf);</div>
+<div class="line">        <span class="keywordflow">return</span> 1;</div>
+<div class="line">    }</div>
 <div class="line"> </div>
-<div class="line">  <span class="keywordtype">void</span> *buf3 = <a class="code hl_function" href="group___libmemalloc.html#gab05eb289fbab89920c21abe7f8d9ff1b">MEM_allocMallocNextFit</a>(&amp;allocator, 512, <span class="stringliteral">&quot;buffer3&quot;</span>);</div>
-<div class="line">  <span class="keywordflow">if</span> (!buf3)</div>
-<div class="line">    <span class="keywordflow">return</span> ret;</div>
+<div class="line">    <span class="comment">/* Use MEM_memset on these buffers as well */</span></div>
+<div class="line">    <a class="code hl_function" href="group___libmemalloc.html#gacfe1e6a057174df954033f59117b9cde">MEM_memset</a>(buf_ff, 0xAA, 1024);</div>
+<div class="line">    <a class="code hl_function" href="group___libmemalloc.html#gacfe1e6a057174df954033f59117b9cde">MEM_memset</a>(buf_nf, 0xBB, 512);</div>
+<div class="line">    <a class="code hl_function" href="group___libmemalloc.html#gacfe1e6a057174df954033f59117b9cde">MEM_memset</a>(buf_bf, 0xCC, 2048);</div>
 <div class="line"> </div>
-<div class="line">  <a class="code hl_function" href="group___libmemalloc.html#ga3cab92042cc5e42c0b275df4628f604c">MEM_allocFree</a>(&amp;allocator, buf3, <span class="stringliteral">&quot;buffer3&quot;</span>);</div>
+<div class="line">    <span class="comment">/* 6) Resize an allocation with MEM_realloc */</span></div>
+<div class="line">    <span class="keywordtype">char</span> *buf_bigger = <a class="code hl_function" href="group___libmemalloc.html#gaf8496139e385d0f5369307ebca30bf17">MEM_realloc</a>(buf_bf, 4096);</div>
+<div class="line">    <span class="keywordflow">if</span> (buf_bigger == NULL) {</div>
+<div class="line">        fprintf(stderr, <span class="stringliteral">&quot;MEM_realloc failed, keeping original buffer\n&quot;</span>);</div>
+<div class="line">        <span class="comment">/* In this case buf_bf is still valid and must be freed */</span></div>
+<div class="line">        <a class="code hl_function" href="group___libmemalloc.html#ga74f580f9ee49f663360ac5ba6a727bc3">MEM_free</a>(buf_bf);</div>
+<div class="line">    } <span class="keywordflow">else</span> {</div>
+<div class="line">        buf_bf = buf_bigger;</div>
+<div class="line">    }</div>
 <div class="line"> </div>
-<div class="line">  <a class="code hl_function" href="group___libmemalloc.html#gada7e498922ace7676e4b928e0c3fbfdd">MEM_enableGc</a>(&amp;allocator);</div>
+<div class="line">    <span class="comment">/* 7) Clean up everything with MEM_free */</span></div>
+<div class="line">    <a class="code hl_function" href="group___libmemalloc.html#ga74f580f9ee49f663360ac5ba6a727bc3">MEM_free</a>(buf_ff);</div>
+<div class="line">    <a class="code hl_function" href="group___libmemalloc.html#ga74f580f9ee49f663360ac5ba6a727bc3">MEM_free</a>(buf_nf);</div>
+<div class="line">    <a class="code hl_function" href="group___libmemalloc.html#ga74f580f9ee49f663360ac5ba6a727bc3">MEM_free</a>(buf_bf);</div>
+<div class="line">    <a class="code hl_function" href="group___libmemalloc.html#ga74f580f9ee49f663360ac5ba6a727bc3">MEM_free</a>(copy);</div>
+<div class="line">    <a class="code hl_function" href="group___libmemalloc.html#ga74f580f9ee49f663360ac5ba6a727bc3">MEM_free</a>(zeros);</div>
+<div class="line">    <a class="code hl_function" href="group___libmemalloc.html#ga74f580f9ee49f663360ac5ba6a727bc3">MEM_free</a>(values);</div>
 <div class="line"> </div>
-<div class="line">  <span class="keywordtype">void</span> *gc_buf = <a class="code hl_function" href="group___libmemalloc.html#ga7b69c79c27b1d2b7984b828b97ff5541">MEM_allocCalloc</a>(&amp;allocator, 4096, <span class="stringliteral">&quot;gc_buffer&quot;</span>, <a class="code hl_enumvalue" href="group___libmemalloc.html#gga36d2f4c096864df4566ad4ccbf9f1cc8a8dba223d467d98a5827105bfb9e1f7f9">FIRST_FIT</a>);</div>
-<div class="line">  gc_buff = NULL;</div>
-<div class="line"> </div>
-<div class="line">  <a class="code hl_function" href="group___libmemalloc.html#gac52c90f06b2f9aee3f5350c46852dbaa">MEM_disableGc</a>(&amp;allocator);</div>
-<div class="line"> </div>
-<div class="line">  <span class="keywordflow">return</span> ret;</div>
+<div class="line">    <span class="keywordflow">return</span> 0;</div>
 <div class="line">}</div>
-<div class="ttc" id="agroup___libmemalloc_html_ga29b089596d8875787349365defca54e3"><div class="ttname"><a href="group___libmemalloc.html#ga29b089596d8875787349365defca54e3">MEM_allocatorInit</a></div><div class="ttdeci">int MEM_allocatorInit(mem_allocator_t *const allocator)</div><div class="ttdoc">Initializes the memory allocator and its internal structures.</div><div class="ttdef"><b>Definition</b> libmemalloc.c:1788</div></div>
-<div class="ttc" id="agroup___libmemalloc_html_ga3cab92042cc5e42c0b275df4628f604c"><div class="ttname"><a href="group___libmemalloc.html#ga3cab92042cc5e42c0b275df4628f604c">MEM_allocFree</a></div><div class="ttdeci">int MEM_allocFree(mem_allocator_t *const allocator, void *const ptr, const char *const var)</div><div class="ttdoc">Releases allocated memory back to the heap.</div><div class="ttdef"><b>Definition</b> libmemalloc.c:3995</div></div>
-<div class="ttc" id="agroup___libmemalloc_html_ga7b69c79c27b1d2b7984b828b97ff5541"><div class="ttname"><a href="group___libmemalloc.html#ga7b69c79c27b1d2b7984b828b97ff5541">MEM_allocCalloc</a></div><div class="ttdeci">void * MEM_allocCalloc(mem_allocator_t *const allocator, const size_t size, const char *const var, const allocation_strategy_t strategy)</div><div class="ttdoc">Allocates and zero‐initializes memory using the specified strategy.</div><div class="ttdef"><b>Definition</b> libmemalloc.c:3922</div></div>
-<div class="ttc" id="agroup___libmemalloc_html_ga8188c29f62d50e0ac2817c97a5725eb2"><div class="ttname"><a href="group___libmemalloc.html#ga8188c29f62d50e0ac2817c97a5725eb2">MEM_allocMallocBestFit</a></div><div class="ttdeci">void * MEM_allocMallocBestFit(mem_allocator_t *const allocator, const size_t size, const char *const var)</div><div class="ttdoc">Allocates memory using the BEST_FIT strategy.</div><div class="ttdef"><b>Definition</b> libmemalloc.c:3826</div></div>
-<div class="ttc" id="agroup___libmemalloc_html_ga974e87377bc908b49153828daf968d7d"><div class="ttname"><a href="group___libmemalloc.html#ga974e87377bc908b49153828daf968d7d">MEM_allocMallocFirstFit</a></div><div class="ttdeci">void * MEM_allocMallocFirstFit(mem_allocator_t *const allocator, const size_t size, const char *const var)</div><div class="ttdoc">Allocates memory using the FIRST_FIT strategy.</div><div class="ttdef"><b>Definition</b> libmemalloc.c:3794</div></div>
-<div class="ttc" id="agroup___libmemalloc_html_gab05eb289fbab89920c21abe7f8d9ff1b"><div class="ttname"><a href="group___libmemalloc.html#gab05eb289fbab89920c21abe7f8d9ff1b">MEM_allocMallocNextFit</a></div><div class="ttdeci">void * MEM_allocMallocNextFit(mem_allocator_t *const allocator, const size_t size, const char *const var)</div><div class="ttdoc">Allocates memory using the NEXT_FIT strategy.</div><div class="ttdef"><b>Definition</b> libmemalloc.c:3857</div></div>
-<div class="ttc" id="agroup___libmemalloc_html_gac52c90f06b2f9aee3f5350c46852dbaa"><div class="ttname"><a href="group___libmemalloc.html#gac52c90f06b2f9aee3f5350c46852dbaa">MEM_disableGc</a></div><div class="ttdeci">int MEM_disableGc(mem_allocator_t *const allocator)</div><div class="ttdoc">Stop the garbage collector thread and perform a final collection.</div><div class="ttdef"><b>Definition</b> libmemalloc.c:4043</div></div>
-<div class="ttc" id="agroup___libmemalloc_html_gada7e498922ace7676e4b928e0c3fbfdd"><div class="ttname"><a href="group___libmemalloc.html#gada7e498922ace7676e4b928e0c3fbfdd">MEM_enableGc</a></div><div class="ttdeci">int MEM_enableGc(mem_allocator_t *const allocator)</div><div class="ttdoc">Start or signal the garbage collector thread.</div><div class="ttdef"><b>Definition</b> libmemalloc.c:4023</div></div>
-<div class="ttc" id="agroup___libmemalloc_html_gga36d2f4c096864df4566ad4ccbf9f1cc8a8dba223d467d98a5827105bfb9e1f7f9"><div class="ttname"><a href="group___libmemalloc.html#gga36d2f4c096864df4566ad4ccbf9f1cc8a8dba223d467d98a5827105bfb9e1f7f9">FIRST_FIT</a></div><div class="ttdeci">@ FIRST_FIT</div><div class="ttdef"><b>Definition</b> libmemalloc.h:324</div></div>
+<div class="ttc" id="agroup___libmemalloc_html_ga27be8a5fc93952695fd2f8b977c49cb1"><div class="ttname"><a href="group___libmemalloc.html#ga27be8a5fc93952695fd2f8b977c49cb1">MEM_calloc</a></div><div class="ttdeci">void * MEM_calloc(const size_t size, const allocation_strategy_t strategy)</div><div class="ttdoc">Allocates and zero‐initializes memory using the specified strategy.</div><div class="ttdef"><b>Definition</b> libmemalloc.c:4035</div></div>
+<div class="ttc" id="agroup___libmemalloc_html_ga44952545cf4a9d026d650d6d9d2658f2"><div class="ttname"><a href="group___libmemalloc.html#ga44952545cf4a9d026d650d6d9d2658f2">MEM_allocFirstFit</a></div><div class="ttdeci">void * MEM_allocFirstFit(const size_t size)</div><div class="ttdoc">Allocates memory using the FIRST_FIT strategy.</div><div class="ttdef"><b>Definition</b> libmemalloc.c:3877</div></div>
+<div class="ttc" id="agroup___libmemalloc_html_ga74f580f9ee49f663360ac5ba6a727bc3"><div class="ttname"><a href="group___libmemalloc.html#ga74f580f9ee49f663360ac5ba6a727bc3">MEM_free</a></div><div class="ttdeci">int MEM_free(void *const ptr)</div><div class="ttdoc">Releases allocated memory back to the heap.</div><div class="ttdef"><b>Definition</b> libmemalloc.c:4118</div></div>
+<div class="ttc" id="agroup___libmemalloc_html_gac731edabed78872194a188209e4435fc"><div class="ttname"><a href="group___libmemalloc.html#gac731edabed78872194a188209e4435fc">MEM_alloc</a></div><div class="ttdeci">void * MEM_alloc(const size_t size, const allocation_strategy_t strategy)</div><div class="ttdoc">Allocates memory using the specified strategy.</div><div class="ttdef"><b>Definition</b> libmemalloc.c:3995</div></div>
+<div class="ttc" id="agroup___libmemalloc_html_gacfe1e6a057174df954033f59117b9cde"><div class="ttname"><a href="group___libmemalloc.html#gacfe1e6a057174df954033f59117b9cde">MEM_memset</a></div><div class="ttdeci">void * MEM_memset(void *const source, const int value, const size_t size)</div><div class="ttdoc">Fills a memory block with a specified byte value using optimized operations.</div><div class="ttdef"><b>Definition</b> libmemalloc.c:1204</div></div>
+<div class="ttc" id="agroup___libmemalloc_html_gae39aa1242b547974626068d47aac7e77"><div class="ttname"><a href="group___libmemalloc.html#gae39aa1242b547974626068d47aac7e77">MEM_allocBestFit</a></div><div class="ttdeci">void * MEM_allocBestFit(const size_t size)</div><div class="ttdoc">Allocates memory using the BEST_FIT strategy.</div><div class="ttdef"><b>Definition</b> libmemalloc.c:3916</div></div>
+<div class="ttc" id="agroup___libmemalloc_html_gae4e2ace6db68eba981e8be207cd3aed3"><div class="ttname"><a href="group___libmemalloc.html#gae4e2ace6db68eba981e8be207cd3aed3">MEM_allocNextFit</a></div><div class="ttdeci">void * MEM_allocNextFit(const size_t size)</div><div class="ttdoc">Allocates memory using the NEXT_FIT strategy.</div><div class="ttdef"><b>Definition</b> libmemalloc.c:3955</div></div>
+<div class="ttc" id="agroup___libmemalloc_html_gaf0f38e83f3601cb880ea1feeb6deaf93"><div class="ttname"><a href="group___libmemalloc.html#gaf0f38e83f3601cb880ea1feeb6deaf93">MEM_memcpy</a></div><div class="ttdeci">void * MEM_memcpy(void *const dest, const void *src, const size_t size)</div><div class="ttdoc">Copies a memory block between buffers using optimized operations.</div><div class="ttdef"><b>Definition</b> libmemalloc.c:1287</div></div>
+<div class="ttc" id="agroup___libmemalloc_html_gaf8496139e385d0f5369307ebca30bf17"><div class="ttname"><a href="group___libmemalloc.html#gaf8496139e385d0f5369307ebca30bf17">MEM_realloc</a></div><div class="ttdeci">void * MEM_realloc(void *const ptr, const size_t new_size, const allocation_strategy_t strategy)</div><div class="ttdoc">Reallocates memory with safety checks using the specified strategy.</div><div class="ttdef"><b>Definition</b> libmemalloc.c:4076</div></div>
 <div class="ttc" id="alibmemalloc_8h_html"><div class="ttname"><a href="libmemalloc_8h.html">libmemalloc.h</a></div></div>
-<div class="ttc" id="astructmem__allocator__t_html"><div class="ttname"><a href="structmem__allocator__t.html">mem_allocator_t</a></div><div class="ttdoc">Manages dynamic memory allocation.</div><div class="ttdef"><b>Definition</b> libmemalloc.h:481</div></div>
-</div><!-- fragment --> <p>(<a href="#readme-top">back to top</a>)</p>
+</div><!-- fragment --><p> Typical compile/link invocation (adjust include/library paths to your tree):</p>
+<div class="fragment"><div class="line">gcc -Iinc -o example example.c -Lbin/Release -lmemalloc</div>
+</div><!-- fragment --><p>This example touches all nine symbols from the version script:</p>
+<p><code>MEM_alloc</code> / <code>MEM_calloc</code> / <code>MEM_realloc</code> / <code>MEM_free</code></p>
+<p><code>MEM_memcpy</code> / <code>MEM_memset</code></p>
+<p><code>MEM_allocFirstFit</code> / <code>MEM_allocNextFit</code> / <code>MEM_allocBestFit</code></p>
+<p>(<a href="#readme-top">back to top</a>)</p>
 <hr  />
  </div></div><!-- PageDoc -->
 </div><!-- contents -->
 </div><!-- doc-content -->
-<!-- start footer part -->
-<div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
-  <ul>
-    <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.8 </li>
-  </ul>
-</div>
-</body>
-</html>
+<!--
+SPDX-FileCopyrightText: 2024-2025 Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
+SPDX-License-Identifier: MIT
+-->
+<!-- Included at the end of all pages -->
+<link rel="stylesheet" href="coverage-pill.css" />
+<script src="coverage-link.js"></script>

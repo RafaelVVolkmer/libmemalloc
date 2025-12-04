@@ -16,7 +16,7 @@
 <meta name="twitter:title" content="Doxygen Awesome" />
 <meta name="twitter:description" content="Custom CSS theme for doxygen html-documentation with lots of customization parameters." />
 <!-- END twitter metadata -->
-<title>libmemalloc: /home/runner/work/libmemalloc/libmemalloc/inc/libmemalloc.h File Reference</title>
+<title>libmemalloc: inc/libmemalloc.h File Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <link rel="icon" type="image/svg+xml" href="logo.drawio.svg"/>
 <script type="text/javascript" src="jquery.js"></script>
@@ -46,6 +46,7 @@
 <link href="custom.css" rel="stylesheet" type="text/css"/>
 <link href="doxygen-awesome-sidebar-only.css" rel="stylesheet" type="text/css"/>
 <link href="doxygen-awesome-sidebar-only-darkmode-toggle.css" rel="stylesheet" type="text/css"/>
+<link href="coverage-pill.css" rel="stylesheet" type="text/css"/>
 </head>
 <body>
 <!-- https://tholman.com/github-corners/ -->
@@ -60,7 +61,7 @@
   <td id="projectlogo"><img alt="Logo" src="libmemalloc.svg"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">libmemalloc
-   &#160;<span id="projectnumber">v4.0.00</span>
+   &#160;<span id="projectnumber">v2.0.00</span>
    </div>
    <div id="projectbrief">Modern Memory Allocator</div>
   </td>
@@ -134,7 +135,6 @@ $(document).ready(function(){initNavTree('libmemalloc_8h.html',''); initResizabl
 
 <div class="header">
   <div class="summary">
-<a href="#nested-classes">Classes</a> &#124;
 <a href="#define-members">Macros</a> &#124;
 <a href="#enum-members">Enumerations</a> &#124;
 <a href="#func-members">Functions</a>  </div>
@@ -146,6 +146,7 @@ $(document).ready(function(){initNavTree('libmemalloc_8h.html',''); initResizabl
 <code>#include &lt;stdbool.h&gt;</code><br />
 <code>#include &lt;stdint.h&gt;</code><br />
 <code>#include &lt;string.h&gt;</code><br />
+<code>#include &quot;<a class="el" href="memalloc__utils_8h_source.html">memalloc_utils.h</a>&quot;</code><br />
 </div><div class="textblock"><div class="dynheader">
 Include dependency graph for libmemalloc.h:</div>
 <div class="dyncontent">
@@ -159,44 +160,8 @@ This graph shows which files directly or indirectly include this file:</div>
 </div>
 <p><a href="libmemalloc_8h_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="nested-classes" name="nested-classes"></a>
-Classes</h2></td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structblock__header__t.html">block_header_t</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Represents the header for a memory block.  <a href="structblock__header__t.html#details">More...</a><br /></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structmem__arena__t.html">mem_arena_t</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Represents a memory arena with its own free lists.  <a href="structmem__arena__t.html#details">More...</a><br /></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structmmap__t.html">mmap_t</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Tracks memory-mapped regions for large allocations.  <a href="structmmap__t.html#details">More...</a><br /></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structgc__thread__t.html">gc_thread_t</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Orchestrates the background mark-and-sweep garbage collector.  <a href="structgc__thread__t.html#details">More...</a><br /></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structmem__allocator__t.html">mem_allocator_t</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Manages dynamic memory allocation.  <a href="structmem__allocator__t.html#details">More...</a><br /></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="define-members" name="define-members"></a>
 Macros</h2></td></tr>
-<tr class="memitem:gaabc39bf362e54cf3bb45d3dfe4933ccb" id="r_gaabc39bf362e54cf3bb45d3dfe4933ccb"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___libmemalloc.html#gaabc39bf362e54cf3bb45d3dfe4933ccb">__ALIGN</a></td></tr>
-<tr class="memdesc:gaabc39bf362e54cf3bb45d3dfe4933ccb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Defines structure alignment and enforces the target byte order.  <br /></td></tr>
-<tr class="separator:gaabc39bf362e54cf3bb45d3dfe4933ccb"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gab530abfacb1e55f2317fe51a1dfc9f61" id="r_gab530abfacb1e55f2317fe51a1dfc9f61"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___libmemalloc.html#gab530abfacb1e55f2317fe51a1dfc9f61">__LIBMEMALLOC_API</a></td></tr>
-<tr class="memdesc:gab530abfacb1e55f2317fe51a1dfc9f61"><td class="mdescLeft">&#160;</td><td class="mdescRight">Defines the default visibility attribute for exported symbols.  <br /></td></tr>
-<tr class="separator:gab530abfacb1e55f2317fe51a1dfc9f61"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gaf415f4394a90cbf3b58ffb43c1d26122" id="r_gaf415f4394a90cbf3b58ffb43c1d26122"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___libmemalloc.html#gaf415f4394a90cbf3b58ffb43c1d26122">__LIBMEMALLOC_MALLOC</a></td></tr>
-<tr class="memdesc:gaf415f4394a90cbf3b58ffb43c1d26122"><td class="mdescLeft">&#160;</td><td class="mdescRight">Annotates allocator functions that return newly allocated memory.  <br /></td></tr>
-<tr class="separator:gaf415f4394a90cbf3b58ffb43c1d26122"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gab2ea557d67d841f4f1a765a7ebb2ec4c" id="r_gab2ea557d67d841f4f1a765a7ebb2ec4c"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___libmemalloc.html#gab2ea557d67d841f4f1a765a7ebb2ec4c">__LIBMEMALLOC_REALLOC</a></td></tr>
-<tr class="memdesc:gab2ea557d67d841f4f1a765a7ebb2ec4c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Annotates reallocator functions that may return a pointer to resized memory.  <br /></td></tr>
-<tr class="separator:gab2ea557d67d841f4f1a765a7ebb2ec4c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gad279cb341b8fafacaef5650243902eee" id="r_gad279cb341b8fafacaef5650243902eee"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___libmemalloc.html#gad279cb341b8fafacaef5650243902eee">PTR_ERR</a>(x)&#160;&#160;&#160;((void *)((intptr_t)(x)))</td></tr>
-<tr class="memdesc:gad279cb341b8fafacaef5650243902eee"><td class="mdescLeft">&#160;</td><td class="mdescRight">Encodes a negative error code as an error pointer.  <br /></td></tr>
-<tr class="separator:gad279cb341b8fafacaef5650243902eee"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gabe7f8cd9a0ce69b71567a3870415be66" id="r_gabe7f8cd9a0ce69b71567a3870415be66"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___libmemalloc.html#gabe7f8cd9a0ce69b71567a3870415be66">ALIGN</a>(x)&#160;&#160;&#160;(((x) + (ARCH_ALIGNMENT - 1U)) &amp; ~(ARCH_ALIGNMENT - 1U))</td></tr>
-<tr class="memdesc:gabe7f8cd9a0ce69b71567a3870415be66"><td class="mdescLeft">&#160;</td><td class="mdescRight">Aligns a given value to the nearest memory boundary.  <br /></td></tr>
-<tr class="separator:gabe7f8cd9a0ce69b71567a3870415be66"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga78fc3a47b5647490189daf6d222121cc" id="r_ga78fc3a47b5647490189daf6d222121cc"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___libmemalloc.html#ga78fc3a47b5647490189daf6d222121cc">GC_INTERVAL_MS</a>&#160;&#160;&#160;(uint16_t)(100U)</td></tr>
 <tr class="memdesc:ga78fc3a47b5647490189daf6d222121cc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Default interval in milliseconds between GC cycles.  <br /></td></tr>
 <tr class="separator:ga78fc3a47b5647490189daf6d222121cc"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -218,36 +183,27 @@ Functions</h2></td></tr>
 <tr class="memitem:gaf0f38e83f3601cb880ea1feeb6deaf93" id="r_gaf0f38e83f3601cb880ea1feeb6deaf93"><td class="memItemLeft" align="right" valign="top">void *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___libmemalloc.html#gaf0f38e83f3601cb880ea1feeb6deaf93">MEM_memcpy</a> (void *const dest, const void *src, const size_t size)</td></tr>
 <tr class="memdesc:gaf0f38e83f3601cb880ea1feeb6deaf93"><td class="mdescLeft">&#160;</td><td class="mdescRight">Copies a memory block between buffers using optimized operations.  <br /></td></tr>
 <tr class="separator:gaf0f38e83f3601cb880ea1feeb6deaf93"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga29b089596d8875787349365defca54e3" id="r_ga29b089596d8875787349365defca54e3"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___libmemalloc.html#ga29b089596d8875787349365defca54e3">MEM_allocatorInit</a> (<a class="el" href="structmem__allocator__t.html">mem_allocator_t</a> *const allocator)</td></tr>
-<tr class="memdesc:ga29b089596d8875787349365defca54e3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initializes the memory allocator and its internal structures.  <br /></td></tr>
-<tr class="separator:ga29b089596d8875787349365defca54e3"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga974e87377bc908b49153828daf968d7d" id="r_ga974e87377bc908b49153828daf968d7d"><td class="memItemLeft" align="right" valign="top">void *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___libmemalloc.html#ga974e87377bc908b49153828daf968d7d">MEM_allocMallocFirstFit</a> (<a class="el" href="structmem__allocator__t.html">mem_allocator_t</a> *const allocator, const size_t size, const char *const var)</td></tr>
-<tr class="memdesc:ga974e87377bc908b49153828daf968d7d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Allocates memory using the FIRST_FIT strategy.  <br /></td></tr>
-<tr class="separator:ga974e87377bc908b49153828daf968d7d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga8188c29f62d50e0ac2817c97a5725eb2" id="r_ga8188c29f62d50e0ac2817c97a5725eb2"><td class="memItemLeft" align="right" valign="top">void *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___libmemalloc.html#ga8188c29f62d50e0ac2817c97a5725eb2">MEM_allocMallocBestFit</a> (<a class="el" href="structmem__allocator__t.html">mem_allocator_t</a> *const allocator, const size_t size, const char *const var)</td></tr>
-<tr class="memdesc:ga8188c29f62d50e0ac2817c97a5725eb2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Allocates memory using the BEST_FIT strategy.  <br /></td></tr>
-<tr class="separator:ga8188c29f62d50e0ac2817c97a5725eb2"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gab05eb289fbab89920c21abe7f8d9ff1b" id="r_gab05eb289fbab89920c21abe7f8d9ff1b"><td class="memItemLeft" align="right" valign="top">void *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___libmemalloc.html#gab05eb289fbab89920c21abe7f8d9ff1b">MEM_allocMallocNextFit</a> (<a class="el" href="structmem__allocator__t.html">mem_allocator_t</a> *const allocator, const size_t size, const char *const var)</td></tr>
-<tr class="memdesc:gab05eb289fbab89920c21abe7f8d9ff1b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Allocates memory using the NEXT_FIT strategy.  <br /></td></tr>
-<tr class="separator:gab05eb289fbab89920c21abe7f8d9ff1b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gaf47b919f35d0b68fb150fa7bcfc26e09" id="r_gaf47b919f35d0b68fb150fa7bcfc26e09"><td class="memItemLeft" align="right" valign="top">void *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___libmemalloc.html#gaf47b919f35d0b68fb150fa7bcfc26e09">MEM_allocMalloc</a> (<a class="el" href="structmem__allocator__t.html">mem_allocator_t</a> *const allocator, const size_t size, const char *const var, const <a class="el" href="group___libmemalloc.html#ga36d2f4c096864df4566ad4ccbf9f1cc8">allocation_strategy_t</a> strategy)</td></tr>
-<tr class="memdesc:gaf47b919f35d0b68fb150fa7bcfc26e09"><td class="mdescLeft">&#160;</td><td class="mdescRight">Allocates memory using the specified strategy.  <br /></td></tr>
-<tr class="separator:gaf47b919f35d0b68fb150fa7bcfc26e09"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga7b69c79c27b1d2b7984b828b97ff5541" id="r_ga7b69c79c27b1d2b7984b828b97ff5541"><td class="memItemLeft" align="right" valign="top">void *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___libmemalloc.html#ga7b69c79c27b1d2b7984b828b97ff5541">MEM_allocCalloc</a> (<a class="el" href="structmem__allocator__t.html">mem_allocator_t</a> *const allocator, const size_t size, const char *const var, const <a class="el" href="group___libmemalloc.html#ga36d2f4c096864df4566ad4ccbf9f1cc8">allocation_strategy_t</a> strategy)</td></tr>
-<tr class="memdesc:ga7b69c79c27b1d2b7984b828b97ff5541"><td class="mdescLeft">&#160;</td><td class="mdescRight">Allocates and zero‐initializes memory using the specified strategy.  <br /></td></tr>
-<tr class="separator:ga7b69c79c27b1d2b7984b828b97ff5541"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gaf8c7a8857b519e657735f716d4023b47" id="r_gaf8c7a8857b519e657735f716d4023b47"><td class="memItemLeft" align="right" valign="top">void *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___libmemalloc.html#gaf8c7a8857b519e657735f716d4023b47">MEM_allocRealloc</a> (<a class="el" href="structmem__allocator__t.html">mem_allocator_t</a> *const allocator, void *const ptr, const size_t new_size, const char *const var, const <a class="el" href="group___libmemalloc.html#ga36d2f4c096864df4566ad4ccbf9f1cc8">allocation_strategy_t</a> strategy)</td></tr>
-<tr class="memdesc:gaf8c7a8857b519e657735f716d4023b47"><td class="mdescLeft">&#160;</td><td class="mdescRight">Reallocates memory with safety checks using the specified strategy.  <br /></td></tr>
-<tr class="separator:gaf8c7a8857b519e657735f716d4023b47"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga3cab92042cc5e42c0b275df4628f604c" id="r_ga3cab92042cc5e42c0b275df4628f604c"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___libmemalloc.html#ga3cab92042cc5e42c0b275df4628f604c">MEM_allocFree</a> (<a class="el" href="structmem__allocator__t.html">mem_allocator_t</a> *const allocator, void *const ptr, const char *const var)</td></tr>
-<tr class="memdesc:ga3cab92042cc5e42c0b275df4628f604c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Releases allocated memory back to the heap.  <br /></td></tr>
-<tr class="separator:ga3cab92042cc5e42c0b275df4628f604c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gada7e498922ace7676e4b928e0c3fbfdd" id="r_gada7e498922ace7676e4b928e0c3fbfdd"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___libmemalloc.html#gada7e498922ace7676e4b928e0c3fbfdd">MEM_enableGc</a> (<a class="el" href="structmem__allocator__t.html">mem_allocator_t</a> *const allocator)</td></tr>
-<tr class="memdesc:gada7e498922ace7676e4b928e0c3fbfdd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Start or signal the garbage collector thread.  <br /></td></tr>
-<tr class="separator:gada7e498922ace7676e4b928e0c3fbfdd"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gac52c90f06b2f9aee3f5350c46852dbaa" id="r_gac52c90f06b2f9aee3f5350c46852dbaa"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___libmemalloc.html#gac52c90f06b2f9aee3f5350c46852dbaa">MEM_disableGc</a> (<a class="el" href="structmem__allocator__t.html">mem_allocator_t</a> *const allocator)</td></tr>
-<tr class="memdesc:gac52c90f06b2f9aee3f5350c46852dbaa"><td class="mdescLeft">&#160;</td><td class="mdescRight">Stop the garbage collector thread and perform a final collection.  <br /></td></tr>
-<tr class="separator:gac52c90f06b2f9aee3f5350c46852dbaa"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga44952545cf4a9d026d650d6d9d2658f2" id="r_ga44952545cf4a9d026d650d6d9d2658f2"><td class="memItemLeft" align="right" valign="top">void *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___libmemalloc.html#ga44952545cf4a9d026d650d6d9d2658f2">MEM_allocFirstFit</a> (const size_t size)</td></tr>
+<tr class="memdesc:ga44952545cf4a9d026d650d6d9d2658f2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Allocates memory using the FIRST_FIT strategy.  <br /></td></tr>
+<tr class="separator:ga44952545cf4a9d026d650d6d9d2658f2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gae39aa1242b547974626068d47aac7e77" id="r_gae39aa1242b547974626068d47aac7e77"><td class="memItemLeft" align="right" valign="top">void *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___libmemalloc.html#gae39aa1242b547974626068d47aac7e77">MEM_allocBestFit</a> (const size_t size)</td></tr>
+<tr class="memdesc:gae39aa1242b547974626068d47aac7e77"><td class="mdescLeft">&#160;</td><td class="mdescRight">Allocates memory using the BEST_FIT strategy.  <br /></td></tr>
+<tr class="separator:gae39aa1242b547974626068d47aac7e77"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gae4e2ace6db68eba981e8be207cd3aed3" id="r_gae4e2ace6db68eba981e8be207cd3aed3"><td class="memItemLeft" align="right" valign="top">void *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___libmemalloc.html#gae4e2ace6db68eba981e8be207cd3aed3">MEM_allocNextFit</a> (const size_t size)</td></tr>
+<tr class="memdesc:gae4e2ace6db68eba981e8be207cd3aed3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Allocates memory using the NEXT_FIT strategy.  <br /></td></tr>
+<tr class="separator:gae4e2ace6db68eba981e8be207cd3aed3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gac731edabed78872194a188209e4435fc" id="r_gac731edabed78872194a188209e4435fc"><td class="memItemLeft" align="right" valign="top">void *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___libmemalloc.html#gac731edabed78872194a188209e4435fc">MEM_alloc</a> (const size_t size, const <a class="el" href="group___libmemalloc.html#ga36d2f4c096864df4566ad4ccbf9f1cc8">allocation_strategy_t</a> strategy)</td></tr>
+<tr class="memdesc:gac731edabed78872194a188209e4435fc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Allocates memory using the specified strategy.  <br /></td></tr>
+<tr class="separator:gac731edabed78872194a188209e4435fc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga27be8a5fc93952695fd2f8b977c49cb1" id="r_ga27be8a5fc93952695fd2f8b977c49cb1"><td class="memItemLeft" align="right" valign="top">void *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___libmemalloc.html#ga27be8a5fc93952695fd2f8b977c49cb1">MEM_calloc</a> (const size_t size, const <a class="el" href="group___libmemalloc.html#ga36d2f4c096864df4566ad4ccbf9f1cc8">allocation_strategy_t</a> strategy)</td></tr>
+<tr class="memdesc:ga27be8a5fc93952695fd2f8b977c49cb1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Allocates and zero‐initializes memory using the specified strategy.  <br /></td></tr>
+<tr class="separator:ga27be8a5fc93952695fd2f8b977c49cb1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaf8496139e385d0f5369307ebca30bf17" id="r_gaf8496139e385d0f5369307ebca30bf17"><td class="memItemLeft" align="right" valign="top">void *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___libmemalloc.html#gaf8496139e385d0f5369307ebca30bf17">MEM_realloc</a> (void *const ptr, const size_t new_size, const <a class="el" href="group___libmemalloc.html#ga36d2f4c096864df4566ad4ccbf9f1cc8">allocation_strategy_t</a> strategy)</td></tr>
+<tr class="memdesc:gaf8496139e385d0f5369307ebca30bf17"><td class="mdescLeft">&#160;</td><td class="mdescRight">Reallocates memory with safety checks using the specified strategy.  <br /></td></tr>
+<tr class="separator:gaf8496139e385d0f5369307ebca30bf17"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga74f580f9ee49f663360ac5ba6a727bc3" id="r_ga74f580f9ee49f663360ac5ba6a727bc3"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___libmemalloc.html#ga74f580f9ee49f663360ac5ba6a727bc3">MEM_free</a> (void *const ptr)</td></tr>
+<tr class="memdesc:ga74f580f9ee49f663360ac5ba6a727bc3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Releases allocated memory back to the heap.  <br /></td></tr>
+<tr class="separator:ga74f580f9ee49f663360ac5ba6a727bc3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Implements memory allocator with advanced features:</p><ul>
@@ -259,12 +215,10 @@ Functions</h2></td></tr>
 <dl class="section author"><dt>Author</dt><dd>Rafael V. Volkmer <a href="#" onclick="location.href='mai'+'lto:'+'raf'+'ae'+'l.v'+'.v'+'olk'+'me'+'r@g'+'ma'+'il.'+'co'+'m'; return false;">rafae<span class="obfuscator">.nosp@m.</span>l.v.<span class="obfuscator">.nosp@m.</span>volkm<span class="obfuscator">.nosp@m.</span>er@g<span class="obfuscator">.nosp@m.</span>mail.<span class="obfuscator">.nosp@m.</span>com</a> </dd></dl>
 </div></div><!-- contents -->
 </div><!-- doc-content -->
-<!-- start footer part -->
-<div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
-  <ul>
-    <li class="navelem"><a class="el" href="dir_bfccd401955b95cf8c75461437045ac0.html">inc</a></li><li class="navelem"><a class="el" href="libmemalloc_8h.html">libmemalloc.h</a></li>
-    <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.8 </li>
-  </ul>
-</div>
-</body>
-</html>
+<!--
+SPDX-FileCopyrightText: 2024-2025 Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
+SPDX-License-Identifier: MIT
+-->
+<!-- Included at the end of all pages -->
+<link rel="stylesheet" href="coverage-pill.css" />
+<script src="coverage-link.js"></script>

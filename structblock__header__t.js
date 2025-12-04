@@ -10,6 +10,5 @@ var structblock__header__t =
     [ "marked", "structblock__header__t.html#a654b34f813df916058d9cc1ee256f027", null ],
     [ "next", "structblock__header__t.html#aaa54e46e5a8474f0c807305dc261bd04", null ],
     [ "prev", "structblock__header__t.html#a635c6d653e8d114cb528c9c4b144c11d", null ],
-    [ "size", "structblock__header__t.html#a0f7cccc0c1922adaf4656efadd2cdaa2", null ],
-    [ "var_name", "structblock__header__t.html#a980672b953020cecfd1dcc7e5bfaee16", null ]
+    [ "size", "structblock__header__t.html#a0f7cccc0c1922adaf4656efadd2cdaa2", null ]
 ];

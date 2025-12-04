@@ -1,10 +1,10 @@
-digraph "/home/runner/work/libmemalloc/libmemalloc/src/libmemalloc.c"
+digraph "src/libmemalloc.c"
 {
  // LATEX_PDF_SIZE
   bgcolor="transparent";
   edge [fontname=Helvetica,fontsize=10,labelfontname=Helvetica,labelfontsize=10];
   node [fontname=Helvetica,fontsize=10,shape=box,height=0.2,width=0.4];
-  Node1 [id="Node000001",label="/home/runner/work/libmemalloc\l/libmemalloc/src/libmemalloc.c",height=0.2,width=0.4,color="gray40", fillcolor="grey60", style="filled", fontcolor="black",tooltip="Core memory management components for libmemalloc."];
+  Node1 [id="Node000001",label="src/libmemalloc.c",height=0.2,width=0.4,color="gray40", fillcolor="grey60", style="filled", fontcolor="black",tooltip="Core memory management components for libmemalloc."];
   Node1 -> Node2 [id="edge1_Node000001_Node000002",color="steelblue1",style="solid",tooltip=" "];
   Node2 [id="Node000002",label="inttypes.h",height=0.2,width=0.4,color="grey60", fillcolor="#E0E0E0", style="filled",tooltip=" "];
   Node1 -> Node3 [id="edge2_Node000001_Node000003",color="steelblue1",style="solid",tooltip=" "];
@@ -26,21 +26,23 @@ digraph "/home/runner/work/libmemalloc/libmemalloc/src/libmemalloc.c"
   Node10 [id="Node000010",label="stdint.h",height=0.2,width=0.4,color="grey60", fillcolor="#E0E0E0", style="filled",tooltip=" "];
   Node7 -> Node11 [id="edge11_Node000007_Node000011",color="steelblue1",style="solid",tooltip=" "];
   Node11 [id="Node000011",label="string.h",height=0.2,width=0.4,color="grey60", fillcolor="#E0E0E0", style="filled",tooltip=" "];
-  Node1 -> Node12 [id="edge12_Node000001_Node000012",color="steelblue1",style="solid",tooltip=" "];
-  Node12 [id="Node000012",label="logs.h",height=0.2,width=0.4,color="grey40", fillcolor="white", style="filled",URL="$logs_8h.html",tooltip="Logging macros and configuration for libmemalloc."];
-  Node12 -> Node13 [id="edge13_Node000012_Node000013",color="steelblue1",style="solid",tooltip=" "];
-  Node13 [id="Node000013",label="errno.h",height=0.2,width=0.4,color="grey60", fillcolor="#E0E0E0", style="filled",tooltip=" "];
-  Node12 -> Node8 [id="edge14_Node000012_Node000008",color="steelblue1",style="solid",tooltip=" "];
-  Node12 -> Node14 [id="edge15_Node000012_Node000014",color="steelblue1",style="solid",tooltip=" "];
-  Node14 [id="Node000014",label="stdarg.h",height=0.2,width=0.4,color="grey60", fillcolor="#E0E0E0", style="filled",tooltip=" "];
-  Node12 -> Node10 [id="edge16_Node000012_Node000010",color="steelblue1",style="solid",tooltip=" "];
-  Node12 -> Node15 [id="edge17_Node000012_Node000015",color="steelblue1",style="solid",tooltip=" "];
-  Node15 [id="Node000015",label="stdio.h",height=0.2,width=0.4,color="grey60", fillcolor="#E0E0E0", style="filled",tooltip=" "];
-  Node12 -> Node16 [id="edge18_Node000012_Node000016",color="steelblue1",style="solid",tooltip=" "];
-  Node16 [id="Node000016",label="stdlib.h",height=0.2,width=0.4,color="grey60", fillcolor="#E0E0E0", style="filled",tooltip=" "];
-  Node12 -> Node11 [id="edge19_Node000012_Node000011",color="steelblue1",style="solid",tooltip=" "];
-  Node12 -> Node17 [id="edge20_Node000012_Node000017",color="steelblue1",style="solid",tooltip=" "];
-  Node17 [id="Node000017",label="time.h",height=0.2,width=0.4,color="grey60", fillcolor="#E0E0E0", style="filled",tooltip=" "];
-  Node12 -> Node18 [id="edge21_Node000012_Node000018",color="steelblue1",style="solid",tooltip=" "];
-  Node18 [id="Node000018",label="unistd.h",height=0.2,width=0.4,color="grey60", fillcolor="#E0E0E0", style="filled",tooltip=" "];
+  Node7 -> Node12 [id="edge12_Node000007_Node000012",color="steelblue1",style="solid",tooltip=" "];
+  Node12 [id="Node000012",label="memalloc_utils.h",height=0.2,width=0.4,color="grey40", fillcolor="white", style="filled",URL="$memalloc__utils_8h.html",tooltip=" "];
+  Node1 -> Node13 [id="edge13_Node000001_Node000013",color="steelblue1",style="solid",tooltip=" "];
+  Node13 [id="Node000013",label="logs.h",height=0.2,width=0.4,color="grey40", fillcolor="white", style="filled",URL="$logs_8h.html",tooltip="Logging macros and configuration for libmemalloc."];
+  Node13 -> Node14 [id="edge14_Node000013_Node000014",color="steelblue1",style="solid",tooltip=" "];
+  Node14 [id="Node000014",label="errno.h",height=0.2,width=0.4,color="grey60", fillcolor="#E0E0E0", style="filled",tooltip=" "];
+  Node13 -> Node8 [id="edge15_Node000013_Node000008",color="steelblue1",style="solid",tooltip=" "];
+  Node13 -> Node15 [id="edge16_Node000013_Node000015",color="steelblue1",style="solid",tooltip=" "];
+  Node15 [id="Node000015",label="stdarg.h",height=0.2,width=0.4,color="grey60", fillcolor="#E0E0E0", style="filled",tooltip=" "];
+  Node13 -> Node10 [id="edge17_Node000013_Node000010",color="steelblue1",style="solid",tooltip=" "];
+  Node13 -> Node16 [id="edge18_Node000013_Node000016",color="steelblue1",style="solid",tooltip=" "];
+  Node16 [id="Node000016",label="stdio.h",height=0.2,width=0.4,color="grey60", fillcolor="#E0E0E0", style="filled",tooltip=" "];
+  Node13 -> Node17 [id="edge19_Node000013_Node000017",color="steelblue1",style="solid",tooltip=" "];
+  Node17 [id="Node000017",label="stdlib.h",height=0.2,width=0.4,color="grey60", fillcolor="#E0E0E0", style="filled",tooltip=" "];
+  Node13 -> Node11 [id="edge20_Node000013_Node000011",color="steelblue1",style="solid",tooltip=" "];
+  Node13 -> Node18 [id="edge21_Node000013_Node000018",color="steelblue1",style="solid",tooltip=" "];
+  Node18 [id="Node000018",label="time.h",height=0.2,width=0.4,color="grey60", fillcolor="#E0E0E0", style="filled",tooltip=" "];
+  Node13 -> Node19 [id="edge22_Node000013_Node000019",color="steelblue1",style="solid",tooltip=" "];
+  Node19 [id="Node000019",label="unistd.h",height=0.2,width=0.4,color="grey60", fillcolor="#E0E0E0", style="filled",tooltip=" "];
 }

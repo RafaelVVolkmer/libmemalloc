@@ -8,13 +8,13 @@ var group___logs =
     [ "COLOR_RED", "group___logs.html#gad86358bf19927183dd7b4ae215a29731", null ],
     [ "COLOR_RESET", "group___logs.html#ga17f760256046df23dd0ab46602f04d02", null ],
     [ "COLOR_YELLOW", "group___logs.html#ga4534b577b74a58b0f4b7be027af664e0", null ],
-    [ "LOG_DEBUG", "group___logs.html#gac06cfc686322558f590c50eab8622ebd", null ],
-    [ "LOG_ERROR", "group___logs.html#gae6fc70e87e424e7083c63696b8fb9e78", null ],
-    [ "LOG_INFO", "group___logs.html#gae69d735f8291bd2aff230fe6ffb4d4b3", null ],
+    [ "LOG_DEBUG", "group___logs.html#ga754b3d074e0af4ad3c7b918dd77ecb2d", null ],
+    [ "LOG_ERROR", "group___logs.html#gad4a9117ce894e3319e903142347a0f63", null ],
+    [ "LOG_INFO", "group___logs.html#ga378e28bfcb78d17285210d6bbb70a083", null ],
     [ "LOG_LEVEL", "group___logs.html#ga0b87e0d3bf5853bcbb0b66a7c48fdc05", null ],
-    [ "LOG_PRINTF", "group___logs.html#gab8a4b84aac717ad2a4f709618e472578", null ],
-    [ "LOG_VPRINTF", "group___logs.html#ga4b06fcce8e4ed7ef2ff200ed77fd029b", null ],
-    [ "LOG_WARNING", "group___logs.html#gafde44945335adc0c0ae2986fea13438f", null ],
+    [ "LOG_PRINTF", "group___logs.html#ga5aa27f5c35e2662288aef5a13ea22918", null ],
+    [ "LOG_VPRINTF", "group___logs.html#gaff257b9b72de986f4e287a922ab85201", null ],
+    [ "LOG_WARNING", "group___logs.html#gafef5ff03ea272d388345cf47148953d4", null ],
     [ "PREFIX_DEBUG", "group___logs.html#ga3526aa23d5fc21b8ef58b438612b678a", null ],
     [ "PREFIX_ERROR", "group___logs.html#ga6f184204e09bbd4969858ada1e45d3ff", null ],
     [ "PREFIX_INFO", "group___logs.html#ga02530f5c05fcd35c2d1d6f42ba5f10e4", null ],
@@ -26,5 +26,5 @@ var group___logs =
       [ "LOG_LEVEL_INFO", "group___logs.html#gga98121d38a8cf3daf5246a349f912ca1daedee1e3159bfe7d918b6e29873c5aee4", null ],
       [ "LOG_LEVEL_DEBUG", "group___logs.html#gga98121d38a8cf3daf5246a349f912ca1da538b2b6e011479d408ecd2be0f6d6177", null ]
     ] ],
-    [ "LOG_output", "group___logs.html#ga0fb4817827dfe796a4f0a28045063195", null ]
+    [ "LOG_output", "group___logs.html#ga98d99a78b58326edf46ec318727a56e3", null ]
 ];

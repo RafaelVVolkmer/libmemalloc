@@ -46,6 +46,7 @@
 <link href="custom.css" rel="stylesheet" type="text/css"/>
 <link href="doxygen-awesome-sidebar-only.css" rel="stylesheet" type="text/css"/>
 <link href="doxygen-awesome-sidebar-only-darkmode-toggle.css" rel="stylesheet" type="text/css"/>
+<link href="coverage-pill.css" rel="stylesheet" type="text/css"/>
 </head>
 <body>
 <!-- https://tholman.com/github-corners/ -->
@@ -60,7 +61,7 @@
   <td id="projectlogo"><img alt="Logo" src="libmemalloc.svg"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">libmemalloc
-   &#160;<span id="projectnumber">v4.0.00</span>
+   &#160;<span id="projectnumber">v2.0.00</span>
    </div>
    <div id="projectbrief">Modern Memory Allocator</div>
   </td>
@@ -156,12 +157,12 @@ Macros</h2></td></tr>
 <tr class="memitem:ga3024ccd4a9af5109d24e6c57565d74a1" id="r_ga3024ccd4a9af5109d24e6c57565d74a1"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___logs.html#ga3024ccd4a9af5109d24e6c57565d74a1">_POSIX_C_SOURCE</a>&#160;&#160;&#160;200809UL</td></tr>
 <tr class="memdesc:ga3024ccd4a9af5109d24e6c57565d74a1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Expose POSIX extensions for clock_gettime and pthread mutex initializer.  <br /></td></tr>
 <tr class="separator:ga3024ccd4a9af5109d24e6c57565d74a1"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gab8a4b84aac717ad2a4f709618e472578" id="r_gab8a4b84aac717ad2a4f709618e472578"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___logs.html#gab8a4b84aac717ad2a4f709618e472578">LOG_PRINTF</a>(file, ...)&#160;&#160;&#160;fprintf(file, __VA_ARGS__)</td></tr>
-<tr class="memdesc:gab8a4b84aac717ad2a4f709618e472578"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compiler-specific printf abstraction.  <br /></td></tr>
-<tr class="separator:gab8a4b84aac717ad2a4f709618e472578"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga4b06fcce8e4ed7ef2ff200ed77fd029b" id="r_ga4b06fcce8e4ed7ef2ff200ed77fd029b"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___logs.html#ga4b06fcce8e4ed7ef2ff200ed77fd029b">LOG_VPRINTF</a>(file,  fmt,  args)&#160;&#160;&#160;vfprintf(file, fmt, args)</td></tr>
-<tr class="memdesc:ga4b06fcce8e4ed7ef2ff200ed77fd029b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compiler-specific vprintf abstraction.  <br /></td></tr>
-<tr class="separator:ga4b06fcce8e4ed7ef2ff200ed77fd029b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga5aa27f5c35e2662288aef5a13ea22918" id="r_ga5aa27f5c35e2662288aef5a13ea22918"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___logs.html#ga5aa27f5c35e2662288aef5a13ea22918">LOG_PRINTF</a>(...)&#160;&#160;&#160;fprintf(__VA_ARGS__)</td></tr>
+<tr class="memdesc:ga5aa27f5c35e2662288aef5a13ea22918"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compiler-specific printf abstraction (variadic).  <br /></td></tr>
+<tr class="separator:ga5aa27f5c35e2662288aef5a13ea22918"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaff257b9b72de986f4e287a922ab85201" id="r_gaff257b9b72de986f4e287a922ab85201"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___logs.html#gaff257b9b72de986f4e287a922ab85201">LOG_VPRINTF</a>(...)&#160;&#160;&#160;vfprintf(__VA_ARGS__)</td></tr>
+<tr class="memdesc:gaff257b9b72de986f4e287a922ab85201"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compiler-specific vprintf abstraction.  <br /></td></tr>
+<tr class="separator:gaff257b9b72de986f4e287a922ab85201"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga6f184204e09bbd4969858ada1e45d3ff" id="r_ga6f184204e09bbd4969858ada1e45d3ff"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___logs.html#ga6f184204e09bbd4969858ada1e45d3ff">PREFIX_ERROR</a>&#160;&#160;&#160;&quot;[ERROR]&quot;</td></tr>
 <tr class="separator:ga6f184204e09bbd4969858ada1e45d3ff"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gaa24bbed6b4248ab887cb19d3e99ccbc6" id="r_gaa24bbed6b4248ab887cb19d3e99ccbc6"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___logs.html#gaa24bbed6b4248ab887cb19d3e99ccbc6">PREFIX_WARNING</a>&#160;&#160;&#160;&quot;[WARNING]&quot;</td></tr>
@@ -180,21 +181,21 @@ Macros</h2></td></tr>
 <tr class="separator:gafc9149f5de51bd9ac4f5ebbfa153f018"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga17f760256046df23dd0ab46602f04d02" id="r_ga17f760256046df23dd0ab46602f04d02"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___logs.html#ga17f760256046df23dd0ab46602f04d02">COLOR_RESET</a>&#160;&#160;&#160;&quot;\033[0m&quot;</td></tr>
 <tr class="separator:ga17f760256046df23dd0ab46602f04d02"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga51406614a2e1af065a0d938952ed91c4" id="r_ga51406614a2e1af065a0d938952ed91c4"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___logs.html#ga51406614a2e1af065a0d938952ed91c4">ATTR_PRINTF</a>(fmt_idx,  var_idx)&#160;&#160;&#160;    __attribute__((format(printf, fmt_idx, var_idx)))</td></tr>
-<tr class="memdesc:ga51406614a2e1af065a0d938952ed91c4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Macro to apply GCC printf-style format checking on custom functions.  <br /></td></tr>
+<tr class="memitem:ga51406614a2e1af065a0d938952ed91c4" id="r_ga51406614a2e1af065a0d938952ed91c4"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___logs.html#ga51406614a2e1af065a0d938952ed91c4">ATTR_PRINTF</a>(fmt_idx,  var_idx)</td></tr>
+<tr class="memdesc:ga51406614a2e1af065a0d938952ed91c4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Macro to apply printf-style format checking on custom functions when supported by the compiler.  <br /></td></tr>
 <tr class="separator:ga51406614a2e1af065a0d938952ed91c4"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gae6fc70e87e424e7083c63696b8fb9e78" id="r_gae6fc70e87e424e7083c63696b8fb9e78"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___logs.html#gae6fc70e87e424e7083c63696b8fb9e78">LOG_ERROR</a>(fmt, ...)</td></tr>
-<tr class="memdesc:gae6fc70e87e424e7083c63696b8fb9e78"><td class="mdescLeft">&#160;</td><td class="mdescRight">Logs an error message (red).  <br /></td></tr>
-<tr class="separator:gae6fc70e87e424e7083c63696b8fb9e78"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gafde44945335adc0c0ae2986fea13438f" id="r_gafde44945335adc0c0ae2986fea13438f"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___logs.html#gafde44945335adc0c0ae2986fea13438f">LOG_WARNING</a>(fmt, ...)</td></tr>
-<tr class="memdesc:gafde44945335adc0c0ae2986fea13438f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Logs a warning message (yellow).  <br /></td></tr>
-<tr class="separator:gafde44945335adc0c0ae2986fea13438f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gae69d735f8291bd2aff230fe6ffb4d4b3" id="r_gae69d735f8291bd2aff230fe6ffb4d4b3"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___logs.html#gae69d735f8291bd2aff230fe6ffb4d4b3">LOG_INFO</a>(fmt, ...)</td></tr>
-<tr class="memdesc:gae69d735f8291bd2aff230fe6ffb4d4b3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Logs an info message (blue).  <br /></td></tr>
-<tr class="separator:gae69d735f8291bd2aff230fe6ffb4d4b3"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gac06cfc686322558f590c50eab8622ebd" id="r_gac06cfc686322558f590c50eab8622ebd"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___logs.html#gac06cfc686322558f590c50eab8622ebd">LOG_DEBUG</a>(fmt, ...)</td></tr>
-<tr class="memdesc:gac06cfc686322558f590c50eab8622ebd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Logs a debug message (green).  <br /></td></tr>
-<tr class="separator:gac06cfc686322558f590c50eab8622ebd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gad4a9117ce894e3319e903142347a0f63" id="r_gad4a9117ce894e3319e903142347a0f63"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___logs.html#gad4a9117ce894e3319e903142347a0f63">LOG_ERROR</a>(...)</td></tr>
+<tr class="memdesc:gad4a9117ce894e3319e903142347a0f63"><td class="mdescLeft">&#160;</td><td class="mdescRight">Logs an error message (red).  <br /></td></tr>
+<tr class="separator:gad4a9117ce894e3319e903142347a0f63"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gafef5ff03ea272d388345cf47148953d4" id="r_gafef5ff03ea272d388345cf47148953d4"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___logs.html#gafef5ff03ea272d388345cf47148953d4">LOG_WARNING</a>(...)</td></tr>
+<tr class="memdesc:gafef5ff03ea272d388345cf47148953d4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Logs a warning message (yellow).  <br /></td></tr>
+<tr class="separator:gafef5ff03ea272d388345cf47148953d4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga378e28bfcb78d17285210d6bbb70a083" id="r_ga378e28bfcb78d17285210d6bbb70a083"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___logs.html#ga378e28bfcb78d17285210d6bbb70a083">LOG_INFO</a>(...)</td></tr>
+<tr class="memdesc:ga378e28bfcb78d17285210d6bbb70a083"><td class="mdescLeft">&#160;</td><td class="mdescRight">Logs an info message (blue).  <br /></td></tr>
+<tr class="separator:ga378e28bfcb78d17285210d6bbb70a083"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga754b3d074e0af4ad3c7b918dd77ecb2d" id="r_ga754b3d074e0af4ad3c7b918dd77ecb2d"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___logs.html#ga754b3d074e0af4ad3c7b918dd77ecb2d">LOG_DEBUG</a>(...)</td></tr>
+<tr class="memdesc:ga754b3d074e0af4ad3c7b918dd77ecb2d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Logs a debug message (green).  <br /></td></tr>
+<tr class="separator:ga754b3d074e0af4ad3c7b918dd77ecb2d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="enum-members" name="enum-members"></a>
 Enumerations</h2></td></tr>
@@ -212,9 +213,9 @@ Enumerations</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:ga0fb4817827dfe796a4f0a28045063195" id="r_ga0fb4817827dfe796a4f0a28045063195"><td class="memItemLeft" align="right" valign="top">static int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___logs.html#ga0fb4817827dfe796a4f0a28045063195">LOG_output</a> (<a class="el" href="group___logs.html#ga98121d38a8cf3daf5246a349f912ca1d">log_level_t</a> level, const char *color, const char *prefix, const char *file, const char *func, int line, const char *fmt,...) __attribute__((format(printf</td></tr>
-<tr class="memdesc:ga0fb4817827dfe796a4f0a28045063195"><td class="mdescLeft">&#160;</td><td class="mdescRight">Internal logging implementation: thread‐safe, prints timestamp, optional ANSI color, severity prefix, formatted message, and source location.  <br /></td></tr>
-<tr class="separator:ga0fb4817827dfe796a4f0a28045063195"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga98d99a78b58326edf46ec318727a56e3" id="r_ga98d99a78b58326edf46ec318727a56e3"><td class="memItemLeft" align="right" valign="top">static int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___logs.html#ga98d99a78b58326edf46ec318727a56e3">LOG_output</a> (<a class="el" href="group___logs.html#ga98121d38a8cf3daf5246a349f912ca1d">log_level_t</a> level, const char *color, const char *prefix, const char *file, const char *func, int line, const char *fmt,...)</td></tr>
+<tr class="memdesc:ga98d99a78b58326edf46ec318727a56e3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Internal logging implementation: thread‐safe, prints timestamp, optional ANSI color, severity prefix, formatted message, and source location.  <br /></td></tr>
+<tr class="separator:ga98d99a78b58326edf46ec318727a56e3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <h2 class="groupheader">Macro Definition Documentation</h2>
@@ -231,6 +232,7 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Expose POSIX extensions for clock_gettime and pthread mutex initializer. </p>
+<dl class="section note"><dt>Note</dt><dd>This macro should be defined before including system headers in translation units that require POSIX extensions. </dd></dl>
 
 </div>
 </div>
@@ -255,12 +257,13 @@ Functions</h2></td></tr>
         <tr>
           <td></td>
           <td>)</td>
-          <td></td><td>&#160;&#160;&#160;    __attribute__((format(printf, fmt_idx, var_idx)))</td>
+          <td></td><td></td>
         </tr>
       </table>
 </div><div class="memdoc">
 
-<p>Macro to apply GCC printf-style format checking on custom functions. </p>
+<p>Macro to apply printf-style format checking on custom functions when supported by the compiler. </p>
+<p>Expands to GCC/Clang's <b>attribute</b>((format(printf, ...))) when available, otherwise to nothing. </p>
 
 </div>
 </div>
@@ -334,8 +337,8 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="gac06cfc686322558f590c50eab8622ebd" name="gac06cfc686322558f590c50eab8622ebd"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#gac06cfc686322558f590c50eab8622ebd">&#9670;&#160;</a></span>LOG_DEBUG</h2>
+<a id="ga754b3d074e0af4ad3c7b918dd77ecb2d" name="ga754b3d074e0af4ad3c7b918dd77ecb2d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga754b3d074e0af4ad3c7b918dd77ecb2d">&#9670;&#160;</a></span>LOG_DEBUG</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -344,40 +347,29 @@ Functions</h2></td></tr>
           <td class="memname">#define LOG_DEBUG</td>
           <td>(</td>
           <td class="paramtype">&#160;</td>
-          <td class="paramname">fmt, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
+          <td class="paramname"><em>...</em></td><td>)</td>
           <td></td>
-          <td class="paramtype">&#160;</td>
-          <td class="paramname"><em>...</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
         </tr>
       </table>
 </div><div class="memdoc">
-<b>Value:</b><div class="fragment"><div class="line">  <a class="code hl_function" href="group___logs.html#ga0fb4817827dfe796a4f0a28045063195">LOG_output</a>(<a class="code hl_enumvalue" href="group___logs.html#gga98121d38a8cf3daf5246a349f912ca1da538b2b6e011479d408ecd2be0f6d6177">LOG_LEVEL_DEBUG</a>, \</div>
+<b>Value:</b><div class="fragment"><div class="line">  <a class="code hl_function" href="group___logs.html#ga98d99a78b58326edf46ec318727a56e3">LOG_output</a>(<a class="code hl_enumvalue" href="group___logs.html#gga98121d38a8cf3daf5246a349f912ca1da538b2b6e011479d408ecd2be0f6d6177">LOG_LEVEL_DEBUG</a>, \</div>
 <div class="line">             <a class="code hl_define" href="group___logs.html#gafc9149f5de51bd9ac4f5ebbfa153f018">COLOR_GREEN</a>,     \</div>
 <div class="line">             <a class="code hl_define" href="group___logs.html#ga3526aa23d5fc21b8ef58b438612b678a">PREFIX_DEBUG</a>,    \</div>
 <div class="line">             __FILE__,        \</div>
 <div class="line">             __func__,        \</div>
 <div class="line">             __LINE__,        \</div>
-<div class="line">             fmt,             \</div>
-<div class="line">             ##__VA_ARGS__)</div>
-<div class="ttc" id="agroup___logs_html_ga0fb4817827dfe796a4f0a28045063195"><div class="ttname"><a href="group___logs.html#ga0fb4817827dfe796a4f0a28045063195">LOG_output</a></div><div class="ttdeci">static int LOG_output(log_level_t level, const char *color, const char *prefix, const char *file, const char *func, int line, const char *fmt,...) __attribute__((format(printf</div><div class="ttdoc">Internal logging implementation: thread‐safe, prints timestamp, optional ANSI color,...</div><div class="ttdef"><b>Definition</b> logs.h:214</div></div>
-<div class="ttc" id="agroup___logs_html_ga3526aa23d5fc21b8ef58b438612b678a"><div class="ttname"><a href="group___logs.html#ga3526aa23d5fc21b8ef58b438612b678a">PREFIX_DEBUG</a></div><div class="ttdeci">#define PREFIX_DEBUG</div><div class="ttdef"><b>Definition</b> logs.h:115</div></div>
-<div class="ttc" id="agroup___logs_html_gafc9149f5de51bd9ac4f5ebbfa153f018"><div class="ttname"><a href="group___logs.html#gafc9149f5de51bd9ac4f5ebbfa153f018">COLOR_GREEN</a></div><div class="ttdeci">#define COLOR_GREEN</div><div class="ttdef"><b>Definition</b> logs.h:125</div></div>
-<div class="ttc" id="agroup___logs_html_gga98121d38a8cf3daf5246a349f912ca1da538b2b6e011479d408ecd2be0f6d6177"><div class="ttname"><a href="group___logs.html#gga98121d38a8cf3daf5246a349f912ca1da538b2b6e011479d408ecd2be0f6d6177">LOG_LEVEL_DEBUG</a></div><div class="ttdeci">@ LOG_LEVEL_DEBUG</div><div class="ttdef"><b>Definition</b> logs.h:63</div></div>
+<div class="line">             __VA_ARGS__)</div>
+<div class="ttc" id="agroup___logs_html_ga3526aa23d5fc21b8ef58b438612b678a"><div class="ttname"><a href="group___logs.html#ga3526aa23d5fc21b8ef58b438612b678a">PREFIX_DEBUG</a></div><div class="ttdeci">#define PREFIX_DEBUG</div><div class="ttdef"><b>Definition</b> logs.h:147</div></div>
+<div class="ttc" id="agroup___logs_html_ga98d99a78b58326edf46ec318727a56e3"><div class="ttname"><a href="group___logs.html#ga98d99a78b58326edf46ec318727a56e3">LOG_output</a></div><div class="ttdeci">static int LOG_output(log_level_t level, const char *color, const char *prefix, const char *file, const char *func, int line, const char *fmt,...)</div><div class="ttdoc">Internal logging implementation: thread‐safe, prints timestamp, optional ANSI color,...</div><div class="ttdef"><b>Definition</b> logs.h:260</div></div>
+<div class="ttc" id="agroup___logs_html_gafc9149f5de51bd9ac4f5ebbfa153f018"><div class="ttname"><a href="group___logs.html#gafc9149f5de51bd9ac4f5ebbfa153f018">COLOR_GREEN</a></div><div class="ttdeci">#define COLOR_GREEN</div><div class="ttdef"><b>Definition</b> logs.h:157</div></div>
+<div class="ttc" id="agroup___logs_html_gga98121d38a8cf3daf5246a349f912ca1da538b2b6e011479d408ecd2be0f6d6177"><div class="ttname"><a href="group___logs.html#gga98121d38a8cf3daf5246a349f912ca1da538b2b6e011479d408ecd2be0f6d6177">LOG_LEVEL_DEBUG</a></div><div class="ttdeci">@ LOG_LEVEL_DEBUG</div><div class="ttdef"><b>Definition</b> logs.h:69</div></div>
 </div><!-- fragment -->
 <p>Logs a debug message (green). </p>
 
 </div>
 </div>
-<a id="gae6fc70e87e424e7083c63696b8fb9e78" name="gae6fc70e87e424e7083c63696b8fb9e78"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#gae6fc70e87e424e7083c63696b8fb9e78">&#9670;&#160;</a></span>LOG_ERROR</h2>
+<a id="gad4a9117ce894e3319e903142347a0f63" name="gad4a9117ce894e3319e903142347a0f63"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gad4a9117ce894e3319e903142347a0f63">&#9670;&#160;</a></span>LOG_ERROR</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -386,39 +378,29 @@ Functions</h2></td></tr>
           <td class="memname">#define LOG_ERROR</td>
           <td>(</td>
           <td class="paramtype">&#160;</td>
-          <td class="paramname">fmt, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
+          <td class="paramname"><em>...</em></td><td>)</td>
           <td></td>
-          <td class="paramtype">&#160;</td>
-          <td class="paramname"><em>...</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
         </tr>
       </table>
 </div><div class="memdoc">
-<b>Value:</b><div class="fragment"><div class="line">  <a class="code hl_function" href="group___logs.html#ga0fb4817827dfe796a4f0a28045063195">LOG_output</a>(<a class="code hl_enumvalue" href="group___logs.html#gga98121d38a8cf3daf5246a349f912ca1da5b40f003febbc3b535649d63f4b8a44f">LOG_LEVEL_ERROR</a>, \</div>
+<b>Value:</b><div class="fragment"><div class="line">  <a class="code hl_function" href="group___logs.html#ga98d99a78b58326edf46ec318727a56e3">LOG_output</a>(<a class="code hl_enumvalue" href="group___logs.html#gga98121d38a8cf3daf5246a349f912ca1da5b40f003febbc3b535649d63f4b8a44f">LOG_LEVEL_ERROR</a>, \</div>
 <div class="line">             <a class="code hl_define" href="group___logs.html#gad86358bf19927183dd7b4ae215a29731">COLOR_RED</a>,       \</div>
 <div class="line">             <a class="code hl_define" href="group___logs.html#ga6f184204e09bbd4969858ada1e45d3ff">PREFIX_ERROR</a>,    \</div>
 <div class="line">             __FILE__,        \</div>
 <div class="line">             __func__,        \</div>
 <div class="line">             __LINE__,        \</div>
-<div class="line">             fmt,             \</div>
-<div class="line">             ##__VA_ARGS__)</div>
-<div class="ttc" id="agroup___logs_html_ga6f184204e09bbd4969858ada1e45d3ff"><div class="ttname"><a href="group___logs.html#ga6f184204e09bbd4969858ada1e45d3ff">PREFIX_ERROR</a></div><div class="ttdeci">#define PREFIX_ERROR</div><div class="ttdef"><b>Definition</b> logs.h:112</div></div>
-<div class="ttc" id="agroup___logs_html_gad86358bf19927183dd7b4ae215a29731"><div class="ttname"><a href="group___logs.html#gad86358bf19927183dd7b4ae215a29731">COLOR_RED</a></div><div class="ttdeci">#define COLOR_RED</div><div class="ttdef"><b>Definition</b> logs.h:122</div></div>
-<div class="ttc" id="agroup___logs_html_gga98121d38a8cf3daf5246a349f912ca1da5b40f003febbc3b535649d63f4b8a44f"><div class="ttname"><a href="group___logs.html#gga98121d38a8cf3daf5246a349f912ca1da5b40f003febbc3b535649d63f4b8a44f">LOG_LEVEL_ERROR</a></div><div class="ttdeci">@ LOG_LEVEL_ERROR</div><div class="ttdef"><b>Definition</b> logs.h:60</div></div>
+<div class="line">             __VA_ARGS__)</div>
+<div class="ttc" id="agroup___logs_html_ga6f184204e09bbd4969858ada1e45d3ff"><div class="ttname"><a href="group___logs.html#ga6f184204e09bbd4969858ada1e45d3ff">PREFIX_ERROR</a></div><div class="ttdeci">#define PREFIX_ERROR</div><div class="ttdef"><b>Definition</b> logs.h:144</div></div>
+<div class="ttc" id="agroup___logs_html_gad86358bf19927183dd7b4ae215a29731"><div class="ttname"><a href="group___logs.html#gad86358bf19927183dd7b4ae215a29731">COLOR_RED</a></div><div class="ttdeci">#define COLOR_RED</div><div class="ttdef"><b>Definition</b> logs.h:154</div></div>
+<div class="ttc" id="agroup___logs_html_gga98121d38a8cf3daf5246a349f912ca1da5b40f003febbc3b535649d63f4b8a44f"><div class="ttname"><a href="group___logs.html#gga98121d38a8cf3daf5246a349f912ca1da5b40f003febbc3b535649d63f4b8a44f">LOG_LEVEL_ERROR</a></div><div class="ttdeci">@ LOG_LEVEL_ERROR</div><div class="ttdef"><b>Definition</b> logs.h:66</div></div>
 </div><!-- fragment -->
 <p>Logs an error message (red). </p>
+<p>Usage: LOG_ERROR("Message\n"); LOG_ERROR("Message: %d\n", code); </p>
 
 </div>
 </div>
-<a id="gae69d735f8291bd2aff230fe6ffb4d4b3" name="gae69d735f8291bd2aff230fe6ffb4d4b3"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#gae69d735f8291bd2aff230fe6ffb4d4b3">&#9670;&#160;</a></span>LOG_INFO</h2>
+<a id="ga378e28bfcb78d17285210d6bbb70a083" name="ga378e28bfcb78d17285210d6bbb70a083"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga378e28bfcb78d17285210d6bbb70a083">&#9670;&#160;</a></span>LOG_INFO</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -427,32 +409,21 @@ Functions</h2></td></tr>
           <td class="memname">#define LOG_INFO</td>
           <td>(</td>
           <td class="paramtype">&#160;</td>
-          <td class="paramname">fmt, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
+          <td class="paramname"><em>...</em></td><td>)</td>
           <td></td>
-          <td class="paramtype">&#160;</td>
-          <td class="paramname"><em>...</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
         </tr>
       </table>
 </div><div class="memdoc">
-<b>Value:</b><div class="fragment"><div class="line">  <a class="code hl_function" href="group___logs.html#ga0fb4817827dfe796a4f0a28045063195">LOG_output</a>(<a class="code hl_enumvalue" href="group___logs.html#gga98121d38a8cf3daf5246a349f912ca1daedee1e3159bfe7d918b6e29873c5aee4">LOG_LEVEL_INFO</a>, \</div>
+<b>Value:</b><div class="fragment"><div class="line">  <a class="code hl_function" href="group___logs.html#ga98d99a78b58326edf46ec318727a56e3">LOG_output</a>(<a class="code hl_enumvalue" href="group___logs.html#gga98121d38a8cf3daf5246a349f912ca1daedee1e3159bfe7d918b6e29873c5aee4">LOG_LEVEL_INFO</a>, \</div>
 <div class="line">             <a class="code hl_define" href="group___logs.html#ga23c70d699a5a775bc2e1ebeb8603f630">COLOR_BLUE</a>,     \</div>
 <div class="line">             <a class="code hl_define" href="group___logs.html#ga02530f5c05fcd35c2d1d6f42ba5f10e4">PREFIX_INFO</a>,    \</div>
 <div class="line">             __FILE__,       \</div>
 <div class="line">             __func__,       \</div>
 <div class="line">             __LINE__,       \</div>
-<div class="line">             fmt,            \</div>
-<div class="line">             ##__VA_ARGS__)</div>
-<div class="ttc" id="agroup___logs_html_ga02530f5c05fcd35c2d1d6f42ba5f10e4"><div class="ttname"><a href="group___logs.html#ga02530f5c05fcd35c2d1d6f42ba5f10e4">PREFIX_INFO</a></div><div class="ttdeci">#define PREFIX_INFO</div><div class="ttdef"><b>Definition</b> logs.h:114</div></div>
-<div class="ttc" id="agroup___logs_html_ga23c70d699a5a775bc2e1ebeb8603f630"><div class="ttname"><a href="group___logs.html#ga23c70d699a5a775bc2e1ebeb8603f630">COLOR_BLUE</a></div><div class="ttdeci">#define COLOR_BLUE</div><div class="ttdef"><b>Definition</b> logs.h:124</div></div>
-<div class="ttc" id="agroup___logs_html_gga98121d38a8cf3daf5246a349f912ca1daedee1e3159bfe7d918b6e29873c5aee4"><div class="ttname"><a href="group___logs.html#gga98121d38a8cf3daf5246a349f912ca1daedee1e3159bfe7d918b6e29873c5aee4">LOG_LEVEL_INFO</a></div><div class="ttdeci">@ LOG_LEVEL_INFO</div><div class="ttdef"><b>Definition</b> logs.h:62</div></div>
+<div class="line">             __VA_ARGS__)</div>
+<div class="ttc" id="agroup___logs_html_ga02530f5c05fcd35c2d1d6f42ba5f10e4"><div class="ttname"><a href="group___logs.html#ga02530f5c05fcd35c2d1d6f42ba5f10e4">PREFIX_INFO</a></div><div class="ttdeci">#define PREFIX_INFO</div><div class="ttdef"><b>Definition</b> logs.h:146</div></div>
+<div class="ttc" id="agroup___logs_html_ga23c70d699a5a775bc2e1ebeb8603f630"><div class="ttname"><a href="group___logs.html#ga23c70d699a5a775bc2e1ebeb8603f630">COLOR_BLUE</a></div><div class="ttdeci">#define COLOR_BLUE</div><div class="ttdef"><b>Definition</b> logs.h:156</div></div>
+<div class="ttc" id="agroup___logs_html_gga98121d38a8cf3daf5246a349f912ca1daedee1e3159bfe7d918b6e29873c5aee4"><div class="ttname"><a href="group___logs.html#gga98121d38a8cf3daf5246a349f912ca1daedee1e3159bfe7d918b6e29873c5aee4">LOG_LEVEL_INFO</a></div><div class="ttdeci">@ LOG_LEVEL_INFO</div><div class="ttdef"><b>Definition</b> logs.h:68</div></div>
 </div><!-- fragment -->
 <p>Logs an info message (blue). </p>
 
@@ -474,8 +445,8 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="gab8a4b84aac717ad2a4f709618e472578" name="gab8a4b84aac717ad2a4f709618e472578"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#gab8a4b84aac717ad2a4f709618e472578">&#9670;&#160;</a></span>LOG_PRINTF</h2>
+<a id="ga5aa27f5c35e2662288aef5a13ea22918" name="ga5aa27f5c35e2662288aef5a13ea22918"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga5aa27f5c35e2662288aef5a13ea22918">&#9670;&#160;</a></span>LOG_PRINTF</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -484,28 +455,19 @@ Functions</h2></td></tr>
           <td class="memname">#define LOG_PRINTF</td>
           <td>(</td>
           <td class="paramtype">&#160;</td>
-          <td class="paramname">file, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">&#160;</td>
-          <td class="paramname"><em>...</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td>&#160;&#160;&#160;fprintf(file, __VA_ARGS__)</td>
+          <td class="paramname"><em>...</em></td><td>)</td>
+          <td>&#160;&#160;&#160;fprintf(__VA_ARGS__)</td>
         </tr>
       </table>
 </div><div class="memdoc">
 
-<p>Compiler-specific printf abstraction. </p>
-
+<p>Compiler-specific printf abstraction (variadic). </p>
+<p>Uses __builtin_fprintf when available; falls back to fprintf otherwise. Intended usage matches fprintf: </p><pre class="fragment">LOG_PRINTF(stream, "fmt %d\n", value);
+</pre> 
 </div>
 </div>
-<a id="ga4b06fcce8e4ed7ef2ff200ed77fd029b" name="ga4b06fcce8e4ed7ef2ff200ed77fd029b"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ga4b06fcce8e4ed7ef2ff200ed77fd029b">&#9670;&#160;</a></span>LOG_VPRINTF</h2>
+<a id="gaff257b9b72de986f4e287a922ab85201" name="gaff257b9b72de986f4e287a922ab85201"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gaff257b9b72de986f4e287a922ab85201">&#9670;&#160;</a></span>LOG_VPRINTF</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -514,34 +476,19 @@ Functions</h2></td></tr>
           <td class="memname">#define LOG_VPRINTF</td>
           <td>(</td>
           <td class="paramtype">&#160;</td>
-          <td class="paramname">file, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">&#160;</td>
-          <td class="paramname">fmt, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">&#160;</td>
-          <td class="paramname">args&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td>&#160;&#160;&#160;vfprintf(file, fmt, args)</td>
+          <td class="paramname"><em>...</em></td><td>)</td>
+          <td>&#160;&#160;&#160;vfprintf(__VA_ARGS__)</td>
         </tr>
       </table>
 </div><div class="memdoc">
 
 <p>Compiler-specific vprintf abstraction. </p>
-
+<p>Uses __builtin_vfprintf when available; falls back to vfprintf otherwise. Intended usage matches vfprintf: </p><pre class="fragment">LOG_VPRINTF(stream, "fmt %d\n", args);
+</pre> 
 </div>
 </div>
-<a id="gafde44945335adc0c0ae2986fea13438f" name="gafde44945335adc0c0ae2986fea13438f"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#gafde44945335adc0c0ae2986fea13438f">&#9670;&#160;</a></span>LOG_WARNING</h2>
+<a id="gafef5ff03ea272d388345cf47148953d4" name="gafef5ff03ea272d388345cf47148953d4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gafef5ff03ea272d388345cf47148953d4">&#9670;&#160;</a></span>LOG_WARNING</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -550,32 +497,21 @@ Functions</h2></td></tr>
           <td class="memname">#define LOG_WARNING</td>
           <td>(</td>
           <td class="paramtype">&#160;</td>
-          <td class="paramname">fmt, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
+          <td class="paramname"><em>...</em></td><td>)</td>
           <td></td>
-          <td class="paramtype">&#160;</td>
-          <td class="paramname"><em>...</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
         </tr>
       </table>
 </div><div class="memdoc">
-<b>Value:</b><div class="fragment"><div class="line">  <a class="code hl_function" href="group___logs.html#ga0fb4817827dfe796a4f0a28045063195">LOG_output</a>(<a class="code hl_enumvalue" href="group___logs.html#gga98121d38a8cf3daf5246a349f912ca1da5b4dd81b4dc7eefbc55ba03415c627ef">LOG_LEVEL_WARNING</a>, \</div>
+<b>Value:</b><div class="fragment"><div class="line">  <a class="code hl_function" href="group___logs.html#ga98d99a78b58326edf46ec318727a56e3">LOG_output</a>(<a class="code hl_enumvalue" href="group___logs.html#gga98121d38a8cf3daf5246a349f912ca1da5b4dd81b4dc7eefbc55ba03415c627ef">LOG_LEVEL_WARNING</a>, \</div>
 <div class="line">             <a class="code hl_define" href="group___logs.html#ga4534b577b74a58b0f4b7be027af664e0">COLOR_YELLOW</a>,      \</div>
 <div class="line">             <a class="code hl_define" href="group___logs.html#gaa24bbed6b4248ab887cb19d3e99ccbc6">PREFIX_WARNING</a>,    \</div>
 <div class="line">             __FILE__,          \</div>
 <div class="line">             __func__,          \</div>
 <div class="line">             __LINE__,          \</div>
-<div class="line">             fmt,               \</div>
-<div class="line">             ##__VA_ARGS__)</div>
-<div class="ttc" id="agroup___logs_html_ga4534b577b74a58b0f4b7be027af664e0"><div class="ttname"><a href="group___logs.html#ga4534b577b74a58b0f4b7be027af664e0">COLOR_YELLOW</a></div><div class="ttdeci">#define COLOR_YELLOW</div><div class="ttdef"><b>Definition</b> logs.h:123</div></div>
-<div class="ttc" id="agroup___logs_html_gaa24bbed6b4248ab887cb19d3e99ccbc6"><div class="ttname"><a href="group___logs.html#gaa24bbed6b4248ab887cb19d3e99ccbc6">PREFIX_WARNING</a></div><div class="ttdeci">#define PREFIX_WARNING</div><div class="ttdef"><b>Definition</b> logs.h:113</div></div>
-<div class="ttc" id="agroup___logs_html_gga98121d38a8cf3daf5246a349f912ca1da5b4dd81b4dc7eefbc55ba03415c627ef"><div class="ttname"><a href="group___logs.html#gga98121d38a8cf3daf5246a349f912ca1da5b4dd81b4dc7eefbc55ba03415c627ef">LOG_LEVEL_WARNING</a></div><div class="ttdeci">@ LOG_LEVEL_WARNING</div><div class="ttdef"><b>Definition</b> logs.h:61</div></div>
+<div class="line">             __VA_ARGS__)</div>
+<div class="ttc" id="agroup___logs_html_ga4534b577b74a58b0f4b7be027af664e0"><div class="ttname"><a href="group___logs.html#ga4534b577b74a58b0f4b7be027af664e0">COLOR_YELLOW</a></div><div class="ttdeci">#define COLOR_YELLOW</div><div class="ttdef"><b>Definition</b> logs.h:155</div></div>
+<div class="ttc" id="agroup___logs_html_gaa24bbed6b4248ab887cb19d3e99ccbc6"><div class="ttname"><a href="group___logs.html#gaa24bbed6b4248ab887cb19d3e99ccbc6">PREFIX_WARNING</a></div><div class="ttdeci">#define PREFIX_WARNING</div><div class="ttdef"><b>Definition</b> logs.h:145</div></div>
+<div class="ttc" id="agroup___logs_html_gga98121d38a8cf3daf5246a349f912ca1da5b4dd81b4dc7eefbc55ba03415c627ef"><div class="ttname"><a href="group___logs.html#gga98121d38a8cf3daf5246a349f912ca1da5b4dd81b4dc7eefbc55ba03415c627ef">LOG_LEVEL_WARNING</a></div><div class="ttdeci">@ LOG_LEVEL_WARNING</div><div class="ttdef"><b>Definition</b> logs.h:67</div></div>
 </div><!-- fragment -->
 <p>Logs a warning message (yellow). </p>
 
@@ -675,8 +611,8 @@ Functions</h2></td></tr>
 </div>
 </div>
 <h2 class="groupheader">Function Documentation</h2>
-<a id="ga0fb4817827dfe796a4f0a28045063195" name="ga0fb4817827dfe796a4f0a28045063195"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ga0fb4817827dfe796a4f0a28045063195">&#9670;&#160;</a></span>LOG_output()</h2>
+<a id="ga98d99a78b58326edf46ec318727a56e3" name="ga98d99a78b58326edf46ec318727a56e3"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga98d99a78b58326edf46ec318727a56e3">&#9670;&#160;</a></span>LOG_output()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -685,7 +621,7 @@ Functions</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static int static int LOG_output </td>
+          <td class="memname">static int LOG_output </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="group___logs.html#ga98121d38a8cf3daf5246a349f912ca1d">log_level_t</a>&#160;</td>
           <td class="paramname"><em>level</em>, </td>
@@ -782,11 +718,10 @@ Functions</h2></td></tr>
 </div>
 </div><!-- contents -->
 </div><!-- doc-content -->
-<!-- start footer part -->
-<div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
-  <ul>
-    <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.8 </li>
-  </ul>
-</div>
-</body>
-</html>
+<!--
+SPDX-FileCopyrightText: 2024-2025 Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
+SPDX-License-Identifier: MIT
+-->
+<!-- Included at the end of all pages -->
+<link rel="stylesheet" href="coverage-pill.css" />
+<script src="coverage-link.js"></script>
