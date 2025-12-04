@@ -93,16 +93,13 @@ body:
     validations:
       required: false
 
-  - type: markdown
+  - type: input
+    id: signed_off_by
     attributes:
-      value: |
-        ---
-        ## ✍️ Signed-off-by (DCO)
-        
-        If you intend to submit a PR fixing this documentation issue and wish
-        to comply with the Developer Certificate of Origin (DCO), include your
-        own line below:
-
-        ```
-        Signed-off-by: <Your Name> <your.email@example.com>
-        ```
+      label: "✍️ Signed-off-by (optional)"
+      description: |
+        If you intend to provide patches for this bug and want to comply with the
+        Developer Certificate of Origin (DCO), enter your Signed-off-by line below.
+      placeholder: "Signed-off-by: <Your Name> <your.email@example.com>"
+    validations:
+      required: false

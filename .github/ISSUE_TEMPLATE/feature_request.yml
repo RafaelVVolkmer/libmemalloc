@@ -198,14 +198,13 @@ body:
       placeholder: |
         Related issues, discussions, blog posts, diagrams, or design notes.
 
-  - type: markdown
+  - type: input
+    id: signed_off_by
     attributes:
-      value: |
-        ---
-        ## ✍️ Signed-off-by (DCO)
-        If you plan to contribute code for this feature and want to comply
-        with the Developer Certificate of Origin (DCO), add your line here:
-
-        ```
-        Signed-off-by: <Your Name> <your.email@example.com>
-        ```
+      label: "✍️ Signed-off-by (optional)"
+      description: |
+        If you intend to provide patches for this bug and want to comply with the
+        Developer Certificate of Origin (DCO), enter your Signed-off-by line below.
+      placeholder: "Signed-off-by: <Your Name> <your.email@example.com>"
+    validations:
+      required: false

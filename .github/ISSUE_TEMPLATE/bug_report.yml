@@ -201,13 +201,13 @@ body:
         - Interaction with other allocators
         - Threading / signals / fork/exec details
 
-  - type: markdown
+  - type: input
+    id: signed_off_by
     attributes:
-      value: |
-        ---
-        ## ✍️ Signed-off-by (optional)
-
-        If you intend to provide patches for this bug, fill the line below:
-        ```
-        Signed-off-by: <Your Name> <your.email@example.com>
-        ```
+      label: "✍️ Signed-off-by (optional)"
+      description: |
+        If you intend to provide patches for this bug and want to comply with the
+        Developer Certificate of Origin (DCO), enter your Signed-off-by line below.
+      placeholder: "Signed-off-by: <Your Name> <your.email@example.com>"
+    validations:
+      required: false
