@@ -5,7 +5,7 @@
 # PROJECT IDENTITY
 # ==============================================================================
 PROJECT_NAME            = "libmemalloc"
-PROJECT_NUMBER          = "v2.0.00"
+PROJECT_NUMBER          = "v3.0.00"
 PROJECT_BRIEF           = "Modern Memory Allocator"
 
 PROJECT_LOGO            = "@CMAKE_SOURCE_DIR@/readme/libmemalloc.svg"

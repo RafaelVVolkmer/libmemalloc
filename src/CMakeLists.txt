@@ -38,7 +38,7 @@ include(GNUInstallDirs)
 # ------------------------------------------------------------------------------
 option(RM_CONSTRUCT "Do not link GCC/GLIBC startup files (crt*)" OFF)
 
-set(MEMALLOC_VERSION "2.0.0" CACHE STRING "Project semantic version")
+set(MEMALLOC_VERSION "3.0.00" CACHE STRING "Project semantic version")
 string(REPLACE "." ";" _vlist "${MEMALLOC_VERSION}")
 list(GET _vlist 0 MEMALLOC_SOVERSION)
 
