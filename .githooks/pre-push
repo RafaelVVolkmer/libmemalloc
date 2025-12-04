@@ -1,0 +1,170 @@
+#!/usr/bin/env bash
+
+# SPDX-FileCopyrightText: 2024-2025 Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
+# SPDX-License-Identifier: MIT
+
+# ==============================================================================
+# pre-push — protect main, enforce branch naming, GPG signatures and CI-lite
+#
+# - Blocks direct pushes to main (feature branches + PRs only)
+# - Enforces branch naming convention for local branches:
+#     main, develop, or:
+#       feat/*, feature/*, fix/*, bugfix/*, hotfix/*, release/*, chore/*
+# - Requires all commits being pushed to be GPG-signed (git log %G?)
+# - For non-main pushes:
+#     - runs scripts/build.sh release
+#     - runs scripts/security_check.sh on Release artifacts
+#
+# Intended to be used as a pre-push hook, either via:
+#   .git/hooks/pre-push
+# or with:
+#   core.hooksPath = .githooks
+# ==============================================================================
+
+set -euo pipefail
+
+REMOTE="$1"      # e.g., origin
+REMOTE_URL="$2"  # currently unused, kept for future use
+
+# ------------------------------------------------------------------------------
+# Colors
+# ------------------------------------------------------------------------------
+RED=$'\033[31m'
+GREEN=$'\033[32m'
+YELLOW=$'\033[33m'
+RESET=$'\033[0m'
+
+# ------------------------------------------------------------------------------
+# Helpers
+# ------------------------------------------------------------------------------
+have_cmd() {
+  command -v "$1" >/dev/null 2>&1
+}
+
+need_cmd() {
+  local cmd="$1" msg="$2"
+  if ! have_cmd "$cmd"; then
+    echo "[pre-push] ${RED}${cmd} not found in PATH (${msg}).${RESET}"
+    exit 1
+  fi
+}
+
+fail() {
+  echo "[pre-push] ${RED}$*${RESET}" >&2
+  exit 1
+}
+
+need_cmd git "required to inspect refs and commits"
+
+echo "[pre-push] ${YELLOW}Validating push to remote '${REMOTE}'…${RESET}"
+
+# Store all ref lines from stdin to process them after the loop.
+REFS=()
+
+while read -r LOCAL_REF LOCAL_SHA REMOTE_REF REMOTE_SHA; do
+  # Ignore empty or malformed lines
+  [ -z "${LOCAL_REF:-}" ] && continue
+
+  # --------------------------------------------------------------------------
+  # 1) Block direct pushes to main
+  # --------------------------------------------------------------------------
+  if [ "${LOCAL_REF}" = "refs/heads/main" ]; then
+    cat <<EOF
+[pre-push] ${RED}Direct push to 'main' is blocked.${RESET}
+
+This repository is configured so that 'main' can only be updated via
+Pull Requests. Please:
+
+  1. Create or use a feature branch, for example:
+       git checkout -b feat/my-feature
+  2. Commit your changes on that branch.
+  3. Push the feature branch:
+       git push ${REMOTE:-origin} HEAD
+  4. Open a Pull Request targeting 'main' on GitHub.
+
+If you really need to change this behavior, edit or remove this hook
+locally (not recommended).
+EOF
+    exit 1
+  fi
+
+  # --------------------------------------------------------------------------
+  # 2) Enforce branch naming convention for local branches
+  # --------------------------------------------------------------------------
+  if [[ "${LOCAL_REF}" == refs/heads/* ]]; then
+    BRANCH_NAME="${LOCAL_REF#refs/heads/}"
+    if ! [[ "${BRANCH_NAME}" == "main" || "${BRANCH_NAME}" == "develop" || \
+            "${BRANCH_NAME}" =~ ^feat/ || "${BRANCH_NAME}" =~ ^feature/ || \
+            "${BRANCH_NAME}" =~ ^fix/  || "${BRANCH_NAME}" =~ ^bugfix/  || \
+            "${BRANCH_NAME}" =~ ^hotfix/ || "${BRANCH_NAME}" =~ ^release/ || \
+            "${BRANCH_NAME}" =~ ^chore/ ]]; then
+      fail "Branch '${BRANCH_NAME}' does not follow the naming convention (main, develop, feat/*, feature/*, fix/*, bugfix/*, hotfix/*, release/*, chore/*)."
+    fi
+  fi
+
+  REFS+=( "${LOCAL_REF} ${LOCAL_SHA} ${REMOTE_REF} ${REMOTE_SHA}" )
+done
+
+# ------------------------------------------------------------------------------
+# 3) Enforce GPG-signed commits for everything being pushed
+# ------------------------------------------------------------------------------
+for entry in "${REFS[@]}"; do
+  set -- ${entry}
+  LOCAL_REF="$1"
+  LOCAL_SHA="$2"
+  REMOTE_REF="$3"
+  REMOTE_SHA="$4"
+
+  # Skip references without a valid local SHA
+  if [ -z "${LOCAL_SHA:-}" ] || [ "${LOCAL_SHA}" = "0000000000000000000000000000000000000000" ]; then
+    continue
+  fi
+
+  # New branch / first push: remote SHA is all zeros
+  if [ "${REMOTE_SHA}" = "0000000000000000000000000000000000000000" ]; then
+    RANGE="${LOCAL_SHA}"
+  else
+    RANGE="${REMOTE_SHA}..${LOCAL_SHA}"
+  fi
+
+  COMMITS="$(git rev-list "${RANGE}" 2>/dev/null || true)"
+  [ -z "${COMMITS}" ] && continue
+
+  for COMMIT in ${COMMITS}; do
+    SIG_STATE="$(git log -1 --pretty='%G?' "${COMMIT}")"
+    if [ "${SIG_STATE}" != "G" ] && [ "${SIG_STATE}" != "U" ]; then
+      echo "[pre-push] Commit ${COMMIT} is not GPG signed (state: ${SIG_STATE})."
+      echo "[pre-push] Make sure you have commit.gpgsign=true and a valid signing key configured."
+      fail "Rejecting push due to unsigned or improperly signed commit."
+    fi
+  done
+done
+
+echo "[pre-push] ${GREEN}All commits in this push are GPG signed.${RESET}"
+
+# ------------------------------------------------------------------------------
+# 4) Run build + security checks (Release)
+# ------------------------------------------------------------------------------
+if [ ! -d "scripts" ]; then
+  echo "[pre-push] ${YELLOW}No scripts/ directory detected, skipping build and security checks.${RESET}"
+  exit 0
+fi
+
+if [ ! -x "scripts/build.sh" ] || [ ! -x "scripts/security_check.sh" ]; then
+  echo "[pre-push] ${YELLOW}scripts/build.sh or scripts/security_check.sh not executable or missing.${RESET}"
+  echo "[pre-push] Skipping local CI-lite checks, but allowing the push."
+  exit 0
+fi
+
+echo "[pre-push] ${YELLOW}Running build + security checks (Release)…${RESET}"
+
+chmod +x scripts/*.sh 2>/dev/null || true
+
+./scripts/build.sh release
+
+if ! ./scripts/security_check.sh ./bin/Release/libmemalloc.a ./bin/Release/libmemalloc.so; then
+  fail "Build or security checks failed. Push aborted."
+fi
+
+echo "[pre-push] ${GREEN}Build and security checks passed.${RESET}"
+exit 0

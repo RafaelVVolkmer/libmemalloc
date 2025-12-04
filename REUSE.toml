@@ -1,0 +1,76 @@
+# SPDX-FileCopyrightText: 2024-2025 Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
+# SPDX-License-Identifier: MIT
+
+# REUSE.toml — Project-wide SPDX metadata for libmemalloc
+#
+# This file complements per-file SPDX headers and helps REUSE:
+#   - understand that the main project code and infrastructure are MIT;
+#   - handle non-commentable or hard-to-annotate files;
+#   - clearly mark future third-party code as NOASSERTION.
+#
+# See: https://reuse.software/spec/
+
+version = 1
+
+# --------------------------------------------------------------------
+# Main project code, build system, CI and tooling (MIT)
+# --------------------------------------------------------------------
+[[annotations]]
+path = [
+  # Core library code and headers
+  "src/**",
+  "inc/**",
+
+  # Tests
+  "tests/**",
+
+  # Scripts and tooling
+  "scripts/**",
+  "typos.toml",
+  "REUSE.toml",
+
+  # Build system and configuration
+  "CMakeLists.txt",
+  "CMakePresets.json",
+  "cmake/**",
+
+  # CI / GitHub metadata
+  ".github/**",
+
+  # Documentation and top-level project files
+  "README.md",
+  "CHANGELOG.md",
+  "CODE_OF_CONDUCT.md",
+  "SECURITY.md",
+  "Dockerfile",
+  "doxygen/**",
+  "libmemalloc.map",
+  "readme/libmemalloc.svg"
+]
+
+# Combine this metadata with any in-file SPDX headers instead of
+# letting this block override them.
+precedence = "aggregate"
+
+SPDX-FileCopyrightText = [
+  "2024-2025 Rafael V. Volkmer <rafael.v.volkmer@gmail.com>"
+]
+
+# Main project license. If libmemalloc ever changes license, update this.
+SPDX-License-Identifier = "MIT"
+
+# --------------------------------------------------------------------
+# Placeholder for third-party / external code
+# --------------------------------------------------------------------
+[[annotations]]
+path = [
+  "third_party/**",
+  "external/**"
+]
+
+# For third-party code, we do not assert a license here. When you add
+# such code, either:
+#   - add proper SPDX headers to those files, or
+#   - add more specific annotations for each subdirectory.
+precedence = "override"
+SPDX-License-Identifier = "NOASSERTION"

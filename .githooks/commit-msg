@@ -1,0 +1,83 @@
+#!/usr/bin/env bash
+
+# SPDX-FileCopyrightText: 2024-2025 Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
+# SPDX-License-Identifier: MIT
+
+# ==============================================================================
+# commit-msg — validate Conventional Commit style and Signed-off-by
+#
+# - Enforces header format: <type>(<scope>): <summary>
+# - Allowed types: feat, fix, docs, style, refactor, test, ci, chore, build, perf, merge, revert
+# - Limits subject line to 72 characters
+# - Requires a non-empty body (ignoring comments and Signed-off-by lines)
+# - Requires at least one valid Signed-off-by footer
+#
+# Intended to be used as a commit-msg hook, either via:
+#   .git/hooks/commit-msg
+# or with:
+#   core.hooksPath = .githooks
+# ==============================================================================
+
+set -euo pipefail
+
+MSG_FILE="$1"
+
+# ------------------------------------------------------------------------------
+# Colors
+# ------------------------------------------------------------------------------
+RED=$'\033[31m'
+GREEN=$'\033[32m'
+YELLOW=$'\033[33m'
+RESET=$'\033[0m'
+
+HEADER="$(sed -n '1p' "${MSG_FILE}")"
+
+# Allow automatic merge/revert commits without strict validation
+if [[ "${HEADER}" =~ ^(Merge|Revert) ]]; then
+  echo "[commit-msg] ${YELLOW}Merge/Revert commit detected, skipping strict validation.${RESET}"
+  exit 0
+fi
+
+echo "[commit-msg] ${YELLOW}Validating Conventional Commit header and Signed-off-by…${RESET}"
+
+# ------------------------------------------------------------------------------
+# 1) Header format: type(scope): summary
+# ------------------------------------------------------------------------------
+if ! [[ "${HEADER}" =~ ^(feat|fix|docs|style|refactor|test|ci|chore|build|perf|merge|revert)\([a-zA-Z0-9_-]+\):\  ]]; then
+  echo "[commit-msg] ${RED}Invalid commit header format.${RESET}"
+  echo "[commit-msg] Expected: <type>(<scope>): <short summary>"
+  echo "[commit-msg] Allowed types: feat, fix, docs, style, refactor, test, ci, chore, build, perf, merge, revert"
+  echo "[commit-msg] Example: feat(core): add MEM_allocBestFit helper"
+  echo "[commit-msg] Got: '${HEADER}'"
+  exit 1
+fi
+
+# ------------------------------------------------------------------------------
+# 2) Subject line length
+# ------------------------------------------------------------------------------
+if [ "${#HEADER}" -gt 72 ]; then
+  echo "[commit-msg] ${RED}First line should be <= 72 characters (current: ${#HEADER}).${RESET}"
+  exit 1
+fi
+
+# ------------------------------------------------------------------------------
+# 3) Require a body (non-empty line after header, ignoring comments and S-o-b)
+# ------------------------------------------------------------------------------
+if ! awk 'NR>1 && $0 !~ /^#/ && $0 !~ /^[[:space:]]*$/ && $0 !~ /^Signed-off-by:/ {found=1} END{exit !found}' "${MSG_FILE}"; then
+  echo "[commit-msg] ${RED}Missing commit body.${RESET}"
+  echo "[commit-msg] Add at least one non-empty line after the header explaining the change."
+  exit 1
+fi
+
+# ------------------------------------------------------------------------------
+# 4) Require at least one Signed-off-by footer
+# ------------------------------------------------------------------------------
+if ! grep -Eq '^Signed-off-by: .+ <.+>$' "${MSG_FILE}"; then
+  echo "[commit-msg] ${RED}Missing or invalid Signed-off-by line.${RESET}"
+  echo "[commit-msg] Expected a footer like:"
+  echo "  Signed-off-by: Your Name <your.email@example.com>"
+  exit 1
+fi
+
+echo "[commit-msg] ${GREEN}Commit message passes Conventional Commit and Signed-off-by checks.${RESET}"
+exit 0

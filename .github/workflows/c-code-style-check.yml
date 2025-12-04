@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2024-2025 Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
+# SPDX-License-Identifier: MIT
+
 name: Style Check
 
 permissions:
@@ -15,20 +18,40 @@ jobs:
   lint:
     name: Lint & Format
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Install clang-format & clang-tidy
+      - name: Install tooling (clang, cmake, valgrind, Rust, Python)
         run: |
           sudo apt-get update
-          sudo apt-get install -y clang-format clang-tidy cmake valgrind
+          sudo apt-get install -y \
+            clang-format \
+            clang-tidy \
+            cmake \
+            valgrind \
+            rustc \
+            cargo \
+            python3 \
+            python3-pip
+
+      - name: Install typos (spell checker)
+        run: |
+          cargo install typos-cli --locked
+          echo "$HOME/.cargo/bin" >> "$GITHUB_PATH"
+
+      - name: Install REUSE (SPDX/REUSE compliance tool)
+        run: |
+          python3 -m pip install --user --upgrade pip
+          python3 -m pip install --user reuse
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
 
       - name: Prepare style script
-        run: chmod +x ./style_check.sh
+        run: chmod +x ./scripts/style_check.sh
 
       - name: Run style_check.sh
-        run: ./style_check.sh
+        run: ./scripts/style_check.sh
 
       - name: Upload tidy log
         if: failure()

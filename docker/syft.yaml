@@ -1,0 +1,16 @@
+# SPDX-FileCopyrightText: 2024-2025 Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
+# SPDX-License-Identifier: MIT
+
+output:
+  - cyclonedx-json
+
+exclude:
+  - /usr/share/doc
+  - /usr/share/man
+
+metadata:
+  labels:
+    org.opencontainers.image.vendor: "Rafael Volkmer"
+    org.opencontainers.image.title: "libmemalloc"
+    org.opencontainers.image.source: "https://github.com/RafaelVVolkmer/libmemalloc"
+    org.opencontainers.image.licenses: "MIT"

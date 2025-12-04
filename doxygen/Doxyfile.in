@@ -1,12 +1,15 @@
+# SPDX-FileCopyrightText: 2024-2025 Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
+# SPDX-License-Identifier: MIT
+
 # ==============================================================================
 # PROJECT IDENTITY
 # ==============================================================================
 PROJECT_NAME            = "libmemalloc"
-PROJECT_NUMBER          = "v4.0.00"
+PROJECT_NUMBER          = "v2.0.00"
 PROJECT_BRIEF           = "Modern Memory Allocator"
 
 PROJECT_LOGO            = "@CMAKE_SOURCE_DIR@/readme/libmemalloc.svg"
-USE_MDFILE_AS_MAINPAGE  = doxygen.md
+USE_MDFILE_AS_MAINPAGE  = "@CMAKE_SOURCE_DIR@/doxygen/doxygen.md"
 
 # ==============================================================================
 # TEXT OPTIONS
@@ -26,7 +29,14 @@ CREATE_SUBDIRS_LEVEL   = 8
 # ==============================================================================
 INPUT                   = "@CMAKE_SOURCE_DIR@/doxygen/doxygen.md" \
                           "@CMAKE_SOURCE_DIR@/src/libmemalloc.c"  \
+													"@CMAKE_SOURCE_DIR@/src/memalloc_rng.c"  \
+													"@CMAKE_SOURCE_DIR@/src/memalloc_safe.c"  \
+													"@CMAKE_SOURCE_DIR@/src/logs.c"  \
                           "@CMAKE_SOURCE_DIR@/inc/libmemalloc.h"  \
+													"@CMAKE_SOURCE_DIR@/inc/memalloc_rng.h"  \
+													"@CMAKE_SOURCE_DIR@/inc/memalloc_safe.h"  \
+													"@CMAKE_SOURCE_DIR@/inc/memalloc_utils.h"  \
+													"@CMAKE_SOURCE_DIR@/inc/memalloc_valgrind.h"  \
                           "@CMAKE_SOURCE_DIR@/inc/logs.h"
 
 
@@ -34,6 +44,11 @@ HTML_EXTRA_FILES        = "@CMAKE_SOURCE_DIR@/readme/libmemalloc.svg"
 
 FILE_PATTERNS           = *.h *.c *.md
 RECURSIVE               = NO
+
+# EXCLUDE                 = "@CMAKE_SOURCE_DIR@/doxygen"
+# EXCLUDE_PATTERNS        = */doxygen/*
+
+PREDEFINED += _GNU_SOURCE _POSIX_SOURCE
 
 # ==============================================================================
 # OUTPUT FILES 
@@ -54,7 +69,9 @@ MAN_EXTENSION           = .3
 MAN_LINKS               = YES
 
 ## LATEX
-GENERATE_LATEX          = YES
+GENERATE_LATEX          = NO
+GENERATE_LATEX 					= YES
+USE_PDFLATEX   					= YES
 LATEX_OUTPUT            = latex
 LATEX_CMD_NAME          = latex
 MAKEINDEX_CMD_NAME      = makeindex
@@ -63,7 +80,6 @@ PAPER_TYPE              = a4
 LATEX_BIB_STYLE         = plain
 COMPACT_LATEX           = NO
 PDF_HYPERLINKS          = NO
-PDFLATEX                = NO
 LATEX_BATCHMODE         = NO
 LATEX_HIDE_INDICES      = NO
 
@@ -74,7 +90,7 @@ XML_PROGRAMLISTING      = YES
 XML_NS_MEMB_FILE_SCOPE  = NO
 
 ## TAGFILES
-TAGFILES                = libmemalloc.tag
+TAGFILES                =
 GENERATE_TAGFILE        = libmemalloc.tag
 ALLEXTERNALS            = NO
 EXTERNAL_GROUPS         = YES
@@ -97,12 +113,6 @@ TYPEDEF_HIDES_STRUCT     = YES
 # ==============================================================================
 ENABLE_PREPROCESSING    = YES
 MACRO_EXPANSION         = YES
-
-# ==============================================================================
-# MARKDOWN SUPPORT 
-# ==============================================================================
-MARKDOWN_SUPPORT        = YES
-EXTENSION_MAPPING       = md=markdown
 
 # ==============================================================================
 # SOURCE BROWSING 
@@ -140,7 +150,7 @@ WARN_FORMAT             = "$file:$line: $text"
 # ==============================================================================
 
 ## HTML Configs
-HTML_HEADER            = "@AWESOME_DOXYGEN_DIR@/doxygen-custom/header.html"
+HTML_HEADER            = "@doxygen_site_dir@/doxygen-custom/header.html"
 HTML_FOOTER            =
 
 HTML_COLORSTYLE        = LIGHT
@@ -156,18 +166,17 @@ HTML_CODE_FOLDING      = YES
 HTML_INDEX_NUM_ENTRIES = 100
 
 ## HTML paths
-HTML_EXTRA_STYLESHEET  = "@AWESOME_DOXYGEN_DIR@/doxygen-awesome.css" \
-                         "@AWESOME_DOXYGEN_DIR@/doxygen-custom/custom.css" \
-                         "@AWESOME_DOXYGEN_DIR@/doxygen-awesome-sidebar-only.css" \
-                         "@AWESOME_DOXYGEN_DIR@/doxygen-awesome-sidebar-only-darkmode-toggle.css" \
-                         "@AWESOME_DOXYGEN_DIR@/doxygen-custom/custom-alternative.css"
+HTML_EXTRA_STYLESHEET  = "@doxygen_site_dir@/doxygen-awesome.css" \
+                         "@doxygen_site_dir@/doxygen-custom/custom.css" \
+                         "@doxygen_site_dir@/doxygen-awesome-sidebar-only.css" \
+                         "@doxygen_site_dir@/doxygen-awesome-sidebar-only-darkmode-toggle.css"
 
-HTML_EXTRA_FILES       = "@AWESOME_DOXYGEN_DIR@/doxygen-awesome-darkmode-toggle.js" \
-                         "@AWESOME_DOXYGEN_DIR@/doxygen-awesome-fragment-copy-button.js" \
-                         "@AWESOME_DOXYGEN_DIR@/doxygen-awesome-paragraph-link.js" \
-                         "@AWESOME_DOXYGEN_DIR@/doxygen-custom/toggle-alternative-theme.js" \
-                         "@AWESOME_DOXYGEN_DIR@/doxygen-awesome-interactive-toc.js" \
-                         "@AWESOME_DOXYGEN_DIR@/doxygen-awesome-tabs.js"
+HTML_EXTRA_FILES       = "@doxygen_site_dir@/doxygen-awesome-darkmode-toggle.js" \
+                         "@doxygen_site_dir@/doxygen-awesome-fragment-copy-button.js" \
+                         "@doxygen_site_dir@/doxygen-awesome-paragraph-link.js" \
+                         "@doxygen_site_dir@/doxygen-custom/toggle-alternative-theme.js" \
+                         "@doxygen_site_dir@/doxygen-awesome-interactive-toc.js" \
+                         "@doxygen_site_dir@/doxygen-awesome-tabs.js"
 
 ## Page Configs
 GENERATE_TREEVIEW      = YES
@@ -189,10 +198,12 @@ SORT_BRIEF_DOCS          = NO     # don’t sort brief docs separately
 # ==============================================================================
 # NAMING, PATHS & IDENTIFIERS
 # ==============================================================================
-FULL_PATH_NAMES          = NO    # show full file paths
-SHORT_NAMES              = NO     # use full names, not shortened
-CASE_SENSE_NAMES         = NO     # case-insensitive name handling
-IGNORE_PREFIX            =        # no prefix ignored in names
+FULL_PATH_NAMES          = YES    								# show full paths for includes
+SHORT_NAMES              = NO     								# use full names, not shortened
+STRIP_FROM_PATH          = "@CMAKE_SOURCE_DIR@"		# strip repo root from file paths
+STRIP_FROM_INC_PATH      = "@CMAKE_SOURCE_DIR@"		# idem para includes
+CASE_SENSE_NAMES         = NO     								# case-insensitive name handling
+IGNORE_PREFIX            = NO											# no prefix ignored in names
 
 # ==============================================================================
 # JAVADOC & STYLE SUPPORT
@@ -222,9 +233,6 @@ TAB_SIZE                 = 4      # code block tab width
 AUTOLINK_SUPPORT         = YES    # automatically link URLs
 MARKDOWN_ID_STYLE        = DOXYGEN # style for generated IDs
 ALIASES                  =        # no custom command aliases
-FULL_PATH_NAMES          = YES    # show full paths for includes
-
-
 
 # ==============================================================================
 # SEARCH & INDEXING
@@ -263,8 +271,8 @@ GENERATE_DEPRECATEDLIST  = YES    # generate list of deprecated items
 EXAMPLE_PATH             =        # no example dirs by default
 EXAMPLE_PATTERNS         = *      # include all example files
 EXAMPLE_RECURSIVE        = NO     # don’t recurse into example dirs
-IMAGE_PATH               = img \
-                           docs/img   # look for images here
+IMAGE_PATH               = # img \
+                           # docs/img   # look for images here
 
 # ==============================================================================
 # SOURCE BROWSING & FILTERING

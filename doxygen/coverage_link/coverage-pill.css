@@ -1,0 +1,64 @@
+/*
+ * SPDX-FileCopyrightText: 2024-2025 Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
+ * SPDX-License-Identifier: MIT
+ */
+
+/* "coverage tests" button – bigger and further from the bottom edge */
+#cov-pill{
+  position: fixed;
+  right: 56px;
+  bottom: 40px;        /* ↑ extra padding from the bottom edge */
+  z-index: 9999;
+}
+
+#cov-pill a{
+  /* dark fallback + integration with doxygen-awesome */
+  background: #234063;
+  border: 1px solid #14273c;
+  color: var(--page-background-color, #ffffff);
+
+  background: color-mix(in srgb, var(--primary-dark-color, #1e40af) 55%, black 45%);
+  border-color: color-mix(in srgb, var(--primary-dark-color, #1e40af) 80%, black 20%);
+
+  display: inline-flex;
+  align-items: center;
+
+  padding: .72rem 1.35rem;
+  font-size: 16px;
+  line-height: 1;
+  font-weight: 700;
+  letter-spacing: .02em;
+  text-decoration: none;
+  border-radius: 999px;
+
+  box-shadow: 0 8px 22px rgba(0,0,0,.26), 0 2px 7px rgba(0,0,0,.18);
+  transition: transform .12s ease, filter .12s ease;
+}
+
+#cov-pill a:hover  { transform: translateY(-1px); filter: brightness(1.05); }
+#cov-pill a:active { transform: translateY(0); }
+#cov-pill a:focus-visible{
+  outline: 2px solid var(--link-color, #58a6ff);
+  outline-offset: 2px;
+}
+
+/* Dark theme */
+html[data-theme="dark"] #cov-pill a{
+  background: color-mix(in srgb, var(--primary-dark-color, #1e40af) 35%, black 65%);
+  border-color: color-mix(in srgb, var(--primary-dark-color, #1e40af) 65%, black 35%);
+  color: #E6E8EE;
+}
+
+/* Wide screens: push a bit further from the edge and bottom */
+@media (min-width: 1200px){
+  #cov-pill{ right: 72px; bottom: 48px; }
+}
+
+/* Mobile: slightly smaller, but still with extra bottom spacing */
+@media (max-width: 640px){
+  #cov-pill{ right: 18px; bottom: 22px; }
+  #cov-pill a{ padding: .58rem 1.10rem; font-size: 14px; }
+}
+
+/* Hide when printing */
+@media print{ #cov-pill{ display:none; } }

@@ -1,3 +1,9 @@
+/*
+ * SPDX-FileCopyrightText: 2024-2025 Rafael V. Volkmer
+ * SPDX-FileCopyrightText: <rafael.v.volkmer@gmail.com>
+ * SPDX-License-Identifier: MIT
+ */
+
 /** ============================================================================
  *  @ingroup    Libmemalloc
  *
@@ -12,8 +18,7 @@
  *  @version    v1.0.00
  *  @date       23.08.2025
  *  @author     Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
- * ============================================================================
- */
+ * ========================================================================== */
 
 /** ============================================================================
  *                      P R I V A T E  I N C L U D E S
@@ -36,14 +41,14 @@
  * ========================================================================== */
 
 /** ============================================================================
- *  @def        EXIT_ERRROR
+ *  @def        EXIT_ERROR
  *  @brief      Standard error return code for test failures.
  *
  *  @details    Defined as a uint8_t value of 1 to indicate any
  *              assertion or test step failure within the test suite.
  *              Returned by test functions when a CHECK() fails.
  * ========================================================================== */
-#define EXIT_ERRROR (uint8_t)(1U)
+#define EXIT_ERROR (uint8_t)(1U)
 
 /** ============================================================================
  *  @def        CHECK(expr)
@@ -53,7 +58,7 @@
  *
  *  @details    Evaluates the given expression and, if false,
  *              logs an error with file and line information,
- *              then returns EXIT_ERRROR from the current function.
+ *              then returns EXIT_ERROR from the current function.
  *              Ensures immediate test termination on failure.
  * ========================================================================== */
 #define CHECK(expr)                                                          \
@@ -62,7 +67,7 @@
     if (!(expr))                                                             \
     {                                                                        \
       LOG_ERROR("Assertion failed at %s:%d: %s", __FILE__, __LINE__, #expr); \
-      return EXIT_ERRROR;                                                    \
+      return EXIT_ERROR;                                                     \
     }                                                                        \
   } while (0)
 
@@ -74,10 +79,10 @@
  *  @fn         TEST_doubleFree
  *  @brief      Tests that freeing the same pointer twice triggers an error.
  *
- *  @return     EXIT_SUCCESS on correct behavior, EXIT_ERRROR on failure.
+ *  @return     EXIT_SUCCESS on correct behavior, EXIT_ERROR on failure.
  *
  *  @retval     EXIT_SUCCESS  Second free returned an error as expected.
- *  @retval     EXIT_ERRROR   Unexpected success or initial operations failed.
+ *  @retval     EXIT_ERROR   Unexpected success or initial operations failed.
  * ========================================================================== */
 static int TEST_doubleFree(void);
 
@@ -104,10 +109,10 @@ int main(void)
  *  @fn         TEST_doubleFree
  *  @brief      Tests that freeing the same pointer twice triggers an error.
  *
- *  @return     EXIT_SUCCESS on correct behavior, EXIT_ERRROR on failure.
+ *  @return     EXIT_SUCCESS on correct behavior, EXIT_ERROR on failure.
  *
  *  @retval     EXIT_SUCCESS  Second free returned an error as expected.
- *  @retval     EXIT_ERRROR   Unexpected success or initial operations failed.
+ *  @retval     EXIT_ERROR   Unexpected success or initial operations failed.
  * ========================================================================== */
 static int TEST_doubleFree(void)
 {
@@ -115,18 +120,13 @@ static int TEST_doubleFree(void)
 
   void *ptr = (void *)NULL;
 
-  mem_allocator_t allocator;
-
-  ret = MEM_allocatorInit(&allocator);
-  CHECK(ret == EXIT_SUCCESS);
-
-  ptr = MEM_allocMallocFirstFit(&allocator, 64, "dfree");
+  ptr = MEM_allocFirstFit(64);
   CHECK(ptr != NULL);
 
-  ret = MEM_allocFree(&allocator, ptr, "dfree");
+  ret = MEM_free(ptr);
   CHECK(ret == EXIT_SUCCESS);
 
-  ret = MEM_allocFree(&allocator, ptr, "dfree");
+  ret = MEM_free(ptr);
   CHECK(ret != EXIT_SUCCESS);
 
   return EXIT_SUCCESS;

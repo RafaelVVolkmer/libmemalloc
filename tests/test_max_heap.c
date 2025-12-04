@@ -1,3 +1,9 @@
+/*
+ * SPDX-FileCopyrightText: 2024-2025 Rafael V. Volkmer
+ * SPDX-FileCopyrightText: <rafael.v.volkmer@gmail.com>
+ * SPDX-License-Identifier: MIT
+ */
+
 /** ============================================================================
  *  @ingroup    Libmemalloc
  *
@@ -49,14 +55,14 @@
  * ========================================================================== */
 
 /** ============================================================================
- *  @def        EXIT_ERRROR
+ *  @def        EXIT_ERROR
  *  @brief      Standard error return code for test failures.
  *
  *  @details    Defined as a uint8_t value of 1. Used by test
  *              functions to indicate failure when a CHECK() macro
  *              assertion fails.
  * ========================================================================== */
-#define EXIT_ERRROR (uint8_t)(1U)
+#define EXIT_ERROR (uint8_t)(1U)
 
 /** ============================================================================
  *  @def        BLOCK_SIZE
@@ -66,7 +72,7 @@
  *              for memory blocks used during testing. Set to 10UL
  *              as a uint64_t constant to avoid implicit type conversions.
  * ========================================================================== */
-#define BLOCK_SIZE  (uint64_t)(10UL)
+#define BLOCK_SIZE (uint64_t)(1024U)
 
 /** ============================================================================
  *  @def        MAX_BLOCKS
@@ -76,7 +82,7 @@
  *  @details    Provides semantic clarity when using BLOCK_SIZE
  *              as a block count limit instead of a byte size.
  * ========================================================================== */
-#define MAX_BLOCKS  BLOCK_SIZE
+#define MAX_BLOCKS 1000
 
 /** ============================================================================
  *  @def        CHECK(expr)
@@ -86,7 +92,7 @@
  *
  *  @details    Checks the given condition and, if false, logs an error
  *              including file and line number, then immediately returns
- *              EXIT_ERRROR from the current function. Prevents further
+ *              EXIT_ERROR from the current function. Prevents further
  *              execution of failing tests.
  * ========================================================================== */
 #define CHECK(expr)                                                          \
@@ -95,7 +101,7 @@
     if (!(expr))                                                             \
     {                                                                        \
       LOG_ERROR("Assertion failed at %s:%d: %s", __FILE__, __LINE__, #expr); \
-      return EXIT_ERRROR;                                                    \
+      return EXIT_ERROR;                                                     \
     }                                                                        \
   } while (0)
 
@@ -111,17 +117,12 @@ int main(void)
 
   void *ptrs[MAX_BLOCKS];
 
-  mem_allocator_t allocator;
-
   size_t count    = 0u;
   size_t iterator = 0u;
 
-  ret = MEM_allocatorInit(&allocator);
-  CHECK(ret == EXIT_SUCCESS);
-
   while (count < MAX_BLOCKS)
   {
-    ptr = MEM_allocMallocFirstFit(&allocator, BLOCK_SIZE, "ptr");
+    ptr = MEM_allocFirstFit(BLOCK_SIZE);
     if (ptr == NULL)
       break;
 
@@ -134,7 +135,7 @@ int main(void)
 
   for (iterator = 0; iterator < count; ++iterator)
   {
-    ret = MEM_allocFree(&allocator, ptrs[iterator], "ptr");
+    ret = MEM_free(ptrs[iterator]);
     CHECK(ret == EXIT_SUCCESS);
   }
 

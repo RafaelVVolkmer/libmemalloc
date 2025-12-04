@@ -1,0 +1,103 @@
+#!/usr/bin/env bash
+
+# SPDX-FileCopyrightText: 2024-2025 Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
+# SPDX-License-Identifier: MIT
+
+# ==============================================================================
+# post-merge — track style/docs-only commits from merges in .git-blame-ignore-revs
+#
+# - Runs after merges (including git pull that performs a non-fast-forward merge)
+# - Uses ORIG_HEAD to discover which commits were introduced by this merge
+# - For each new commit:
+#     * If the subject starts with "style" or "docs" (with or without a scope):
+#         style: reformat allocator core
+#         style(core): normalize SPDX headers
+#         docs(readme): document new workflow
+#       → appends the hash to .git-blame-ignore-revs (if not already present)
+#       → keeps the file unique and sorted for clean diffs
+#
+# This complements the post-commit hook: local commits are handled there;
+# here we handle commits that arrive via merge/pull.
+#
+# Usage:
+#   - .git/hooks/post-merge
+#   or
+#   - core.hooksPath = .githooks (and save as .githooks/post-merge)
+# ==============================================================================
+
+set -euo pipefail
+
+# ------------------------------------------------------------------------------
+# Colors
+# ------------------------------------------------------------------------------
+RED=$'\033[31m'
+GREEN=$'\033[32m'
+YELLOW=$'\033[33m'
+RESET=$'\033[0m'
+
+have_cmd() {
+  command -v "$1" >/dev/null 2>&1
+}
+
+if ! have_cmd git; then
+  exit 0
+fi
+
+# ------------------------------------------------------------------------------
+# Discover ORIG_HEAD (position before the merge)
+# ------------------------------------------------------------------------------
+ORIG_HEAD_HASH="$(git rev-parse ORIG_HEAD 2>/dev/null || true)"
+
+if [ -z "${ORIG_HEAD_HASH}" ]; then
+  echo "[post-merge] ${YELLOW}ORIG_HEAD not found. Nothing to do.${RESET}"
+  exit 0
+fi
+
+# New commits introduced by the merge: ORIG_HEAD..HEAD
+NEW_COMMITS="$(git log --format=%H "${ORIG_HEAD_HASH}..HEAD" 2>/dev/null || true)"
+
+if [ -z "${NEW_COMMITS}" ]; then
+  echo "[post-merge] ${YELLOW}No new commits detected in this merge. Skipping.${RESET}"
+  exit 0
+fi
+
+IGNORE_FILE=".git-blame-ignore-revs"
+
+if [ ! -f "${IGNORE_FILE}" ]; then
+  echo "[post-merge] ${YELLOW}${IGNORE_FILE} not found, creating it.${RESET}"
+  : > "${IGNORE_FILE}"
+fi
+
+ADDED=0
+
+for HASH in ${NEW_COMMITS}; do
+  MSG="$(git log -1 --pretty=%s "${HASH}" 2>/dev/null || true)"
+
+  if [ -z "${MSG}" ]; then
+    continue
+  fi
+
+  # Match commits whose subject starts with "style" or "docs"
+  if [[ ! "${MSG}" =~ ^style(|\(|:)|^docs(|\(|:) ]]; then
+    continue
+  fi
+
+  if grep -qx "${HASH}" "${IGNORE_FILE}" 2>/dev/null; then
+    echo "[post-merge] ${YELLOW}Commit ${HASH} is already in ${IGNORE_FILE}.${RESET}"
+    continue
+  fi
+
+  echo "${HASH}" >> "${IGNORE_FILE}"
+  ADDED=1
+  echo "[post-merge] ${GREEN}Marked ${HASH} (${MSG}) for blame ignore.${RESET}"
+done
+
+if [ "${ADDED}" -eq 1 ]; then
+  sort -u "${IGNORE_FILE}" -o "${IGNORE_FILE}"
+  git add "${IGNORE_FILE}" 2>/dev/null || true
+  echo "[post-merge] ${GREEN}Updated ${IGNORE_FILE} with new style/docs commits.${RESET}"
+else
+  echo "[post-merge] ${YELLOW}No new style/docs commits to add from this merge.${RESET}"
+fi
+
+exit 0

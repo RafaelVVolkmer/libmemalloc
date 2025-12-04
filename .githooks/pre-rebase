@@ -1,0 +1,77 @@
+#!/usr/bin/env bash
+
+# SPDX-FileCopyrightText: 2024-2025 Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
+# SPDX-License-Identifier: MIT
+
+# ==============================================================================
+# pre-rebase — protect main/develop from accidental rebases
+#
+# Git calls this hook as:
+#   pre-rebase <upstream> [branch]
+#
+# Behaviour:
+# - Determine which branch is being rebased (argument or current HEAD).
+# - If the target branch is 'main' or 'develop':
+#     - Ask for explicit confirmation ('yes') before proceeding.
+#     - In non-interactive environments (no TTY), abort for safety.
+#
+# Intended to be used with:
+#   core.hooksPath = .githooks
+# ==============================================================================
+
+set -euo pipefail
+
+UPSTREAM="${1:-}"
+BRANCH_ARG="${2:-}"
+
+RED=$'\033[31m'
+GREEN=$'\033[32m'
+YELLOW=$'\033[33m'
+RESET=$'\033[0m'
+
+have_cmd() {
+  command -v "$1" >/dev/null 2>&1
+}
+
+if ! have_cmd git; then
+  exit 0
+fi
+
+CURRENT_BRANCH="$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "")"
+TARGET_BRANCH="${BRANCH_ARG:-${CURRENT_BRANCH}}"
+
+case "${TARGET_BRANCH}" in
+  main|develop)
+    echo "[pre-rebase] ${RED}You are about to rebase branch '${TARGET_BRANCH}'.${RESET}"
+    echo
+    echo "  Rebasing a long-lived branch like '${TARGET_BRANCH}' can rewrite"
+    echo "  shared history and break collaborators' clones."
+    echo
+    echo "  If you really know what you are doing, type 'yes' to continue."
+    echo "  Any other answer will abort this rebase."
+    echo
+
+    # Ensure we have a TTY to read user input.
+    if [ ! -t 0 ] && [ -r /dev/tty ]; then
+      exec < /dev/tty
+    fi
+
+    read -r -p "[pre-rebase] Continue rebase on '${TARGET_BRANCH}'? (yes/[no]): " ANSWER || {
+      echo "[pre-rebase] ${RED}Could not read answer. Aborting rebase.${RESET}"
+      exit 1
+    }
+
+    if [ "${ANSWER}" != "yes" ]; then
+      echo "[pre-rebase] ${YELLOW}Rebase on '${TARGET_BRANCH}' aborted by user.${RESET}"
+      exit 1
+    fi
+
+    echo "[pre-rebase] ${GREEN}User explicitly confirmed rebase on '${TARGET_BRANCH}'. Proceeding.${RESET}"
+    ;;
+  *)
+    # Normal feature branches are allowed without prompt.
+    :
+    ;;
+esac
+
+exit 0

@@ -1,3 +1,9 @@
+/*
+ * SPDX-FileCopyrightText: 2024-2025 Rafael V. Volkmer
+ * SPDX-FileCopyrightText: <rafael.v.volkmer@gmail.com>
+ * SPDX-License-Identifier: MIT
+ */
+
 /** ============================================================================
  *  @ingroup    Libmemalloc
  *
@@ -47,14 +53,14 @@
  * ========================================================================== */
 
 /** ============================================================================
- *  @def        EXIT_ERRROR
+ *  @def        EXIT_ERROR
  *  @brief      Standard error code for test failure scenarios.
  *
  *  @details    Defined as uint8_t value 1. Used as the return code
  *              from test functions when a CHECK() macro detects
  *              a failed assertion or runtime error condition.
  * ========================================================================== */
-#define EXIT_ERRROR (uint8_t)(1U)
+#define EXIT_ERROR (uint8_t)(1U)
 
 /** ============================================================================
  *  @def        MAX_NODES
@@ -63,7 +69,7 @@
  *  @details    Defines the total number of nodes (5) to be allocated,
  *              initialized, and manipulated during linked list unit tests.
  * ========================================================================== */
-#define MAX_NODES   (uint8_t)(5U)
+#define MAX_NODES  (uint8_t)(5U)
 
 /** ============================================================================
  *  @def        CHECK(expr)
@@ -73,7 +79,7 @@
  *
  *  @details    Evaluates the given expression, and if the condition fails,
  *              logs an error message with file and line number context,
- *              then returns EXIT_ERRROR to indicate test failure.
+ *              then returns EXIT_ERROR to indicate test failure.
  *              Halts further execution of the current test function.
  * ========================================================================== */
 #define CHECK(expr)                                                          \
@@ -82,7 +88,7 @@
     if (!(expr))                                                             \
     {                                                                        \
       LOG_ERROR("Assertion failed at %s:%d: %s", __FILE__, __LINE__, #expr); \
-      return EXIT_ERRROR;                                                    \
+      return EXIT_ERROR;                                                     \
     }                                                                        \
   } while (0)
 
@@ -131,10 +137,10 @@ static int TEST_printList(node_t *head);
  *  @param[in]  head    Pointer to the head node of the list to print.
  *
  *  @return     EXIT_SUCCESS if the list was printed successfully.
- *              EXIT_ERRROR if the input list is empty.
+ *              EXIT_ERROR if the input list is empty.
  *
  *  @retval     EXIT_SUCCESS  List printed correctly (non-empty list).
- *  @retval     EXIT_ERRROR   Input list was empty (head == NULL).
+ *  @retval     EXIT_ERROR   Input list was empty (head == NULL).
  * ========================================================================== */
 static node_t *TEST_reverseList(node_t *head);
 
@@ -151,16 +157,11 @@ int main(void)
   node_t *iter = (node_t *)NULL;
   node_t *next = (node_t *)NULL;
 
-  mem_allocator_t allocator;
-
   size_t iterator = 0u;
-
-  ret = MEM_allocatorInit(&allocator);
-  CHECK(ret == EXIT_SUCCESS);
 
   for (iterator = 1u; iterator <= MAX_NODES; ++iterator)
   {
-    node = MEM_allocMallocFirstFit(&allocator, sizeof(node_t), "node");
+    node = MEM_allocFirstFit(sizeof(node_t));
     CHECK(node != NULL);
 
     node->data = iterator;
@@ -182,7 +183,7 @@ int main(void)
   for (iter = head; iter;)
   {
     next = iter->next;
-    ret  = MEM_allocFree(&allocator, (void *)iter, "node");
+    ret  = MEM_free((void *)iter);
     CHECK(ret == EXIT_SUCCESS);
     iter = next;
   }
@@ -236,10 +237,10 @@ function_output:
  *  @param[in]  head    Pointer to the head node of the list to print.
  *
  *  @return     EXIT_SUCCESS if the list was printed successfully.
- *              EXIT_ERRROR if the input list is empty.
+ *              EXIT_ERROR if the input list is empty.
  *
  *  @retval     EXIT_SUCCESS  List printed correctly (non-empty list).
- *  @retval     EXIT_ERRROR   Input list was empty (head == NULL).
+ *  @retval     EXIT_ERROR   Input list was empty (head == NULL).
  * ========================================================================== */
 static int TEST_printList(node_t *head)
 {
@@ -249,7 +250,7 @@ static int TEST_printList(node_t *head)
 
   if (head == NULL)
   {
-    ret = EXIT_ERRROR;
+    ret = EXIT_ERROR;
     goto function_output;
   }
 

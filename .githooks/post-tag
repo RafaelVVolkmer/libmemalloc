@@ -1,0 +1,69 @@
+#!/usr/bin/env bash
+
+# SPDX-FileCopyrightText: 2024-2025 Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
+# SPDX-License-Identifier: MIT
+
+# ==============================================================================
+# post-tag (wrapper) — release reminders on tag creation
+#
+# This script is intended to be invoked via a git alias, e.g.:
+#
+#   [alias]
+#     tag = !.githooks/post-tag
+#
+# Usage:
+#   git tag v2.0.0
+#
+# Behaviour:
+#   - Delegates to the real 'git tag' with all arguments.
+#   - If the last argument looks like a semantic tag 'vX.Y.Z' or 'vX.Y',
+#     prints a small release checklist reminding to update:
+#       * CITATION.cff (version, date-released)
+#       * CHANGELOG.md
+#       * GitHub release notes
+#
+# This script never modifies the tag itself; it only prints hints.
+# ==============================================================================
+
+set -euo pipefail
+
+RED=$'\033[31m'
+GREEN=$'\033[32m'
+YELLOW=$'\033[33m'
+RESET=$'\033[0m'
+
+have_cmd() {
+  command -v "$1" >/dev/null 2>&1
+}
+
+if ! have_cmd git; then
+  echo "[post-tag] ${RED}git not found in PATH. Aborting tag wrapper.${RESET}" >&2
+  exit 1
+fi
+
+# Delegate to the real git tag first
+git tag "$@" || exit $?
+
+# If there are no arguments, this was likely a 'git tag' listing invocation.
+[ "$#" -eq 0 ] && exit 0
+
+LAST_ARG="${*: -1}"
+
+# If the last argument looks like vX.Y or vX.Y.Z, treat it as a release tag.
+if echo "${LAST_ARG}" | grep -Eq '^v[0-9]+\.[0-9]+(\.[0-9]+)?$'; then
+  TAG_NAME="${LAST_ARG}"
+
+  echo
+  echo "[post-tag] ${YELLOW}Tag '${TAG_NAME}' created.${RESET}"
+  echo
+  echo "  Suggested release checklist:"
+  echo "    • Update CITATION.cff:"
+  echo "        - version: \"${TAG_NAME#v}\""
+  echo "        - date-released: \"$(date +%Y-%m-%d)\""
+  echo "    • Update CHANGELOG.md with an entry for ${TAG_NAME}"
+  echo "    • Create or update GitHub release notes for ${TAG_NAME}"
+  echo
+  echo "[post-tag] ${GREEN}Remember to regenerate docs and verify CI before publishing.${RESET}"
+fi
+
+exit 0

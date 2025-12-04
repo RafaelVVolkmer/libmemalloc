@@ -1,3 +1,8 @@
+<!--
+SPDX-FileCopyrightText: 2024-2025 Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
+SPDX-License-Identifier: MIT
+-->
+
 <a id="readme-top"></a>
 
 <div align="center">
@@ -25,54 +30,144 @@
 
 ---
 
-# - Library Description
+# 🚀 Library Description
 
-libmemalloc is a comprehensive, drop-in C memory management library that elevates your application’s heap to a fully introspectable, high-performance subsystem. It offers three tunable allocation strategies—First-Fit, Next-Fit (with optional “last allocated” pointer tracking), and Best-Fit—enabling you to balance speed, fragmentation, or memory footprint on each call. Small allocations are serviced via segregated free lists organized into configurable size classes for constant-time inserts and removals, while large requests (≥ 128 KiB) automatically bypass sbrk in favor of mmap to minimize fragmentation and leverage OS paging efficiencies. An optional background mark-and-sweep garbage collector can be activated to transparently reclaim unreachable blocks, eliminating manual free() calls in scenarios where automatic cleanup is preferred. Every block is protected by magic numbers and footer canaries to detect header corruption or buffer overflows at runtime. Internal locking guarantees thread safety in multithreaded environments, and seamless Valgrind integration annotates a dedicated MemPool for precise leak and fragmentation reporting. With configurable log verbosity (ERROR, WARN, INFO, DEBUG), live allocation maps, fragmentation metrics, and on-demand diagnostics, libmemalloc gives you unparalleled visibility into your program’s memory behavior. Integration couldn’t be simpler: link against the provided static (.a) or shared (.so) library, include libmemalloc.h, and replace your standard malloc/free calls with the intuitive MEM_* API to transform your heap—no other source modifications required.
+`libmemalloc` is a focused, drop-in replacement for the standard C allocator that turns your heap into a high-visibility, high-reliability subsystem.
+
+Instead of opaque `malloc`/`free` calls, you get a small, well-defined API under the `MEM_` prefix:
+
+- Core allocation:
+  - `MEM_alloc`
+  - `MEM_calloc`
+  - `MEM_realloc`
+  - `MEM_free`
+- Custom memory operations:
+  - `MEM_memcpy`
+  - `MEM_memset`
+- Strategy-specific helpers:
+  - `MEM_allocFirstFit`
+  - `MEM_allocNextFit`
+  - `MEM_allocBestFit`
+
+Under the hood, the allocator uses:
+
+- **Segregated free lists** organized into size classes for (amortized) O(1) insert/remove.
+- Automatic promotion of large blocks to **`mmap(2)`** regions to reduce fragmentation.
+- Dynamic heap growth / shrink using **`sbrk(2)`** for regular blocks.
+- Optional background **mark-and-sweep GC** mode to reclaim unreachable memory in GC-friendly workloads.
+- **Magic values and canaries** around each block to detect overruns and header corruption.
+- **Internal locking** to remain safe in multithreaded programs.
+- Integration points for tools like Valgrind and external profilers.
+
+The public surface is kept small and stable, and the shared library is exported through a linker version script (`MEMALLOC_2.0`) so that only the intended symbols are visible to consumers.
+
+To use it, you simply link the `.a` or `.so`, include `libmemalloc.h`, and swap your `malloc`/`free` calls for `MEM_*` equivalents.
 
 ---
-# - C Example
+
+# 📦 C Example
+
+A minimal example using the current public API (no explicit allocator struct or init):
 
 ```c
-#include "libmemalloc.h"
+#include <stdio.h>
+#include <string.h>         /* only for printf formats, not memcpy/memset */
+#include "libmemalloc.h"    /* provides MEM_* declarations */
 
 int main(void)
 {
-  int ret = EXIT_SUCESS;
+    /* 1) Default allocation using MEM_alloc */
+    int *values = MEM_alloc(10 * sizeof *values);
+    if (values == NULL) {
+        fprintf(stderr, "MEM_alloc failed\n");
+        return 1;
+    }
 
-  mem_allocator_t allocator;
+    /* 2) Zero-initialized array with MEM_calloc */
+    int *zeros = MEM_calloc(5, sizeof *zeros);
+    if (zeros == NULL) {
+        fprintf(stderr, "MEM_calloc failed\n");
+        MEM_free(values);
+        return 1;
+    }
 
-  ret = MEM_allocatorInit(&allocator);
-  if (ret != EXIT_SUCESS)
-    return ret;
+    /* 3) Initialize memory using MEM_memset */
+    /*    Set all 'values' entries to 42 in two steps:
+     *    - fill with zero
+     *    - then write the contents explicitly
+     */
+    MEM_memset(values, 0, 10 * sizeof *values);
+    for (int i = 0; i < 10; ++i)
+        values[i] = 42 + i;
 
-  void *buf1 = MEM_allocMallocFirstFit(&allocator, 1024, "buffer1");
-  if (!buf1)
-    return ret;
+    /* 4) Copy memory with MEM_memcpy */
+    int *copy = MEM_alloc(10 * sizeof *copy);
+    if (copy == NULL) {
+        fprintf(stderr, "MEM_alloc for copy failed\n");
+        MEM_free(zeros);
+        MEM_free(values);
+        return 1;
+    }
+    MEM_memcpy(copy, values, 10 * sizeof *copy);
 
-  MEM_allocFree(&allocator, buf1, "buffer1");
+    printf("copy[3] = %d\n", copy[3]);
 
-  void *buf2 = MEM_allocMallocBestFit(&allocator, 2048, "buffer2");
-  if (!buf2)
-    return ret;
+    /* 5) Strategy-specific allocations */
+    char *buf_ff = MEM_allocFirstFit(1024);   /* fast, simple placement */
+    char *buf_nf = MEM_allocNextFit(512);     /* reuse last search position */
+    char *buf_bf = MEM_allocBestFit(2048);    /* reduce fragmentation */
 
-  MEM_allocFree(&allocator, buf2, "buffer2");
+    if (!buf_ff || !buf_nf || !buf_bf) {
+        fprintf(stderr, "strategy-specific allocation failed\n");
+        MEM_free(copy);
+        MEM_free(zeros);
+        MEM_free(values);
+        MEM_free(buf_ff);
+        MEM_free(buf_nf);
+        MEM_free(buf_bf);
+        return 1;
+    }
 
-  void *buf3 = MEM_allocMallocNextFit(&allocator, 512, "buffer3");
-  if (!buf3)
-    return ret;
+    /* Use MEM_memset on these buffers as well */
+    MEM_memset(buf_ff, 0xAA, 1024);
+    MEM_memset(buf_nf, 0xBB, 512);
+    MEM_memset(buf_bf, 0xCC, 2048);
 
-  MEM_allocFree(&allocator, buf3, "buffer3");
+    /* 6) Resize an allocation with MEM_realloc */
+    char *buf_bigger = MEM_realloc(buf_bf, 4096);
+    if (buf_bigger == NULL) {
+        fprintf(stderr, "MEM_realloc failed, keeping original buffer\n");
+        /* In this case buf_bf is still valid and must be freed */
+        MEM_free(buf_bf);
+    } else {
+        buf_bf = buf_bigger;
+    }
 
-  MEM_enableGc(&allocator);
+    /* 7) Clean up everything with MEM_free */
+    MEM_free(buf_ff);
+    MEM_free(buf_nf);
+    MEM_free(buf_bf);
+    MEM_free(copy);
+    MEM_free(zeros);
+    MEM_free(values);
 
-  void *gc_buf = MEM_allocCalloc(&allocator, 4096, "gc_buffer", FIRST_FIT);
-  gc_buff = NULL;
-
-  MEM_disableGc(&allocator);
-
-  return ret;
+    return 0;
 }
 ```
+Typical compile/link invocation (adjust include/library paths to your tree):
+
+```Bash
+gcc -Iinc -o example example.c -Lbin/Release -lmemalloc
+```
+
+This example touches all nine symbols from the version script:
+
+`MEM_alloc` / `MEM_calloc` / `MEM_realloc` / `MEM_free`
+
+`MEM_memcpy` / `MEM_memset`
+
+`MEM_allocFirstFit` / `MEM_allocNextFit` / `MEM_allocBestFit`
+
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ---

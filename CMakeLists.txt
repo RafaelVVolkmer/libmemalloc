@@ -1,111 +1,257 @@
-cmake_minimum_required(VERSION 3.15)
+# SPDX-FileCopyrightText: 2024-2025 Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
+# SPDX-License-Identifier: MIT
+
+# -----------------------------------------------------------------------------
+# File: CMakeLists.txt (root)
+# Purpose:
+#   Project entry point for libmemalloc.
+#   - Define user options (docs/tests/coverage/asm)
+#   - Apply safe compiler/linker flags per compiler & build type
+#   - Normalize output folders (bin/<Config>)
+#   - Print a concise environment summary (compiler, doxygen, gcovr, etc.)
+#
+# Requirements:
+#   - CMake >= 3.24
+#   - GCC >= 12.2 / Clang >= 11 / MSVC >= 19.20
+#   - Optional: Doxygen, gcovr, valgrind
+#
+# Options (cache):
+#   DOCS_EN                    : BOOL   Generate Doxygen site (default: ON)
+#   GCOVR_DOCS                 : BOOL   Publish coverage into the docs site (default: ON)
+#   TESTS_EN                   : BOOL   Enable test tree (ctest) (default: ON)
+#   ASM_EN                     : BOOL   Enable Assembly language (default: OFF)
+#   LIBMEMALLOC_ENABLE_COVERAGE: BOOL   Enable coverage instrumentation (default: OFF)
+#   LIBMEMALLOC_ENABLE_SANITIZERS: STRING Semicolon-separated sanitizers (e.g. "address;undefined;leak")
+#
+# Notes:
+#   - We let CMake control IPO/LTO via INTERPROCEDURAL_OPTIMIZATION_* (no -flto).
+#   - Warnings and hardening are selected per compiler with generator expressions.
+#   - Output dirs are consistent across single- and multi-config generators.
+# -----------------------------------------------------------------------------
+
+cmake_minimum_required(VERSION 3.24)
 project(libmemalloc C)
 
-# ----------------------------------------------------------------------------
-# 1. Basic Project Settings
-# ----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
+# 1. User Options
+# -----------------------------------------------------------------------------
+option(DOCS_EN     "Generate Doxygen site (subdir doxygen/)"           ON)
+option(GCOVR_DOCS  "Publish coverage (gcovr) inside the Doxygen site"  ON)
+option(TESTS_EN    "Enable test tree (ctest)"                          ON)
+option(ASM_EN      "Enable Assembly language"                          OFF)
+
+# Coverage & sanitizers options (to be controlled by CMakePresets or manually)
+option(LIBMEMALLOC_ENABLE_COVERAGE
+       "Enable coverage instrumentation (gcov/llvm-cov)"               OFF)
+
+set(LIBMEMALLOC_ENABLE_SANITIZERS ""
+    CACHE STRING
+    "Semicolon-separated sanitizers (e.g. \"address;undefined;leak\")")
+
+# -----------------------------------------------------------------------------
+# 2. Core Settings & Modules
+# -----------------------------------------------------------------------------
 include(FetchContent)
 include(CheckCCompilerFlag)
 include(CheckCSourceCompiles)
 include(ProcessorCount)
 
-# enable_language(ASM)
+if(TESTS_EN)
+  include(CTest)
+endif()
+
+if(ASM_EN)
+  enable_language(ASM)
+endif()
 
 set(CMAKE_C_STANDARD 23)
 set(CMAKE_C_STANDARD_REQUIRED ON)
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
+# Let CMake drive IPO/LTO in Release
 set(CMAKE_INTERPROCEDURAL_OPTIMIZATION_RELEASE ON)
 
-if(NOT CMAKE_BUILD_TYPE)
-    set(CMAKE_BUILD_TYPE Release CACHE STRING "Choose the build type (Debug or Release)." FORCE)
+# Default build type for single-config generators
+if(NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
+  set(CMAKE_BUILD_TYPE Release CACHE STRING "Build type" FORCE)
+  set_property(CACHE CMAKE_BUILD_TYPE PROPERTY
+               STRINGS
+               Debug
+               Release
+               RelWithDebInfo
+               MinSizeRel)
 endif()
 
-# ----------------------------------------------------------------------------
-# 2. Checking dependencies
-# ----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
+# 3. Toolchain Sanity
+# -----------------------------------------------------------------------------
 set(MIN_GCC_VERSION   "12.2.0")
 set(MIN_CLANG_VERSION "11.0")
 set(MIN_MSVC_VERSION  "19.20")
 
-if (CMAKE_C_COMPILER_ID STREQUAL "GNU")
-  if (CMAKE_C_COMPILER_VERSION VERSION_LESS ${MIN_GCC_VERSION})
-    message(FATAL_ERROR
-      "[ERROR]: GCC ${MIN_GCC_VERSION} or newer is required.\n"
-      "Detected version: ${CMAKE_C_COMPILER_VERSION}."
-    )
+if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
+  if(CMAKE_C_COMPILER_VERSION VERSION_LESS ${MIN_GCC_VERSION})
+    message(FATAL_ERROR "GCC >= ${MIN_GCC_VERSION}"
+                        "required (found ${CMAKE_C_COMPILER_VERSION}).")
   endif()
-
-elseif (CMAKE_C_COMPILER_ID STREQUAL "Clang")
-  if (CMAKE_C_COMPILER_VERSION VERSION_LESS ${MIN_CLANG_VERSION})
-    message(FATAL_ERROR
-      "[ERROR]: Clang ${MIN_CLANG_VERSION} or newer is required.\n"
-      "Detected version: ${CMAKE_C_COMPILER_VERSION}."
-    )
+elseif(CMAKE_C_COMPILER_ID STREQUAL "Clang")
+  if(CMAKE_C_COMPILER_VERSION VERSION_LESS ${MIN_CLANG_VERSION})
+    message(FATAL_ERROR "Clang >= ${MIN_CLANG_VERSION}"
+                        "required (found ${CMAKE_C_COMPILER_VERSION}).")
   endif()
-
-elseif (CMAKE_C_COMPILER_ID STREQUAL "MSVC")
-  if (CMAKE_C_COMPILER_VERSION VERSION_LESS ${MIN_MSVC_VERSION})
-    message(FATAL_ERROR
-      "[ERROR]: MSVC ${MIN_MSVC_VERSION} or newer is required.\n"
-      "Detected version: ${CMAKE_C_COMPILER_VERSION}."
-    )
+elseif(MSVC)
+  if(CMAKE_C_COMPILER_VERSION VERSION_LESS ${MIN_MSVC_VERSION})
+    message(FATAL_ERROR "MSVC >= ${MIN_MSVC_VERSION}"
+                        "required (found ${CMAKE_C_COMPILER_VERSION}).")
   endif()
-
 else()
-  message(WARNING "[WARNING]: Unrecognized compiler (${CMAKE_C_COMPILER_ID})")
+  message(WARNING "Unrecognized compiler: ${CMAKE_C_COMPILER_ID}")
 endif()
 
 find_program(VALGRIND_EXECUTABLE NAMES valgrind)
+find_program(GCOVR_EXECUTABLE    NAMES gcovr)
 find_package(Doxygen QUIET)
 
-# ----------------------------------------------------------------------------
-# 3. Output Directories for Binaries
-#    - Archive (static libraries)
-#    - Library (shared libraries)
-#    - Runtime (executables)
-# ----------------------------------------------------------------------------
-set(OUTPUT_BIN_DIR "${CMAKE_SOURCE_DIR}/bin/${CMAKE_BUILD_TYPE}")
+# -----------------------------------------------------------------------------
+# 4. Output Folders (normalized to bin/<Config>)
+# -----------------------------------------------------------------------------
+set(OUTPUT_BIN_DIR "${CMAKE_SOURCE_DIR}/bin")
 file(MAKE_DIRECTORY "${OUTPUT_BIN_DIR}")
 
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${OUTPUT_BIN_DIR}")
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${OUTPUT_BIN_DIR}")
-
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${OUTPUT_BIN_DIR}")
 
-# ----------------------------------------------------------------------------
-# 4. Build-Type Specific Compiler Flags
-# ----------------------------------------------------------------------------
+foreach(cfg Debug Release RelWithDebInfo MinSizeRel)
+  string(TOUPPER "${cfg}" CFGU)
+  set("CMAKE_ARCHIVE_OUTPUT_DIRECTORY_${CFGU}" "${OUTPUT_BIN_DIR}/${cfg}")
+  set("CMAKE_LIBRARY_OUTPUT_DIRECTORY_${CFGU}" "${OUTPUT_BIN_DIR}/${cfg}")
+  set("CMAKE_RUNTIME_OUTPUT_DIRECTORY_${CFGU}" "${OUTPUT_BIN_DIR}/${cfg}")
+endforeach()
+
+# -----------------------------------------------------------------------------
+# 5. Emulation Detection
+# -----------------------------------------------------------------------------
+
+#
+# detect_qemu() — detects ANY form of QEMU:
+# - Docker buildx multi-arch (BUILDPLATFORM ≠ TARGETPLATFORM)
+# - qemu-user (qemu-arm, qemu-aarch64, qemu-riscv64, etc.)
+# - qemu-system VMs (TCG, KVM)
+# - binfmt_misc user-mode emulation
+#
+function(detect_qemu out_var out_ver out_bin)
+    set(IS_QEMU FALSE)
+    set(QEMU_BIN "unknown")
+    set(QEMU_VER "unknown")
+
+    # --- Method 1: Docker Buildx cross-platform ------------------------------
+		if(DEFINED ENV{BUILDPLATFORM}
+			AND DEFINED ENV{TARGETPLATFORM}
+			AND NOT "$ENV{TARGETPLATFORM}" MATCHES "^[a-z0-9]+/[a-z0-9]+(/[a-z0-9]+)?$")
+		elseif(DEFINED ENV{BUILDPLATFORM} AND DEFINED ENV{TARGETPLATFORM}
+					AND NOT "$ENV{BUILDPLATFORM}" STREQUAL "$ENV{TARGETPLATFORM}")
+				set(IS_QEMU TRUE)
+		endif()
+
+
+    # --- Method 2: qemu-user static interpreter detection --------------------
+    # If the program was invoked under qemu-user-static, the interpreter is visible.
+    file(READ "/proc/self/maps" SELF_MAPS ERROR_QUIET)
+    if(SELF_MAPS MATCHES "qemu-[a-z0-9_-]+-static")
+        set(IS_QEMU TRUE)
+        string(REGEX MATCH "qemu-[a-z0-9_-]+-static" QEMU_BIN "${SELF_MAPS}")
+    endif()
+
+    # --- Method 3: detect virtualization via systemd-detect-virt -------------
+    find_program(SDV_BIN systemd-detect-virt)
+    if(SDV_BIN)
+        execute_process(
+            COMMAND ${SDV_BIN} --vm
+            OUTPUT_VARIABLE VM_OUT
+            OUTPUT_STRIP_TRAILING_WHITESPACE
+            ERROR_QUIET
+        )
+        if(VM_OUT MATCHES "qemu|kvm|tcg")
+            set(IS_QEMU TRUE)
+        endif()
+    endif()
+
+    # --- Method 4: detect QEMU fingerprints in /proc/cpuinfo -----------------
+    if(EXISTS "/proc/cpuinfo")
+        file(READ "/proc/cpuinfo" CPUINFO)
+        if(CPUINFO MATCHES "QEMU|TCG|QEMU Virtual CPU|QEMU Processor")
+            set(IS_QEMU TRUE)
+        endif()
+    endif()
+
+    # Find QEMU version (best effort)
+    if(NOT QEMU_BIN STREQUAL "unknown")
+        find_program(QEMU_EXEC NAMES ${QEMU_BIN})
+        if(QEMU_EXEC)
+            execute_process(
+                COMMAND ${QEMU_EXEC} --version
+                OUTPUT_VARIABLE RAW
+                OUTPUT_STRIP_TRAILING_WHITESPACE
+                ERROR_QUIET
+            )
+            if(RAW)
+                string(REGEX MATCH "[0-9]+(\\.[0-9]+)+" QEMU_VER "${RAW}")
+            endif()
+        endif()
+    endif()
+
+    # Export results
+    set(${out_var} ${IS_QEMU} PARENT_SCOPE)
+    set(${out_ver} ${QEMU_VER} PARENT_SCOPE)
+    set(${out_bin} ${QEMU_BIN} PARENT_SCOPE)
+endfunction()
+
+# -----------------------------------------------------------------------------
+# 6. Build-Type Flags (safe per-compiler)
+# -----------------------------------------------------------------------------
+
+# -- Debug ---------------------------------------------------------------------
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-    add_compile_options(
-        # --- Optimization Level ---
-        -O0
+  add_compile_options(
+    # --- Optimization Level ---
+    -O0
 
-        # --- Debug Symbols & Frame Pointers ---
-        -g3
-        -ggdb
-        -fno-omit-frame-pointer
-        -fvar-tracking-assignments
-        -fdebug-prefix-map=${CMAKE_CURRENT_SOURCE_DIR}/src/=src/
+    # --- Debug Symbols & Frame Pointers ---
+    -g3
+    -ggdb
+    -fno-omit-frame-pointer
+    -fvar-tracking-assignments
+    -fdebug-prefix-map=${CMAKE_CURRENT_SOURCE_DIR}/src/=src/
+    -frecord-gcc-switches
 
-        # --- Inlining Control ---
-        -fno-inline
-        -fno-inline-functions
-        -fno-inline-functions-called-once
+    # --- Inlining Control ---
+    -fno-inline
+    -fno-inline-functions
+    -fno-inline-functions-called-once
 
-        # --- Strictness Overrides ---
-        -fno-strict-aliasing
-        -DDEBUG
+    # --- Strictness Overrides ---
+    -fno-strict-aliasing
+    -DDEBUG
 
-        # --- Auxiliary Info ---
-        -aux-info filename
+    # --- Auxiliary Info ---
+    -aux-info filename
+  )
+
+  if (CMAKE_C_COMPILER_ID STREQUAL "Clang"
+      OR (CMAKE_C_COMPILER_ID STREQUAL "GNU"
+          AND CMAKE_C_COMPILER_VERSION VERSION_GREATER_EQUAL "13.0"))
+    option(ENABLE_ANALYZER_DUMPS
+           "Write GCC analyzer dumps to files (not stderr)" OFF)
+
+    set(ANALYZER_FLAGS
+      -fanalyzer
+      -fanalyzer-verbosity=3
     )
 
-    if (CMAKE_C_COMPILER_ID STREQUAL "Clang"
-        OR (CMAKE_C_COMPILER_ID STREQUAL "GNU"
-            AND CMAKE_C_COMPILER_VERSION VERSION_GREATER_EQUAL "13.0"))
-      set(ANALYZER_FLAGS
-        -fanalyzer-verbosity=5
+    if (ENABLE_ANALYZER_DUMPS)
+      list(APPEND ANALYZER_FLAG
         -fanalyzer-fine-grained
         -fanalyzer-call-summaries
         -fanalyzer-transitivity
@@ -123,69 +269,118 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
         -fdump-analyzer-untracked
         -fdump-analyzer-stderr
       )
-      add_compile_options(${ANALYZER_FLAGS})
     endif()
 
-    if (NOT VALGRIND_EXECUTABLE)
-        set(SANITIZE_FLAGS
-            -fsanitize=address
-            -fsanitize=undefined
-            -fsanitize=leak
-            -fsanitize=alignment
-        )
+    add_compile_options(${ANALYZER_FLAGS})
 
-        add_compile_options(${SANITIZE_FLAGS})
-        add_link_options(${SANITIZE_FLAGS})
-    endif()
+  endif()
 
+	# --- Sanitizers (configurable via LIBMEMALLOC_ENABLE_SANITIZERS) ---
+	if (CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
 
-    set(CMAKE_EXE_LINKER_FLAGS    "${CMAKE_EXE_LINKER_FLAGS} -Wl,--gc-sections -flto")
-    set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,--gc-sections -flto")
-  
+			set(SANITIZE_FLAGS "")
+
+			# QEMU → sanitizers off
+			if (IS_QEMU)
+					message(STATUS "Sanitizers forcibly disabled (running under QEMU).")
+
+			elseif (LIBMEMALLOC_ENABLE_SANITIZERS)
+					foreach(_san IN LISTS LIBMEMALLOC_ENABLE_SANITIZERS)
+							list(APPEND SANITIZE_FLAGS "-fsanitize=${_san}")
+					endforeach()
+
+			elseif (NOT VALGRIND_EXECUTABLE)
+					# fallback ASan/UBSan
+					list(APPEND SANITIZE_FLAGS
+							-fsanitize=address
+							-fsanitize=undefined
+							-fsanitize=leak
+							-fsanitize=alignment
+					)
+			endif()
+
+			if (SANITIZE_FLAGS)
+					if (CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64|amd64")
+							add_compile_options(${SANITIZE_FLAGS})
+							add_link_options(${SANITIZE_FLAGS})
+							message(STATUS "Sanitizers enabled: ${SANITIZE_FLAGS}")
+					else()
+							message(STATUS
+								"Sanitizers skipped on ${CMAKE_SYSTEM_PROCESSOR} "
+								"(runtime issues known with ASan on this arch/emulation).")
+					endif()
+			endif()
+
+	endif()
+
+  set(CMAKE_EXE_LINKER_FLAGS
+      "${CMAKE_EXE_LINKER_FLAGS} -Wl,--gc-sections -flto")
+  set(CMAKE_SHARED_LINKER_FLAGS
+      "${CMAKE_SHARED_LINKER_FLAGS} -Wl,--gc-sections -flto")
+
+# -- Release -------------------------------------------------------------------
 elseif(CMAKE_BUILD_TYPE STREQUAL "Release")
-    add_compile_options(
-        # --- NDEBUG & Optimization ---
-        -DNDEBUG
-        -Ofast
-        -Os
+  add_compile_options(
+    # --- NDEBUG & Optimization ---
+    -DNDEBUG
+    -Ofast
+    -Os
 
-        # --- Math & Overflow ---
-				-fno-strict-overflow
+    # --- Math & Overflow ---
+    -fno-strict-overflow
 
-        # --- Frame Pointer & Inlining ---
-        -fno-omit-frame-pointer
-        -funroll-loops
+    # --- Frame Pointer & Inlining ---
+    -fomit-frame-pointer
+    -funroll-loops
 
-        # --- Exceptions & Unwind Tables ---
-        -fno-exceptions
-        -fno-unwind-tables
+    # --- Exceptions & Unwind Tables ---
+    -fno-exceptions
+    -fno-unwind-tables
 
-        # --- Stack & Data Sections ---
-        -fdata-sections
-        -ffunction-sections
+    # --- Stack & Data Sections ---
+    -fdata-sections
+    -ffunction-sections
 
-        # --- Debug Info Removal ---
-        -g0
-        -fno-ident
-        -fvisibility=hidden
+    # --- Debug Info Removal ---
+    -g0
+    -fno-ident
+    -fvisibility=hidden
 
-        # --- Common Flags ---
-        -fno-common
-    )
+    # --- Common Flags ---
+    -fno-common
+  )
 
-    set(CMAKE_EXE_LINKER_FLAGS    "${CMAKE_EXE_LINKER_FLAGS}    -Wl,--gc-sections -Wl,-O1 -Wl,-s")
-    set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,--gc-sections -Wl,-O1 -Wl,-s")
+  set(CMAKE_EXE_LINKER_FLAGS
+      "${CMAKE_EXE_LINKER_FLAGS}    -Wl,--gc-sections -Wl,-O1 -Wl,-s")
+  set(CMAKE_SHARED_LINKER_FLAGS
+      "${CMAKE_SHARED_LINKER_FLAGS} -Wl,--gc-sections -Wl,-O1 -Wl,-s")
 endif()
 
-# ----------------------------------------------------------------------------
-# 5. Global Warning and Strictness Options
-#    (Applied to all build types)
-# ----------------------------------------------------------------------------
+# --- Coverage flags (LIBMEMALLOC_ENABLE_COVERAGE) -----------------------------
+if (LIBMEMALLOC_ENABLE_COVERAGE)
+  if (CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
+    # Typical gcov/llvm-cov friendly flags
+    add_compile_options(--coverage -fprofile-arcs -ftest-coverage)
+    add_link_options(--coverage -fprofile-arcs -ftest-coverage)
+
+    # LTO/IPO often causes trouble with coverage; disable IPO in this mode
+    set(CMAKE_INTERPROCEDURAL_OPTIMIZATION_RELEASE OFF)
+    message(STATUS "Coverage enabled: disabling IPO for Release builds.")
+  else()
+    message(WARNING
+      "LIBMEMALLOC_ENABLE_COVERAGE is ON, but coverage flags are only set for GCC/Clang.")
+  endif()
+endif()
+
+# -----------------------------------------------------------------------------
+# 7. Global Hardening & Warnings (per-compiler) + Platform Linker Settings
+# -----------------------------------------------------------------------------
+
 set(_FORTIFY_LVL 2)
 check_c_source_compiles("
   #include <features.h>
   #if !defined(__GLIBC__) || (__GLIBC__*100 + __GLIBC_MINOR__) < 235
-  #error FORTIFY3 not available
+    #error FORTIFY3 not available
   #endif
   int main(void){return 0;}
 " LIBMEMALLOC_HAVE_GLIBC_235)
@@ -196,123 +391,122 @@ endif()
 add_compile_options(-U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=${_FORTIFY_LVL})
 
 add_compile_options(
-    # --- Hardening / Security ---
-    -fstack-protector-strong
-		-fstack-clash-protection
-		-fno-delete-null-pointer-checks
-		-fwrapv
-    -Wpacked-bitfield-compat
-    -Wpacked-not-aligned
-    -Waddress-of-packed-member
-    -Wpadded
-    -Wformat-security
-    -Werror=format-security
+  # --- Hardening / Security ---
+  -fstack-protector-strong
+  -fstack-clash-protection
+  -fno-delete-null-pointer-checks
+  -fwrapv
+  -Wpacked-bitfield-compat
+  -Wpacked-not-aligned
+  -Waddress-of-packed-member
+  # -Wpadded
+  -Wformat-security
+  -Werror=format-security
 
-    # --- Link Time Optimization & Linker Flags ---
-    -flto
-    -fuse-linker-plugin
-    -Wl,--as-needed
+  # --- Link Time Optimization & Linker Flags ---
+  -flto
+  -fuse-linker-plugin
+  -Wl,--as-needed
 
-    # --- ABI, Data Layout & Conventions ---
-    -fsso-struct=little-endian
-    -fsigned-bitfields
-    -fsigned-char
-    -fcond-mismatch
-    -fno-common
+  # --- ABI, Data Layout & Conventions ---
+  -fsso-struct=little-endian
+  -fsigned-bitfields
+  -fsigned-char
+  -fcond-mismatch
+  -fno-common
 
-    # --- Optimization & Static Analysis ---
-    -fstrict-aliasing
-    -fanalyzer
+  # --- Optimization & Static Analysis ---
+  -fstrict-aliasing
+  -fanalyzer
 
-    # --- Basic Code Quality Warnings ---
-    -Wall
-    -Wextra
-    -Wpedantic
-    -Werror
-    -Wshadow=global
-    -Wshadow=local
+  # --- Basic Code Quality Warnings ---
+  -Wall
+  -Wextra
+  -Wpedantic
+  -Werror
+  -Wshadow=global
+  -Wshadow=local
 
-    # --- Casting & Type Safety ---
-    -Wbad-function-cast
-    -Wcast-function-type
-    -Wcast-align
-    -Wcast-qual
+  # --- Casting & Type Safety ---
+  -Wbad-function-cast
+  -Wcast-function-type
+  -Wcast-align
+  -Wcast-qual
 
-    # --- Numeric Conversions ---
-    -Wconversion
-    -Warith-conversion
-    -Wsign-conversion
+  # --- Numeric Conversions ---
+  -Wconversion
+  -Warith-conversion
+  -Wsign-conversion
 
-    # --- Initialization & Variable Usage ---
-    -Wuninitialized
-    -Wmaybe-uninitialized
-    -Winit-self
-    -Wclobbered
-    -Wunused-parameter
-    -Wunused-result
+  # --- Initialization & Variable Usage ---
+  -Wuninitialized
+  -Wmaybe-uninitialized
+  -Winit-self
+  -Wclobbered
+  -Wunused-parameter
+  -Wunused-result
 
-    # --- Prototypes, Declarations & Linking ---
-    -Wstrict-prototypes
-    -Wmissing-prototypes
-    -Wmissing-declarations
-    -Wnested-externs
-    -Wunused-function
+  # --- Prototypes, Declarations & Linking ---
+  -Wstrict-prototypes
+  -Wmissing-prototypes
+  -Wmissing-declarations
+  -Wnested-externs
+  -Wunused-function
 
-    # --- Pointers & Pointer Arithmetic ---
-    -Wpointer-arith
-    -Waddress
-    -Walloca
-    -Wfree-nonheap-object
-    -Wrestrict
-    -Wnonnull
+  # --- Pointers & Pointer Arithmetic ---
+  -Wpointer-arith
+  -Waddress
+  -Walloca
+  -Wfree-nonheap-object
+  -Wrestrict
+  -Wnonnull
 
-    # --- Format String Checks (printf/scanf) ---
-    -Wformat=2
-    -Wformat-overflow=2
-    -Wformat-truncation=2
-    -Wformat-signedness
-    -Wformat-y2k
-    -Wmissing-format-attribute
+  # --- Format String Checks (printf/scanf) ---
+  -Wformat=2
+  -Wformat-overflow=2
+  -Wformat-truncation=2
+  -Wformat-signedness
+  -Wformat-y2k
+  -Wmissing-format-attribute
 
-    # --- Control Flow & Resource Usage ---
-    -Wunreachable-code
-    -Wsequence-point
-    -Wjump-misses-init
-    -Wstack-usage=8192
-    -Wfloat-equal
-    -Wdouble-promotion
-    -Wwrite-strings
+  # --- Control Flow & Resource Usage ---
+  -Wunreachable-code
+  -Wsequence-point
+  -Wjump-misses-init
+  -Wstack-usage=8192
+  -Wfloat-equal
+  -Wdouble-promotion
+  -Wwrite-strings
 
-    # --- Redundancies & Unused Declarations ---
-    -Wredundant-decls
+  # --- Redundancies & Unused Declarations ---
+  -Wredundant-decls
 
-    # --- Switch Statements & Case Coverage ---
-    -Wswitch-default
-    -Wswitch-enum
+  # --- Switch Statements & Case Coverage ---
+  -Wswitch-default
+  -Wswitch-enum
 
-    # --- Duplicate Code & Logical Checks ---
-    -Wduplicated-cond
-    -Wduplicated-branches
-    -Wlogical-op
+  # --- Duplicate Code & Logical Checks ---
+  -Wduplicated-cond
+  -Wduplicated-branches
+  -Wlogical-op
 
-    # --- Performance & Vectorization Warnings ---
-    -Wunsafe-loop-optimizations
-    -Wvector-operation-performance
+  # --- Performance & Vectorization Warnings ---
+  -Wunsafe-loop-optimizations
+  -Wvector-operation-performance
 
-    # --- Other Useful Warnings ---
-    -Wvla
-    -Wempty-body
-    -Wdate-time
-    -Winvalid-pch
-    -Wtrigraphs
-    -Wundef
-    -Wsuggest-attribute=format
-    -Wsuggest-attribute=noreturn
-    -Wdeprecated
-    -Wno-deprecated-declarations
+  # --- Other Useful Warnings ---
+  -Wvla
+  -Wempty-body
+  -Wdate-time
+  -Winvalid-pch
+  -Wtrigraphs
+  -Wundef
+  -Wsuggest-attribute=format
+  -Wsuggest-attribute=noreturn
+  -Wdeprecated
+  -Wno-deprecated-declarations
 )
 
-# Cyber-Security Flags
 if (MSVC)
   add_compile_options(
     /GS
@@ -331,6 +525,7 @@ if (MSVC)
   endif()
 endif()
 
+# ELF linker hardening (non-Apple, non-MSVC)
 if (UNIX AND NOT APPLE AND NOT MSVC AND CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
   add_link_options(
     -Wl,-z,relro
@@ -339,35 +534,103 @@ if (UNIX AND NOT APPLE AND NOT MSVC AND CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
     -Wl,-z,separate-code
     -Wl,--as-needed
     -Wl,-z,defs
+    -Wl,--build-id=sha1
   )
 endif()
 
-check_c_compiler_flag("-fcf-protection=full" HAVE_CET)
-if(HAVE_CET AND CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64|amd64")
-  add_compile_options(
-		-fcf-protection=full
-		-fno-plt
-	)
-  add_link_options(
-		-Wl,-z,cet-report=error
-		-Wl,-z,shstk
-	)
+# -----------------------------------------------------------------------------
+# 8. CET control: AUTO (default), ON, OFF
+# -----------------------------------------------------------------------------
+set(LIBMEMALLOC_CET "AUTO" CACHE STRING
+    "Control CET hardening: AUTO (detect), ON (force), OFF (disable)")
+
+set_property(CACHE LIBMEMALLOC_CET PROPERTY STRINGS AUTO ON OFF)
+
+if(UNIX AND NOT APPLE AND NOT MSVC
+   AND CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64|amd64"
+   AND CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
+
+  # LIBMEMALLOC_CET: AUTO / ON / OFF
+  if(LIBMEMALLOC_CET STREQUAL "OFF")
+    message(STATUS "CET: forced OFF")
+  else()
+    set(_CET_SAVE_REQ_FLAGS "${CMAKE_REQUIRED_FLAGS}")
+    set(CMAKE_REQUIRED_FLAGS
+        "${CMAKE_REQUIRED_FLAGS} -fcf-protection=full -fno-plt -Wl,-z,shstk -Wl,-z,cet-report=error")
+
+    check_c_source_compiles(
+      "int main(void) { return 0; }"
+      LIBMEMALLOC_HAVE_CET_FULL
+    )
+
+    set(CMAKE_REQUIRED_FLAGS "${_CET_SAVE_REQ_FLAGS}")
+
+    if(LIBMEMALLOC_CET STREQUAL "ON")
+      if(NOT LIBMEMALLOC_HAVE_CET_FULL)
+        message(FATAL_ERROR "CET forced ON but toolchain does not support full CET (IBT/SHSTK).")
+      endif()
+    endif()
+
+    if(LIBMEMALLOC_CET STREQUAL "ON"
+       OR (LIBMEMALLOC_CET STREQUAL "AUTO" AND LIBMEMALLOC_HAVE_CET_FULL))
+      message(STATUS "CET: enabling -fcf-protection=full, -fno-plt, -z shstk")
+      add_compile_options(
+        -fcf-protection=full
+        -fno-plt
+      )
+      add_link_options(
+        -Wl,-z,cet-report=error
+        -Wl,-z,shstk
+      )
+    elseif(LIBMEMALLOC_CET STREQUAL "AUTO")
+      message(STATUS "CET: toolchain does not support full CET (IBT/SHSTK) - disabling")
+    endif()
+  endif()
+else()
+  message(STATUS "CET: not applicable for this platform/compiler")
 endif()
 
+# -----------------------------------------------------------------------------
+# 9. AArch64 MTE/BTI hardening (mostly for real armv8.5+ hardware)
+# -----------------------------------------------------------------------------
+set(LIBMEMALLOC_AARCH64_HARDEN "AUTO" CACHE STRING
+    "AArch64 hardening: AUTO (branch-protection only), OFF, MEMTAG, MTE")
+set_property(CACHE LIBMEMALLOC_AARCH64_HARDEN PROPERTY STRINGS AUTO OFF MEMTAG MTE)
 
 check_c_compiler_flag("-mbranch-protection=standard" HAVE_BPROT)
-if(HAVE_BPROT AND CMAKE_SYSTEM_PROCESSOR MATCHES "aarch64")
-  add_compile_options(
-		-mbranch-protection=standard
-	)
+check_c_compiler_flag("-march=armv8.5-a+memtag"      HAVE_ARM_MEMTAG)
+check_c_compiler_flag("-march=armv8.5-a+mte"         HAVE_ARM_MTE)
+
+if(CMAKE_SYSTEM_PROCESSOR MATCHES "aarch64|AARCH64")
+  if(LIBMEMALLOC_AARCH64_HARDEN STREQUAL "OFF")
+    message(STATUS "AArch64 hardening: disabled (LIBMEMALLOC_AARCH64_HARDEN=OFF)")
+  else()
+    if(HAVE_BPROT)
+      add_compile_options(-mbranch-protection=standard)
+      message(STATUS "AArch64 hardening: -mbranch-protection=standard enabled")
+    endif()
+
+    if(LIBMEMALLOC_AARCH64_HARDEN STREQUAL "MEMTAG")
+      if(HAVE_ARM_MEMTAG)
+        add_compile_options(-march=armv8.5-a+memtag)
+        message(STATUS "AArch64 hardening: -march=armv8.5-a+memtag enabled")
+      else()
+        message(WARNING "AArch64 MEMTAG requested, but toolchain does not support -march=armv8.5-a+memtag")
+      endif()
+    elseif(LIBMEMALLOC_AARCH64_HARDEN STREQUAL "MTE")
+      if(HAVE_ARM_MTE)
+        add_compile_options(-march=armv8.5-a+mte)
+        message(STATUS "AArch64 hardening: -march=armv8.5-a+mte enabled")
+      else()
+        message(WARNING "AArch64 MTE requested, but toolchain does not support -march=armv8.5-a+mte")
+      endif()
+    endif()
+  endif()
 endif()
 
-if(UNIX AND NOT APPLE AND NOT MSVC)
-  add_link_options(
-		-Wl,--build-id=sha1
-	)
-endif()
-
+# -----------------------------------------------------------------------------
+# 10. Other hardening / safety features
+# -----------------------------------------------------------------------------
 check_c_compiler_flag("-ftrivial-auto-var-init=pattern" HAVE_TRIVIAL_AUTO_VAR_INIT_PATTERN)
 if (HAVE_TRIVIAL_AUTO_VAR_INIT_PATTERN)
   add_compile_options($<$<CONFIG:Debug,RelWithDebInfo>:-ftrivial-auto-var-init=pattern>)
@@ -378,21 +641,29 @@ if (HAVE_ZERO_CALL_USED_REGS_USED)
   add_compile_options($<$<CONFIG:Debug,RelWithDebInfo>:-fzero-call-used-regs=used>)
 endif()
 
+# PIE for executables (libs are PIC via POSITION_INDEPENDENT_CODE)
 add_compile_options($<$<STREQUAL:$<TARGET_PROPERTY:TYPE>,EXECUTABLE>:-fPIE>)
 add_link_options($<$<STREQUAL:$<TARGET_PROPERTY:TYPE>,EXECUTABLE>:-pie>)
 
-# ----------------------------------------------------------------------------
-# 6. Include Subdirectories and Enable Testing
-# ----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
+# 11. Include Subdirectories and Enable Testing
+# -----------------------------------------------------------------------------
 add_subdirectory(src)
 
-add_subdirectory(doxygen)
-enable_testing()
-add_subdirectory(tests)
+if (TESTS_EN)
+  if (BUILD_TESTING)
+    enable_testing()
+    add_subdirectory(tests)
+  endif()
+endif()
 
-# ----------------------------------------------------------------------------
-# 7. Informational Output
-# ----------------------------------------------------------------------------
+if (DOCS_EN)
+  add_subdirectory(doxygen)
+endif()
+
+# -----------------------------------------------------------------------------
+# 12. Informational Output
+# -----------------------------------------------------------------------------
 get_filename_component(COMPILER_NAME ${CMAKE_C_COMPILER} NAME)
 
 ProcessorCount(NPROC)
@@ -408,17 +679,52 @@ if (NOT WIN32)
 endif()
 
 message(STATUS "")
-message(STATUS "${ANSI_BLUE}=====================================================================${ANSI_RESET}")
-message(STATUS "${ANSI_RESET}  Project:        ${ANSI_MAGENTA}${PROJECT_NAME}${ANSI_RESET}")
-message(STATUS "${ANSI_RESET}  Build type:     ${ANSI_GREEN}${CMAKE_BUILD_TYPE}${ANSI_RESET}")
-message(STATUS "${ANSI_BLUE}=====================================================================${ANSI_RESET}")
-message(STATUS "${ANSI_RESET}  Compiler:       ${ANSI_GREEN}${CMAKE_C_COMPILER_ID} ${COMPILER_NAME} V${CMAKE_C_COMPILER_VERSION}${ANSI_RESET}")
-message(STATUS "${ANSI_RESET}  C Standard:     ${ANSI_GREEN}C${CMAKE_C_STANDARD}${ANSI_RESET}")
-message(STATUS "${ANSI_RESET}  CMake Version:  ${ANSI_GREEN}${CMAKE_VERSION}${ANSI_RESET}")
-message(STATUS "${ANSI_RESET}  Generator:      ${ANSI_GREEN}${CMAKE_GENERATOR}${ANSI_RESET}")
-message(STATUS "${ANSI_BLUE}=====================================================================${ANSI_RESET}")
-message(STATUS "${ANSI_RESET}  System arch:    ${ANSI_GREEN}${CMAKE_SYSTEM_PROCESSOR}${ANSI_RESET}")
-message(STATUS "${ANSI_RESET}  Host arch:      ${ANSI_GREEN}${CMAKE_HOST_SYSTEM_PROCESSOR}${ANSI_RESET}")
+message(STATUS
+        "${ANSI_BLUE}"
+        "====================================================================="
+        "${ANSI_RESET}")
+message(STATUS
+        "${ANSI_RESET}"
+        "  Project:        "
+        "${ANSI_MAGENTA}${PROJECT_NAME}${ANSI_RESET}")
+message(STATUS
+        "${ANSI_RESET}"
+        "  Build type:     "
+        "${ANSI_GREEN}${CMAKE_BUILD_TYPE}${ANSI_RESET}")
+message(STATUS
+        "${ANSI_BLUE}"
+        "====================================================================="
+        "${ANSI_RESET}")
+message(STATUS
+        "${ANSI_RESET}"
+        "  Compiler:       "
+        "${ANSI_GREEN}${CMAKE_C_COMPILER_ID}"
+        "${COMPILER_NAME}"
+        "V${CMAKE_C_COMPILER_VERSION}${ANSI_RESET}")
+message(STATUS
+        "${ANSI_RESET}"
+        "  C Standard:     "
+        "${ANSI_GREEN}C${CMAKE_C_STANDARD}${ANSI_RESET}")
+message(STATUS
+        "${ANSI_RESET}"
+        "  CMake Version:  "
+        "${ANSI_GREEN}${CMAKE_VERSION}${ANSI_RESET}")
+message(STATUS
+        "${ANSI_RESET}"
+        "  Generator:      "
+        "${ANSI_GREEN}${CMAKE_GENERATOR}${ANSI_RESET}")
+message(STATUS
+        "${ANSI_BLUE}"
+        "====================================================================="
+        "${ANSI_RESET}")
+message(STATUS
+        "${ANSI_RESET}"
+        "  System arch:    "
+        "${ANSI_GREEN}${CMAKE_SYSTEM_PROCESSOR}${ANSI_RESET}")
+message(STATUS
+        "${ANSI_RESET}"
+        "  Host arch:      "
+        "${ANSI_GREEN}${CMAKE_HOST_SYSTEM_PROCESSOR}${ANSI_RESET}")
 
 if (CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
   execute_process(
@@ -426,25 +732,175 @@ if (CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
     OUTPUT_VARIABLE _TARGET_TRIPLE
     OUTPUT_STRIP_TRAILING_WHITESPACE
   )
-  message(STATUS "${ANSI_RESET}  Target triple:  ${ANSI_GREEN}${_TARGET_TRIPLE}${ANSI_RESET}")
+  message(STATUS
+          "${ANSI_RESET}"
+          "  Target triple:  "
+          "${ANSI_GREEN}${_TARGET_TRIPLE}${ANSI_RESET}")
 endif()
 
-message(STATUS "${ANSI_RESET}  OS:             ${ANSI_GREEN}${CMAKE_SYSTEM_NAME} (${CMAKE_SYSTEM_VERSION})${ANSI_RESET}")
-message(STATUS "${ANSI_BLUE}=====================================================================${ANSI_RESET}")
+message(STATUS
+        "${ANSI_RESET}"
+        "  OS:             "
+        "${ANSI_GREEN}${CMAKE_SYSTEM_NAME}"
+        "(${CMAKE_SYSTEM_VERSION})${ANSI_RESET}")
+message(STATUS
+        "${ANSI_BLUE}"
+        "====================================================================="
+        "${ANSI_RESET}")
 
+# Valgrind
 if (VALGRIND_EXECUTABLE)
-    message(STATUS "${ANSI_RESET}  Valgrind:       ${ANSI_GREEN}${VALGRIND_EXECUTABLE}${ANSI_RESET}")
+
+  set(_VALGRIND_VER "unknown")
+  execute_process(
+    COMMAND "${VALGRIND_EXECUTABLE}" --version
+    OUTPUT_VARIABLE _vout
+    ERROR_VARIABLE  _verr
+    RESULT_VARIABLE _vres
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+    ERROR_STRIP_TRAILING_WHITESPACE
+  )
+  if(_vres EQUAL 0)
+    set(_vtext "${_vout}${_verr}")
+    string(REGEX MATCH "[0-9]+(\\.[0-9]+)+" _VALGRIND_VER "${_vtext}")
+    if(_VALGRIND_VER STREQUAL "")
+      set(_VALGRIND_VER "unknown")
+    endif()
+  endif()
+
+  message(STATUS
+          "${ANSI_RESET}"
+          "  Valgrind:       "
+          "${ANSI_GREEN}${VALGRIND_EXECUTABLE}${ANSI_RESET}"
+          " ${ANSI_GREEN}(v${_VALGRIND_VER})${ANSI_RESET}")
 else()
-    message(STATUS "${ANSI_RESET}  Valgrind:       ${ANSI_RED}<not found>  (running tests without memcheck)${ANSI_RESET}")
-endif()
-if (DOXYGEN_EXECUTABLE)
-    message(STATUS "${ANSI_RESET}  Doxygen:        ${ANSI_GREEN}${DOXYGEN_EXECUTABLE}${ANSI_RESET}")
-else()
-    message(STATUS "${ANSI_RESET}  Doxygen:        ${ANSI_RED}<not found>  (skip docs)${ANSI_RESET}")
+  message(STATUS
+          "${ANSI_RESET}"
+          "  Valgrind:       "
+          "${ANSI_RED}<not found>"
+          " (running tests without memcheck)${ANSI_RESET}")
 endif()
 
-message(STATUS "${ANSI_BLUE}=====================================================================${ANSI_RESET}")
-message(STATUS "${ANSI_RESET}  Parallel Jobs:  ${ANSI_GREEN}${NPROC}${ANSI_RESET}")
-message(STATUS "${ANSI_RESET}  Binaries in:    ${ANSI_GREEN}${OUTPUT_BIN_DIR}${ANSI_RESET}")
-message(STATUS "${ANSI_BLUE}=====================================================================${ANSI_RESET}")
+# Doxygen
+if (DOXYGEN_EXECUTABLE)
+
+  set(_DOXY_VER "unknown")
+  execute_process(
+    COMMAND "${DOXYGEN_EXECUTABLE}" --version
+    OUTPUT_VARIABLE _dout
+    ERROR_VARIABLE  _derr
+    RESULT_VARIABLE _dres
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+    ERROR_STRIP_TRAILING_WHITESPACE
+  )
+  if(_dres EQUAL 0)
+    set(_dtext "${_dout}${_derr}")
+    string(REGEX MATCH "[0-9]+(\\.[0-9]+)+" _DOXY_VER "${_dtext}")
+    if(_DOXY_VER STREQUAL "")
+      set(_DOXY_VER "unknown")
+    endif()
+  endif()
+
+  message(STATUS
+          "${ANSI_RESET}"
+          "  Doxygen:        "
+          "${ANSI_GREEN}${DOXYGEN_EXECUTABLE}${ANSI_RESET}"
+          " ${ANSI_GREEN}(v${_DOXY_VER})${ANSI_RESET}")
+else()
+  message(STATUS
+          "${ANSI_RESET}"
+          "  Doxygen:        "
+          "${ANSI_RED}<not found>"
+          " (skip docs)${ANSI_RESET}")
+endif()
+
+# Gcovr (llvm-cov backend when using Clang)
+if (GCOVR_EXECUTABLE)
+
+  set(_GCOVR_VER "unknown")
+  execute_process(
+    COMMAND "${GCOVR_EXECUTABLE}" --version
+    OUTPUT_VARIABLE _gout
+    ERROR_VARIABLE  _gerr
+    RESULT_VARIABLE _gres
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+    ERROR_STRIP_TRAILING_WHITESPACE
+  )
+  if(_gres EQUAL 0)
+    set(_gtext "${_gout}${_gerr}")
+    string(REGEX MATCH "[0-9]+(\\.[0-9]+)+" _GCOVR_VER "${_gtext}")
+    if(_GCOVR_VER STREQUAL "")
+      set(_GCOVR_VER "unknown")
+    endif()
+  endif()
+
+  set(_GCOV_BACKEND_STR "")
+  if(CMAKE_C_COMPILER_ID STREQUAL "Clang")
+    find_program(LLVM_COV_EXECUTABLE NAMES llvm-cov)
+    if(LLVM_COV_EXECUTABLE)
+      set(_LLVM_COV_VER "unknown")
+      execute_process(
+        COMMAND "${LLVM_COV_EXECUTABLE}" --version
+        OUTPUT_VARIABLE _lc_out
+        ERROR_VARIABLE  _lc_err
+        RESULT_VARIABLE _lc_res
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+        ERROR_STRIP_TRAILING_WHITESPACE
+      )
+      if(_lc_res EQUAL 0)
+        set(_lctext "${_lc_out}${_lc_err}")
+        string(REGEX MATCH "[0-9]+(\\.[0-9]+)+" _LLVM_COV_VER "${_lctext}")
+        if(_LLVM_COV_VER STREQUAL "")
+          set(_LLVM_COV_VER "unknown")
+        endif()
+      endif()
+      set(_GCOV_BACKEND_STR
+          "  ${ANSI_RESET}"
+          "[backend: ${ANSI_GREEN}llvm-cov"
+          "gcov v${_LLVM_COV_VER}${ANSI_RESET}]")
+    endif()
+  endif()
+
+  message(STATUS
+          "${ANSI_RESET}"
+          "  Gcovr:          "
+          "${ANSI_GREEN}${GCOVR_EXECUTABLE}${ANSI_RESET}"
+          " ${ANSI_GREEN}(v${_GCOVR_VER})${ANSI_RESET}${_GCOV_BACKEND_STR}")
+else()
+  message(STATUS
+          "${ANSI_RESET}"
+          "  Gcovr:          "
+          " ${ANSI_RED}<not found>${ANSI_RESET}")
+endif()
+message(STATUS
+        "${ANSI_BLUE}"
+        "====================================================================="
+        "${ANSI_RESET}")
+# QEMU
+detect_qemu(IS_QEMU QEMU_VERSION QEMU_BIN)
+
+if(IS_QEMU)
+	message(STATUS "  QEMU:           "
+								"${ANSI_GREEN}QEMU emulation${ANSI_RESET}")
+else()
+	message(STATUS "  QEMU:           "
+								"${ANSI_GREEN}native hardware${ANSI_RESET}")
+	endif()
+
+message(STATUS
+        "${ANSI_BLUE}"
+        "====================================================================="
+        "${ANSI_RESET}")
+message(STATUS
+        "${ANSI_RESET}"
+        "  Parallel Jobs:  "
+        "${ANSI_GREEN}${NPROC}${ANSI_RESET}")
+message(STATUS
+        "${ANSI_RESET}"
+        "  Binaries in:    "
+        "${ANSI_GREEN}${OUTPUT_BIN_DIR}${ANSI_RESET}")
+message(STATUS
+        "${ANSI_BLUE}"
+        "====================================================================="
+        "${ANSI_RESET}")
 message(STATUS "")
