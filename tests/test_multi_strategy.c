@@ -1,3 +1,9 @@
+/*
+ * SPDX-FileCopyrightText: 2024-2025 Rafael V. Volkmer
+ * SPDX-FileCopyrightText: <rafael.v.volkmer@gmail.com>
+ * SPDX-License-Identifier: MIT
+ */
+
 /** ============================================================================
  *  @ingroup    Libmemalloc
  *
@@ -48,17 +54,17 @@
  *  @details    Defined as a size_t value of 128 bytes,
  *              used for allocations when a fixed-size buffer is required.
  * ========================================================================== */
-#define ALLOC_SIZE  (size_t)(128U)
+#define ALLOC_SIZE (size_t)(128U)
 
 /** ============================================================================
- *  @def        EXIT_ERRROR
+ *  @def        EXIT_ERROR
  *  @brief      Standard error return code for test failures.
  *
  *  @details    Defined as a uint8_t value of 1 to indicate any
  *              assertion or test step failure within the test suite.
  *              Returned by test functions when a CHECK() fails.
  * ========================================================================== */
-#define EXIT_ERRROR (uint8_t)(1U)
+#define EXIT_ERROR (uint8_t)(1U)
 
 /** ============================================================================
  *  @def        CHECK(expr)
@@ -68,7 +74,7 @@
  *
  *  @details    Evaluates the given expression and, if false,
  *              logs an error with file and line information,
- *              then returns EXIT_ERRROR from the current function.
+ *              then returns EXIT_ERROR from the current function.
  *              Ensures immediate test termination on failure.
  * ========================================================================== */
 #define CHECK(expr)                                                          \
@@ -77,7 +83,7 @@
     if (!(expr))                                                             \
     {                                                                        \
       LOG_ERROR("Assertion failed at %s:%d: %s", __FILE__, __LINE__, #expr); \
-      return EXIT_ERRROR;                                                    \
+      return EXIT_ERROR;                                                     \
     }                                                                        \
   } while (0)
 
@@ -114,10 +120,10 @@ typedef enum Fills
  *  @fn         TEST_multiStrategy
  *  @brief      Aloca e libera blocos usando First, Next e Best Fit.
  *
- *  @return     EXIT_SUCCESS em caso de sucesso, EXIT_ERRROR em falha.
+ *  @return     EXIT_SUCCESS em caso de sucesso, EXIT_ERROR em falha.
  *
  *  @retval     EXIT_SUCCESS  Todas as operações sucederam.
- *  @retval     EXIT_ERRROR   Alguma operação falhou.
+ *  @retval     EXIT_ERROR   Alguma operação falhou.
  * ========================================================================== */
 static int TEST_multiStrategy(void);
 
@@ -145,41 +151,36 @@ int main(void)
  *  @fn         TEST_multiStrategy
  *  @brief      Aloca e libera blocos usando First, Next e Best Fit.
  *
- *  @return     EXIT_SUCCESS em caso de sucesso, EXIT_ERRROR em falha.
+ *  @return     EXIT_SUCCESS em caso de sucesso, EXIT_ERROR em falha.
  *
  *  @retval     EXIT_SUCCESS  Todas as operações sucederam.
- *  @retval     EXIT_ERRROR   Alguma operação falhou.
+ *  @retval     EXIT_ERROR   Alguma operação falhou.
  * ========================================================================== */
 static int TEST_multiStrategy(void)
 {
   int ret = EXIT_SUCCESS;
 
-  mem_allocator_t allocator;
-
   void *ptr = NULL;
 
-  ret = MEM_allocatorInit(&allocator);
-  CHECK(ret == EXIT_SUCCESS);
-
-  ptr = MEM_allocMallocFirstFit(&allocator, ALLOC_SIZE, "ms1");
+  ptr = MEM_allocFirstFit(ALLOC_SIZE);
   CHECK((intptr_t)ptr >= 0);
   MEM_memset(ptr, FIRST_FILL, ALLOC_SIZE);
 
-  ret = MEM_allocFree(&allocator, ptr, "ms1");
+  ret = MEM_free(ptr);
   CHECK(ret == EXIT_SUCCESS);
 
-  ptr = MEM_allocMallocNextFit(&allocator, ALLOC_SIZE, "ms2");
+  ptr = MEM_allocNextFit(ALLOC_SIZE);
   CHECK((intptr_t)ptr >= 0);
   MEM_memset(ptr, SECOND_FILL, ALLOC_SIZE);
 
-  ret = MEM_allocFree(&allocator, ptr, "ms2");
+  ret = MEM_free(ptr);
   CHECK(ret == EXIT_SUCCESS);
 
-  ptr = MEM_allocMallocBestFit(&allocator, ALLOC_SIZE, "ms3");
+  ptr = MEM_allocBestFit(ALLOC_SIZE);
   CHECK((intptr_t)ptr >= 0);
 
   MEM_memset(ptr, THIRD_FILL, ALLOC_SIZE);
-  ret = MEM_allocFree(&allocator, ptr, "ms3");
+  ret = MEM_free(ptr);
   CHECK(ret == EXIT_SUCCESS);
 
   return EXIT_SUCCESS;

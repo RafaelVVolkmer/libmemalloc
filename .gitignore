@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2024-2025 Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
+# SPDX-License-Identifier: MIT
+
 # ================================
 # - VSCode Settings
 # ================================
@@ -78,7 +81,6 @@ TAGS
 
 # Linker Output
 *.ilk
-*.map
 *.exp
 
 # Precompiled Headers
@@ -144,7 +146,6 @@ dkms.conf
 *.uvopt
 *.axf
 *.hex
-*.map
 *.bak
 *.d
 *.dep
@@ -159,7 +160,6 @@ dkms.conf
 *.d
 *.o
 *.elf
-*.map
 *.axf
 
 # Eclipse

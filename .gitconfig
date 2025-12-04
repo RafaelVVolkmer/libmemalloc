@@ -1,0 +1,42 @@
+# SPDX-FileCopyrightText: 2024-2025 Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
+# SPDX-License-Identifier: MIT
+
+[alias]
+    b  = blame -w
+    bb = blame -w -C -CHANGES
+
+    lg  = log --oneline --graph --decorate --all
+    lg1 = log --graph --decorate --date=relative \
+              --format='%C(auto)%h %C(bold)%ad%Creset %C(auto)%an%d %Creset%s'
+
+    tag = !.githooks/post-tag
+
+[diff]
+    algorithm = histogram
+    colorMoved = default
+
+[merge]
+    conflictstyle = zdiff3
+	
+[blame]
+    ignoreRevsFile = .git-blame-ignore-revs
+    showEmail = true
+    showRoot = true
+    markIgnoredLines = true
+    markUnblamableLines = true
+
+[pull]
+    rebase = true
+
+[rebase]
+    autoStash = true
+
+[rerere]
+    enabled = true
+
+[core]
+    autocrlf = input
+    safecrlf = true
+
+[color]
+    ui = auto

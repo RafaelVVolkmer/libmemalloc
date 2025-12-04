@@ -1,3 +1,9 @@
+/*
+ * SPDX-FileCopyrightText: 2024-2025 Rafael V. Volkmer
+ * SPDX-FileCopyrightText: <rafael.v.volkmer@gmail.com>
+ * SPDX-License-Identifier: MIT
+ */
+
 /** ============================================================================
  *  @ingroup    Libmemalloc
  *
@@ -51,14 +57,14 @@
 #define FILL_PATTERN (uint8_t)(0xAAU)
 
 /** ============================================================================
- *  @def        EXIT_ERRROR
+ *  @def        EXIT_ERROR
  *  @brief      Standard error return code for test failures.
  *
  *  @details    Defined as a uint8_t value of 1 to indicate any
  *              assertion or test step failure within the test suite.
  *              Returned by test functions when a CHECK() fails.
  * ========================================================================== */
-#define EXIT_ERRROR  (uint8_t)(1U)
+#define EXIT_ERROR   (uint8_t)(1U)
 
 /** ============================================================================
  *  @def        CHECK(expr)
@@ -68,7 +74,7 @@
  *
  *  @details    Evaluates the given expression and, if false,
  *              logs an error with file and line information,
- *              then returns EXIT_ERRROR from the current function.
+ *              then returns EXIT_ERROR from the current function.
  *              Ensures immediate test termination on failure.
  * ========================================================================== */
 #define CHECK(expr)                                                          \
@@ -77,7 +83,7 @@
     if (!(expr))                                                             \
     {                                                                        \
       LOG_ERROR("Assertion failed at %s:%d: %s", __FILE__, __LINE__, #expr); \
-      return EXIT_ERRROR;                                                    \
+      return EXIT_ERROR;                                                     \
     }                                                                        \
   } while (0)
 
@@ -119,10 +125,10 @@ typedef enum SizeConstants
  *  @fn         TEST_internalFragmentation
  *  @brief      Exercises allocations of varied small sizes.
  *
- *  @return     EXIT_SUCCESS on success, EXIT_ERRROR on failure.
+ *  @return     EXIT_SUCCESS on success, EXIT_ERROR on failure.
  *
  *  @retval     EXIT_SUCCESS  All allocations, writes, and frees succeeded.
- *  @retval     EXIT_ERRROR   Any allocation, alignment, write, or free failed.
+ *  @retval     EXIT_ERROR   Any allocation, alignment, write, or free failed.
  * ========================================================================== */
 static int TEST_internalFragmentation(void);
 
@@ -149,10 +155,10 @@ int main(void)
  *  @fn         TEST_internalFragmentation
  *  @brief      Exercises allocations of varied small sizes.
  *
- *  @return     EXIT_SUCCESS on success, EXIT_ERRROR on failure.
+ *  @return     EXIT_SUCCESS on success, EXIT_ERROR on failure.
  *
  *  @retval     EXIT_SUCCESS  All allocations, writes, and frees succeeded.
- *  @retval     EXIT_ERRROR   Any allocation, alignment, write, or free failed.
+ *  @retval     EXIT_ERROR   Any allocation, alignment, write, or free failed.
  * ========================================================================== */
 static int TEST_internalFragmentation(void)
 {
@@ -169,8 +175,6 @@ static int TEST_internalFragmentation(void)
         [10] = SIZE_ELEVENTH_ORDER,   [11] = SIZE_TWELFTH_ORDER,
         [12] = SIZE_THIRTEENTH_ORDER, [13] = SIZE_TWELFTH_ORDER };
 
-  mem_allocator_t allocator;
-
   size_t size     = 0u;
   size_t byte     = 0u;
   size_t iterator = 0u;
@@ -178,13 +182,10 @@ static int TEST_internalFragmentation(void)
 
   count = (size_t)(sizeof(sizes) / sizeof(sizes[0]));
 
-  ret = MEM_allocatorInit(&allocator);
-  CHECK(ret == EXIT_SUCCESS);
-
   for (iterator = 0u; iterator < count; ++iterator)
   {
     size = (size_t)sizes[iterator];
-    ptr  = MEM_allocMallocFirstFit(&allocator, size, "frag");
+    ptr  = MEM_allocFirstFit(size);
     CHECK(ptr != NULL);
 
     CHECK(((uintptr_t)ptr % ARCH_ALIGNMENT) == 0u);
@@ -192,7 +193,7 @@ static int TEST_internalFragmentation(void)
     for (byte = 0u; byte < size; ++byte)
       ptr[byte] = FILL_PATTERN;
 
-    ret = MEM_allocFree(&allocator, ptr, "frag");
+    ret = MEM_free(ptr);
     CHECK(ret == EXIT_SUCCESS);
   }
 

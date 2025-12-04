@@ -1,0 +1,24 @@
+# SPDX-FileCopyrightText: 2024-2025 Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
+# SPDX-License-Identifier: MIT
+
+# CODEOWNERS for libmemalloc
+# See: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+# Default owner for everything in this repository
+* @RafaelVVolkmer
+
+# CI / GitHub workflows
+.github/workflows/* @RafaelVVolkmer
+
+# Public headers / API surface
+inc/* @RafaelVVolkmer
+
+# Core allocator implementation
+src/* @RafaelVVolkmer
+
+# Tests
+tests/* @RafaelVVolkmer
+
+# Documentation and Doxygen config
+doxygen/* @RafaelVVolkmer
+readme/* @RafaelVVolkmer

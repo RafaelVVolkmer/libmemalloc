@@ -1,0 +1,36 @@
+# SPDX-FileCopyrightText: 2024-2025 Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
+# SPDX-License-Identifier: MIT
+
+cff-version: 1.2.0
+message: >
+  If you use libmemalloc in academic work, reports, or technical publications,
+  please cite this software using the metadata below.
+title: "libmemalloc: An introspectable memory allocator for C"
+type: software
+
+authors:
+  - family-names: "Volkmer"
+    given-names: "Rafael V."
+    email: "rafael.v.volkmer@gmail.com"
+    orcid: "https://https://orcid.org/0009-0001-9766-5564"
+
+repository-code: "https://github.com/RafaelVVolkmer/libmemalloc"
+license: "MIT"
+version: "2.0.0"
+url: "https://rafaelvvolkmer.github.io/libmemalloc/"
+date-released: "2025-01-12"
+
+abstract: >
+  libmemalloc is a lightweight, introspectable memory allocator for C that
+  replaces the standard malloc family with a small, well-defined API under the
+  MEM_ prefix. It supports multiple allocation strategies (First-Fit, Next-Fit,
+  Best-Fit), segregated free lists, hybrid sbrk/mmap growth, and optional
+  diagnostics and hardening features suitable for teaching, experimentation,
+  and production-quality systems programming.
+
+keywords:
+  - C
+  - memory allocation
+  - allocator
+  - systems programming
+  - software infrastructure

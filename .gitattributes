@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2024-2025 Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
+# SPDX-License-Identifier: MIT
+
 # ==============================================================================
 # 1) General Settings
 # ==============================================================================
@@ -50,8 +53,9 @@
 .browserslistrc         text    eol=lf
 .editorconfig           text    eol=lf
 *.npmignore             text    eol=lf
-*.yaml                  text    eol=lf
-*.yml                   text    eol=lf
+*.yaml                  text    eol=lf  linguist-language=YAML
+*.yml                   text    eol=lf	linguist-language=YAML
++*.cff                  text    eol=lf  linguist-language=YAML
 browserslist            text    eol=lf
 Makefile                text    eol=lf
 makefile                text    eol=lf

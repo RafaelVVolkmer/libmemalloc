@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2024-2025 Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
+# SPDX-License-Identifier: MIT
+
 name: Build and Test libmemalloc
 
 permissions:
@@ -5,7 +8,7 @@ permissions:
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ main, develop ]
   pull_request:
     branches: [ "main" ]
 
@@ -34,8 +37,8 @@ jobs:
           gcc g++ cmake make valgrind doxygen graphviz
 
       - name: Make build script executable
-        run: chmod +x ./build.sh
+        run: chmod +x ./scripts/build.sh
 
       - name: Build & test (${{ env.BUILD_TYPE }})
-        run: ./build.sh ${{ env.BUILD_TYPE }}
+        run: ./scripts/build.sh ${{ env.BUILD_TYPE }}
 

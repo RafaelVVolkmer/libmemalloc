@@ -1,3 +1,9 @@
+/*
+ * SPDX-FileCopyrightText: 2024-2025 Rafael V. Volkmer
+ * SPDX-FileCopyrightText: <rafael.v.volkmer@gmail.com>
+ * SPDX-License-Identifier: MIT
+ */
+
 /** ============================================================================
  *  @ingroup    Libmemalloc
  *
@@ -98,14 +104,14 @@
 #define NULL_SIZE    (size_t)((PATTERN_SIZE * 3U) / 4U)
 
 /** ============================================================================
- *  @def        EXIT_ERRROR
+ *  @def        EXIT_ERROR
  *  @brief      Standard error return code for test failures.
  *
  *  @details    Defined as a uint8_t value of 1 to indicate any
  *              assertion or test step failure within the test suite.
  *              Returned by test functions when a CHECK() fails.
  * ========================================================================== */
-#define EXIT_ERRROR  (uint8_t)(1U)
+#define EXIT_ERROR   (uint8_t)(1U)
 
 /** ============================================================================
  *  @def        CHECK(expr)
@@ -115,7 +121,7 @@
  *
  *  @details    Evaluates the given expression and, if false,
  *              logs an error with file and line information,
- *              then returns EXIT_ERRROR from the current function.
+ *              then returns EXIT_ERROR from the current function.
  *              Ensures immediate test termination on failure.
  * ========================================================================== */
 #define CHECK(expr)                                                          \
@@ -124,7 +130,7 @@
     if (!(expr))                                                             \
     {                                                                        \
       LOG_ERROR("Assertion failed at %s:%d: %s", __FILE__, __LINE__, #expr); \
-      return EXIT_ERRROR;                                                    \
+      return EXIT_ERROR;                                                     \
     }                                                                        \
   } while (0)
 
@@ -138,10 +144,10 @@
  *              and NULL-pointer cases.
  *
  *  @return     EXIT_SUCCESS when all realloc and free operations succeed
- *              EXIT_ERRROR when any CHECK() assertion fails
+ *              EXIT_ERROR when any CHECK() assertion fails
  *
  *  @retval     EXIT_SUCCESS  All steps completed successfully
- *  @retval     EXIT_ERRROR   A test assertion failed during execution
+ *  @retval     EXIT_ERROR   A test assertion failed during execution
  * ========================================================================== */
 static int TEST_multipleRealloc(void);
 
@@ -168,35 +174,31 @@ int main(void)
  *              and NULL-pointer cases.
  *
  *  @return     EXIT_SUCCESS when all realloc and free operations succeed
- *              EXIT_ERRROR when any CHECK() assertion fails
+ *              EXIT_ERROR when any CHECK() assertion fails
  *
  *  @retval     EXIT_SUCCESS  All steps completed successfully
- *  @retval     EXIT_ERRROR   A test assertion failed during execution
+ *  @retval     EXIT_ERROR   A test assertion failed during execution
  * ========================================================================== */
 static int TEST_multipleRealloc(void)
 {
   int ret = EXIT_SUCCESS;
-
-  mem_allocator_t allocator;
 
   void *ptr_0 = NULL;
   void *ptr_1 = NULL;
   void *ptr_2 = NULL;
   void *ptr_3 = NULL;
 
-  CHECK(MEM_allocatorInit(&allocator) == EXIT_SUCCESS);
+  ptr_0 = MEM_allocFirstFit(INITIAL_SIZE);
 
-  ptr_0 = MEM_allocMallocFirstFit(&allocator, INITIAL_SIZE, "p");
+  ptr_1 = MEM_realloc(ptr_0, GROWN_SIZE, FIRST_FIT);
 
-  ptr_1 = MEM_allocRealloc(&allocator, ptr_0, GROWN_SIZE, "p2", FIRST_FIT);
+  ptr_2 = MEM_realloc(ptr_1, SHRUNK_SIZE, FIRST_FIT);
 
-  ptr_2 = MEM_allocRealloc(&allocator, ptr_1, SHRUNK_SIZE, "p3", FIRST_FIT);
+  CHECK(MEM_free(ptr_2) == EXIT_SUCCESS);
 
-  CHECK(MEM_allocFree(&allocator, ptr_2, "p3") == EXIT_SUCCESS);
+  ptr_3 = MEM_realloc(NULL, NULL_SIZE, FIRST_FIT);
 
-  ptr_3 = MEM_allocRealloc(&allocator, NULL, NULL_SIZE, "pn", FIRST_FIT);
-
-  CHECK(MEM_allocFree(&allocator, ptr_3, "pn") == EXIT_SUCCESS);
+  CHECK(MEM_free(ptr_3) == EXIT_SUCCESS);
 
   return ret;
 }

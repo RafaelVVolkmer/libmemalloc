@@ -1,0 +1,110 @@
+#!/usr/bin/env bash
+
+# SPDX-FileCopyrightText: 2024-2025 Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
+# SPDX-License-Identifier: MIT
+
+# ==============================================================================
+# prepare-commit-msg — seed Conventional Commit template for libmemalloc
+#
+# - Runs before the commit message editor opens
+# - If the message is effectively empty:
+#     - pre-fills a Conventional Commit header: feat(core): …
+#     - adds a placeholder body section
+#     - appends a Signed-off-by footer using git config user.name/user.email
+# - Does nothing for merge/squash commits or when a message already exists
+#
+# Intended to be used as a prepare-commit-msg hook, either via:
+#   .git/hooks/prepare-commit-msg
+# or with:
+#   core.hooksPath = .githooks
+# ==============================================================================
+
+set -euo pipefail
+
+MSG_FILE="$1"
+COMMIT_SOURCE="${2:-}"
+COMMIT_SHA="${3:-}"
+
+# ------------------------------------------------------------------------------
+# Colors
+# ------------------------------------------------------------------------------
+RED=$'\033[31m'
+GREEN=$'\033[32m'
+YELLOW=$'\033[33m'
+RESET=$'\033[0m'
+
+# ------------------------------------------------------------------------------
+# Helpers
+# ------------------------------------------------------------------------------
+need_file() {
+  local f="$1"
+  if [ ! -f "${f}" ]; then
+    echo "[prepare-commit-msg] ${RED}Message file '${f}' not found.${RESET}" >&2
+    exit 1
+  fi
+}
+
+is_msg_effectively_empty() {
+  # Return 0 (true) if there is no non-comment, non-blank line.
+  awk 'NF && $0 !~ /^#/ {found=1} END{exit !found}' "$1"
+}
+
+get_git_value() {
+  git config "$1" 2>/dev/null || echo ""
+}
+
+# ------------------------------------------------------------------------------
+# 1) Basic checks and early exits
+# ------------------------------------------------------------------------------
+need_file "${MSG_FILE}"
+
+# Ignore merge and squash commits: Git already provides a useful template.
+case "${COMMIT_SOURCE}" in
+  merge|squash)
+    echo "[prepare-commit-msg] ${YELLOW}Source='${COMMIT_SOURCE}', leaving message as-is.${RESET}"
+    exit 0
+    ;;
+esac
+
+# If there is already meaningful content (commit -m, template, amend, etc.),
+# do not overwrite it.
+if is_msg_effectively_empty "${MSG_FILE}"; then
+  : # message is effectively empty; we will seed the template below
+else
+  echo "[prepare-commit-msg] ${YELLOW}Existing commit message detected, not seeding template.${RESET}"
+  exit 0
+fi
+
+# ------------------------------------------------------------------------------
+# 2) Build Signed-off-by line from git config
+# ------------------------------------------------------------------------------
+GIT_NAME="$(get_git_value user.name)"
+GIT_EMAIL="$(get_git_value user.email)"
+
+if [ -z "${GIT_NAME}" ] || [ -z "${GIT_EMAIL}" ]; then
+  echo "[prepare-commit-msg] ${YELLOW}git user.name or user.email not set; not adding Signed-off-by automatically.${RESET}"
+  SIGNOFF_HINT="# Signed-off-by: <Your Name> <your.email@example.com>"
+  SIGNOFF_LINE=""
+else
+  SIGNOFF_HINT="# Signed-off-by: ${GIT_NAME} <${GIT_EMAIL}>"
+  SIGNOFF_LINE="Signed-off-by: ${GIT_NAME} <${GIT_EMAIL}>"
+fi
+
+# ------------------------------------------------------------------------------
+# 3) Seed Conventional Commit template + Signed-off-by
+# ------------------------------------------------------------------------------
+echo "[prepare-commit-msg] ${YELLOW}Seeding Conventional Commit template for libmemalloc…${RESET}"
+
+cat > "${MSG_FILE}" <<EOF
+feat(core): <short summary>
+
+<Explain what you changed and why.>
+<Mention any important details, side effects or migrations.>
+<Remove or replace these placeholder lines before committing.>
+
+${SIGNOFF_LINE}
+${SIGNOFF_HINT}
+EOF
+
+echo "[prepare-commit-msg] ${GREEN}Template inserted. Edit header/body and keep or adjust Signed-off-by.${RESET}"
+exit 0

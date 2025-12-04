@@ -1,0 +1,80 @@
+#!/usr/bin/env bash
+
+# SPDX-FileCopyrightText: 2024-2025 Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
+# SPDX-License-Identifier: MIT
+
+# ==============================================================================
+# post-commit — auto-track style/docs-only commits in .git-blame-ignore-revs
+#
+# - Looks at the last commit subject
+# - If it starts with "style" or "docs" (with or without a scope), e.g.:
+#     style: reformat allocator core
+#     style(core): normalize SPDX headers
+#     docs(readme): document new workflow
+#   then:
+#     - appends the commit hash to .git-blame-ignore-revs (if not present)
+#     - keeps the file unique and sorted for nice diffs
+#
+# Intended to be used as a post-commit hook, either via:
+#   .git/hooks/post-commit
+# or with:
+#   core.hooksPath = .githooks
+# ==============================================================================
+
+set -euo pipefail
+
+# ------------------------------------------------------------------------------
+# Colors
+# ------------------------------------------------------------------------------
+RED=$'\033[31m'
+GREEN=$'\033[32m'
+YELLOW=$'\033[33m'
+RESET=$'\033[0m'
+
+have_cmd() {
+  command -v "$1" >/dev/null 2>&1
+}
+
+if ! have_cmd git; then
+  exit 0
+fi
+
+MSG="$(git log -1 --pretty=%s 2>/dev/null || true)"
+
+if [ -z "${MSG}" ]; then
+  echo "[post-commit] ${YELLOW}Could not read last commit subject. Skipping.${RESET}"
+  exit 0
+fi
+
+# Match commits whose subject starts with "style" or "docs"
+if [[ ! "${MSG}" =~ ^style(|\(|:)|^docs(|\(|:) ]]; then
+  echo "[post-commit] ${YELLOW}Last commit is not a style/docs commit. Nothing to do.${RESET}"
+  exit 0
+fi
+
+HASH="$(git rev-parse HEAD 2>/dev/null || true)"
+
+if [ -z "${HASH}" ]; then
+  echo "[post-commit] ${YELLOW}Could not resolve HEAD hash. Skipping.${RESET}"
+  exit 0
+fi
+
+IGNORE_FILE=".git-blame-ignore-revs"
+
+if [ ! -f "${IGNORE_FILE}" ]; then
+  echo "[post-commit] ${YELLOW}${IGNORE_FILE} not found, creating it.${RESET}"
+  : > "${IGNORE_FILE}"
+fi
+
+if grep -qx "${HASH}" "${IGNORE_FILE}" 2>/dev/null; then
+  echo "[post-commit] ${GREEN}Commit ${HASH} is already in ${IGNORE_FILE}.${RESET}"
+  exit 0
+fi
+
+echo "${HASH}" >> "${IGNORE_FILE}"
+sort -u "${IGNORE_FILE}" -o "${IGNORE_FILE}"
+
+git add "${IGNORE_FILE}" 2>/dev/null || true
+
+echo "[post-commit] ${GREEN}Added ${HASH} to ${IGNORE_FILE} for blame ignore.${RESET}"
+exit 0
