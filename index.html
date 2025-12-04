@@ -61,7 +61,7 @@
   <td id="projectlogo"><img alt="Logo" src="libmemalloc.svg"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">libmemalloc
-   &#160;<span id="projectnumber">v2.0.00</span>
+   &#160;<span id="projectnumber">v3.0.00</span>
    </div>
    <div id="projectbrief">Modern Memory Allocator</div>
   </td>
@@ -176,7 +176,7 @@ $(document).ready(function(){initNavTree('index.html',''); initResizable(); });
 <li><b>Internal locking</b> to remain safe in multithreaded programs.</li>
 <li>Integration points for tools like Valgrind and external profilers.</li>
 </ul>
-<p>The public surface is kept small and stable, and the shared library is exported through a linker version script (<code>MEMALLOC_2.0</code>) so that only the intended symbols are visible to consumers.</p>
+<p>The public surface is kept small and stable, and the shared library is exported through a linker version script (<code>MEMALLOC_3.0</code>) so that only the intended symbols are visible to consumers.</p>
 <p>To use it, you simply link the <code>.a</code> or <code>.so</code>, include <code><a class="el" href="libmemalloc_8h.html">libmemalloc.h</a></code>, and swap your <code>malloc</code>/<code>free</code> calls for <code>MEM_*</code> equivalents.</p>
 <hr  />
 <h1><a class="anchor" id="autotoc_md5"></a>
