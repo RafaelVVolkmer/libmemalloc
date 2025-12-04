@@ -1,0 +1,211 @@
+# SPDX-FileCopyrightText: 2024-2025 Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
+# SPDX-License-Identifier: MIT
+
+name: "💡 Feature request"
+description: "Suggest an idea or improvement for libmemalloc."
+title: "[FEAT] "
+labels: ["enhancement"]
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## 📝 Description
+        Provide a clear and concise description of the feature you would like to see.
+        
+        Focus on the **problem or limitation** first, rather than only the solution.
+        
+        - What is missing today?  
+        - In which context are you using libmemalloc (application type, workload, constraints)?  
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Feature Description
+      placeholder: "Describe the problem and the missing functionality."
+    validations:
+      required: true
+
+  - type: markdown
+    attributes:
+      value: |
+        ---
+        ## 🎯 Motivation / Use Case
+        Explain **why** this feature is important.
+
+  - type: textarea
+    id: motivation
+    attributes:
+      label: Motivation / Use Case
+      description: |
+        Why is this feature needed?  
+        How does it improve your workflow, safety, performance, or ergonomics?
+      placeholder: |
+        Describe the context, use case, and why this feature matters.
+    validations:
+      required: true
+
+  - type: markdown
+    attributes:
+      value: |
+        ---
+        ## 💡 Proposed Solution
+
+  - type: textarea
+    id: proposed_solution
+    attributes:
+      label: Proposed Solution
+      description: "Describe the behavior or API you would like to see."
+      placeholder: |
+        New API functions?  
+        Changes to existing behavior?  
+        New allocation strategies, debugging hooks, GC options?
+      render: markdown
+
+  - type: textarea
+    id: example_api
+    attributes:
+      label: Example API usage (optional)
+      render: c
+      placeholder: |
+        // example API usage (pseudo-code)
+        void *ptr = memalloc_alloc_special(/* ... */);
+
+  - type: markdown
+    attributes:
+      value: |
+        ---
+        ## 🏗️ Build / Toolchain Environment (optional)
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Build / Toolchain Environment
+      description: "Only fill if the feature is motivated by platform/toolchain details."
+      value: |
+        - libmemalloc version (tag/commit):
+        - Build type: Debug / Release
+        - Target architecture:
+        - Target CPU / SoC / board:
+        - Kernel / OS and version:
+        - Host compiler and version:
+        - C standard used:
+        
+        Build method:
+        - [ ] ./build.sh
+        - [ ] CMake manual invocation
+        - [ ] Docker
+        - [ ] Other:
+      validations:
+        required: false
+
+  - type: markdown
+    attributes:
+      value: |
+        ---
+        ## ⚙️ Current libmemalloc Configuration
+
+  - type: textarea
+    id: current_config
+    attributes:
+      label: Current libmemalloc Configuration
+      description: "Helps determine whether the feature interacts with specific allocator settings."
+      value: |
+        - Allocation strategy in use:
+        - GC / background collection:
+          - [ ] Disabled (default)
+          - [ ] Enabled
+        - Logging level: ERROR / WARN / INFO / DEBUG
+        - Non-default compile-time options or macros:
+      validations:
+        required: false
+
+  - type: markdown
+    attributes:
+      value: |
+        ---
+        ## 🔄 Alternatives Considered
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives Considered
+      placeholder: |
+        - Different allocator configuration?
+        - Implementing the feature in your application?
+        - Other allocators or tools?
+    validations:
+      required: false
+
+  - type: markdown
+    attributes:
+      value: |
+        ---
+        ## 🔁 API / ABI Impact (expected)
+
+  - type: checkboxes
+    id: api_impact
+    attributes:
+      label: Expected API/ABI Impact
+      options:
+        - label: No API changes (internal behavior only)
+        - label: API extension (backwards compatible)
+        - label: Potentially breaking change
+
+  - type: textarea
+    id: api_details
+    attributes:
+      label: API / ABI Details
+      placeholder: |
+        New functions or types?  
+        Migration path for existing users?
+    validations:
+      required: false
+
+  - type: markdown
+    attributes:
+      value: |
+        ---
+        ## 🚀 Performance Expectations
+
+  - type: checkboxes
+    id: performance_target
+    attributes:
+      label: Does this feature target performance?
+      options:
+        - label: Not primarily about performance
+        - label: Mainly about performance (latency/throughput/memory usage)
+
+  - type: textarea
+    id: performance_details
+    attributes:
+      label: Performance details (if applicable)
+      placeholder: |
+        What aspect of performance should improve?
+        Under what workload (small allocs, large blocks, mixed patterns)?
+
+  - type: markdown
+    attributes:
+      value: |
+        ---
+        ## 📎 Additional Context
+
+  - type: textarea
+    id: additional_context
+    attributes:
+      label: Additional Context
+      placeholder: |
+        Related issues, discussions, blog posts, diagrams, or design notes.
+
+  - type: markdown
+    attributes:
+      value: |
+        ---
+        ## ✍️ Signed-off-by (DCO)
+        If you plan to contribute code for this feature and want to comply
+        with the Developer Certificate of Origin (DCO), add your line here:
+
+        ```
+        Signed-off-by: <Your Name> <your.email@example.com>
+        ```

@@ -1,0 +1,97 @@
+# SPDX-FileCopyrightText: 2024-2025 Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
+# SPDX-License-Identifier: MIT
+
+name: "❓ Questions and Help"
+description: "Ask a question about using libmemalloc."
+title: "[QUESTION] "
+labels: ["question"]
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## ❓ Question  
+        What would you like to know about libmemalloc?
+
+        Be as specific as possible (API names, behavior, configuration details, etc.).
+
+  - type: textarea
+    id: question
+    attributes:
+      label: Your Question
+      placeholder: "Describe the question clearly and specifically."
+    validations:
+      required: true
+
+  - type: markdown
+    attributes:
+      value: |
+        ---
+        ## 📦 Environment (optional, but helpful)
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      value: |
+        - libmemalloc version (tag/commit):
+        - OS / distribution:
+        - Compiler and version:
+        - Integration method:
+          - e.g. static library, shared library, embedded in a larger project, etc.
+      validations:
+        required: false
+
+  - type: markdown
+    attributes:
+      value: |
+        ---
+        ## 🔍 What You Tried  
+        Describe what you already investigated or tested.
+
+  - type: textarea
+    id: what_you_tried
+    attributes:
+      label: What you tried
+      description: |
+        Describe:
+        - Docs or examples you checked
+        - Code snippets or experiments
+        - Any errors or unexpected behavior
+      placeholder: |
+        - Looked at docs/usage.md
+        - Tried calling memalloc_alloc() with X
+        - Saw unexpected behavior Y
+      validations:
+        required: false
+
+  - type: markdown
+    attributes:
+      value: |
+        ---
+        ## 📎 Additional Context  
+        Add any other details that may help clarify the question.
+
+  - type: textarea
+    id: additional_context
+    attributes:
+      label: Additional context
+      placeholder: |
+        - Links to related issues or discussions
+        - Constraints: real-time, embedded, memory limits, etc.
+      validations:
+        required: false
+
+  - type: markdown
+    attributes:
+      value: |
+        ---
+        ## ✍️ Signed-off-by (DCO)
+
+        If you expect to contribute code based on this discussion and wish to
+        comply with the Developer Certificate of Origin (DCO), include your line:
+
+        ```
+        Signed-off-by: <Your Name> <your.email@example.com>
+        ```
