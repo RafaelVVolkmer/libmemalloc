@@ -11,16 +11,14 @@ body:
   - type: markdown
     attributes:
       value: |
-        ## ❓ Question  
-        What would you like to know about libmemalloc?
-
-        Be as specific as possible (API names, behavior, configuration details, etc.).
+        ## ❓ Question
+        Be as specific as possible.
 
   - type: textarea
     id: question
     attributes:
       label: Your Question
-      placeholder: "Describe the question clearly and specifically."
+      placeholder: "Describe your question clearly and specifically."
     validations:
       required: true
 
@@ -28,68 +26,47 @@ body:
     attributes:
       value: |
         ---
-        ## 📦 Environment (optional, but helpful)
+        ## 📦 Environment (optional)
 
   - type: textarea
     id: environment
     attributes:
       label: Environment
       value: |
-        - libmemalloc version (tag/commit):
-        - OS / distribution:
-        - Compiler and version:
+        - libmemalloc version:
+        - OS:
+        - Compiler:
         - Integration method:
-          - e.g. static library, shared library, embedded in a larger project, etc.
-      validations:
-        required: false
 
   - type: markdown
     attributes:
       value: |
         ---
-        ## 🔍 What You Tried  
-        Describe what you already investigated or tested.
+        ## 🔍 What You Tried
 
   - type: textarea
     id: what_you_tried
     attributes:
       label: What you tried
-      description: |
-        Describe:
-        - Docs or examples you checked
-        - Code snippets or experiments
-        - Any errors or unexpected behavior
-      placeholder: |
-        - Looked at docs/usage.md
-        - Tried calling memalloc_alloc() with X
-        - Saw unexpected behavior Y
-      validations:
-        required: false
+      placeholder: "Docs read, experiments, errors…"
 
   - type: markdown
     attributes:
       value: |
         ---
-        ## 📎 Additional Context  
-        Add any other details that may help clarify the question.
+        ## 📎 Additional Context
 
   - type: textarea
     id: additional_context
     attributes:
       label: Additional context
-      placeholder: |
-        - Links to related issues or discussions
-        - Constraints: real-time, embedded, memory limits, etc.
-      validations:
-        required: false
+      placeholder: "Links, constraints, diagrams…"
 
   - type: input
     id: signed_off_by
     attributes:
       label: "✍️ Signed-off-by (optional)"
-      description: |
-        If you intend to provide patches for this bug and want to comply with the
-        Developer Certificate of Origin (DCO), enter your Signed-off-by line below.
+      description: "Only if contributing patches for this issue."
       placeholder: "Signed-off-by: <Your Name> <your.email@example.com>"
     validations:
-      required: false
+      required: false  

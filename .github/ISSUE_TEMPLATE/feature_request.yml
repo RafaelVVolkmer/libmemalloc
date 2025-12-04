@@ -13,11 +13,7 @@ body:
       value: |
         ## 📝 Description
         Provide a clear and concise description of the feature you would like to see.
-        
-        Focus on the **problem or limitation** first, rather than only the solution.
-        
-        - What is missing today?  
-        - In which context are you using libmemalloc (application type, workload, constraints)?  
+        Focus on the problem or limitation first.
 
   - type: textarea
     id: description
@@ -32,17 +28,12 @@ body:
       value: |
         ---
         ## 🎯 Motivation / Use Case
-        Explain **why** this feature is important.
 
   - type: textarea
     id: motivation
     attributes:
       label: Motivation / Use Case
-      description: |
-        Why is this feature needed?  
-        How does it improve your workflow, safety, performance, or ergonomics?
-      placeholder: |
-        Describe the context, use case, and why this feature matters.
+      placeholder: "Explain why this feature matters."
     validations:
       required: true
 
@@ -56,11 +47,7 @@ body:
     id: proposed_solution
     attributes:
       label: Proposed Solution
-      description: "Describe the behavior or API you would like to see."
-      placeholder: |
-        New API functions?  
-        Changes to existing behavior?  
-        New allocation strategies, debugging hooks, GC options?
+      placeholder: "New API? Behavior changes? New strategy?"
       render: markdown
 
   - type: textarea
@@ -69,8 +56,7 @@ body:
       label: Example API usage (optional)
       render: c
       placeholder: |
-        // example API usage (pseudo-code)
-        void *ptr = memalloc_alloc_special(/* ... */);
+        // pseudo-code example
 
   - type: markdown
     attributes:
@@ -82,23 +68,15 @@ body:
     id: environment
     attributes:
       label: Build / Toolchain Environment
-      description: "Only fill if the feature is motivated by platform/toolchain details."
+      description: "Only if relevant."
       value: |
-        - libmemalloc version (tag/commit):
-        - Build type: Debug / Release
-        - Target architecture:
-        - Target CPU / SoC / board:
-        - Kernel / OS and version:
-        - Host compiler and version:
-        - C standard used:
-        
-        Build method:
-        - [ ] ./build.sh
-        - [ ] CMake manual invocation
-        - [ ] Docker
-        - [ ] Other:
-      validations:
-        required: false
+        - libmemalloc version:
+        - Build type:
+        - Architecture:
+        - OS:
+        - Compiler:
+        - C standard:
+        - Build method:
 
   - type: markdown
     attributes:
@@ -109,17 +87,12 @@ body:
   - type: textarea
     id: current_config
     attributes:
-      label: Current libmemalloc Configuration
-      description: "Helps determine whether the feature interacts with specific allocator settings."
+      label: Current Configuration
       value: |
-        - Allocation strategy in use:
-        - GC / background collection:
-          - [ ] Disabled (default)
-          - [ ] Enabled
-        - Logging level: ERROR / WARN / INFO / DEBUG
-        - Non-default compile-time options or macros:
-      validations:
-        required: false
+        - Allocation strategy:
+        - GC:
+        - Logging:
+        - Compile-time options:
 
   - type: markdown
     attributes:
@@ -131,12 +104,7 @@ body:
     id: alternatives
     attributes:
       label: Alternatives Considered
-      placeholder: |
-        - Different allocator configuration?
-        - Implementing the feature in your application?
-        - Other allocators or tools?
-    validations:
-      required: false
+      placeholder: "Describe alternatives and trade-offs."
 
   - type: markdown
     attributes:
@@ -147,21 +115,17 @@ body:
   - type: checkboxes
     id: api_impact
     attributes:
-      label: Expected API/ABI Impact
+      label: API/ABI Impact
       options:
-        - label: No API changes (internal behavior only)
-        - label: API extension (backwards compatible)
-        - label: Potentially breaking change
+        - label: No API changes
+        - label: API extension
+        - label: Breaking change
 
   - type: textarea
     id: api_details
     attributes:
       label: API / ABI Details
-      placeholder: |
-        New functions or types?  
-        Migration path for existing users?
-    validations:
-      required: false
+      placeholder: "New types? Migration path?"
 
   - type: markdown
     attributes:
@@ -172,18 +136,16 @@ body:
   - type: checkboxes
     id: performance_target
     attributes:
-      label: Does this feature target performance?
+      label: Performance Target
       options:
-        - label: Not primarily about performance
-        - label: Mainly about performance (latency/throughput/memory usage)
+        - label: Not performance related
+        - label: Targets performance improvements
 
   - type: textarea
     id: performance_details
     attributes:
-      label: Performance details (if applicable)
-      placeholder: |
-        What aspect of performance should improve?
-        Under what workload (small allocs, large blocks, mixed patterns)?
+      label: Performance details
+      placeholder: "Latency? Throughput? Memory usage? Under what workload?"
 
   - type: markdown
     attributes:
@@ -195,16 +157,13 @@ body:
     id: additional_context
     attributes:
       label: Additional Context
-      placeholder: |
-        Related issues, discussions, blog posts, diagrams, or design notes.
+      placeholder: "Links, diagrams, notes, references…"
 
   - type: input
     id: signed_off_by
     attributes:
       label: "✍️ Signed-off-by (optional)"
-      description: |
-        If you intend to provide patches for this bug and want to comply with the
-        Developer Certificate of Origin (DCO), enter your Signed-off-by line below.
+      description: "Enter your DCO signature if contributing patches."
       placeholder: "Signed-off-by: <Your Name> <your.email@example.com>"
     validations:
       required: false
