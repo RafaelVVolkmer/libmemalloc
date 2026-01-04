@@ -33,15 +33,15 @@ extern "C"
  *                      P U B L I C  I N C L U D E S
  * ========================================================================== */
 
+/*< Implemented >*/
+#include "memalloc_utils.h"
+
 /*< Dependencies >*/
 #include <pthread.h>
 #include <stdatomic.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <string.h>
-
-/*< Implemented >*/
-#include "memalloc_utils.h"
 
 /** ============================================================================
  *              P U B L I C  D E F I N E S  &  M A C R O S

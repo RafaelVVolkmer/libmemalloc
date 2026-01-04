@@ -36,6 +36,10 @@
  *                      P R I V A T E  I N C L U D E S
  * ========================================================================== */
 
+/*< Implemented >*/
+#include "libmemalloc.h"
+#include "logs.h"
+
 /*< Dependencies >*/
 #include <assert.h>
 #include <errno.h>
@@ -43,10 +47,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-/*< Implemented >*/
-#include "libmemalloc.h"
-#include "logs.h"
 
 /** ============================================================================
  *               P R I V A T E  D E F I N E S  &  M A C R O S
