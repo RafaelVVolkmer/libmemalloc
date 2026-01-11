@@ -33,6 +33,52 @@ extern "C"
 #endif
 
 /** ============================================================================
+ *             P R I V A T E  A T T R I B U T E  W R A P P E R S
+ * ========================================================================== */
+
+/** ============================================================================
+ *  @def        __LIBMEMALLOC_HAS_ATTRIBUTE
+ *  @brief      Wrapper for __has_attribute when available.
+ *
+ *  @details    Evaluates to 1 when the compiler reports support for
+ *              the given attribute; otherwise 0. This avoids warnings
+ *              on toolchains that don't recognize newer attributes.
+ * ========================================================================== */
+#ifndef __LIBMEMALLOC_HAS_ATTRIBUTE
+  #if defined(__has_attribute)
+    #define __LIBMEMALLOC_HAS_ATTRIBUTE(attr_) __has_attribute(attr_)
+  #else
+    #define __LIBMEMALLOC_HAS_ATTRIBUTE(attr_) 0
+  #endif
+#endif
+
+/** ============================================================================
+ *  @def        __LIBMEMALLOC_GNUC_PREREQ
+ *  @brief      GCC version check helper (non-Clang).
+ * ========================================================================== */
+#ifndef __LIBMEMALLOC_GNUC_PREREQ
+  #if defined(__GNUC__) && !defined(__clang__)
+    #define __LIBMEMALLOC_GNUC_PREREQ(maj_, min_) \
+      ((__GNUC__ > (maj_)) || (__GNUC__ == (maj_) && __GNUC_MINOR__ >= (min_)))
+  #else
+    #define __LIBMEMALLOC_GNUC_PREREQ(maj_, min_) 0
+  #endif
+#endif
+
+/** ============================================================================
+ *  @def        __LIBMEMALLOC_ATTR_ZERO_CALL_USED_REGS
+ *  @brief      Optional zero_call_used_regs("all") attribute wrapper.
+ * ========================================================================== */
+#ifndef __LIBMEMALLOC_ATTR_ZERO_CALL_USED_REGS
+  #if __LIBMEMALLOC_HAS_ATTRIBUTE(zero_call_used_regs) \
+    || __LIBMEMALLOC_GNUC_PREREQ(11, 0)
+    #define __LIBMEMALLOC_ATTR_ZERO_CALL_USED_REGS , zero_call_used_regs("all")
+  #else
+    #define __LIBMEMALLOC_ATTR_ZERO_CALL_USED_REGS
+  #endif
+#endif
+
+/** ============================================================================
  *              P U B L I C  D E F I N E S  &  M A C R O S
  * ========================================================================== */
 
@@ -197,10 +243,6 @@ extern "C"
 #define PTR_ERR(ptr_) ((void *)((intptr_t)(ptr_)))
 
 /** ============================================================================
- *             P R I V A T E  A T T R I B U T E  W R A P P E R S
- * ========================================================================== */
-
-/** ============================================================================
  *  @def        __LIBMEMALLOC_API
  *  @brief      Defines the default visibility attribute
  *              for exported symbols.
@@ -242,21 +284,29 @@ extern "C"
  * nada.
  * ========================================================================== */
 #ifndef __ALIGN
-  #if defined(__GNUC__) || defined(__clang__)
+  #if __LIBMEMALLOC_HAS_ATTRIBUTE(scalar_storage_order) \
+    || __LIBMEMALLOC_GNUC_PREREQ(8, 0)
     #if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
-      #define __ALIGN                                      \
-        __attribute__((scalar_storage_order("big-endian"), \
-                       aligned(ARCH_ALIGNMENT)))
+      #define __LIBMEMALLOC_ATTR_SSO \
+        __attribute__((scalar_storage_order("big-endian")))
     #elif __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
-      #define __ALIGN                                         \
-        __attribute__((scalar_storage_order("little-endian"), \
-                       aligned(ARCH_ALIGNMENT)))
+      #define __LIBMEMALLOC_ATTR_SSO \
+        __attribute__((scalar_storage_order("little-endian")))
     #else
       #error "[ERROR] Unknown Endianness: check '__BYTE_ORDER__'"
     #endif
   #else
-    #define __ALIGN
+    #define __LIBMEMALLOC_ATTR_SSO
   #endif
+
+  #if (defined(__GNUC__) || defined(__clang__) \
+       || __LIBMEMALLOC_HAS_ATTRIBUTE(aligned))
+    #define __LIBMEMALLOC_ATTR_ALIGNED __attribute__((aligned(ARCH_ALIGNMENT)))
+  #else
+    #define __LIBMEMALLOC_ATTR_ALIGNED
+  #endif
+
+  #define __ALIGN __LIBMEMALLOC_ATTR_SSO __LIBMEMALLOC_ATTR_ALIGNED
 #endif
 
 /** ===========================================================================
@@ -330,8 +380,7 @@ extern "C"
       __attribute__((malloc,              \
                      alloc_size(2),       \
                      warn_unused_result,  \
-                     returns_nonnull,     \
-                     zero_call_used_regs("all")))
+                     returns_nonnull __LIBMEMALLOC_ATTR_ZERO_CALL_USED_REGS))
   #else
     #define __LIBMEMALLOC_INTERNAL_MALLOC
   #endif
@@ -356,8 +405,7 @@ extern "C"
       __attribute__((malloc,             \
                      alloc_size(1),      \
                      warn_unused_result, \
-                     returns_nonnull,    \
-                     zero_call_used_regs("all")))
+                     returns_nonnull __LIBMEMALLOC_ATTR_ZERO_CALL_USED_REGS))
   #else
     #define __LIBMEMALLOC_MALLOC
   #endif
@@ -381,8 +429,7 @@ extern "C"
       __attribute__((malloc,             \
                      alloc_size(2),      \
                      warn_unused_result, \
-                     returns_nonnull,    \
-                     zero_call_used_regs("all")))
+                     returns_nonnull __LIBMEMALLOC_ATTR_ZERO_CALL_USED_REGS))
   #else
     #define __LIBMEMALLOC_REALLOC
   #endif
@@ -406,8 +453,7 @@ extern "C"
       __attribute__((malloc,               \
                      alloc_size(3),        \
                      warn_unused_result,   \
-                     returns_nonnull,      \
-                     zero_call_used_regs("all")))
+                     returns_nonnull __LIBMEMALLOC_ATTR_ZERO_CALL_USED_REGS))
   #else
     #define __LIBMEMALLOC_INTERNAL_REALLOC
   #endif
