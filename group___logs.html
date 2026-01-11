@@ -152,11 +152,8 @@ Files</h2></td></tr>
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="define-members" name="define-members"></a>
 Macros</h2></td></tr>
 <tr class="memitem:ga0b87e0d3bf5853bcbb0b66a7c48fdc05" id="r_ga0b87e0d3bf5853bcbb0b66a7c48fdc05"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___logs.html#ga0b87e0d3bf5853bcbb0b66a7c48fdc05">LOG_LEVEL</a>&#160;&#160;&#160;<a class="el" href="group___logs.html#gga98121d38a8cf3daf5246a349f912ca1da538b2b6e011479d408ecd2be0f6d6177">LOG_LEVEL_DEBUG</a></td></tr>
-<tr class="memdesc:ga0b87e0d3bf5853bcbb0b66a7c48fdc05"><td class="mdescLeft">&#160;</td><td class="mdescRight">Default log level if not defined.  <br /></td></tr>
+<tr class="memdesc:ga0b87e0d3bf5853bcbb0b66a7c48fdc05"><td class="mdescLeft">&#160;</td><td class="mdescRight">Logging verbosity threshold for this module.  <br /></td></tr>
 <tr class="separator:ga0b87e0d3bf5853bcbb0b66a7c48fdc05"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga3024ccd4a9af5109d24e6c57565d74a1" id="r_ga3024ccd4a9af5109d24e6c57565d74a1"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___logs.html#ga3024ccd4a9af5109d24e6c57565d74a1">_POSIX_C_SOURCE</a>&#160;&#160;&#160;200809UL</td></tr>
-<tr class="memdesc:ga3024ccd4a9af5109d24e6c57565d74a1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Expose POSIX extensions for clock_gettime and pthread mutex initializer.  <br /></td></tr>
-<tr class="separator:ga3024ccd4a9af5109d24e6c57565d74a1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga5aa27f5c35e2662288aef5a13ea22918" id="r_ga5aa27f5c35e2662288aef5a13ea22918"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___logs.html#ga5aa27f5c35e2662288aef5a13ea22918">LOG_PRINTF</a>(...)&#160;&#160;&#160;fprintf(__VA_ARGS__)</td></tr>
 <tr class="memdesc:ga5aa27f5c35e2662288aef5a13ea22918"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compiler-specific printf abstraction (variadic).  <br /></td></tr>
 <tr class="separator:ga5aa27f5c35e2662288aef5a13ea22918"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -219,23 +216,6 @@ Functions</h2></td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <h2 class="groupheader">Macro Definition Documentation</h2>
-<a id="ga3024ccd4a9af5109d24e6c57565d74a1" name="ga3024ccd4a9af5109d24e6c57565d74a1"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ga3024ccd4a9af5109d24e6c57565d74a1">&#9670;&#160;</a></span>_POSIX_C_SOURCE</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define _POSIX_C_SOURCE&#160;&#160;&#160;200809UL</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Expose POSIX extensions for clock_gettime and pthread mutex initializer. </p>
-<dl class="section note"><dt>Note</dt><dd>This macro should be defined before including system headers in translation units that require POSIX extensions. </dd></dl>
-
-</div>
-</div>
 <a id="ga51406614a2e1af065a0d938952ed91c4" name="ga51406614a2e1af065a0d938952ed91c4"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ga51406614a2e1af065a0d938952ed91c4">&#9670;&#160;</a></span>ATTR_PRINTF</h2>
 
@@ -359,10 +339,10 @@ Functions</h2></td></tr>
 <div class="line">             __func__,        \</div>
 <div class="line">             __LINE__,        \</div>
 <div class="line">             __VA_ARGS__)</div>
-<div class="ttc" id="agroup___logs_html_ga3526aa23d5fc21b8ef58b438612b678a"><div class="ttname"><a href="group___logs.html#ga3526aa23d5fc21b8ef58b438612b678a">PREFIX_DEBUG</a></div><div class="ttdeci">#define PREFIX_DEBUG</div><div class="ttdef"><b>Definition</b> logs.h:147</div></div>
-<div class="ttc" id="agroup___logs_html_ga98d99a78b58326edf46ec318727a56e3"><div class="ttname"><a href="group___logs.html#ga98d99a78b58326edf46ec318727a56e3">LOG_output</a></div><div class="ttdeci">static int LOG_output(log_level_t level, const char *color, const char *prefix, const char *file, const char *func, int line, const char *fmt,...)</div><div class="ttdoc">Internal logging implementation: thread‐safe, prints timestamp, optional ANSI color,...</div><div class="ttdef"><b>Definition</b> logs.h:260</div></div>
-<div class="ttc" id="agroup___logs_html_gafc9149f5de51bd9ac4f5ebbfa153f018"><div class="ttname"><a href="group___logs.html#gafc9149f5de51bd9ac4f5ebbfa153f018">COLOR_GREEN</a></div><div class="ttdeci">#define COLOR_GREEN</div><div class="ttdef"><b>Definition</b> logs.h:157</div></div>
-<div class="ttc" id="agroup___logs_html_gga98121d38a8cf3daf5246a349f912ca1da538b2b6e011479d408ecd2be0f6d6177"><div class="ttname"><a href="group___logs.html#gga98121d38a8cf3daf5246a349f912ca1da538b2b6e011479d408ecd2be0f6d6177">LOG_LEVEL_DEBUG</a></div><div class="ttdeci">@ LOG_LEVEL_DEBUG</div><div class="ttdef"><b>Definition</b> logs.h:69</div></div>
+<div class="ttc" id="agroup___logs_html_ga3526aa23d5fc21b8ef58b438612b678a"><div class="ttname"><a href="group___logs.html#ga3526aa23d5fc21b8ef58b438612b678a">PREFIX_DEBUG</a></div><div class="ttdeci">#define PREFIX_DEBUG</div><div class="ttdef"><b>Definition</b> logs.h:187</div></div>
+<div class="ttc" id="agroup___logs_html_ga98d99a78b58326edf46ec318727a56e3"><div class="ttname"><a href="group___logs.html#ga98d99a78b58326edf46ec318727a56e3">LOG_output</a></div><div class="ttdeci">static int LOG_output(log_level_t level, const char *color, const char *prefix, const char *file, const char *func, int line, const char *fmt,...)</div><div class="ttdoc">Internal logging implementation: thread‐safe, prints timestamp, optional ANSI color,...</div><div class="ttdef"><b>Definition</b> logs.h:300</div></div>
+<div class="ttc" id="agroup___logs_html_gafc9149f5de51bd9ac4f5ebbfa153f018"><div class="ttname"><a href="group___logs.html#gafc9149f5de51bd9ac4f5ebbfa153f018">COLOR_GREEN</a></div><div class="ttdeci">#define COLOR_GREEN</div><div class="ttdef"><b>Definition</b> logs.h:197</div></div>
+<div class="ttc" id="agroup___logs_html_gga98121d38a8cf3daf5246a349f912ca1da538b2b6e011479d408ecd2be0f6d6177"><div class="ttname"><a href="group___logs.html#gga98121d38a8cf3daf5246a349f912ca1da538b2b6e011479d408ecd2be0f6d6177">LOG_LEVEL_DEBUG</a></div><div class="ttdeci">@ LOG_LEVEL_DEBUG</div><div class="ttdef"><b>Definition</b> logs.h:128</div></div>
 </div><!-- fragment -->
 <p>Logs a debug message (green). </p>
 
@@ -390,9 +370,9 @@ Functions</h2></td></tr>
 <div class="line">             __func__,        \</div>
 <div class="line">             __LINE__,        \</div>
 <div class="line">             __VA_ARGS__)</div>
-<div class="ttc" id="agroup___logs_html_ga6f184204e09bbd4969858ada1e45d3ff"><div class="ttname"><a href="group___logs.html#ga6f184204e09bbd4969858ada1e45d3ff">PREFIX_ERROR</a></div><div class="ttdeci">#define PREFIX_ERROR</div><div class="ttdef"><b>Definition</b> logs.h:144</div></div>
-<div class="ttc" id="agroup___logs_html_gad86358bf19927183dd7b4ae215a29731"><div class="ttname"><a href="group___logs.html#gad86358bf19927183dd7b4ae215a29731">COLOR_RED</a></div><div class="ttdeci">#define COLOR_RED</div><div class="ttdef"><b>Definition</b> logs.h:154</div></div>
-<div class="ttc" id="agroup___logs_html_gga98121d38a8cf3daf5246a349f912ca1da5b40f003febbc3b535649d63f4b8a44f"><div class="ttname"><a href="group___logs.html#gga98121d38a8cf3daf5246a349f912ca1da5b40f003febbc3b535649d63f4b8a44f">LOG_LEVEL_ERROR</a></div><div class="ttdeci">@ LOG_LEVEL_ERROR</div><div class="ttdef"><b>Definition</b> logs.h:66</div></div>
+<div class="ttc" id="agroup___logs_html_ga6f184204e09bbd4969858ada1e45d3ff"><div class="ttname"><a href="group___logs.html#ga6f184204e09bbd4969858ada1e45d3ff">PREFIX_ERROR</a></div><div class="ttdeci">#define PREFIX_ERROR</div><div class="ttdef"><b>Definition</b> logs.h:184</div></div>
+<div class="ttc" id="agroup___logs_html_gad86358bf19927183dd7b4ae215a29731"><div class="ttname"><a href="group___logs.html#gad86358bf19927183dd7b4ae215a29731">COLOR_RED</a></div><div class="ttdeci">#define COLOR_RED</div><div class="ttdef"><b>Definition</b> logs.h:194</div></div>
+<div class="ttc" id="agroup___logs_html_gga98121d38a8cf3daf5246a349f912ca1da5b40f003febbc3b535649d63f4b8a44f"><div class="ttname"><a href="group___logs.html#gga98121d38a8cf3daf5246a349f912ca1da5b40f003febbc3b535649d63f4b8a44f">LOG_LEVEL_ERROR</a></div><div class="ttdeci">@ LOG_LEVEL_ERROR</div><div class="ttdef"><b>Definition</b> logs.h:125</div></div>
 </div><!-- fragment -->
 <p>Logs an error message (red). </p>
 <p>Usage: LOG_ERROR("Message\n"); LOG_ERROR("Message: %d\n", code); </p>
@@ -421,9 +401,9 @@ Functions</h2></td></tr>
 <div class="line">             __func__,       \</div>
 <div class="line">             __LINE__,       \</div>
 <div class="line">             __VA_ARGS__)</div>
-<div class="ttc" id="agroup___logs_html_ga02530f5c05fcd35c2d1d6f42ba5f10e4"><div class="ttname"><a href="group___logs.html#ga02530f5c05fcd35c2d1d6f42ba5f10e4">PREFIX_INFO</a></div><div class="ttdeci">#define PREFIX_INFO</div><div class="ttdef"><b>Definition</b> logs.h:146</div></div>
-<div class="ttc" id="agroup___logs_html_ga23c70d699a5a775bc2e1ebeb8603f630"><div class="ttname"><a href="group___logs.html#ga23c70d699a5a775bc2e1ebeb8603f630">COLOR_BLUE</a></div><div class="ttdeci">#define COLOR_BLUE</div><div class="ttdef"><b>Definition</b> logs.h:156</div></div>
-<div class="ttc" id="agroup___logs_html_gga98121d38a8cf3daf5246a349f912ca1daedee1e3159bfe7d918b6e29873c5aee4"><div class="ttname"><a href="group___logs.html#gga98121d38a8cf3daf5246a349f912ca1daedee1e3159bfe7d918b6e29873c5aee4">LOG_LEVEL_INFO</a></div><div class="ttdeci">@ LOG_LEVEL_INFO</div><div class="ttdef"><b>Definition</b> logs.h:68</div></div>
+<div class="ttc" id="agroup___logs_html_ga02530f5c05fcd35c2d1d6f42ba5f10e4"><div class="ttname"><a href="group___logs.html#ga02530f5c05fcd35c2d1d6f42ba5f10e4">PREFIX_INFO</a></div><div class="ttdeci">#define PREFIX_INFO</div><div class="ttdef"><b>Definition</b> logs.h:186</div></div>
+<div class="ttc" id="agroup___logs_html_ga23c70d699a5a775bc2e1ebeb8603f630"><div class="ttname"><a href="group___logs.html#ga23c70d699a5a775bc2e1ebeb8603f630">COLOR_BLUE</a></div><div class="ttdeci">#define COLOR_BLUE</div><div class="ttdef"><b>Definition</b> logs.h:196</div></div>
+<div class="ttc" id="agroup___logs_html_gga98121d38a8cf3daf5246a349f912ca1daedee1e3159bfe7d918b6e29873c5aee4"><div class="ttname"><a href="group___logs.html#gga98121d38a8cf3daf5246a349f912ca1daedee1e3159bfe7d918b6e29873c5aee4">LOG_LEVEL_INFO</a></div><div class="ttdeci">@ LOG_LEVEL_INFO</div><div class="ttdef"><b>Definition</b> logs.h:127</div></div>
 </div><!-- fragment -->
 <p>Logs an info message (blue). </p>
 
@@ -441,6 +421,14 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p>Logging verbosity threshold for this module. </p>
+<p>Sets the minimum severity of log messages that will be compiled into this translation unit. Only log calls at or below the specified level are enabled:</p><ul>
+<li>LOG_LEVEL_NONE (0): disable all logging</li>
+<li>LOG_LEVEL_ERROR (1): errors only</li>
+<li>LOG_LEVEL_WARNING (2): warnings and errors</li>
+<li>LOG_LEVEL_INFO (3): info, warnings, and errors</li>
+<li>LOG_LEVEL_DEBUG (4): debug, info, warnings, and errors</li>
+</ul>
 <p>Default log level if not defined. </p>
 
 </div>
@@ -509,9 +497,9 @@ Functions</h2></td></tr>
 <div class="line">             __func__,          \</div>
 <div class="line">             __LINE__,          \</div>
 <div class="line">             __VA_ARGS__)</div>
-<div class="ttc" id="agroup___logs_html_ga4534b577b74a58b0f4b7be027af664e0"><div class="ttname"><a href="group___logs.html#ga4534b577b74a58b0f4b7be027af664e0">COLOR_YELLOW</a></div><div class="ttdeci">#define COLOR_YELLOW</div><div class="ttdef"><b>Definition</b> logs.h:155</div></div>
-<div class="ttc" id="agroup___logs_html_gaa24bbed6b4248ab887cb19d3e99ccbc6"><div class="ttname"><a href="group___logs.html#gaa24bbed6b4248ab887cb19d3e99ccbc6">PREFIX_WARNING</a></div><div class="ttdeci">#define PREFIX_WARNING</div><div class="ttdef"><b>Definition</b> logs.h:145</div></div>
-<div class="ttc" id="agroup___logs_html_gga98121d38a8cf3daf5246a349f912ca1da5b4dd81b4dc7eefbc55ba03415c627ef"><div class="ttname"><a href="group___logs.html#gga98121d38a8cf3daf5246a349f912ca1da5b4dd81b4dc7eefbc55ba03415c627ef">LOG_LEVEL_WARNING</a></div><div class="ttdeci">@ LOG_LEVEL_WARNING</div><div class="ttdef"><b>Definition</b> logs.h:67</div></div>
+<div class="ttc" id="agroup___logs_html_ga4534b577b74a58b0f4b7be027af664e0"><div class="ttname"><a href="group___logs.html#ga4534b577b74a58b0f4b7be027af664e0">COLOR_YELLOW</a></div><div class="ttdeci">#define COLOR_YELLOW</div><div class="ttdef"><b>Definition</b> logs.h:195</div></div>
+<div class="ttc" id="agroup___logs_html_gaa24bbed6b4248ab887cb19d3e99ccbc6"><div class="ttname"><a href="group___logs.html#gaa24bbed6b4248ab887cb19d3e99ccbc6">PREFIX_WARNING</a></div><div class="ttdeci">#define PREFIX_WARNING</div><div class="ttdef"><b>Definition</b> logs.h:185</div></div>
+<div class="ttc" id="agroup___logs_html_gga98121d38a8cf3daf5246a349f912ca1da5b4dd81b4dc7eefbc55ba03415c627ef"><div class="ttname"><a href="group___logs.html#gga98121d38a8cf3daf5246a349f912ca1da5b4dd81b4dc7eefbc55ba03415c627ef">LOG_LEVEL_WARNING</a></div><div class="ttdeci">@ LOG_LEVEL_WARNING</div><div class="ttdef"><b>Definition</b> logs.h:126</div></div>
 </div><!-- fragment -->
 <p>Logs a warning message (yellow). </p>
 

@@ -1,7 +1,6 @@
 var group___logs =
 [
     [ "logs.h", "logs_8h.html", null ],
-    [ "_POSIX_C_SOURCE", "group___logs.html#ga3024ccd4a9af5109d24e6c57565d74a1", null ],
     [ "ATTR_PRINTF", "group___logs.html#ga51406614a2e1af065a0d938952ed91c4", null ],
     [ "COLOR_BLUE", "group___logs.html#ga23c70d699a5a775bc2e1ebeb8603f630", null ],
     [ "COLOR_GREEN", "group___logs.html#gafc9149f5de51bd9ac4f5ebbfa153f018", null ],
