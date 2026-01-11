@@ -317,6 +317,7 @@ static inline int LOG_output(log_level_t level,
   static pthread_mutex_t log_mutex = PTHREAD_MUTEX_INITIALIZER;
 
   struct timespec ts;
+  struct tm       tm_buf;
   struct tm      *ptm = (struct tm *)NULL;
 
   time_t now = 0;
@@ -336,7 +337,17 @@ static inline int LOG_output(log_level_t level,
   clock_gettime(CLOCK_REALTIME, &ts);
 
   now = ts.tv_sec;
-  ptm = localtime(&now);
+  memset(&tm_buf, 0, sizeof(tm_buf));
+
+#if defined(_WIN32) || defined(_WIN64)
+  if (localtime_s(&tm_buf, &now) != 0)
+    memset(&tm_buf, 0, sizeof(tm_buf));
+#else
+  if (localtime_r(&now, &tm_buf) == NULL)
+    memset(&tm_buf, 0, sizeof(tm_buf));
+#endif
+
+  ptm = &tm_buf;
 
   out  = (level <= LOG_LEVEL_WARNING) ? stderr : stdout;
   msec = ts.tv_nsec / 1000000L;
