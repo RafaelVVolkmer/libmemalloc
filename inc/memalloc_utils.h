@@ -449,7 +449,7 @@ extern "C"
     || defined(__GNUC__) || defined(__clang__)
     #define UNLIKELY(cond_) (__builtin_expect(!!(cond_), 0))
   #else
-    #define UNLIKELY(cond_) (!!(x))
+    #define UNLIKELY(cond_) (!!(cond_))
   #endif
 #endif
 
