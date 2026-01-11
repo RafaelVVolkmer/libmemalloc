@@ -253,7 +253,7 @@ __LIBMEMALLOC_API int MEM_free(void *const ptr);
  *          G A R B A G E  C O L L E C T O R  F U N C T I O N S
  * ========================================================================== */
 
-#if defined(GARBACE_COLLECTOR)
+#if defined(GARBAGE_COLLECTOR)
 
 /** ============================================================================
  *  @brief  Start or signal the garbage collector thread.

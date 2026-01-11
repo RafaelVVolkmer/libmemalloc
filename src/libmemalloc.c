@@ -892,7 +892,7 @@ static bool MEM_stackGrowsDown(void);
 static int MEM_stackBounds(const pthread_t        id,
                            mem_allocator_t *const allocator);
 
-#if defined(GARBACE_COLLECTOR)
+#if defined(GARBAGE_COLLECTOR)
 
 /** ============================================================================
  *  @brief  Dedicated thread loop driving mark-and-sweep iterations.
@@ -3305,7 +3305,7 @@ function_output:
  *      P R I V A T E  G A R B A G E  C O L L E C T O R  F U N C T I O N S
  * ========================================================================== */
 
-#if defined(GARBACE_COLLECTOR)
+#if defined(GARBAGE_COLLECTOR)
 
 /** ============================================================================
  *  @brief  Reset “marked” flags across all allocated regions.
@@ -4151,7 +4151,7 @@ function_output:
   return ret_addr;
 }
 
-#if defined(GARBACE_COLLECTOR)
+#if defined(GARBAGE_COLLECTOR)
 
 /** ============================================================================
  *  @brief  Start or signal the garbage collector thread.
