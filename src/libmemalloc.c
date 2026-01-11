@@ -39,8 +39,30 @@
  *              specifications, such as nonstandard functions, constants,
  *              and structures.
  * ========================================================================== */
-#ifndef _GNU_SOURCE
-  #define _GNU_SOURCE
+#if !defined(_WIN32) && !defined(_WIN64)
+  #if defined(__STDC_HOSTED__) && (__STDC_HOSTED__ == 1)
+    #ifndef _GNU_SOURCE
+      #define _GNU_SOURCE
+    #endif
+  #endif
+#endif
+
+/** ============================================================================
+ *  @def        _POSIX_C_SOURCE
+ *  @brief      Expose POSIX extensions for clock_gettime and
+ *              pthread mutex initializer.
+ *  @note       This macro should be defined before including system headers
+ *              in translation units that require POSIX extensions.
+ * ========================================================================== */
+#if !defined(_WIN32) && !defined(_WIN64)
+  #if defined(__STDC_HOSTED__) && (__STDC_HOSTED__ == 1)
+    #if defined(__unix__) || defined(__unix) || defined(__APPLE__) \
+      || defined(__linux__)
+      #ifndef _POSIX_C_SOURCE
+        #define _POSIX_C_SOURCE 200809UL
+      #endif
+    #endif
+  #endif
 #endif
 
 /** ============================================================================
@@ -55,6 +77,7 @@
  *                - LOG_LEVEL_WARNING (2): warnings and errors
  *                - LOG_LEVEL_INFO    (3): info, warnings, and errors
  *                - LOG_LEVEL_DEBUG   (4): debug, info, warnings, and errors
+ *  @brief      Default log level if not defined.
  * ========================================================================== */
 #ifndef LOG_LEVEL
   #define LOG_LEVEL LOG_LEVEL_NONE
@@ -63,6 +86,11 @@
 /** ============================================================================
  *                      P R I V A T E  I N C L U D E S
  * ========================================================================== */
+
+/*< Implemented >*/
+#include "libmemalloc.h"
+
+#include "logs.h"
 
 /*< Dependencies >*/
 #include <inttypes.h>
@@ -76,10 +104,6 @@
     #include <valgrind/memcheck.h>
   #endif
 #endif
-
-/*< Implemented >*/
-#include "libmemalloc.h"
-#include "logs.h"
 
 /** ============================================================================
  *               P R I V A T E  D E F I N E S  &  M A C R O S
@@ -891,7 +915,7 @@ static bool MEM_stackGrowsDown(void);
 static int MEM_stackBounds(const pthread_t        id,
                            mem_allocator_t *const allocator);
 
-#if defined(GARBACE_COLLECTOR)
+#if defined(GARBAGE_COLLECTOR)
 
 /** ============================================================================
  *  @brief  Dedicated thread loop driving mark-and-sweep iterations.
@@ -3304,7 +3328,7 @@ function_output:
  *      P R I V A T E  G A R B A G E  C O L L E C T O R  F U N C T I O N S
  * ========================================================================== */
 
-#if defined(GARBACE_COLLECTOR)
+#if defined(GARBAGE_COLLECTOR)
 
 /** ============================================================================
  *  @brief  Reset “marked” flags across all allocated regions.
@@ -4150,7 +4174,7 @@ function_output:
   return ret_addr;
 }
 
-#if defined(GARBACE_COLLECTOR)
+#if defined(GARBAGE_COLLECTOR)
 
 /** ============================================================================
  *  @brief  Start or signal the garbage collector thread.

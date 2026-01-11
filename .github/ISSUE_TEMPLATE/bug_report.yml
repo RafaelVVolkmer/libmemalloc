@@ -1,0 +1,213 @@
+# SPDX-FileCopyrightText: 2024-2025 Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
+# SPDX-License-Identifier: MIT
+
+name: "🐛 Bug report"
+description: "Create a report to help improve libmemalloc."
+title: "[BUG] "
+labels: ["bug"]
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## 📝 Description
+        A clear and concise description of the bug.
+
+        What is going wrong? In what general situation (startup, heavy load,
+        shutdown, specific API, etc.)?
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Bug Description
+      placeholder: "Describe what is happening and what should happen instead."
+    validations:
+      required: true
+
+  - type: markdown
+    attributes:
+      value: |
+        ---
+        ## 🏗️ Build / Toolchain Environment  
+        Please provide details about the environment where libmemalloc was built
+        and executed.
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Build / Execution Environment
+      description: "Fill in as many fields as you can."
+      value: |
+        - libmemalloc version (tag/commit): `vX.Y.ZZ` or `<commit-hash>`
+        - Build type: Debug / Release
+        - Target architecture: (e.g. x86_64, armv7, aarch64)
+        - Target CPU / SoC / board (e.g. Intel i7, TI AM6232, STM32MP135)
+        - Kernel/OS and version (e.g. Linux 6.11.5, Windows 11)
+        - Host compiler and version (gcc/clang)
+        - C standard (e.g. -std=c99)
+        - Doxygen version:
+        - Valgrind version:
+        - gcov / coverage tool version:
+
+        Build method:
+        - [ ] ./build.sh
+        - [ ] CMake manual invocation
+        - [ ] Docker
+        - [ ] Other (describe):
+    validations:
+      required: false
+
+  - type: markdown
+    attributes:
+      value: |
+        ---
+        ## ⚙️ libmemalloc Configuration  
+        Describe any non-default configuration.
+
+  - type: textarea
+    id: config
+    attributes:
+      label: libmemalloc Configuration
+      value: |
+        - Allocation strategy:
+        - GC / background collection:
+          - [ ] Disabled (default)
+          - [ ] Enabled (describe interval/triggers)
+        - Logging:
+          - Level: ERROR / WARN / INFO / DEBUG
+          - Custom log sink?:
+        - Non-default compile-time options / macros:
+    validations:
+      required: false
+
+  - type: markdown
+    attributes:
+      value: |
+        ---
+        ## 🔁 Steps to Reproduce
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. …
+        2. …
+        3. …
+    validations:
+      required: true
+
+  - type: textarea
+    id: code
+    attributes:
+      label: Minimal C snippet (if applicable)
+      render: c
+      placeholder: |
+        // minimal example here
+
+  - type: markdown
+    attributes:
+      value: |
+        ---
+        ## ✅ Expected Behavior
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+
+  - type: markdown
+    attributes:
+      value: |
+        ---
+        ## ❌ Actual Behavior
+
+        If there are crashes, include:
+        - Backtrace (gdb/lldb)
+        - Sanitizer output (ASan/UBSan/etc.)
+        - libmemalloc logs (WARN/ERROR/DEBUG)
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+
+  - type: markdown
+    attributes:
+      value: |
+        ---
+        ## 🎯 Reproducibility & Severity
+
+  - type: checkboxes
+    id: reproducibility
+    attributes:
+      label: Reproducibility
+      options:
+        - label: Always reproducible
+        - label: Sometimes
+        - label: Rarely / hard to reproduce
+
+  - type: checkboxes
+    id: severity
+    attributes:
+      label: Impact / Severity
+      options:
+        - label: Cosmetic / logging only
+        - label: Incorrect allocation behavior
+        - label: Memory leak
+        - label: Crash / abort
+        - label: Potential security impact
+
+  - type: textarea
+    id: security_reason
+    attributes:
+      label: If security impact checked, explain why
+
+  - type: markdown
+    attributes:
+      value: |
+        ---
+        ## ⏪ Regression?
+
+  - type: checkboxes
+    id: regression
+    attributes:
+      label: Regression information
+      options:
+        - label: This worked in a previous version
+        - label: Not sure / first time using this feature
+
+  - type: textarea
+    id: regression_details
+    attributes:
+      label: Regression details
+      placeholder: |
+        - Known good version:
+        - First known bad version:
+
+  - type: markdown
+    attributes:
+      value: |
+        ---
+        ## 📎 Additional Context
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional context
+      placeholder: |
+        - Type of application integrating libmemalloc
+        - Interaction with other allocators
+        - Threading / signals / fork/exec details
+
+  - type: input
+    id: signed_off_by
+    attributes:
+      label: "✍️ Signed-off-by (optional)"
+      description: |
+        If you intend to provide patches for this bug and want to comply with the
+        Developer Certificate of Origin (DCO), enter your Signed-off-by line below.
+      placeholder: "Signed-off-by: <Your Name> <your.email@example.com>"
+    validations:
+      required: false

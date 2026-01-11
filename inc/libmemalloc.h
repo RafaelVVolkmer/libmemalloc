@@ -33,15 +33,15 @@ extern "C"
  *                      P U B L I C  I N C L U D E S
  * ========================================================================== */
 
+/*< Implemented >*/
+#include "memalloc_utils.h"
+
 /*< Dependencies >*/
 #include <pthread.h>
 #include <stdatomic.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <string.h>
-
-/*< Implemented >*/
-#include "memalloc_utils.h"
 
 /** ============================================================================
  *              P U B L I C  D E F I N E S  &  M A C R O S
@@ -253,7 +253,7 @@ __LIBMEMALLOC_API int MEM_free(void *const ptr);
  *          G A R B A G E  C O L L E C T O R  F U N C T I O N S
  * ========================================================================== */
 
-#if defined(GARBACE_COLLECTOR)
+#if defined(GARBAGE_COLLECTOR)
 
 /** ============================================================================
  *  @brief  Start or signal the garbage collector thread.

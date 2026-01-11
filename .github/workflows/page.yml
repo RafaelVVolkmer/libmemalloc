@@ -21,8 +21,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install Doxygen
-        run: sudo apt-get update && sudo apt-get install -y doxygen
+      - name: Install Doxygen & Coverage Tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y doxygen lcov gcovr
 
       - name: Generate docs
         run: |

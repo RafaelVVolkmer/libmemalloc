@@ -31,6 +31,65 @@ extern "C"
 #endif
 
 /** ============================================================================
+ *          P R I V A T E  P R E - I N C L U D E  D E F I N E S
+ * ========================================================================== */
+
+/** ============================================================================
+ *  @def        _GNU_SOURCE
+ *  @brief      Enable GNU extensions on POSIX systems
+ *
+ *  @details    Defining _GNU_SOURCE before including any headers
+ *              activates GNU-specific library features and extensions
+ *              in glibc and other GNU-compatible C libraries. This
+ *              enables additional APIs beyond the standard C/POSIX
+ *              specifications, such as nonstandard functions, constants,
+ *              and structures.
+ * ========================================================================== */
+#if !defined(_WIN32) && !defined(_WIN64)
+  #if defined(__STDC_HOSTED__) && (__STDC_HOSTED__ == 1)
+    #ifndef _GNU_SOURCE
+      #define _GNU_SOURCE
+    #endif
+  #endif
+#endif
+
+/** ============================================================================
+ *  @def        _POSIX_C_SOURCE
+ *  @brief      Expose POSIX extensions for clock_gettime and
+ *              pthread mutex initializer.
+ *  @note       This macro should be defined before including system headers
+ *              in translation units that require POSIX extensions.
+ * ========================================================================== */
+#if !defined(_WIN32) && !defined(_WIN64)
+  #if defined(__STDC_HOSTED__) && (__STDC_HOSTED__ == 1)
+    #if defined(__unix__) || defined(__unix) || defined(__APPLE__) \
+      || defined(__linux__)
+      #ifndef _POSIX_C_SOURCE
+        #define _POSIX_C_SOURCE 200809UL
+      #endif
+    #endif
+  #endif
+#endif
+
+/** ============================================================================
+ *  @def        LOG_LEVEL
+ *  @brief      Logging verbosity threshold for this module
+ *
+ *  @details    Sets the minimum severity of log messages that will be
+ *              compiled into this translation unit. Only log calls at or
+ *              below the specified level are enabled:
+ *                - LOG_LEVEL_NONE    (0): disable all logging
+ *                - LOG_LEVEL_ERROR   (1): errors only
+ *                - LOG_LEVEL_WARNING (2): warnings and errors
+ *                - LOG_LEVEL_INFO    (3): info, warnings, and errors
+ *                - LOG_LEVEL_DEBUG   (4): debug, info, warnings, and errors
+ *  @brief      Default log level if not defined.
+ * ========================================================================== */
+#ifndef LOG_LEVEL
+  #define LOG_LEVEL LOG_LEVEL_DEBUG
+#endif
+
+/** ============================================================================
  *                      P U B L I C  I N C L U D E S
  * ========================================================================== */
 
@@ -74,25 +133,6 @@ typedef enum LogLevel
 /** ============================================================================
  *              P U B L I C  D E F I N E S  &  M A C R O S
  * ========================================================================== */
-
-/** ============================================================================
- *  @def        LOG_LEVEL
- *  @brief      Default log level if not defined.
- * ========================================================================== */
-#ifndef LOG_LEVEL
-  #define LOG_LEVEL LOG_LEVEL_DEBUG
-#endif
-
-/** ============================================================================
- *  @def        _POSIX_C_SOURCE
- *  @brief      Expose POSIX extensions for clock_gettime and
- *              pthread mutex initializer.
- *  @note       This macro should be defined before including system headers
- *              in translation units that require POSIX extensions.
- * ========================================================================== */
-#ifndef _POSIX_C_SOURCE
-  #define _POSIX_C_SOURCE 200809UL
-#endif
 
 /** ============================================================================
  *  @def        LOG_PRINTF
@@ -277,6 +317,7 @@ static inline int LOG_output(log_level_t level,
   static pthread_mutex_t log_mutex = PTHREAD_MUTEX_INITIALIZER;
 
   struct timespec ts;
+  struct tm       tm_buf;
   struct tm      *ptm = (struct tm *)NULL;
 
   time_t now = 0;
@@ -296,7 +337,17 @@ static inline int LOG_output(log_level_t level,
   clock_gettime(CLOCK_REALTIME, &ts);
 
   now = ts.tv_sec;
-  ptm = localtime(&now);
+  memset(&tm_buf, 0, sizeof(tm_buf));
+
+#if defined(_WIN32) || defined(_WIN64)
+  if (localtime_s(&tm_buf, &now) != 0)
+    memset(&tm_buf, 0, sizeof(tm_buf));
+#else
+  if (localtime_r(&now, &tm_buf) == NULL)
+    memset(&tm_buf, 0, sizeof(tm_buf));
+#endif
+
+  ptm = &tm_buf;
 
   out  = (level <= LOG_LEVEL_WARNING) ? stderr : stdout;
   msec = ts.tv_nsec / 1000000L;

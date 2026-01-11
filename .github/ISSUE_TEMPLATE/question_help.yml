@@ -1,0 +1,72 @@
+# SPDX-FileCopyrightText: 2024-2025 Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
+# SPDX-License-Identifier: MIT
+
+name: "❓ Questions and Help"
+description: "Ask a question about using libmemalloc."
+title: "[QUESTION] "
+labels: ["question"]
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## ❓ Question
+        Be as specific as possible.
+
+  - type: textarea
+    id: question
+    attributes:
+      label: Your Question
+      placeholder: "Describe your question clearly and specifically."
+    validations:
+      required: true
+
+  - type: markdown
+    attributes:
+      value: |
+        ---
+        ## 📦 Environment (optional)
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      value: |
+        - libmemalloc version:
+        - OS:
+        - Compiler:
+        - Integration method:
+
+  - type: markdown
+    attributes:
+      value: |
+        ---
+        ## 🔍 What You Tried
+
+  - type: textarea
+    id: what_you_tried
+    attributes:
+      label: What you tried
+      placeholder: "Docs read, experiments, errors…"
+
+  - type: markdown
+    attributes:
+      value: |
+        ---
+        ## 📎 Additional Context
+
+  - type: textarea
+    id: additional_context
+    attributes:
+      label: Additional context
+      placeholder: "Links, constraints, diagrams…"
+
+  - type: input
+    id: signed_off_by
+    attributes:
+      label: "✍️ Signed-off-by (optional)"
+      description: "Only if contributing patches for this issue."
+      placeholder: "Signed-off-by: <Your Name> <your.email@example.com>"
+    validations:
+      required: false  
