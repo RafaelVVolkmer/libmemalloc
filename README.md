@@ -13,7 +13,7 @@ SPDX-License-Identifier: MIT
   [![Issues][issues-shield]][issues-url]
   [![ULicense][license-shield]][license-url]
   [![LinkedIn][linkedin-shield]][linkedin-url]
-  
+  [![CI][ci-all-shield]][ci-all-url]
 </div>
 
 ##
@@ -300,3 +300,5 @@ of .git/hooks/
 [linkedin-url]: https://www.linkedin.com/in/rafaelvvolkmer
 [license-shield]: https://img.shields.io/github/license/RafaelVVolkmer/libmemalloc.svg?style=flat-square
 [license-url]: https://github.com/RafaelVVolkmer/libmemalloc/blob/main/LICENSE.txt
+[ci-all-shield]: https://img.shields.io/github/check-runs/RafaelVVolkmer/libmemalloc/develop?style=flat-square&logo=github&label=CI
+[ci-all-url]: https://github.com/RafaelVVolkmer/libmemalloc/actions
