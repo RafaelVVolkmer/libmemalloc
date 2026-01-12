@@ -59,7 +59,7 @@ Under the hood, the allocator uses:
 - **Internal locking** to remain safe in multithreaded programs.
 - Integration points for tools like Valgrind and external profilers.
 
-The public surface is kept small and stable, and the shared library is exported through a linker version script (`MEMALLOC_3.0`) so that only the intended symbols are visible to consumers.
+The public surface is kept small and stable, and the shared library is exported through a linker version script (`MEMALLOC_3.5`) so that only the intended symbols are visible to consumers.
 
 To use it, you simply link the `.a` or `.so`, include `libmemalloc.h`, and swap your `malloc`/`free` calls for `MEM_*` equivalents.
 

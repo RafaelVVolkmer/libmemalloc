@@ -48,7 +48,7 @@ Highlights:
 - Thread-safety via internal locking  
 - Valgrind integration for detailed leak reports  
 - Configurable logging and colored diagnostics  
-- Exported API is versioned via a linker script (e.g. `MEMALLOC_3.0`), keeping the public surface tight and stable
+- Exported API is versioned via a linker script (e.g. `MEMALLOC_3.5`), keeping the public surface tight and stable
 
 The public API is intentionally compact and lives under the `MEM_` prefix:
 

@@ -17,8 +17,8 @@
  *              Supports GCC-specific built-in printing as well as standard
  *              printf for other compilers.
  *
- *  @version    v1.0.00
- *  @date       23.08.2025
+ *  @version    v3.5.00
+ *  @date       11.01.2026
  *  @author     Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
  * ========================================================================== */
 

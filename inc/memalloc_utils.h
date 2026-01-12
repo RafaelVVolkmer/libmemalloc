@@ -19,8 +19,8 @@
  *              attribute semantics, and performance annotations across
  *              multiple target architectures and toolchains.
  *
- *  @version    v1.0.00
- *  @date       29.09.2025
+ *  @version    v3.5.00
+ *  @date       11.01.2026
  *  @author     Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
  * ========================================================================== */
 

@@ -16,8 +16,8 @@
  *              - Garbage collection (mark & sweep)
  *              - Multiple allocation strategies (First/Best/Next Fit)
  *
- *  @version    v3.0.00
- *  @date       28.09.2025
+ *  @version    v3.5.00
+ *  @date       11.01.2026
  *  @author     Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
  * ========================================================================== */
 

@@ -24,6 +24,40 @@ and versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html
 
 ---
 
+## [3.5.00] – 2026-01-11
+
+### Added
+- **Aggregated CI status badge**
+  - Added a single “CI” badge (Shields check-runs) to reflect overall pipeline health at a glance.
+
+### Changed
+- **ABI / version script namespace bump**
+  - Updated `libmemalloc.map` namespace from `MEMALLOC_3.0` to `MEMALLOC_3.5.00`.
+- **Version metadata refresh**
+  - Updated version/date annotations in public headers and `src/libmemalloc.c` to `v3.5.00` / `2026-01-11`.
+- **Toolchain maintainability**
+  - Centralized the compiler-specific `zero_call_used_regs("all")` attribute behind
+    `__LIBMEMALLOC_ATTR_ZERO_CALL_USED_REGS` to reduce duplication and simplify gating.
+
+### Fixed
+- **Branch prediction helpers**
+  - Fixed `UNLIKELY(cond_)` fallback macro to use the correct parameter (was referencing an undefined identifier).
+- **GC feature flag typo**
+  - Standardized the canonical feature macro to `GARBAGE_COLLECTOR`.
+  - Kept temporary compatibility by accepting the legacy typo `GARBACE_COLLECTOR`.
+- **Feature-test macros (portability)**
+  - Guarded `_GNU_SOURCE` and `_POSIX_C_SOURCE` to only apply on hosted, non-Windows builds.
+  - Enabled `_POSIX_C_SOURCE` only on POSIX-like targets (Linux/Unix/macOS), preventing pollution on unsupported platforms/toolchains.
+- **Logging thread-safety**
+  - Replaced `localtime()` (shared static storage) with thread-safe alternatives:
+    - POSIX: `localtime_r()`
+    - Windows: `localtime_s()`
+  - Uses a stack-based `struct tm` buffer with deterministic fallback behavior on conversion failure.
+- **Include order determinism**
+  - Reordered includes so project headers come before libc/system headers, reducing guarded-include collisions and inconsistent include graphs.
+
+---
+
 ## [3.0.00] – 2025-12-04
 
 ### Added

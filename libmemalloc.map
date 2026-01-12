@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-MEMALLOC_3.0 {
+MEMALLOC_3.5.00 {
   global:
     MEM_alloc;
     MEM_calloc;
