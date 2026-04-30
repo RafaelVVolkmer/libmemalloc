@@ -263,3 +263,8 @@ Thumbs.db
 
 # WSL identifier
 **/*.Identifier
+
+# ================================
+# - NODE JS Modules
+# ================================
+node_modules/
