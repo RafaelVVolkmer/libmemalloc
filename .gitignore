@@ -176,7 +176,7 @@ cmake-build-*/
 
 # ArduinoIDE
 /libraries/
- /build/
+/build/
 *.ino.cpp
 *.ino.h
 *.eep

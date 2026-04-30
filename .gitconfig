@@ -2,40 +2,40 @@
 # SPDX-License-Identifier: MIT
 
 [alias]
-    b  = blame -w
-    bb = blame -w -C -CHANGES
+	b  = blame -w
+	bb = blame -w -C -CHANGES
 
-    lg  = log --oneline --graph --decorate --all
-    lg1 = log --graph --decorate --date=relative \
-              --format='%C(auto)%h %C(bold)%ad%Creset %C(auto)%an%d %Creset%s'
+	lg  = log --oneline --graph --decorate --all
+	lg1 = log --graph --decorate --date=relative \
+		--format='%C(auto)%h %C(bold)%ad%Creset %C(auto)%an%d %Creset%s'
 
-    tag = !.githooks/post-tag
+	tag = !.githooks/post-tag
 
 [diff]
-    algorithm = histogram
-    colorMoved = default
+	algorithm = histogram
+	colorMoved = default
 
 [merge]
-    conflictstyle = zdiff3
+	conflictstyle = zdiff3
 
 [blame]
-    showEmail = true
-    showRoot = true
-    markIgnoredLines = true
-    markUnblamableLines = true
+	showEmail = true
+	showRoot = true
+	markIgnoredLines = true
+	markUnblamableLines = true
 
 [pull]
-    rebase = true
+	rebase = true
 
 [rebase]
-    autoStash = true
+	autoStash = true
 
 [rerere]
-    enabled = true
+	enabled = true
 
 [core]
-    autocrlf = input
-    safecrlf = true
+	autocrlf = input
+    	safecrlf = true
 
 [color]
-    ui = auto
+	ui = auto

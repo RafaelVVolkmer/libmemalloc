@@ -7,13 +7,14 @@ SPDX-License-Identifier: MIT
 
 <div align="center">
 
-  [![Contributors][contributors-shield]][contributors-url]
-  [![Forks][forks-shield]][forks-url]
-  [![Stargazers][stars-shield]][stars-url]
-  [![Issues][issues-shield]][issues-url]
-  [![ULicense][license-shield]][license-url]
-  [![LinkedIn][linkedin-shield]][linkedin-url]
-  [![CI][ci-all-shield]][ci-all-url]
+[![Contributors][contributors-shield]][contributors-url]
+[![Forks][forks-shield]][forks-url]
+[![Stargazers][stars-shield]][stars-url]
+[![Issues][issues-shield]][issues-url]
+[![ULicense][license-shield]][license-url]
+[![LinkedIn][linkedin-shield]][linkedin-url]
+[![CI][ci-all-shield]][ci-all-url]
+
 </div>
 
 ##
@@ -35,7 +36,7 @@ SPDX-License-Identifier: MIT
 ---
 
 [maintainability-shield]: https://qlty.sh/gh/RafaelVVolkmer/projects/libmemalloc/badges/maintainability.svg?style=flat-square
-[maintainability-url]:   https://qlty.sh/gh/RafaelVVolkmer/projects/libmemalloc
+[maintainability-url]: https://qlty.sh/gh/RafaelVVolkmer/projects/libmemalloc
 [stars-shield]: https://img.shields.io/github/stars/RafaelVVolkmer/libmemalloc.svg?style=flat-square
 [stars-url]: https://github.com/RafaelVVolkmer/libmemalloc/stargazers
 [contributors-shield]: https://img.shields.io/github/contributors/RafaelVVolkmer/libmemalloc.svg?style=flat-square
