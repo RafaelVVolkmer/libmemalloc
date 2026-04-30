@@ -1,0 +1,26 @@
+{
+  "name": "libmemalloc-formatting-tools",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Formatting tooling for libmemalloc.",
+  "license": "MIT",
+  "engines": {
+    "node": ">=24 <25",
+    "npm": ">=11 <12"
+  },
+  "packageManager": "npm@11.13.0",
+  "scripts": {
+    "format:prettier": "prettier --write .",
+    "check:prettier": "prettier --check .",
+    "format": "npm run format:prettier",
+    "check": "npm run check:prettier"
+  },
+  "devDependencies": {
+    "@prettier/plugin-xml": "3.4.2",
+    "prettier": "3.8.3",
+    "prettier-plugin-powershell": "2.0.11",
+    "prettier-plugin-sh": "0.18.1",
+    "prettier-plugin-sql": "0.20.0",
+    "prettier-plugin-toml": "2.0.6"
+  }
+}

@@ -1,0 +1,152 @@
+{
+  "$schema": "https://json.schemastore.org/prettierrc",
+  "printWidth": 80,
+  "tabWidth": 2,
+  "useTabs": false,
+  "endOfLine": "lf",
+  "semi": true,
+  "singleQuote": false,
+  "quoteProps": "as-needed",
+  "jsxSingleQuote": false,
+  "trailingComma": "none",
+  "bracketSpacing": true,
+  "bracketSameLine": false,
+  "arrowParens": "always",
+  "proseWrap": "preserve",
+  "htmlWhitespaceSensitivity": "css",
+  "vueIndentScriptAndStyle": false,
+  "singleAttributePerLine": false,
+  "embeddedLanguageFormatting": "auto",
+  "objectWrap": "preserve",
+  "plugins": [
+    "@prettier/plugin-xml",
+    "prettier-plugin-sh",
+    "prettier-plugin-sql",
+    "prettier-plugin-toml",
+    "prettier-plugin-powershell"
+  ],
+  "overrides": [
+    {
+      "files": [
+        "*.js",
+        "*.jsx",
+        "*.mjs",
+        "*.cjs",
+        "*.ts",
+        "*.tsx",
+        "*.mts",
+        "*.cts"
+      ],
+      "options": {
+        "tabWidth": 2,
+        "useTabs": false
+      }
+    },
+    {
+      "files": ["*.css", "*.scss", "*.sass", "*.less"],
+      "options": {
+        "tabWidth": 2,
+        "useTabs": false
+      }
+    },
+    {
+      "files": ["*.html", "*.htm", "*.vue"],
+      "options": {
+        "tabWidth": 2,
+        "useTabs": false,
+        "singleAttributePerLine": false
+      }
+    },
+    {
+      "files": ["*.json", "*.json5", "*.jsonc"],
+      "options": {
+        "tabWidth": 2,
+        "useTabs": false,
+        "trailingComma": "none"
+      }
+    },
+    {
+      "files": ["*.yml", "*.yaml"],
+      "options": {
+        "tabWidth": 2,
+        "useTabs": false,
+        "singleQuote": false
+      }
+    },
+    {
+      "files": ["*.md", "*.mdx"],
+      "options": {
+        "tabWidth": 2,
+        "useTabs": false,
+        "proseWrap": "preserve"
+      }
+    },
+    {
+      "files": ["*.graphql", "*.gql"],
+      "options": {
+        "tabWidth": 2,
+        "useTabs": false
+      }
+    },
+    {
+      "files": ["*.toml"],
+      "options": {
+        "tabWidth": 2,
+        "useTabs": false
+      }
+    },
+    {
+      "files": ["*.xml", "*.xsd", "*.svg", "*.ui", "*.qrc"],
+      "options": {
+        "tabWidth": 2,
+        "useTabs": false,
+        "bracketSameLine": false,
+        "xmlQuoteAttributes": "preserve",
+        "xmlSelfClosingSpace": true,
+        "xmlSortAttributesByKey": false,
+        "xmlWhitespaceSensitivity": "strict"
+      }
+    },
+    {
+      "files": ["*.sql", "*.psql", "*.pgsql", "*.mysql", "*.sqlite"],
+      "options": {
+        "tabWidth": 4,
+        "useTabs": false,
+        "keywordCase": "upper",
+        "dataTypeCase": "upper",
+        "functionCase": "upper",
+        "identifierCase": "preserve"
+      }
+    },
+    {
+      "files": ["*.sh", "*.bash", "*.zsh"],
+      "options": {
+        "tabWidth": 8,
+        "useTabs": true
+      }
+    },
+    {
+      "files": ["*.ps1", "*.psm1", "*.psd1"],
+      "options": {
+        "tabWidth": 4,
+        "useTabs": false
+      }
+    },
+    {
+      "files": [
+        ".env",
+        ".env.*",
+        ".gitignore",
+        ".dockerignore",
+        "Dockerfile",
+        "Dockerfile.*",
+        "*.Dockerfile",
+        "*.dockerfile"
+      ],
+      "options": {
+        "tabWidth": 4,
+        "useTabs": false
+      }
+    }
+  ]
+}
