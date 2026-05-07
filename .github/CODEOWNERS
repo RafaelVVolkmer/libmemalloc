@@ -1,0 +1,41 @@
+# SPDX-FileCopyrightText: 2026 Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
+# SPDX-License-Identifier: GPL-3.0-only
+
+# CODEOWNERS for libmemalloc
+# See: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+# Default fallback for any path not explicitly listed below
+* @RafaelVVolkmer
+
+# GitHub-specific repository metadata and collaboration files
+/.github/ @RafaelVVolkmer
+
+# Project documentation tree and workflow guides
+/docs/ @RafaelVVolkmer
+
+# Canonical license texts used by REUSE
+/LICENSES/ @RafaelVVolkmer
+
+# Repository images and README support assets
+/readme/ @RafaelVVolkmer
+
+# Root placeholder file kept for repository layout
+/.gitkeep @RafaelVVolkmer
+
+# Human-readable release history and change tracking
+/CHANGELOG.md @RafaelVVolkmer
+
+# Community behavior policy and enforcement guide
+/CODE_OF_CONDUCT.md @RafaelVVolkmer
+
+# Project governance rules and ownership policy
+/GOVERNANCE.md @RafaelVVolkmer
+
+# Main repository license text
+/LICENSE @RafaelVVolkmer
+
+# Primary project landing page and overview
+/README.md @RafaelVVolkmer
+
+# Security policy and vulnerability handling process
+/SECURITY.md @RafaelVVolkmer
