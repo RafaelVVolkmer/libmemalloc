@@ -1,0 +1,674 @@
+# SPDX-FileCopyrightText: 2026 Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
+# SPDX-License-Identifier: GPL-3.0-only
+
+# ==============================================================================
+# Default Repository Policy
+# ==============================================================================
+
+# Normalize text files to LF in the repository.
+# Binary files should be marked explicitly below.
+* text=auto
+
+# Keep shell scripts and text-based tooling portable.
+*.sh  text eol=lf
+*.bash text eol=lf
+*.zsh text eol=lf
+*.ksh text eol=lf
+*.fish text eol=lf
+
+# Windows scripts intentionally keep CRLF.
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.ps1 text eol=crlf
+*.psm1 text eol=crlf
+*.psd1 text eol=crlf
+
+# ==============================================================================
+# Git and Repository Metadata
+# ==============================================================================
+
+.gitattributes           text eol=lf
+.gitignore               text eol=lf
+.gitmodules              text eol=lf
+.gitmessage              text eol=lf
+.git-blame-ignore-revs   text eol=lf
+.mailmap                 text eol=lf
+.editorconfig            text eol=lf
+
+.github/**               text eol=lf
+.githooks/**             text eol=lf
+
+# ==============================================================================
+# Project Documentation and Metadata
+# ==============================================================================
+
+*.md       text eol=lf linguist-language=Markdown
+*.mdx      text eol=lf linguist-language=MDX
+*.adoc     text eol=lf linguist-language=AsciiDoc
+*.rst      text eol=lf linguist-language=reStructuredText
+*.txt      text eol=lf
+*.textile  text eol=lf
+
+README*           text eol=lf
+CHANGELOG*        text eol=lf
+CONTRIBUTING*     text eol=lf
+CODE_OF_CONDUCT*  text eol=lf
+GOVERNANCE*       text eol=lf
+SECURITY*         text eol=lf
+SUPPORT*          text eol=lf
+AUTHORS*          text eol=lf
+MAINTAINERS*      text eol=lf
+NOTICE*           text eol=lf
+NEWS*             text eol=lf
+TODO*             text eol=lf
+
+LICENSE*          text eol=lf
+COPYING*          text eol=lf
+REUSE.toml        text eol=lf linguist-language=TOML
+*.license         text eol=lf
+*.spdx            text eol=lf
+
+CITATION.cff      text eol=lf linguist-language=YAML
+*.cff             text eol=lf linguist-language=YAML
+
+# ==============================================================================
+# Configuration Formats
+# ==============================================================================
+
+*.json      text eol=lf linguist-language=JSON
+*.jsonc     text eol=lf linguist-language=JSON-with-Comments
+*.yaml      text eol=lf linguist-language=YAML
+*.yml       text eol=lf linguist-language=YAML
+*.toml      text eol=lf linguist-language=TOML
+*.ini       text eol=lf linguist-language=INI
+*.cfg       text eol=lf
+*.conf      text eol=lf
+*.config    text eol=lf
+*.cnf       text eol=lf
+*.xml       text eol=lf linguist-language=XML
+*.xsd       text eol=lf linguist-language=XML
+*.plist     text eol=lf linguist-language=XML
+*.csv       text eol=lf
+*.tsv       text eol=lf
+*.tab       text eol=lf
+
+.prettierrc        text eol=lf linguist-language=JSON
+.prettierignore    text eol=lf
+.eslintrc          text eol=lf
+.stylelintrc       text eol=lf
+.markdownlint*     text eol=lf
+.yamllint*         text eol=lf
+.lychee.toml       text eol=lf linguist-language=TOML
+
+# ==============================================================================
+# C / C++ / Assembly / Embedded Sources
+# ==============================================================================
+
+*.c       text eol=lf linguist-language=C
+*.h       text eol=lf linguist-language=C
+*.i       text eol=lf linguist-language=C
+*.ii      text eol=lf linguist-language=C++
+
+*.cc      text eol=lf linguist-language=C++
+*.cpp     text eol=lf linguist-language=C++
+*.cxx     text eol=lf linguist-language=C++
+*.c++     text eol=lf linguist-language=C++
+*.hh      text eol=lf linguist-language=C++
+*.hpp     text eol=lf linguist-language=C++
+*.hxx     text eol=lf linguist-language=C++
+*.h++     text eol=lf linguist-language=C++
+
+*.m       text eol=lf linguist-language=Objective-C
+*.mm      text eol=lf linguist-language=Objective-C++
+
+*.s       text eol=lf linguist-language=Assembly
+*.S       text eol=lf linguist-language=Assembly
+*.asm     text eol=lf linguist-language=Assembly
+*.inc     text eol=lf
+
+*.ld       text eol=lf linguist-language=LinkerScript
+*.lds      text eol=lf linguist-language=LinkerScript
+*.ldscript text eol=lf linguist-language=LinkerScript
+*.map      text eol=lf
+
+*.dts     text eol=lf linguist-language=DeviceTree
+*.dtsi    text eol=lf linguist-language=DeviceTree
+
+*.ino     text eol=lf linguist-language=Arduino
+*.pde     text eol=lf linguist-language=Processing
+*.svd     text eol=lf linguist-language=XML
+
+# ==============================================================================
+# Build Systems and Package Manifests
+# ==============================================================================
+
+CMakeLists.txt       text eol=lf linguist-language=CMake
+*.cmake              text eol=lf linguist-language=CMake
+CMakePresets.json    text eol=lf linguist-language=JSON
+CMakeUserPresets.json text eol=lf linguist-language=JSON
+
+Makefile             text eol=lf linguist-language=Makefile
+Makefile.*           text eol=lf linguist-language=Makefile
+makefile             text eol=lf linguist-language=Makefile
+*.mk                 text eol=lf linguist-language=Makefile
+Kbuild               text eol=lf linguist-language=Makefile
+Kconfig              text eol=lf linguist-language=Kconfig
+
+configure.ac         text eol=lf linguist-language=M4
+configure.in         text eol=lf linguist-language=M4
+Makefile.am          text eol=lf linguist-language=Makefile
+Makefile.in          text eol=lf linguist-language=Makefile
+*.m4                 text eol=lf linguist-language=M4
+*.ac                 text eol=lf linguist-language=M4
+
+meson.build          text eol=lf linguist-language=Meson
+meson_options.txt    text eol=lf linguist-language=Meson
+build.ninja          text eol=lf linguist-language=Ninja
+
+BUILD                text eol=lf linguist-language=Bazel
+BUILD.bazel          text eol=lf linguist-language=Bazel
+WORKSPACE            text eol=lf linguist-language=Bazel
+WORKSPACE.bazel      text eol=lf linguist-language=Bazel
+MODULE.bazel         text eol=lf linguist-language=Starlark
+*.bzl                text eol=lf linguist-language=Starlark
+
+conanfile.txt        text eol=lf linguist-language=INI
+conanfile.py         text eol=lf linguist-language=Python
+vcpkg.json           text eol=lf linguist-language=JSON
+vcpkg-configuration.json text eol=lf linguist-language=JSON
+package.json         text eol=lf linguist-language=JSON
+package-lock.json    text eol=lf linguist-language=JSON
+pnpm-lock.yaml       text eol=lf linguist-language=YAML
+yarn.lock            text eol=lf
+
+# ==============================================================================
+# Tooling Configuration
+# ==============================================================================
+
+.clang-format        text eol=lf linguist-language=YAML
+.clang-tidy          text eol=lf linguist-language=YAML
+.clangd              text eol=lf linguist-language=YAML
+
+Doxyfile             text eol=lf linguist-language=INI
+Doxyfile.in          text eol=lf linguist-language=INI
+*.dot                text eol=lf linguist-language=Graphviz
+
+Dockerfile           text eol=lf linguist-language=Dockerfile
+Dockerfile.*         text eol=lf linguist-language=Dockerfile
+*.dockerfile         text eol=lf linguist-language=Dockerfile
+.dockerignore        text eol=lf
+docker-compose*.yml  text eol=lf linguist-language=YAML
+docker-compose*.yaml text eol=lf linguist-language=YAML
+
+Jenkinsfile          text eol=lf linguist-language=Groovy
+*.jenkinsfile        text eol=lf linguist-language=Groovy
+
+# ==============================================================================
+# Web / Scripting / Other Languages
+# ==============================================================================
+
+*.css      text eol=lf linguist-language=CSS
+*.scss     text eol=lf linguist-language=SCSS
+*.html     text eol=lf linguist-language=HTML
+*.htm      text eol=lf linguist-language=HTML
+*.xhtml    text eol=lf linguist-language=HTML
+
+*.js       text eol=lf linguist-language=JavaScript
+*.jsx      text eol=lf linguist-language=JavaScript
+*.ts       text eol=lf linguist-language=TypeScript
+*.tsx      text eol=lf linguist-language=TypeScript
+
+*.py       text eol=lf linguist-language=Python
+*.go       text eol=lf linguist-language=Go
+go.mod     text eol=lf linguist-language=Go
+go.sum     text eol=lf linguist-language=Go
+*.rs       text eol=lf linguist-language=Rust
+*.zig      text eol=lf linguist-language=Zig
+build.zig  text eol=lf linguist-language=Zig
+
+*.proto    text eol=lf linguist-language=ProtocolBuffers
+*.fbs      text eol=lf linguist-language=FlatBuffers
+*.idl      text eol=lf linguist-language=IDL
+*.spec     text eol=lf linguist-language=RPMSpec
+*.pc       text eol=lf linguist-language=PkgConfig
+
+# ==============================================================================
+# Patches, Diffs, Logs, and Reports
+# ==============================================================================
+
+*.patch     text eol=lf linguist-language=Diff
+*.diff      text eol=lf linguist-language=Diff
+*.log       text eol=lf
+*.sarif     text eol=lf linguist-language=JSON
+*.tap       text eol=lf
+*.junit.xml text eol=lf linguist-language=XML
+*.gcov      text eol=lf
+
+# ==============================================================================
+# Textual Graphics
+# ==============================================================================
+
+*.svg       text eol=lf linguist-language=SVG
+*.qrc       text eol=lf linguist-language=XML
+*.ui        text eol=lf linguist-language=XML
+
+# ==============================================================================
+# Binary Build Artifacts
+# ==============================================================================
+
+*.o      binary
+*.obj    binary
+*.lo     binary
+*.la     binary
+*.a      binary
+*.lib    binary
+*.so     binary
+*.so.*   binary
+*.dylib  binary
+*.dll    binary
+*.exe    binary
+*.out    binary
+*.app    binary
+
+*.elf    binary
+*.axf    binary
+*.hex    binary
+*.bin    binary
+*.eep    binary
+*.srec   binary
+*.uf2    binary
+
+*.ko     binary
+*.mod    binary
+*.mod.o  binary
+
+*.gch    binary
+*.pch    binary
+*.gcda   binary
+*.gcno   binary
+*.prof   binary
+*.dbg    binary
+*.pdb    binary
+*.dSYM   binary
+
+# ==============================================================================
+# Binary Media and Documents
+# ==============================================================================
+
+*.png   binary
+*.jpg   binary
+*.jpeg  binary
+*.gif   binary
+*.webp  binary
+*.ico   binary
+*.bmp   binary
+*.tif   binary
+*.tiff  binary
+*.svgz  binary
+
+*.pdf   binary
+*.psd   binary lockable
+*.ai    binary lockable
+*.sketch binary lockable
+
+*.mp3   binary
+*.ogg   binary
+*.wav   binary
+*.flac  binary
+*.m4a   binary
+*.mid   binary
+*.midi  binary
+
+*.mp4   binary
+*.mov   binary
+*.webm  binary
+*.mkv   binary
+*.avi   binary
+*.mpeg  binary
+*.mpg   binary
+
+*.doc   binary lockable
+*.docx  binary lockable
+*.docm  binary lockable
+*.xls   binary lockable
+*.xlsx  binary lockable
+*.xlsm  binary lockable
+*.ppt   binary lockable
+*.pptx  binary lockable
+*.pptm  binary lockable
+*.odt   binary lockable
+*.ods   binary lockable
+*.odp   binary lockable
+
+# ==============================================================================
+# Archives and Compressed Files
+# ==============================================================================
+
+*.7z    binary
+*.gz    binary
+*.bz2   binary
+*.xz    binary
+*.lz    binary
+*.lzma  binary
+*.rar   binary
+*.tar   binary
+*.tgz   binary
+*.txz   binary
+*.zip   binary
+*.zst   binary
+
+# ==============================================================================
+# Fonts
+# ==============================================================================
+
+*.ttf    binary
+*.otf    binary
+*.eot    binary
+*.woff   binary
+*.woff2  binary
+
+# ==============================================================================
+# Optional Git LFS Rules
+# ==============================================================================
+#
+# Enable these only if the project really uses Git LFS.
+# Avoid forcing all images and PDFs into LFS unless the repository policy
+# requires it.
+
+*.png   filter=lfs diff=lfs merge=lfs -text
+*.jpg   filter=lfs diff=lfs merge=lfs -text
+*.jpeg  filter=lfs diff=lfs merge=lfs -text
+*.webp  filter=lfs diff=lfs merge=lfs -text
+*.pdf   filter=lfs diff=lfs merge=lfs -text
+*.psd   filter=lfs diff=lfs merge=lfs -text lockable
+*.ai    filter=lfs diff=lfs merge=lfs -text lockable
+*.zip   filter=lfs diff=lfs merge=lfs -text
+*.tar   filter=lfs diff=lfs merge=lfs -text
+*.gz    filter=lfs diff=lfs merge=lfs -text
+
+# ==============================================================================
+# Merge Rules
+# ==============================================================================
+
+# Keep generated lockfile conflicts explicit by default.
+# Do not use global "merge=ours" for lockfiles unless intentionally configured.
+
+package-lock.json merge=ours
+pnpm-lock.yaml    merge=ours
+yarn.lock         merge=ours
+conan.lock        merge=ours
+
+# Avoid global YAML union merges. They can produce syntactically valid but
+# semantically incorrect workflow/configuration files.
+
+*.yml  merge=union
+*.yaml merge=union
+
+# ==============================================================================
+# Export Ignore for Release Archives
+# ==============================================================================
+
+# Exclude CI internals and local Git support from git archive outputs.
+.github/workflows/**     export-ignore
+.githooks/**             export-ignore
+.git-blame-ignore-revs   export-ignore
+.gitmessage              export-ignore
+
+# Exclude generated build and documentation output.
+build/**                 export-ignore
+build-*/**               export-ignore
+cmake-build-*/**         export-ignore
+out/**                   export-ignore
+dist/**                  export-ignore
+target/**                export-ignore
+docs/html/**             export-ignore
+docs/latex/**            export-ignore
+docs/xml/**              export-ignore
+docs/man/**              export-ignore
+doxygen/html/**          export-ignore
+doxygen/latex/**         export-ignore
+doxygen/xml/**           export-ignore
+
+# ==============================================================================
+# Linters, Formatters, Security, and Compliance Tooling
+# ==============================================================================
+
+# Clang / C / C++ tooling
+.clang-format                         text eol=lf linguist-language=YAML
+.clang-tidy                           text eol=lf linguist-language=YAML
+clang-format                          text eol=lf linguist-language=YAML
+clang-tidy                            text eol=lf linguist-language=YAML
+
+# IWYU
+.iwyu.imp                             text eol=lf
+*.imp                                 text eol=lf
+
+# Markdown tooling
+.markdownlint-cli2                    text eol=lf linguist-language=YAML
+.markdownlint-cli2.yaml               text eol=lf linguist-language=YAML
+.markdownlint-cli2.yml                text eol=lf linguist-language=YAML
+markdownlint-cli2.yaml                text eol=lf linguist-language=YAML
+markdownlint-cli2.yml                 text eol=lf linguist-language=YAML
+
+# Prettier
+.prettierrc                           text eol=lf linguist-language=JSON
+.prettierrc.json                      text eol=lf linguist-language=JSON
+.prettierrc.yaml                      text eol=lf linguist-language=YAML
+.prettierrc.yml                       text eol=lf linguist-language=YAML
+.prettierrc.toml                      text eol=lf linguist-language=TOML
+.prettierrc.js                        text eol=lf linguist-language=JavaScript
+.prettierignore                       text eol=lf
+
+# YAML / TOML linters
+.yamllint                             text eol=lf linguist-language=YAML
+.yamllint.yaml                        text eol=lf linguist-language=YAML
+.yamllint.yml                         text eol=lf linguist-language=YAML
+.taplo                                text eol=lf linguist-language=TOML
+taplo.toml                            text eol=lf linguist-language=TOML
+
+# Lychee link checker
+.lychee                               text eol=lf linguist-language=TOML
+.lychee.toml                          text eol=lf linguist-language=TOML
+lychee.toml                           text eol=lf linguist-language=TOML
+
+# Actionlint / GitHub Actions security tooling
+actionlint                            text eol=lf linguist-language=YAML
+actionlint.yaml                       text eol=lf linguist-language=YAML
+actionlint.yml                        text eol=lf linguist-language=YAML
+zizmor                                text eol=lf linguist-language=YAML
+zizmor.yaml                           text eol=lf linguist-language=YAML
+zizmor.yml                            text eol=lf linguist-language=YAML
+
+# Cppcheck
+cppcheck                              text eol=lf linguist-language=INI
+cppcheck.cfg                          text eol=lf linguist-language=INI
+cppcheck.suppressions                 text eol=lf
+*.suppressions                        text eol=lf
+
+# Commitlint
+commitlint.config.js                  text eol=lf linguist-language=JavaScript
+commitlint.config.cjs                 text eol=lf linguist-language=JavaScript
+commitlint.config.mjs                 text eol=lf linguist-language=JavaScript
+commitlint.config.ts                  text eol=lf linguist-language=TypeScript
+
+# Typos
+typos                                 text eol=lf linguist-language=TOML
+typos.toml                            text eol=lf linguist-language=TOML
+.typos.toml                           text eol=lf linguist-language=TOML
+
+# Gitleaks / secret scanning
+gitleaks                              text eol=lf linguist-language=TOML
+gitleaks.toml                         text eol=lf linguist-language=TOML
+.gitleaks.toml                        text eol=lf linguist-language=TOML
+secret-scan-excludes                  text eol=lf
+secret-scan-excludes.txt              text eol=lf
+
+# Semgrep
+semgrep                               text eol=lf linguist-language=YAML
+semgrep.yaml                          text eol=lf linguist-language=YAML
+semgrep.yml                           text eol=lf linguist-language=YAML
+.semgrep.yml                          text eol=lf linguist-language=YAML
+.semgrep.yaml                         text eol=lf linguist-language=YAML
+
+# Trivy
+trivy                                 text eol=lf linguist-language=YAML
+trivy.yaml                            text eol=lf linguist-language=YAML
+trivy.yml                             text eol=lf linguist-language=YAML
+.trivy.yaml                           text eol=lf linguist-language=YAML
+.trivy.yml                            text eol=lf linguist-language=YAML
+
+# TruffleHog
+trufflehog                            text eol=lf linguist-language=YAML
+trufflehog.yaml                       text eol=lf linguist-language=YAML
+trufflehog.yml                        text eol=lf linguist-language=YAML
+.trufflehog.yaml                      text eol=lf linguist-language=YAML
+.trufflehog.yml                       text eol=lf linguist-language=YAML
+
+# REUSE / SPDX compliance
+REUSE.toml                            text eol=lf linguist-language=TOML
+reuse.toml                            text eol=lf linguist-language=TOML
+.reuse/dep5                           text eol=lf
+LICENSES/**                           text eol=lf
+*.license                             text eol=lf
+*.spdx                                text eol=lf
+
+# Security Insights
+security-insights.yml                 text eol=lf linguist-language=YAML
+security-insights.yaml                text eol=lf linguist-language=YAML
+.security-insights.yml                text eol=lf linguist-language=YAML
+.security-insights.yaml               text eol=lf linguist-language=YAML
+
+# OpenSSF / Scorecard / security metadata
+scorecard.yml                         text eol=lf linguist-language=YAML
+scorecard.yaml                        text eol=lf linguist-language=YAML
+.openssf-scorecard.yml                text eol=lf linguist-language=YAML
+.openssf-scorecard.yaml               text eol=lf linguist-language=YAML
+
+# SBOM / supply-chain metadata
+*.cdx.json                            text eol=lf linguist-language=JSON
+*.spdx.json                           text eol=lf linguist-language=JSON
+*.spdx.yml                            text eol=lf linguist-language=YAML
+*.spdx.yaml                           text eol=lf linguist-language=YAML
+# Keep README, LICENSE, CHANGELOG, and source documentation in release archives.
+# Do not export-ignore "*.md" globally.# ==============================================================================
+# Linters, Formatters, Security, and Compliance Tooling
+# ==============================================================================
+
+# Clang / C / C++ tooling
+.clang-format                         text eol=lf linguist-language=YAML
+.clang-tidy                           text eol=lf linguist-language=YAML
+clang-format                          text eol=lf linguist-language=YAML
+clang-tidy                            text eol=lf linguist-language=YAML
+
+# IWYU
+.iwyu.imp                             text eol=lf
+*.imp                                 text eol=lf
+
+# Markdown tooling
+.markdownlint-cli2                    text eol=lf linguist-language=YAML
+.markdownlint-cli2.yaml               text eol=lf linguist-language=YAML
+.markdownlint-cli2.yml                text eol=lf linguist-language=YAML
+markdownlint-cli2.yaml                text eol=lf linguist-language=YAML
+markdownlint-cli2.yml                 text eol=lf linguist-language=YAML
+
+# Prettier
+.prettierrc                           text eol=lf linguist-language=JSON
+.prettierrc.json                      text eol=lf linguist-language=JSON
+.prettierrc.yaml                      text eol=lf linguist-language=YAML
+.prettierrc.yml                       text eol=lf linguist-language=YAML
+.prettierrc.toml                      text eol=lf linguist-language=TOML
+.prettierrc.js                        text eol=lf linguist-language=JavaScript
+.prettierignore                       text eol=lf
+
+# YAML / TOML linters
+.yamllint                             text eol=lf linguist-language=YAML
+.yamllint.yaml                        text eol=lf linguist-language=YAML
+.yamllint.yml                         text eol=lf linguist-language=YAML
+.taplo                                text eol=lf linguist-language=TOML
+taplo.toml                            text eol=lf linguist-language=TOML
+
+# Lychee link checker
+.lychee                               text eol=lf linguist-language=TOML
+.lychee.toml                          text eol=lf linguist-language=TOML
+lychee.toml                           text eol=lf linguist-language=TOML
+
+# Actionlint / GitHub Actions security tooling
+actionlint                            text eol=lf linguist-language=YAML
+actionlint.yaml                       text eol=lf linguist-language=YAML
+actionlint.yml                        text eol=lf linguist-language=YAML
+zizmor                                text eol=lf linguist-language=YAML
+zizmor.yaml                           text eol=lf linguist-language=YAML
+zizmor.yml                            text eol=lf linguist-language=YAML
+
+# Cppcheck
+cppcheck                              text eol=lf linguist-language=INI
+cppcheck.cfg                          text eol=lf linguist-language=INI
+cppcheck.suppressions                 text eol=lf
+*.suppressions                        text eol=lf
+
+# Commitlint
+commitlint.config.js                  text eol=lf linguist-language=JavaScript
+commitlint.config.cjs                 text eol=lf linguist-language=JavaScript
+commitlint.config.mjs                 text eol=lf linguist-language=JavaScript
+commitlint.config.ts                  text eol=lf linguist-language=TypeScript
+
+# Typos
+typos                                 text eol=lf linguist-language=TOML
+typos.toml                            text eol=lf linguist-language=TOML
+.typos.toml                           text eol=lf linguist-language=TOML
+
+# Gitleaks / secret scanning
+gitleaks                              text eol=lf linguist-language=TOML
+gitleaks.toml                         text eol=lf linguist-language=TOML
+.gitleaks.toml                        text eol=lf linguist-language=TOML
+secret-scan-excludes                  text eol=lf
+secret-scan-excludes.txt              text eol=lf
+
+# Semgrep
+semgrep                               text eol=lf linguist-language=YAML
+semgrep.yaml                          text eol=lf linguist-language=YAML
+semgrep.yml                           text eol=lf linguist-language=YAML
+.semgrep.yml                          text eol=lf linguist-language=YAML
+.semgrep.yaml                         text eol=lf linguist-language=YAML
+
+# Trivy
+trivy                                 text eol=lf linguist-language=YAML
+trivy.yaml                            text eol=lf linguist-language=YAML
+trivy.yml                             text eol=lf linguist-language=YAML
+.trivy.yaml                           text eol=lf linguist-language=YAML
+.trivy.yml                            text eol=lf linguist-language=YAML
+
+# TruffleHog
+trufflehog                            text eol=lf linguist-language=YAML
+trufflehog.yaml                       text eol=lf linguist-language=YAML
+trufflehog.yml                        text eol=lf linguist-language=YAML
+.trufflehog.yaml                      text eol=lf linguist-language=YAML
+.trufflehog.yml                       text eol=lf linguist-language=YAML
+
+# REUSE / SPDX compliance
+REUSE.toml                            text eol=lf linguist-language=TOML
+reuse.toml                            text eol=lf linguist-language=TOML
+.reuse/dep5                           text eol=lf
+LICENSES/**                           text eol=lf
+*.license                             text eol=lf
+*.spdx                                text eol=lf
+
+# Security Insights
+security-insights.yml                 text eol=lf linguist-language=YAML
+security-insights.yaml                text eol=lf linguist-language=YAML
+.security-insights.yml                text eol=lf linguist-language=YAML
+.security-insights.yaml               text eol=lf linguist-language=YAML
+
+# OpenSSF / Scorecard / security metadata
+scorecard.yml                         text eol=lf linguist-language=YAML
+scorecard.yaml                        text eol=lf linguist-language=YAML
+.openssf-scorecard.yml                text eol=lf linguist-language=YAML
+.openssf-scorecard.yaml               text eol=lf linguist-language=YAML
+
+# SBOM / supply-chain metadata
+*.cdx.json                            text eol=lf linguist-language=JSON
+*.spdx.json                           text eol=lf linguist-language=JSON
+*.spdx.yml                            text eol=lf linguist-language=YAML
+*.spdx.yaml                           text eol=lf linguist-language=YAML
+
+# EOF
