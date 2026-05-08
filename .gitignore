@@ -1,0 +1,445 @@
+# SPDX-FileCopyrightText: 2026 Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
+# SPDX-License-Identifier: GPL-3.0-only
+
+# ==============================================================================
+# Editor and IDE State
+# ==============================================================================
+
+# VS Code: keep shared workspace files, ignore local/user state.
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+!.vscode/*.code-snippets
+.vscode/.cache/
+.vscode/.lsp/
+.vscode/.logs/
+
+# JetBrains / CLion
+.idea/
+cmake-build-*/
+
+# Eclipse / STM32CubeIDE / Atollic
+.metadata/
+.settings/
+.cproject
+.project
+.atollic/
+*.launch
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# Neovim / Vim
+.config/nvim/
+.local/share/nvim/
+.cache/nvim/
+.local/share/nvim/lsp/
+.config/nvim/lsp-settings/
+*.swp
+*.swo
+
+# Local editor history
+.history/
+
+# ==============================================================================
+# Tags, Indexes, and Language Server Caches
+# ==============================================================================
+
+tags
+TAGS
+cscope.*
+gtags.files
+GPATH
+GRTAGS
+GSYMS
+GTAGS
+
+.lsp/
+.lsp-cache/
+.lsp-log/
+.lsp-session/
+
+.cache/
+**/.cache/
+.cache/lsp/
+.cache/clangd/
+.cache/pyright/
+
+*.lsp.log
+*.lsp-output
+
+# ==============================================================================
+# C / C++ / Assembly Build Artifacts
+# ==============================================================================
+
+# Dependency files
+*.d
+*.dep
+
+# Object and intermediate files
+*.o
+*.obj
+*.lo
+*.la
+*.su
+*.lst
+*.map
+*.srec
+*.sym
+*.tmp
+*.temp
+
+# Precompiled headers
+*.gch
+*.pch
+
+# Static and import libraries
+*.a
+*.lib
+
+# Shared libraries
+*.so
+*.so.*
+*.dylib
+*.dll
+
+# Executables and firmware images
+*.elf
+*.exe
+*.out
+*.app
+*.axf
+*.hex
+*.bin
+*.eep
+*.i*86
+*.x86_64
+
+# Debug symbols and linker/debugger output
+*.dSYM/
+*.pdb
+*.idb
+*.ilk
+*.exp
+
+# ==============================================================================
+# Build Systems: CMake / Make / Ninja / Autotools / Bazel / Conan
+# ==============================================================================
+
+# ------------------------------------------------------------------------------
+# CMake / Make / Ninja
+# ------------------------------------------------------------------------------
+
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+install_manifest.txt
+CTestTestfile.cmake
+CMakeScripts/
+Makefile
+*.cbp
+compile_commands.json
+compile_flags.txt
+.ninja_deps
+.ninja_log
+build.ninja
+rules.ninja
+
+# Nested CMake / Make / Ninja outputs
+**/CMakeCache.txt
+**/CMakeFiles/
+**/cmake_install.cmake
+**/install_manifest.txt
+**/CTestTestfile.cmake
+**/CMakeScripts/
+**/Makefile
+**/*.cbp
+**/compile_commands.json
+**/compile_flags.txt
+**/.ninja_deps
+**/.ninja_log
+**/build.ninja
+**/rules.ninja
+
+# ------------------------------------------------------------------------------
+# GNU Autotools / Autoconf / Automake / Libtool
+# ------------------------------------------------------------------------------
+
+aclocal.m4
+autom4te.cache/
+autoscan.log
+configure
+configure.scan
+config.cache
+config.log
+config.status
+config.guess
+config.sub
+config.h
+config.h.in
+config.h.in~
+config.lt
+stamp-h1
+
+Makefile.in
+.deps/
+.libs/
+libtool
+ltmain.sh
+m4/libtool.m4
+m4/ltoptions.m4
+m4/ltsugar.m4
+m4/ltversion.m4
+m4/lt~obsolete.m4
+
+# Nested Autotools outputs
+**/autom4te.cache/
+**/config.cache
+**/config.log
+**/config.status
+**/config.h
+**/stamp-h1
+**/.deps/
+**/.libs/
+
+# ------------------------------------------------------------------------------
+# Bazel
+# ------------------------------------------------------------------------------
+
+bazel-*
+.bazelrc.user
+.bazeliskrc
+.bazelversion.lock
+
+# Bazel output and cache directories
+bazel-bin/
+bazel-out/
+bazel-testlogs/
+bazel-genfiles/
+
+# ------------------------------------------------------------------------------
+# Conan
+# ------------------------------------------------------------------------------
+
+conanbuild/
+conanbuildinfo.*
+conaninfo.txt
+conan.lock
+graph_info.json
+
+# Conan 1.x generated files
+conanbuildinfo.cmake
+conanbuildinfo.txt
+conanbuildinfo.json
+conan_paths.cmake
+conan_toolchain.cmake
+
+# Conan 2.x generated files
+CMakeUserPresets.json
+conan_provider.cmake
+conandeps_legacy.cmake
+conan_toolchain.cmake
+deactivate_conanbuild.*
+deactivate_conanrun.*
+conanbuild.*
+conanrun.*
+
+# Conan package/cache folders sometimes created in-tree
+.conan/
+.conan2/
+
+# ------------------------------------------------------------------------------
+# Common Build Directories
+# ------------------------------------------------------------------------------
+
+build/
+build-*/
+_build/
+cmake-build-*/
+out/
+dist/
+target/
+release/
+debug/
+bin/
+
+# ==============================================================================
+# Linux Kernel / Kbuild / KUnit
+# ==============================================================================
+
+*.ko
+*.mod
+*.mod.c
+*.mod.o
+*.order
+*.symvers
+*.cmd
+*.ko.cmd
+*.o.cmd
+*.mod.cmd
+
+.tmp_versions/
+modules.order
+Module.symvers
+Module.markers
+
+# KUnit local build/output directories
+.kunit/
+.kunit-*/
+
+# Kernel config/build leftovers
+.config.old
+*.old
+auto.conf
+auto.conf.cmd
+tristate.conf
+include/config/
+include/generated/
+arch/*/include/generated/
+
+# ==============================================================================
+# Embedded / MCU Toolchains
+# ==============================================================================
+
+# Keil / MDK
+*.uvproj
+*.uvprojx
+*.uvopt
+*.uvoptx
+*.sct
+*.tlog
+
+# Code Composer Studio
+*.ccsproject
+
+# Arduino
+/libraries/
+/build/
+*.ino.cpp
+*.ino.h
+
+# STM32Cube generated local state
+Debug/
+Release/
+.settings/
+.mxproject
+
+
+# ==============================================================================
+# Testing, Coverage, and Static Analysis
+# ==============================================================================
+
+# Coverage
+*.gcda
+*.gcno
+*.gcov
+*.lcov
+*.coverage
+coverage/
+htmlcov/
+
+# Test output
+test-results/
+test-reports/
+*.testlog
+*.tap
+*.junit.xml
+
+# Static analysis outputs
+cppcheck/
+clang-tidy/
+scan-build/
+infer-out/
+frama-c/
+.eva/
+*.sarif
+
+
+# ==============================================================================
+# Documentation Output
+# ==============================================================================
+
+# Generated docs only. Keep source docs tracked.
+docs/html/
+docs/latex/
+docs/xml/
+docs/man/
+doxygen/html/
+doxygen/latex/
+doxygen/xml/
+doxygen/doxygen-awesome/
+
+# ==============================================================================
+# Node.js / Frontend Tooling
+# ==============================================================================
+
+node_modules/
+**/node_modules/
+
+.npm/
+.pnpm-store/
+.yarn/
+.yarn-cache/
+.eslintcache
+.stylelintcache
+.prettier-cache
+
+# ==============================================================================
+# Python / Virtual Environments
+# ==============================================================================
+
+.env
+.env.*
+.venv/
+venv/
+.virtualenv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# ==============================================================================
+# Containers and Virtualization
+# ==============================================================================
+
+.vagrant/
+docker-compose.override.yml
+
+# ==============================================================================
+# Logs, Local Caches, Temporary Files, and OS Metadata
+# ==============================================================================
+
+log/
+logs/
+**/log/
+**/logs/
+
+.lycache/
+**/.lycache/
+
+.cache/
+**/.cache/
+
+*.log
+*.bak
+*.tmp
+*.temp
+*~
+*.tag
+
+.DS_Store
+.AppleDouble
+.LSOverride
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# WSL / Windows zone identifier files
+*.Identifier
+**/*.Identifier
+
+# EOF
