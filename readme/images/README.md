@@ -2,6 +2,7 @@
 SPDX-FileCopyrightText: 2026 Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
 SPDX-License-Identifier: GPL-3.0-only
 -->
+
 ---
 
 # Image Guide
@@ -19,8 +20,8 @@ It includes:
 
 ## Selected Palette
 
-**Palette:** [Endesga 32](<https://lospec.com/palette-list/endesga-32>)
- **Author:** ENDESGA  
+**Palette:** [Endesga 32](https://lospec.com/palette-list/endesga-32)
+**Author:** ENDESGA
 
 This palette was selected because it provides a cohesive set of:
 
