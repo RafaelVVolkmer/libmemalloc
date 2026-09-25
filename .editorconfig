@@ -1,0 +1,390 @@
+# SPDX-FileCopyrightText: 2026 Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
+# SPDX-License-Identifier: GPL-3.0-only
+
+# EditorConfig - libmemalloc Repository Editor Policy
+
+root = true
+
+# ==============================================================================
+# Default Repository Policy
+# ==============================================================================
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+# ==============================================================================
+# C Sources and Headers
+# ==============================================================================
+
+[*.{c,h,i,cpp,hpp}]
+indent_style = tab
+indent_size = 8
+tab_width = 8
+max_line_length = 80
+
+# ==============================================================================
+# Assembly, Linker and Low-Level Sources
+# ==============================================================================
+
+[*.{s,S,asm,inc}]
+indent_style = tab
+indent_size = 8
+tab_width = 8
+max_line_length = 80
+
+[*.{ld,lds,ldscript}]
+indent_style = tab
+indent_size = 8
+tab_width = 8
+max_line_length = 80
+
+[*.{dts,dtsi}]
+indent_style = tab
+indent_size = 8
+tab_width = 8
+max_line_length = 80
+
+# ==============================================================================
+# clang Tooling Configuration
+# ==============================================================================
+
+[tools/lint/code/c/.clang-format]
+indent_style = space
+indent_size = 2
+tab_width = 2
+max_line_length = 120
+
+[tools/lint/code/c/.clang-tidy]
+indent_style = space
+indent_size = 2
+tab_width = 2
+max_line_length = 120
+
+[tools/lint/code/c/.clangd]
+indent_style = space
+indent_size = 2
+tab_width = 2
+max_line_length = 120
+
+# ==============================================================================
+# Lua
+# ==============================================================================
+
+[*.lua]
+indent_style = space
+indent_size = 3
+tab_width = 3
+max_line_length = 80
+
+# Repository Git hooks are extensionless Lua programs.
+[.githooks/*]
+indent_style = space
+indent_size = 3
+tab_width = 3
+max_line_length = 80
+
+# ==============================================================================
+# Python
+# ==============================================================================
+
+[*.{py,pyi}]
+indent_style = space
+indent_size = 4
+tab_width = 4
+max_line_length = 88
+
+# ==============================================================================
+# POSIX sh and Bash
+# ==============================================================================
+#
+# The current CI invokes shfmt with -ln posix / -ln bash. Passing a parser
+# flag makes shfmt ignore EditorConfig formatting options. Because CI does not
+# pass -i N, shfmt uses its default tab indentation. Keep this section aligned
+# with that behavior.
+#
+# ShellCheck validates dialect and diagnostics; bash -n validates Bash syntax
+# when Bash is available.
+
+[*.sh]
+indent_style = tab
+indent_size = 8
+tab_width = 8
+max_line_length = 100
+
+[*.bash]
+indent_style = tab
+indent_size = 8
+tab_width = 8
+max_line_length = 100
+
+# ==============================================================================
+# PowerShell 7
+# ==============================================================================
+#
+# Matches:
+#   tools/lint/code/shell/powershell/PSScriptAnalyzerSettings.psd1
+#     Kind = 'space'
+#     IndentationSize = 4
+#
+# PowerShell files keep the repository-wide LF policy. The pwsh parser and
+# PSScriptAnalyzer run on Linux in CI and do not require CRLF.
+
+[*.{ps1,psm1,psd1}]
+indent_style = space
+indent_size = 4
+tab_width = 4
+max_line_length = 120
+
+# ==============================================================================
+# Nushell
+# ==============================================================================
+#
+# Matches:
+#   tools/lint/code/shell/nushell/nufmt.nuon
+#     indent = 4
+#     indent_char = "space"
+#     line_length = 80
+#
+# .nu files are checked with nu --check and nufmt. .nuon files use the same
+# formatting policy for Nushell object notation/configuration.
+
+[*.{nu,nuon}]
+indent_style = space
+indent_size = 4
+tab_width = 4
+max_line_length = 80
+
+# ==============================================================================
+# YAML
+# ==============================================================================
+
+[*.{yaml,yml}]
+indent_style = space
+indent_size = 2
+tab_width = 2
+max_line_length = 120
+
+# ==============================================================================
+# TOML
+# ==============================================================================
+
+[*.toml]
+indent_style = space
+indent_size = 2
+tab_width = 2
+max_line_length = 100
+
+# ==============================================================================
+# JSON and JSON with Comments
+# ==============================================================================
+
+[*.{json,jsonc,json5}]
+indent_style = space
+indent_size = 2
+tab_width = 2
+max_line_length = 120
+
+# ==============================================================================
+# Markdown and Documentation
+# ==============================================================================
+
+[*.{md,mdx,markdown}]
+indent_style = space
+indent_size = 2
+tab_width = 2
+# Tables and reference URLs are indivisible; Markdown lint owns wrapping.
+max_line_length = off
+trim_trailing_whitespace = false
+
+# These normative reference documents contain wide standards tables, long
+# identifiers, and code examples where hard wrapping changes semantics.
+[docs/standards/c/c-code-style.md]
+indent_size = unset
+tab_width = unset
+max_line_length = off
+
+[docs/standards/c/c-code-standard.md]
+indent_size = unset
+tab_width = unset
+max_line_length = off
+
+[docs/standards/c/c-common-pitfalls.md]
+indent_size = unset
+tab_width = unset
+max_line_length = off
+
+[docs/standards/c/c-module-architecture.md]
+indent_size = unset
+tab_width = unset
+max_line_length = off
+
+[*.{rst,adoc}]
+indent_style = space
+indent_size = 2
+tab_width = 2
+max_line_length = 120
+
+# ==============================================================================
+# CMake
+# ==============================================================================
+
+[CMakeLists.txt]
+indent_style = space
+indent_size = 2
+tab_width = 2
+max_line_length = 100
+
+[*.cmake]
+indent_style = space
+indent_size = 2
+tab_width = 2
+max_line_length = 100
+
+# ==============================================================================
+# Make and Kernel-Style Build Files
+# ==============================================================================
+
+[{Makefile,makefile,Kbuild}]
+indent_style = tab
+indent_size = 8
+tab_width = 8
+
+[Makefile.*]
+indent_style = tab
+indent_size = 8
+tab_width = 8
+
+[*.mk]
+indent_style = tab
+indent_size = 8
+tab_width = 8
+
+# ==============================================================================
+# Windows Batch Scripts
+# ==============================================================================
+
+[*.{bat,cmd}]
+end_of_line = crlf
+indent_style = space
+indent_size = 2
+tab_width = 2
+max_line_length = 120
+
+# ==============================================================================
+# Web and Scripting Languages
+# ==============================================================================
+
+[*.{js,jsx,cjs,mjs,ts,tsx,cts,mts}]
+indent_style = space
+indent_size = 2
+tab_width = 2
+max_line_length = 100
+
+[*.{css,scss,html,htm,xhtml}]
+indent_style = space
+indent_size = 2
+tab_width = 2
+max_line_length = 100
+
+# ==============================================================================
+# XML
+# ==============================================================================
+
+[*.{xml,xsd,plist}]
+indent_style = space
+indent_size = 2
+tab_width = 2
+max_line_length = 120
+
+# ==============================================================================
+# INI and Generic Configuration
+# ==============================================================================
+
+[doxygen/config/Doxyfile*]
+indent_style = space
+indent_size = 2
+tab_width = 2
+max_line_length = 120
+
+[*.{ini,cfg,conf,config,cnf}]
+indent_style = space
+indent_size = 2
+tab_width = 2
+max_line_length = 120
+
+# ==============================================================================
+# Plain Text and License Files
+# ==============================================================================
+
+[*.txt]
+max_line_length = 120
+
+[LICENSE]
+max_line_length = off
+trim_trailing_whitespace = false
+
+[doxygen/web/fonts/*-OFL.txt]
+max_line_length = off
+trim_trailing_whitespace = false
+
+[LICENSES/**]
+max_line_length = off
+trim_trailing_whitespace = false
+
+# Generated-source templates follow their destination language.
+[*.{c,h,cpp,hpp}.in]
+indent_style = tab
+indent_size = 8
+tab_width = 8
+max_line_length = 80
+
+[*.cmake.in]
+indent_style = space
+indent_size = 2
+tab_width = 2
+max_line_length = 100
+
+[*.{pc,txt}.in]
+max_line_length = 120
+
+[*.{dox,cocci}]
+indent_style = tab
+indent_size = 8
+tab_width = 8
+max_line_length = 80
+
+[.gitconfig]
+indent_style = space
+indent_size = 2
+tab_width = 2
+max_line_length = 100
+
+# Preserve the dependency matcher's indivisible regular expression.
+[.github/renovate.json5]
+max_line_length = off
+
+[*.{rs,zig,c3}.in]
+indent_style = space
+indent_size = 4
+max_line_length = 100
+
+[*.{wasm,baremetal}.in]
+indent_style = tab
+indent_size = 8
+tab_width = 8
+max_line_length = 80
+
+[*.nix]
+indent_style = space
+indent_size = 2
+tab_width = 2
+max_line_length = 100
+
+[{uv.lock,flake.lock}]
+max_line_length = off
+
+# EOF
+
