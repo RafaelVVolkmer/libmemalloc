@@ -1,0 +1,67 @@
+# SPDX-FileCopyrightText: 2026 Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
+# SPDX-License-Identifier: GPL-3.0-only
+
+# cspell:words gitmessage
+
+# Paths are anchored at the repository root. The last matching rule wins.
+# See: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+# Default owner for new paths until an explicit area rule is added.
+* @RafaelVVolkmer
+
+# Product sources, build configuration and distribution packages.
+/core/ @RafaelVVolkmer
+/cmake/ @RafaelVVolkmer
+/packaging/ @RafaelVVolkmer
+/CMakeLists.txt @RafaelVVolkmer
+/CMakePresets.json @RafaelVVolkmer
+
+# Automation, host preparation, tooling policies and tests.
+/scripts/ @RafaelVVolkmer
+/infra/ @RafaelVVolkmer
+/tools/ @RafaelVVolkmer
+/tests/ @RafaelVVolkmer
+/playbook.yml @RafaelVVolkmer
+
+# Documentation, generated-site sources and shared visual assets.
+/docs/ @RafaelVVolkmer
+/doxygen/ @RafaelVVolkmer
+/assets/ @RafaelVVolkmer
+
+# GitHub workflows, collaboration metadata and specification authority.
+/.github/ @RafaelVVolkmer
+/.github/CODEOWNERS @RafaelVVolkmer
+/.github/specifications.lua @RafaelVVolkmer
+/.github/workflows/specifications.yml @RafaelVVolkmer
+/scripts/github/ @RafaelVVolkmer
+
+# Contributor settings, hooks and repository metadata.
+/.githooks/ @RafaelVVolkmer
+/.vscode/ @RafaelVVolkmer
+/.editorconfig @RafaelVVolkmer
+/.gitattributes @RafaelVVolkmer
+/.gitconfig @RafaelVVolkmer
+/.gitignore @RafaelVVolkmer
+/.gitkeep @RafaelVVolkmer
+/.gitmessage @RafaelVVolkmer
+/.gitmodules @RafaelVVolkmer
+/.mailmap @RafaelVVolkmer
+
+# License texts and file-level attribution.
+/LICENSES/ @RafaelVVolkmer
+/LICENSE @RafaelVVolkmer
+/REUSE.toml @RafaelVVolkmer
+
+# Project overview, governance, community policies and release history.
+/README.md @RafaelVVolkmer
+/GOVERNANCE.md @RafaelVVolkmer
+/MAINTAINERS.md @RafaelVVolkmer
+/REVIEWING.md @RafaelVVolkmer
+/CODE_OF_CONDUCT.md @RafaelVVolkmer
+/SECURITY.md @RafaelVVolkmer
+/SUPPORT.md @RafaelVVolkmer
+/ROADMAP.md @RafaelVVolkmer
+/CHANGELOG.md @RafaelVVolkmer
+
+# EOF
+
