@@ -1,0 +1,237 @@
+# SPDX-FileCopyrightText: 2026 Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
+# SPDX-License-Identifier: GPL-3.0-only
+
+# clang-format - Libmemalloc C Formatting Configuration
+# Target: clang-format 22.1.x
+#
+# Rule authority: docs/standards/c/c-code-standard.md#cstyle-NNN
+# The IDs below identify formatting controls, not semantic guarantees.
+# clang-tidy owns naming, required braces, conversions, and expression checks.
+# CSTYLE-014, CSTYLE-015: the repository selects eight-column tab indentation
+# and an 80-column source limit. Comments explain each explicit style choice.
+
+---
+# =============================
+# 1. Base style: CSTYLE-014, CSTYLE-015, CSTYLE-017, CSTYLE-019, CSTYLE-243
+# =============================
+BasedOnStyle: Mozilla # inherit Mozilla defaults only for unspecified options
+Language: Cpp # use clang-format's C/C++ parser configuration
+IndentExternBlock: NoIndent # C linkage does not add a source indentation level
+IndentWidth: 8 # use Linux kernel-style 8-column indentation
+ContinuationIndentWidth: 8 # use 8 columns for continuation indentation
+TabWidth: 8 # interpret tabs using Linux kernel 8-column stops
+UseTab: ForIndentation # use tabs for indentation and spaces for alignment
+ColumnLimit: 80 # enforce the CSTYLE-015 line limit
+BreakBeforeBraces: Custom # use the explicit Allman-style rules defined below
+ReflowComments: Never # Doxygen owns comment diagnostics; preserve authored layout
+CommentPragmas: ".*" # do not rewrite comment text
+InsertNewlineAtEOF: true # always terminate source files with a newline
+
+# =============================
+# 2. Brace layout: CSTYLE-019, CSTYLE-022, CSTYLE-075
+# =============================
+BraceWrapping:
+  AfterCaseLabel: true # place case-local block braces on a new line
+  AfterControlStatement: Always # place braces below if/for/while/switch statements
+  AfterExternBlock: true # preserve the C++ compatibility block brace
+  AfterEnum: true # place opening enum braces on a new line
+  AfterFunction: true # place opening function braces on a new line
+  AfterStruct: true # place opening struct braces on a new line
+  AfterUnion: true # place opening union braces on a new line
+  BeforeElse: true # place else below the preceding closing brace
+  BeforeWhile: true # place while below the closing brace of do blocks
+  IndentBraces: false # align braces with the owning declaration or statement
+  SplitEmptyFunction: true # keep empty function bodies vertically expanded
+  SplitEmptyRecord: true # keep empty struct and union bodies vertically expanded
+
+# =============================
+# 3. Alignment: CSTYLE-007, CSTYLE-016, CSTYLE-017, CSTYLE-042, CSTYLE-043
+# =============================
+AlignAfterOpenBracket: true # align wrapped expressions after their opening bracket
+BracedInitializerIndentWidth: 8 # use one project indentation level in initializers
+AlignArrayOfStructures: Right # align tabular arrays of structures by their right edge
+
+AlignConsecutiveAssignments: # configure alignment of adjacent assignments
+  Enabled: true # align consecutive assignment operators
+  AcrossEmptyLines: false # stop assignment alignment at empty lines
+  AcrossComments: false # stop assignment alignment at comment boundaries
+  AlignCompound: true # align compound operators such as += and &=
+  PadOperators: true # pad shorter operators to preserve visual alignment
+
+AlignConsecutiveBitFields: # configure alignment of adjacent bit-field declarations
+  Enabled: true # align consecutive bit-field declarations
+  AcrossEmptyLines: false # stop bit-field alignment at empty lines
+  AcrossComments: false # stop bit-field alignment at comment boundaries
+
+AlignConsecutiveDeclarations: # configure alignment of adjacent declarations
+  Enabled: true # align consecutive variable declarations
+  AcrossEmptyLines: false # stop declaration alignment at empty lines
+  AcrossComments: false # stop declaration alignment at comment boundaries
+
+AlignConsecutiveMacros: # configure alignment of adjacent macro definitions
+  Enabled: true # align consecutive #define declarations
+  AcrossEmptyLines: false # stop macro alignment at empty lines
+  AcrossComments: false # stop macro alignment at comment boundaries
+
+AlignConsecutiveShortCaseStatements: # configure alignment of short case statements
+  Enabled: false # disable compact aligned case statements
+  AcrossEmptyLines: false # never align cases across empty lines
+  AcrossComments: false # never align cases across comments
+  AlignCaseColons: false # keep each case colon attached to its expression
+
+AlignEscapedNewlines: Left # align macro continuation backslashes to the left
+AlignOperands: Align # align operands when expressions wrap
+
+AlignTrailingComments: # configure alignment of trailing line comments
+  Kind: Leave # preserve authored trailing comment alignment
+  OverEmptyLines: 0 # never align comments across an empty line
+
+# =============================
+# 4. Wrapping: CSTYLE-015, CSTYLE-016, CSTYLE-017, CSTYLE-018, CSTYLE-022
+# =============================
+AllowAllArgumentsOnNextLine: true # allow compact argument groups on a continuation line
+AllowAllParametersOfDeclarationOnNextLine: true # allow compact parameter groups on a continuation line
+AllowShortBlocksOnASingleLine: Never # never collapse statement blocks onto one line
+AllowShortCaseLabelsOnASingleLine: false # never place case statements beside their labels
+AllowShortEnumsOnASingleLine: false # never collapse enum definitions onto one line
+AllowShortIfStatementsOnASingleLine: Never # never collapse if statements onto one line
+AllowShortLoopsOnASingleLine: false # never collapse loops onto one line
+AllowShortFunctionsOnASingleLine: None # never collapse complete functions onto one line
+
+BreakAfterReturnType: Automatic # keep return type with function name whenever possible
+AlwaysBreakAfterDefinitionReturnType: None # override the inherited Mozilla definition split
+BreakFunctionDefinitionParameters: false # never force parameters below the function name
+AlwaysBreakBeforeMultilineStrings: false # do not introduce unnecessary breaks before strings
+BinPackArguments: true # pack as many call arguments as possible on each line
+BinPackParameters: BinPack # pack as many function parameters as possible per line
+BinPackLongBracedList: false # CSTYLE-016: do not override explicit initializer wrapping
+BitFieldColonSpacing: Both # format bit fields as `field : width`
+
+BreakAdjacentStringLiterals: true # permit adjacent string literals to wrap independently
+BreakAfterAttributes: Never # keep attributes attached whenever they naturally fit
+BreakBeforeBinaryOperators: None # keep operators at line ends as in CSTYLE-016 examples
+BreakBeforeInlineASMColon: OnlyMultiline # split inline assembly operands only when necessary
+BreakBeforeTernaryOperators: true # put wrapped ternary operators before their operands
+BreakStringLiterals: false # CSTYLE-018, CSTYLE-245: preserve searchable diagnostic text
+
+# =============================
+# 5. Pointers and qualifiers: CSTYLE-023, CSTYLE-024, CSTYLE-078, CSTYLE-155
+# =============================
+DerivePointerAlignment: false # never infer pointer placement from existing source
+PointerAlignment: Right # format pointers as `type *name`
+QualifierAlignment: Leave # preserve const/volatile ordering exactly as written
+SpaceAroundPointerQualifiers: Default # use standard spacing around pointer qualifiers
+
+# =============================
+# 6. Includes and preserved syntax: CSTYLE-021, CSTYLE-026, CSTYLE-027, CSTYLE-028
+# =============================
+SortIncludes: true # sort include directives deterministically
+IncludeBlocks: Regroup # regroup related include directives by category
+MainIncludeChar: Quote # identify project main headers through quoted includes
+IncludeIsMainRegex: "$" # CSTYLE-028: recognize the matching public header
+
+IncludeCategories: # own header is category 0 automatically
+  - Regex: '^<(assert|complex|ctype|errno|fenv|float|inttypes|iso646|limits)\.h>$'
+    Priority: 1 # C standard library headers
+  - Regex: '^<(locale|math|setjmp|signal|stdalign|stdarg|stdatomic|stdbit)\.h>$'
+    Priority: 1
+  - Regex: '^<(stdbool|stdckdint|stddef|stdint|stdio|stdlib|stdnoreturn|string)\.h>$'
+    Priority: 1
+  - Regex: '^<(tgmath|threads|time|uchar|wchar|wctype)\.h>$'
+    Priority: 1 # C standard library headers
+  - Regex: "^<" # third-party or platform headers
+    Priority: 2
+  - Regex: '^"' # remaining project headers
+    Priority: 3
+
+RemoveParentheses: Leave # preserve explicitly written parentheses
+RemoveSemicolon: false # preserve explicitly written semicolons
+EnumTrailingComma: Leave # never insert or remove enum trailing commas
+DisableFormat: false # keep clang-format enabled globally
+SeparateDefinitionBlocks: Always # CSTYLE-014, CSTYLE-053: separate definitions visibly
+
+# =============================
+# 7. Directives and statement layout: CSTYLE-008, CSTYLE-044, CSTYLE-050, CSTYLE-075
+# =============================
+IndentCaseBlocks: false # do not add another level inside explicit case blocks
+IndentCaseLabels: false # align labels with CSTYLE-075 switch examples
+IndentGotoLabels: false # keep goto labels aligned with their containing scope
+IndentPPDirectives: BeforeHash # indent nested preprocessor directives before the '#'
+PPIndentWidth: 2 # indent nested preprocessor directives by 2 spaces
+IndentWrappedFunctionNames: false # do not indent wrapped function names beneath return types
+InsertBraces: false # never modify control-flow semantics by inserting braces
+RemoveBracesLLVM: false # CSTYLE-022: preserve loop and scope braces; review simple ifs
+SkipMacroDefinitionBody: false # CSTYLE-042, CSTYLE-044: format macro bodies too
+
+# =============================
+# 8. Spacing: CSTYLE-020, CSTYLE-021, CSTYLE-023, CSTYLE-243
+# =============================
+SpaceBeforeParens: Custom # explicitly define spacing before parentheses
+
+SpaceBeforeParensOptions: # configure C function and control-statement parentheses
+  AfterControlStatements: true # format control flow as `if (condition)`
+  AfterFunctionDefinitionName: false # format definitions as `function(...)`
+  AfterFunctionDeclarationName: false # format declarations as `function(...)`
+
+SpaceInEmptyBraces: Never # represent empty braces without internal whitespace
+SpacesInParens: Never # never insert spaces immediately inside parentheses
+SpacesInSquareBrackets: false # format indexing as `array[index]`
+SpaceBeforeSquareBrackets: false # never insert whitespace before array brackets
+
+SpaceAfterCStyleCast: false # format casts as `(type)value`
+SpaceAfterLogicalNot: false # format logical negation as `!value`
+SpaceBeforeAssignmentOperators: true # format assignments as `lhs = rhs`
+SpaceBeforeCaseColon: false # format labels as `case VALUE:`
+
+SpacesBeforeTrailingComments: 1 # require one separator before trailing comments
+
+SpacesInLineCommentPrefix: # normalize whitespace following `//`
+  Minimum: 1 # require at least one space following `//`
+  Maximum: 1 # allow exactly one space following `//`
+
+# =============================
+# 9. Literals and source text: CSTYLE-007, CSTYLE-043, CSTYLE-170
+# =============================
+IntegerLiteralSeparator: # normalize separators without introducing C++ syntax
+  Binary: -1 # remove separators from binary integer literals
+  Decimal: -1 # remove separators from decimal integer literals
+  Hex: -1 # remove separators from hexadecimal integer literals
+
+NumericLiteralCase: # normalize capitalization of numeric literals
+  ExponentLetter: Lower # use lowercase `e` for floating-point exponents
+  HexDigit: Upper # use uppercase hexadecimal digits `A` through `F`
+  Prefix: Lower # use lowercase prefixes such as `0x`
+  Suffix: Leave # enum `u` and macro `U` are context-specific rules
+
+LineEnding: LF # always emit Unix LF line endings
+MaxEmptyLinesToKeep: 1 # retain at most one consecutive empty line
+
+KeepEmptyLines: # explicitly control preserved empty lines
+  AtEndOfFile: false # remove extra empty lines from the end of files
+  AtStartOfBlock: false # remove empty lines immediately after opening braces
+  AtStartOfFile: false # remove empty lines before the first source line
+
+# =============================
+# 10. Wrapping preferences: CSTYLE-015, CSTYLE-016, CSTYLE-018
+# =============================
+PenaltyReturnTypeOnItsOwnLine: 1000000 # strongly keep return type and function name together
+PenaltyBreakComment: 300 # prefer comment wrapping over exceeding ColumnLimit
+PenaltyBreakOpenParenthesis: 10000 # strongly avoid breaking immediately after `(`
+PenaltyBreakBeforeFirstCallParameter: 1000 # prefer keeping first call arguments beside the function
+PenaltyExcessCharacter: 10000 # strongly discourage lines beyond ColumnLimit
+PenaltyIndentedWhitespace: 0 # do not penalize whitespace used solely for alignment
+PenaltyBreakString: 1000 # avoid splitting string literals unless necessary
+
+# Coverage limits: CSTYLE-026, CSTYLE-027 need header guards and standalone
+# compilation; sorting includes cannot prove either. CSTYLE-107 declaration
+# ordering, CSTYLE-138 declarator isolation, CSTYLE-139 assignments, and
+# CSTYLE-142 designators need syntax/semantic checks rather than whitespace.
+# CSTYLE-018: split ordinary long strings manually when needed; CSTYLE-245
+# permits keeping a searchable diagnostic together. clang-tidy checks CSTYLE-022
+# braces so this formatter can preserve tokens and avoid semantic rewrites.
+#
+# LLVM reference:
+# https://releases.llvm.org/22.1.0/tools/clang/docs/ClangFormatStyleOptions.html
+
+# EOF
+
