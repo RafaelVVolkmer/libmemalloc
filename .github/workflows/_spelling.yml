@@ -39,15 +39,15 @@ jobs:
       - name: Install the shared locked spelling profile
         env:
           LUA: ${{ steps.lua.outputs.lua }}
-        run: '"${LUA}" scripts/toolchain/install/quality.lua --profile=spelling'
+        run: '"${LUA}" scripts/process/playbook.lua --direct quality-setup --profile=spelling'
 
       - name: Check source spelling and prose
         env:
           LUA: ${{ steps.lua.outputs.lua }}
         run: |
           export PATH="${GITHUB_WORKSPACE}/.cache/tools/quality/bin:${PATH}"
-          "${LUA}" scripts/workspace/doctor.lua --profile=spelling
-          "${LUA}" scripts/check/spelling.lua
+          "${LUA}" scripts/process/playbook.lua --direct doctor --profile=spelling
+          "${LUA}" scripts/process/playbook.lua --direct check-spelling
 
       - name: Verify commit-message link validation
         env:
@@ -61,7 +61,7 @@ jobs:
           LUA: ${{ steps.lua.outputs.lua }}
         run: |
           export PATH="${GITHUB_WORKSPACE}/.cache/tools/quality/bin:${PATH}"
-          "${LUA}" scripts/check/links.lua --offline
+          "${LUA}" scripts/process/playbook.lua --direct check-links --offline
 
       - name: Check external documentation links
         if: >-
@@ -74,7 +74,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           export PATH="${GITHUB_WORKSPACE}/.cache/tools/quality/bin:${PATH}"
-          "${LUA}" scripts/check/links.lua
+          "${LUA}" scripts/process/playbook.lua --direct check-links
 
 # EOF
 

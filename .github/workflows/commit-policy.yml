@@ -56,13 +56,12 @@ jobs:
           persist-credentials: false
 
       - name: Configure repository-local caches
-        run: mkdir -p "${LIBMEMALLOC_CACHE_ROOT}/tools"
+        uses: ./.github/actions/workspace-cache
 
       - name: Setup pinned Lua
         id: lua
         env:
           LIBMEMALLOC_BOOTSTRAP_RUNTIME_ONLY: "1"
-        # Keep this gate runnable before the shared local actions are published.
         run: |
           set -euo pipefail
 
@@ -70,8 +69,8 @@ jobs:
             sudo apt-get update
             sudo apt-get install --yes lua5.4
           fi
-          lua5.4 scripts/workspace/cache.lua lua5.4 scripts/workspace/bootstrap.lua
-          version="$(lua5.4 scripts/toolchain/resolve.lua --field lua.version)"
+          lua5.4 scripts/process/playbook.lua --direct workspace-bootstrap
+          version="$(lua5.4 scripts/process/playbook.lua --direct toolchain-resolve --field lua.version)"
           printf 'lua=%s/tools/lua/%s/src/lua\n' \
             "${LIBMEMALLOC_CACHE_ROOT}" "${version}" >> "${GITHUB_OUTPUT}"
 
@@ -145,7 +144,7 @@ jobs:
 
           while IFS= read -r sha; do
             printf 'Validating message: %s\n' "${sha}"
-            "${LUA}" scripts/check/commits.lua "${sha}"
+            "${LUA}" scripts/process/playbook.lua --direct check-commits "${sha}"
           done < "${LIBMEMALLOC_CACHE_ROOT}/tools/commit-policy-shas"
 
       - name: Require GitHub-verified OpenPGP signatures

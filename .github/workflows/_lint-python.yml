@@ -130,7 +130,7 @@ jobs:
             -C "${LIBMEMALLOC_CACHE_ROOT}/tools/pyright" \
             --strip-components=1
 
-          lua5.4 scripts/toolchain/python.lua --groups=quality,python-lint \
+          lua5.4 scripts/process/playbook.lua --direct toolchain-python --groups=quality,python-lint \
           --directory=.cache/tools/python-lint
 
       - name: Run Python checks
@@ -174,7 +174,7 @@ jobs:
             --config tools/lint/code/python/ruff.toml \
             "${files[@]}"
 
-          lua5.4 scripts/check/format.lua python \
+          lua5.4 scripts/process/playbook.lua --direct check-format python \
             "${LIBMEMALLOC_CACHE_ROOT}/tools/ruff/ruff" \
             "${files[@]}"
 

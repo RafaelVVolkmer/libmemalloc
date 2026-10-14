@@ -101,7 +101,7 @@ runs:
       run: |
         set -euo pipefail
 
-        "${LUA}" scripts/workspace/changes.lua \
+        "${LUA}" scripts/process/playbook.lua --direct workspace-changes \
           --base "${BASE_SHA}" \
           --head "${HEAD_SHA}" \
           --force-all "${FORCE_ALL}"

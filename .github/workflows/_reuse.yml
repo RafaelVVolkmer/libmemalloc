@@ -49,7 +49,7 @@ jobs:
         env:
           LUA: ${{ steps.lua.outputs.lua }}
         run: >-
-          "${LUA}" scripts/toolchain/python.lua --groups=reuse
+          "${LUA}" scripts/process/playbook.lua --direct toolchain-python --groups=reuse
           --directory=.cache/tools/reuse
 
       - name: Check REUSE compliance

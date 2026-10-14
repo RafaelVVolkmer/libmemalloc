@@ -162,7 +162,7 @@ jobs:
       - name: Install locked Lua analysis dependencies
         if: steps.detect.outputs.found == 'true'
         run: >-
-          lua5.4 scripts/toolchain/python.lua
+          lua5.4 scripts/process/playbook.lua --direct toolchain-python
           --groups=quality --directory=.cache/tools/lua-quality
 
       - name: Run Lua checks
@@ -179,7 +179,7 @@ jobs:
         run: |
           set -euo pipefail
 
-          "${LIBMEMALLOC_LUA}" scripts/check/lua.lua
+          "${LIBMEMALLOC_LUA}" scripts/process/playbook.lua --direct lua-check
           "${LIBMEMALLOC_LUA}" tests/automation/workspace/hooks_test.lua
           "${LIBMEMALLOC_LUA}" tests/automation/workspace/settings_test.lua
 

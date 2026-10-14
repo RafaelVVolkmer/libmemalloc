@@ -52,7 +52,7 @@ runs:
         set -euo pipefail
 
         export PATH="${NODE_BIN}:${PATH}"
-        "${LUA}" scripts/check/doc_tools.lua
+        "${LUA}" scripts/process/playbook.lua --direct check-doc-tools
         mkdir -p .cache/tools/web
         cp tools/lint/code/web/package{,-lock}.json .cache/tools/web/
         npm ci --prefix .cache/tools/web \

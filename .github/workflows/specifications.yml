@@ -53,10 +53,10 @@ jobs:
           set -euo pipefail
 
           if [[ -n "${ISSUE_NUMBER}" ]]; then
-            "${LUA}" scripts/github/specifications.lua \
-              --operation=enforce "--issue=${ISSUE_NUMBER}"
+            "${LUA}" scripts/process/playbook.lua --direct spec-reconcile \
+              "--issue=${ISSUE_NUMBER}"
           else
-            "${LUA}" scripts/github/specifications.lua --operation=sync
+            "${LUA}" scripts/process/playbook.lua --direct spec-labels
           fi
 
 # EOF

@@ -174,7 +174,7 @@ jobs:
               --rcfile=tools/lint/code/shell/posix/shellcheckrc \
               "${posix_files[@]}"
 
-            lua5.4 scripts/check/format.lua shell_posix \
+            lua5.4 scripts/process/playbook.lua --direct check-format shell_posix \
               "${LIBMEMALLOC_CACHE_ROOT}/tools/shfmt" \
               "${posix_files[@]}"
           fi
@@ -187,7 +187,7 @@ jobs:
               --rcfile=tools/lint/code/shell/bash/shellcheckrc \
               "${bash_files[@]}"
 
-            lua5.4 scripts/check/format.lua shell_bash \
+            lua5.4 scripts/process/playbook.lua --direct check-format shell_bash \
               "${LIBMEMALLOC_CACHE_ROOT}/tools/shfmt" \
               "${bash_files[@]}"
 
