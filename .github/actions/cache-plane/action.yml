@@ -1,0 +1,64 @@
+# SPDX-FileCopyrightText: 2026 Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
+# SPDX-License-Identifier: GPL-3.0-only
+
+---
+name: Configure CI cache plane
+description: Detect shared, local, specialized, and egress cache services.
+
+inputs:
+  mode:
+    description: disabled, optional, or required. Empty uses the runner setting.
+    required: false
+    default: ""
+
+outputs:
+  enabled:
+    description: Whether at least one effective cache-plane service is configured.
+    value: ${{ steps.configure.outputs.enabled }}
+
+  bazelrc:
+    description: Generated Bazel rc file with remote-cache policy.
+    value: ${{ steps.configure.outputs.bazelrc }}
+
+  bazel_write:
+    description: Whether this GitHub event may upload Bazel cache results.
+    value: ${{ steps.configure.outputs.bazel_write }}
+
+  shared_cache_enabled:
+    description: Whether an S3-compatible shared object cache is configured.
+    value: ${{ steps.configure.outputs.shared_cache_enabled }}
+
+  shared_cache_write:
+    description: Whether this GitHub event may populate the shared object cache.
+    value: ${{ steps.configure.outputs.shared_cache_write }}
+
+  registry_enabled:
+    description: Whether a runner-near OCI registry is configured.
+    value: ${{ steps.configure.outputs.registry_enabled }}
+
+  proxy_enabled:
+    description: Whether an HTTP or HTTPS egress proxy is configured.
+    value: ${{ steps.configure.outputs.proxy_enabled }}
+
+runs:
+  using: composite
+
+  steps:
+    - name: Setup pinned Lua
+      id: lua
+      uses: ./.github/actions/setup-lua
+
+    - name: Detect and configure cache plane
+      id: configure
+      shell: bash
+      env:
+        LUA: ${{ steps.lua.outputs.lua }}
+        INPUT_MODE: ${{ inputs.mode }}
+        EVENT_NAME: ${{ github.event_name }}
+        REF_NAME: ${{ github.ref_name }}
+        DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+      run: |
+        "${LUA}" scripts/github/cache_plane.lua
+
+# EOF
+
