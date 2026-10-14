@@ -1,0 +1,208 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "libmemalloc process catalog",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "scope",
+    "controls",
+    "traceability"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 2
+    },
+    "scope": {
+      "const": "automation-pilot"
+    },
+    "controls": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "verifier",
+          "requirement",
+          "procedure",
+          "configuration"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^LMA-CTRL-[A-Z-]+$"
+          },
+          "verifier": {
+            "enum": [
+              "toolchain_contract",
+              "documentation_contract",
+              "compilation_contract",
+              "regression_contract"
+            ]
+          },
+          "requirement": {
+            "enum": [
+              "LMA-ENG-001",
+              "LMA-ENG-002",
+              "LMA-ENG-003",
+              "LMA-ENG-004"
+            ]
+          },
+          "procedure": {
+            "const": "LMA-PROC-003"
+          },
+          "configuration": {
+            "const": "posix-local"
+          }
+        },
+        "oneOf": [
+          {
+            "properties": {
+              "verifier": {
+                "const": "toolchain_contract"
+              },
+              "requirement": {
+                "const": "LMA-ENG-001"
+              }
+            }
+          },
+          {
+            "properties": {
+              "verifier": {
+                "const": "documentation_contract"
+              },
+              "requirement": {
+                "const": "LMA-ENG-002"
+              }
+            }
+          },
+          {
+            "properties": {
+              "verifier": {
+                "const": "compilation_contract"
+              },
+              "requirement": {
+                "const": "LMA-ENG-003"
+              }
+            }
+          },
+          {
+            "properties": {
+              "verifier": {
+                "const": "regression_contract"
+              },
+              "requirement": {
+                "const": "LMA-ENG-004"
+              }
+            }
+          }
+        ]
+      }
+    },
+    "traceability": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "designs",
+        "verifications",
+        "requirements"
+      ],
+      "properties": {
+        "designs": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "reference"
+            ],
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^LMA-DES-[A-Z]+-[0-9]{3}$"
+              },
+              "reference": {
+                "type": "string",
+                "pattern": "^docs/.+\\.md(#.+)?$"
+              }
+            }
+          }
+        },
+        "verifications": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "kind",
+              "control"
+            ],
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^LMA-TEST-[A-Z]+-[0-9]{3}$"
+              },
+              "kind": {
+                "enum": [
+                  "unit",
+                  "analysis",
+                  "integration"
+                ]
+              },
+              "control": {
+                "type": "string",
+                "pattern": "^LMA-CTRL-[A-Z-]+$"
+              }
+            }
+          }
+        },
+        "requirements": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "statement",
+              "design",
+              "verification"
+            ],
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^LMA-ENG-[0-9]{3}$"
+              },
+              "statement": {
+                "type": "string",
+                "minLength": 1
+              },
+              "design": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "type": "string",
+                  "pattern": "^LMA-DES-[A-Z]+-[0-9]{3}$"
+                }
+              },
+              "verification": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "type": "string",
+                  "pattern": "^LMA-TEST-[A-Z]+-[0-9]{3}$"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

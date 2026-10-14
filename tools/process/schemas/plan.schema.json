@@ -1,0 +1,144 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "libmemalloc process plan",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "scope",
+    "profile",
+    "run_id",
+    "policy_sha256",
+    "subject",
+    "runtime",
+    "controls",
+    "traceability"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 2
+    },
+    "scope": {
+      "const": "automation-pilot"
+    },
+    "profile": {
+      "const": "local"
+    },
+    "run_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,63}$"
+    },
+    "policy_sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "subject": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "revision",
+        "source_sha256",
+        "dirty",
+        "inputs"
+      ],
+      "properties": {
+        "revision": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{40,64}$"
+        },
+        "source_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "dirty": {
+          "type": "boolean"
+        },
+        "inputs": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "path",
+              "sha256",
+              "mode"
+            ],
+            "properties": {
+              "path": {
+                "type": "string"
+              },
+              "sha256": {
+                "type": "string",
+                "pattern": "^([a-f0-9]{64}|DELETED)$"
+              },
+              "mode": {
+                "type": "integer",
+                "minimum": 0
+              }
+            }
+          }
+        }
+      }
+    },
+    "runtime": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "lua",
+        "executable",
+        "executable_sha256",
+        "libuv",
+        "system",
+        "release",
+        "machine",
+        "environment",
+        "toolchain_qualified"
+      ],
+      "properties": {
+        "lua": {
+          "type": "string"
+        },
+        "executable": {
+          "type": "string"
+        },
+        "executable_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "libuv": {
+          "type": "string"
+        },
+        "system": {
+          "type": "string"
+        },
+        "release": {
+          "type": "string"
+        },
+        "machine": {
+          "type": "string"
+        },
+        "environment": {
+          "type": "array",
+          "minItems": 0,
+          "items": {
+            "type": "string"
+          }
+        },
+        "toolchain_qualified": {
+          "const": false
+        }
+      }
+    },
+    "controls": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "catalog.schema.json#/properties/controls/items"
+      }
+    },
+    "traceability": {
+      "$ref": "catalog.schema.json#/properties/traceability"
+    }
+  }
+}
