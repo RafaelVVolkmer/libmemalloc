@@ -1,0 +1,14 @@
+// SPDX-FileCopyrightText: 2026 Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
+// SPDX-License-Identifier: GPL-3.0-only
+
+typedef unsigned int __attribute__((bitwise)) region_id;
+typedef unsigned int __attribute__((bitwise)) block_id;
+region_id invalid_conversion(block_id value);
+
+region_id invalid_conversion(block_id value)
+{
+	return value;
+}
+
+/* EOF */
+
