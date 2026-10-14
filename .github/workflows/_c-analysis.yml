@@ -1,0 +1,192 @@
+# SPDX-FileCopyrightText: 2026 Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
+# SPDX-License-Identifier: GPL-3.0-only
+
+---
+name: C analysis campaigns
+
+on:
+  workflow_call:
+    inputs:
+      enabled:
+        type: boolean
+        required: true
+      integration:
+        type: boolean
+        default: false
+
+permissions: {}
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  rules:
+    if: inputs.enabled
+    name: GCC and module architecture
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: ./.github/actions/workspace-cache
+
+      - uses: ./.github/actions/setup-lua
+
+      - name: Install independent engines
+        run: >-
+          lua scripts/process/playbook.lua --direct workspace-cache lua scripts/process/playbook.lua --direct
+          toolchain-install-c-analysis --group=rules
+
+      - name: Setup locked quality tools
+        uses: ./.github/actions/setup-c-quality
+
+      - name: Validate parsers and policy rejection
+        run: lua scripts/process/playbook.lua --direct test-analysis-analysis-test
+
+      - name: Run analysis, formal, complexity and CMake gates
+        if: ${{ !cancelled() }}
+        env:
+          LIBMEMALLOC_LUA: /usr/bin/lua5.4
+          LIBMEMALLOC_QUALITY_PYTHON: .cache/tools/c-quality/bin/python
+          LIBMEMALLOC_CBMC: .cache/tools/cbmc/usr/bin/cbmc
+          LIBMEMALLOC_CMAKE_LINT: .cache/tools/c-quality/bin/cmake-lint
+          LIBMEMALLOC_CMAKE_FORMAT: .cache/tools/c-quality/bin/cmake-format
+        run: lua5.4 scripts/process/playbook.lua --direct analysis-run --group=rules
+
+      - name: Preserve reports including failures
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: c-analysis-rules
+          path: |
+            .cache/ci/c-analysis/
+            .cache/tools/c-analysis-rules/dependencies.txt
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 30
+
+  csa:
+    if: inputs.enabled
+    name: Clang path analysis
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: ./.github/actions/workspace-cache
+
+      - uses: ./.github/actions/setup-lua
+
+      - name: Install CodeChecker and compatible Clang
+        run: >-
+          lua scripts/process/playbook.lua --direct workspace-cache lua scripts/process/playbook.lua --direct
+          toolchain-install-c-analysis --group=csa
+
+      - name: Run CSA with per-file coverage validation
+        run: >-
+          lua scripts/process/playbook.lua --direct workspace-cache lua scripts/process/playbook.lua --direct
+          check-c-analysis --campaign=csa
+
+      - name: Run CTU with a cross-file defect fixture
+        if: inputs.integration
+        run: >-
+          lua scripts/process/playbook.lua --direct workspace-cache lua scripts/process/playbook.lua --direct
+          check-c-analysis --campaign=csa-ctu
+
+      - name: Preserve CodeChecker results
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: c-analysis-codechecker
+          path: |
+            .cache/ci/c-analysis/
+            .cache/tools/c-analysis-csa/dependencies.txt
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 30
+
+  extended:
+    if: inputs.enabled && inputs.integration
+    name: Restricted types
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: ./.github/actions/workspace-cache
+
+      - uses: ./.github/actions/setup-lua
+
+      - name: Install qualified specialist tools
+        run: >-
+          lua scripts/process/playbook.lua --direct workspace-cache lua scripts/process/playbook.lua --direct
+          toolchain-install-c-analysis --group=extended
+
+      - name: Check restricted types
+        run: >-
+          lua scripts/process/playbook.lua --direct workspace-cache lua scripts/process/playbook.lua --direct
+          analysis-run --group=extended
+
+      - name: Preserve specialist evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: c-analysis-specialists
+          path: .cache/ci/c-analysis/
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 30
+
+  msvc:
+    if: inputs.enabled
+    name: Microsoft native analysis
+    runs-on: windows-2022
+    timeout-minutes: 20
+
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: ./.github/actions/setup-msvc-analysis
+
+      - name: Analyze the Windows source profile
+        shell: pwsh
+        run: |
+          lua scripts/process/playbook.lua --direct check-msvc
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: Preserve Microsoft reports
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: c-analysis-msvc
+          path: .cache/ci/msvc/
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 30
+
+# EOF
+

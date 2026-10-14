@@ -1,0 +1,25 @@
+# SPDX-FileCopyrightText: 2026 Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
+# SPDX-License-Identifier: GPL-3.0-only
+
+---
+name: Extended C analysis
+
+on:
+  schedule:
+    - cron: "41 2 * * *"
+  workflow_dispatch: {}
+
+permissions: {}
+
+jobs:
+  campaigns:
+    uses: ./.github/workflows/_c-analysis.yml
+
+    permissions:
+      contents: read
+    with:
+      enabled: true
+      integration: true
+
+# EOF
+
