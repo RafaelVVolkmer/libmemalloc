@@ -1,0 +1,67 @@
+# SPDX-FileCopyrightText: 2026 Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
+# SPDX-License-Identifier: GPL-3.0-only
+
+# Nixpkgs attribute paths; flake.lock pins the package graph.
+[groups]
+base = [
+  "bashInteractive",
+  "coreutils",
+  "util-linux",
+  "findutils",
+  "gnugrep",
+  "gnused",
+  "gawk",
+  "git",
+  "gnupg",
+  "openssh",
+  "curl",
+  "cacert",
+  "gnutar",
+  "gzip",
+  "xz",
+  "unzip",
+  "pkg-config",
+  "gnumake",
+  "cmake",
+  "ninja",
+  "gcc",
+  "python312",
+  "jq",
+  "patchelf",
+]
+build = [
+  "clang",
+  "llvm",
+  "lld",
+  "zig",
+  "rustc",
+  "cargo",
+  "c3c",
+  "emscripten",
+  "qemu",
+  "ccache",
+  "sccache",
+]
+documentation = [ "doxygen", "graphviz", "nodejs_24" ]
+analysis = [ "clang-tools", "cppcheck", "flawfinder", "sparse", "cbmc", "valgrind" ]
+lint = [
+  "actionlint",
+  "shellcheck",
+  "shfmt",
+  "stylua",
+  "taplo",
+  "reuse",
+  "nixfmt",
+  "vale",
+  "codespell",
+  "yamllint",
+  "selene",
+  "gitleaks",
+  "lychee",
+  "markdownlint-cli2",
+  "editorconfig-checker",
+]
+release = [ "cosign", "syft", "grype", "diffoscopeMinimal", "libabigail", "zstd" ]
+
+# EOF
+
