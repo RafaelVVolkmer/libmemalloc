@@ -1,0 +1,110 @@
+# SPDX-FileCopyrightText: 2026 Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
+# SPDX-License-Identifier: GPL-3.0-only
+
+---
+name: Detect changed areas
+description: Run the repository change classifier with the pinned Lua runtime.
+
+inputs:
+  base:
+    description: Base Git revision.
+    required: false
+    default: ""
+
+  head:
+    description: Head Git revision.
+    required: false
+    default: HEAD
+
+  force-all:
+    description: Force every CI category to true.
+    required: false
+    default: "false"
+
+outputs:
+  engineering:
+    value: ${{ steps.detect.outputs.engineering }}
+
+  html:
+    value: ${{ steps.detect.outputs.html }}
+
+  css:
+    value: ${{ steps.detect.outputs.css }}
+
+  javascript:
+    value: ${{ steps.detect.outputs.javascript }}
+
+  typescript:
+    value: ${{ steps.detect.outputs.typescript }}
+
+  actions:
+    value: ${{ steps.detect.outputs.actions }}
+
+  bazel:
+    value: ${{ steps.detect.outputs.bazel }}
+
+  c:
+    value: ${{ steps.detect.outputs.c }}
+
+  ci:
+    value: ${{ steps.detect.outputs.ci }}
+
+  json:
+    value: ${{ steps.detect.outputs.json }}
+
+  lua:
+    value: ${{ steps.detect.outputs.lua }}
+
+  markdown:
+    value: ${{ steps.detect.outputs.markdown }}
+
+  nushell:
+    value: ${{ steps.detect.outputs.nushell }}
+
+  powershell:
+    value: ${{ steps.detect.outputs.powershell }}
+
+  python:
+    value: ${{ steps.detect.outputs.python }}
+
+  security:
+    value: ${{ steps.detect.outputs.security }}
+
+  shell:
+    value: ${{ steps.detect.outputs.shell }}
+
+  spelling:
+    value: ${{ steps.detect.outputs.spelling }}
+
+  toml:
+    value: ${{ steps.detect.outputs.toml }}
+
+  yaml:
+    value: ${{ steps.detect.outputs.yaml }}
+
+runs:
+  using: composite
+
+  steps:
+    - name: Setup pinned Lua
+      id: lua
+      uses: ./.github/actions/setup-lua
+
+    - name: Classify repository changes
+      id: detect
+      shell: bash
+      env:
+        BASE_SHA: ${{ inputs.base }}
+        HEAD_SHA: ${{ inputs.head }}
+        FORCE_ALL: ${{ inputs.force-all }}
+        LUA: ${{ steps.lua.outputs.lua }}
+      run: |
+        set -euo pipefail
+
+        "${LUA}" scripts/workspace/changes.lua \
+          --base "${BASE_SHA}" \
+          --head "${HEAD_SHA}" \
+          --force-all "${FORCE_ALL}"
+
+# EOF
+
