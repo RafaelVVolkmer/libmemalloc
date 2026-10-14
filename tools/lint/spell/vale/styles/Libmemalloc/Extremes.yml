@@ -1,0 +1,24 @@
+# SPDX-FileCopyrightText: 2026 Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
+# SPDX-License-Identifier: GPL-3.0-only
+
+---
+extends: existence
+
+message: "Replace '%s' with the exact scope or boundary condition."
+
+level: warning
+
+ignorecase: true
+
+tokens:
+  - all
+  - always
+  - every
+  - everyone
+  - everything
+  - never
+  - nobody
+  - none
+
+# EOF
+

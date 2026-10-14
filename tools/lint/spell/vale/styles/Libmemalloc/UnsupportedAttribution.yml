@@ -1,0 +1,21 @@
+# SPDX-FileCopyrightText: 2026 Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
+# SPDX-License-Identifier: GPL-3.0-only
+
+---
+extends: existence
+
+message: "Replace '%s' with a specific, citable source or remove the attribution."
+
+level: warning
+
+ignorecase: true
+
+tokens:
+  - experts (?:agree|believe|say)
+  - it is (?:widely|generally) (?:accepted|believed|known)
+  - research (?:demonstrates|indicates|proves|shows)
+  - scientifically proven
+  - studies (?:demonstrate|indicate|prove|show)
+
+# EOF
+
