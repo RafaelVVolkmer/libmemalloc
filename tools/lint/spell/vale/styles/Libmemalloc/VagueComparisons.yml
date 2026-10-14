@@ -1,0 +1,23 @@
+# SPDX-FileCopyrightText: 2026 Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
+# SPDX-License-Identifier: GPL-3.0-only
+
+---
+extends: existence
+
+message: "For '%s', name the baseline, metric, measured difference, and uncertainty."
+
+level: warning
+
+ignorecase: true
+
+tokens:
+  - better performance
+  - faster performance
+  - higher accuracy
+  - improved performance
+  - lower latency
+  - more efficient
+  - substantial improvement
+
+# EOF
+
