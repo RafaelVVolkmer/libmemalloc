@@ -5,5 +5,44 @@
 - name: Prepare the local workspace
   ansible.builtin.import_playbook: prepare.yml
 
+- name: Execute the engineering automation pilot
+  hosts: localhost
+  gather_facts: false
+  become: false
+  connection: local
+  vars_files:
+    - "{{ playbook_dir }}/../../../.cache/tools/automation.yml"
+  vars:
+    lma_workspace: "{{ (playbook_dir ~ '/../../..') | realpath }}"
+    lma_lua_executable: "{{ lma_managed_lua }}"
+    ansible_python_interpreter: "{{ ansible_playbook_python }}"
+  environment:
+    LIBMEMALLOC_LUA: "{{ lma_lua_executable }}"
+    LUA_CPATH: "{{ lma_managed_luv }};;"
+
+  tasks:
+    - name: Require a real attempt with an externally supplied policy digest
+      ansible.builtin.assert:
+        that:
+          - not ansible_check_mode
+          - lma_run_id is defined
+          - lma_policy_sha256 is defined
+          - lma_run_id is match('^[A-Za-z0-9][A-Za-z0-9_-]{0,63}$')
+          - lma_policy_sha256 is match('^[a-f0-9]{64}$')
+
+    - name: Execute the portable campaign and retain its evidence graph
+      ansible.builtin.command:
+        argv:
+          - "{{ lma_lua_executable }}"
+          - scripts/process/playbook.lua
+          - process-ci
+          - --profile=local
+          - "--run-id={{ lma_run_id }}"
+          - "--policy-sha256={{ lma_policy_sha256 }}"
+          - "--output=.cache/logs/process-{{ lma_run_id }}"
+        chdir: "{{ lma_workspace }}"
+        expand_argument_vars: false
+      changed_when: false
+
 # EOF
 
