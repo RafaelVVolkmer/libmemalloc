@@ -1,0 +1,59 @@
+# SPDX-FileCopyrightText: 2026 Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
+# SPDX-License-Identifier: GPL-3.0-only
+
+---
+extends: default
+
+rules:
+  braces:
+    min-spaces-inside: 0
+    max-spaces-inside: 1
+
+  brackets:
+    min-spaces-inside: 0
+    max-spaces-inside: 1
+
+  comments:
+    min-spaces-from-content: 1
+
+  comments-indentation: enable
+
+  document-end: disable
+
+  document-start:
+    present: true
+
+  empty-lines:
+    max: 2
+    max-start: 0
+    max-end: 1
+
+  indentation:
+    spaces: 2
+    indent-sequences: true
+    check-multi-line-strings: false
+
+  line-length:
+    max: 120
+    allow-non-breakable-inline-mappings: true
+    allow-non-breakable-words: true
+
+  new-line-at-end-of-file: enable
+
+  new-lines:
+    type: unix
+
+  octal-values:
+    forbid-implicit-octal: true
+    forbid-explicit-octal: false
+
+  trailing-spaces: enable
+
+  truthy:
+    allowed-values:
+      - "true"
+      - "false"
+    check-keys: false
+
+# EOF
+
