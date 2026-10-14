@@ -1,0 +1,20 @@
+# SPDX-FileCopyrightText: 2026 Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
+# SPDX-License-Identifier: GPL-3.0-only
+
+[codespell]
+builtin = clear,rare,code
+check-filenames =
+check-hidden =
+count =
+ignore-words = tools/lint/spell/dictionary/libmemalloc-words.txt
+quiet-level = 2
+# C comment contents, including documentation fences, belong to Doxygen.
+ignore-regex = //[^\n]*
+ignore-multiline-regex = /\*.*?\*/
+# The verb "lets" appears in the imported normative C guides.
+ignore-words-list = lets
+# Generated dependency identities and integrity hashes are not authored prose.
+skip = .git,.cache,node_modules,LICENSES,*.lock,package-lock.json,*.min.*,*.svg,*.aff,*.dic,./*.patch
+
+# EOF
+
