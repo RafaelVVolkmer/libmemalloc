@@ -1,0 +1,11 @@
+{
+  "schema": 1,
+  "product": "libmemalloc-mock",
+  "production_ready": false,
+  "supported_targets": ["x86_64-linux", "aarch64-linux"],
+  "required_variants": ["release", "debug"],
+  "required_tests": ["static-smoke", "shared-smoke", "reproducibility"],
+  "required_security_reports": [],
+  "sbom_formats": ["CycloneDX-1.6", "SPDX-2.3"],
+  "slsa_claim": "unqualified-local-provenance"
+}
