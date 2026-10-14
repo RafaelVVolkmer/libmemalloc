@@ -321,6 +321,7 @@ local function BUILD_LOCAL_main()
             "-E",
             "env",
             "SOURCE_DATE_EPOCH=" .. report.source_date_epoch,
+            "ZERO_AR_DATE=1",
             "TZ=UTC",
             "LC_ALL=C",
             "CCACHE_DISABLE=1",
