@@ -73,7 +73,9 @@ def stop(process):
     process.wait(timeout=5)
 
 
-(root / "probe.lua").write_text('dofile("scripts/workspace/lib/lock.lua").guard(arg[1])\n')
+(root / "probe.lua").write_text(
+    'dofile("scripts/workspace/lib/lock.lua").guard(arg[1])\n'
+)
 
 process = holder("shared")
 try:

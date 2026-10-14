@@ -80,8 +80,8 @@ local function SUITES_CATALOG_loadModule()
          "documentation/navigation_test.cjs",
       },
       domain = {
-         ["workspace/ansible_runtime_test.lua"] = "Native runtime preparation tests.",
-         ["workspace/lock_integration_test.lua"] = "Workspace command locking integration.",
+         ["workspace/ansible_runtime_test.lua"] = "Native runtime tests.",
+         ["workspace/lock_integration_test.lua"] = "Command locking tests.",
          ["analysis/lua_metrics_test.py"] = "Lua complexity gate.",
          ["analysis/metrics_test.py"] = "C metrics gate.",
          ["build/wasm_test.cjs"] = "Emscripten campaign.",

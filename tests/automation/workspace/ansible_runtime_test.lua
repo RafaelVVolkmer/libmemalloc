@@ -37,7 +37,8 @@ harness.write_text(
     "---\n- hosts: localhost\n  gather_facts: false\n  vars:\n"
     "    lma_workspace: " + json.dumps(str(checkout)) + "\n"
     "    lma_bootstrap_lua: " + json.dumps(lua) + "\n"
-    "  tasks:\n    - ansible.builtin.import_tasks: infra/ansible/tasks/runtime.yml\n"
+    "  tasks:\n"
+    "    - ansible.builtin.import_tasks: infra/ansible/tasks/runtime.yml\n"
 )
 child_env = dict(os.environ)
 child_env.pop("ANSIBLE_CONFIG", None)
@@ -65,14 +66,16 @@ manifest.write_text(manifest_text)
 assert "changed=0" in run("runtime.yml", "--check")
 assert "changed=0" in run("runtime.yml")
 assert manifest.read_text() == manifest_text
-manifest.write_text("lma_managed_lua: /missing/lua\nlma_managed_luv: /missing/?.so\n")
+manifest.write_text(
+    "lma_managed_lua: /missing/lua\nlma_managed_luv: /missing/?.so\n"
+)
 run("runtime.yml", "--check", succeeds=False)
 manifest.write_text(manifest_text)
 run("infra/ansible/playbooks/prepare.yml")
 assert "changed=0" in run("infra/ansible/playbooks/verify-environment.yml")
 for category in ("logs", "tests", "tmp"):
     assert (checkout / ".cache" / category).stat().st_mode & 0o777 == 0o700
-print("Ansible runtime: cold checks, warm reuse, rejection and preparation passed.")
+print("Ansible runtime: cold checks, reuse, rejection and preparation passed.")
 ]]
    )
    artifacts.run({

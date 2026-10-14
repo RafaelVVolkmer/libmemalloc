@@ -1,7 +1,7 @@
 -- SPDX-FileCopyrightText: 2026 Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
 -- SPDX-License-Identifier: GPL-3.0-only
 
---- Check owned temporary paths, cleanup restrictions, and repository containment.
+--- Check owned temporary paths, cleanup restrictions and containment.
 
 --- Run this command within one explicit execution boundary.
 -- @return nil: no values.
