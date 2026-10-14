@@ -1,0 +1,802 @@
+/*
+ * SPDX-FileCopyrightText: 2026 Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
+ * SPDX-License-Identifier: GPL-3.0-only
+ */
+
+/* Brand typography and palette: assets/images/README.md. */
+@font-face {
+  font-family: "Nunito Sans";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("NunitoSans-Regular.ttf") format("truetype");
+}
+@font-face {
+  font-family: "Nunito Sans";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("NunitoSans-Bold.ttf") format("truetype");
+}
+@font-face {
+  font-family: "JetBrains Mono";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("JetBrainsMono-Regular.woff2") format("woff2");
+}
+@font-face {
+  font-family: "JetBrains Mono";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("JetBrainsMono-Bold.woff2") format("woff2");
+}
+
+html {
+  --font-family: "Nunito Sans", "Segoe UI", sans-serif;
+  --font-family-monospace: "JetBrains Mono", ui-monospace, monospace;
+  --page-font-size: 16px;
+  --content-line-height: 1.7;
+  --content-maxwidth: 1200px;
+  --side-nav-fixed-width: 335px;
+  --top-height: 150px;
+  --lma-outline-width: 260px;
+  --lma-paper: #fff;
+  --lma-ink: #262b44;
+  --lma-muted: #5a6988;
+  --lma-surface: #f3f5f9;
+  --lma-line: #c0cbdc;
+  --lma-link: #124e89;
+  --lma-hover: #3a4466;
+  --lma-selection: #124e89;
+  --lma-selection-text: #fff;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  html:not(.light-mode) {
+    --lma-paper: #1c1d1f;
+    --lma-ink: #e7e9ed;
+    --lma-muted: #adb3bd;
+    --lma-surface: #252628;
+    --lma-line: #45484d;
+    --lma-link: #9cbfe0;
+    --lma-hover: #d8e7f5;
+    --lma-selection: #9cbfe0;
+    --lma-selection-text: #1c1d1f;
+    color-scheme: dark;
+  }
+}
+html.dark-mode {
+  --lma-paper: #1c1d1f;
+  --lma-ink: #e7e9ed;
+  --lma-muted: #adb3bd;
+  --lma-surface: #252628;
+  --lma-line: #45484d;
+  --lma-link: #9cbfe0;
+  --lma-hover: #d8e7f5;
+  --lma-selection: #9cbfe0;
+  --lma-selection-text: #1c1d1f;
+  color-scheme: dark;
+}
+
+/* Match upstream specificity for both system preference and explicit choice. */
+html,
+html:not(.light-mode),
+html.light-mode,
+html.dark-mode {
+  --primary-color: var(--lma-link);
+  --primary-dark-color: var(--lma-hover);
+  --primary-light-color: var(--lma-muted);
+  --on-primary-color: var(--lma-selection-text);
+  --page-background-color: var(--lma-paper);
+  --page-foreground-color: var(--lma-ink);
+  --page-secondary-foreground-color: var(--lma-muted);
+  --separator-color: var(--lma-line);
+  --side-nav-background: var(--lma-surface);
+  --code-background: var(--lma-surface);
+  --tablehead-background: var(--lma-surface);
+  --blockquote-background: var(--lma-surface);
+  --blockquote-foreground: var(--lma-muted);
+  /* Nord also covers native Doxygen fragments, before highlighting loads. */
+  --fragment-background: #2e3440;
+  --fragment-foreground: #d8dee9;
+  --fragment-keyword: #81a1c1;
+  --fragment-keywordtype: #8fbcbb;
+  --fragment-keywordflow: #81a1c1;
+  --fragment-token: #a3be8c;
+  --fragment-comment: #a3adbf;
+  --fragment-link: #88c0d0;
+  --fragment-preprocessor: #81a1c1;
+  --fragment-linenumber-color: #a3adbf;
+  --fragment-linenumber-background: #3b4252;
+  --fragment-linenumber-border: #4c566a;
+  accent-color: var(--lma-link);
+  caret-color: var(--lma-link);
+}
+
+::selection {
+  color: var(--lma-selection-text);
+  background: var(--lma-selection);
+}
+:focus-visible {
+  outline: 2px solid var(--lma-link);
+  outline-offset: 3px;
+}
+#titlearea {
+  position: relative;
+}
+#projectlogo img {
+  max-width: 80px;
+  max-height: 90px;
+  width: auto;
+  height: auto;
+}
+#projectalign {
+  padding-right: 0;
+}
+#projectname {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0 4px;
+  font-family: var(--font-family);
+  font-weight: 700;
+  font-size: 24px;
+  color: var(--lma-link);
+}
+#projectnumber {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.5;
+  white-space: nowrap;
+  color: var(--lma-muted);
+}
+#projectbrief {
+  font-size: 12px;
+  line-height: 1.5;
+  white-space: normal;
+}
+#MSearchField::placeholder {
+  color: var(--lma-muted);
+  opacity: 1;
+}
+/* Doxygen writes an inline gray on focus/blur; keep its editable text readable. */
+#MSearchBox #MSearchField {
+  color: var(--lma-ink) !important;
+}
+#container {
+  display: block;
+  overflow: visible;
+}
+#doc-content {
+  height: auto !important;
+  min-height: 100dvh;
+  overflow: visible;
+}
+.contents :is(h1, h2, h3, h4, h5, h6) {
+  font-family: var(--font-family);
+  font-weight: 700;
+}
+.contents :is(h1, h2, h3),
+.contents .anchor[id],
+.memitem[id] {
+  scroll-margin-top: 80px;
+}
+h1.title {
+  margin: 0;
+  font-size: inherit;
+}
+.contents hr {
+  width: 100%;
+  max-width: 100%;
+  margin-inline: 0;
+  box-shadow: none;
+}
+/* Native API headings must not paint Awesome's full-viewport shadow rules. */
+.contents :is(h2.groupheader, div.groupHeader) {
+  box-sizing: border-box;
+  width: auto;
+  max-width: 100%;
+  box-shadow: none;
+  border-bottom: 1px solid var(--separator-color);
+  color: var(--lma-ink);
+}
+div.header {
+  border-bottom: 0;
+}
+div.header .headertitle::after {
+  content: "";
+  display: block;
+  width: calc(100% - 2 * var(--spacing-xlarge));
+  max-width: var(--content-maxwidth);
+  margin-inline: auto;
+  border-bottom: 1px solid var(--separator-color);
+}
+.contents .textblock {
+  min-width: 0;
+  overflow-wrap: break-word;
+}
+.contents .textblock span.tt {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+/* Doxygen's newer Important notice needs the upstream theme's dark status tokens. */
+.contents dl.important {
+  background: var(--bug-color);
+  color: var(--bug-color-darker);
+  border-left-color: var(--bug-color-dark);
+}
+.contents dl.important dt {
+  color: inherit;
+}
+.contents dl:is(.note, .remark, .warning, .attention, .todo) dt {
+  color: inherit;
+}
+.contents dl.section dt {
+  color: inherit;
+}
+.contents img[src$="libmemalloc_logo.svg"] {
+  width: min(70%, 19rem);
+  height: auto;
+}
+.lma-has-title .header .headertitle {
+  display: none;
+}
+.lma-has-title .header {
+  border: 0;
+}
+
+.lma-tools {
+  margin: 1rem 0 1.5rem;
+}
+details.lma-toc {
+  background: var(--lma-surface);
+  border: 1px solid var(--separator-color);
+  border-radius: var(--border-radius-medium);
+  padding: 0;
+}
+.lma-toc > summary {
+  min-height: 44px;
+  box-sizing: border-box;
+  padding: 10px 16px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.lma-toc > :not(summary) {
+  margin: 0 16px 16px;
+}
+.lma-toc a[aria-current="location"] {
+  font-weight: 700;
+  text-decoration: underline;
+}
+
+.lma-code {
+  position: relative;
+  min-width: 0;
+  margin: 1rem 0;
+}
+.lma-code .fragment {
+  margin: 0;
+  padding-right: 3.5rem;
+}
+.fragment :is(.keyword, .keywordtype, .keywordflow, .hljs-keyword, .hljs-type) {
+  font-weight: 700;
+}
+.fragment :is(.comment, .hljs-comment) {
+  font-style: italic;
+}
+/* Lift Nord comments and directives for readable contrast without changing its hue. */
+.lma-code :is(.hljs-comment, .hljs-quote) {
+  color: var(--fragment-comment);
+}
+.lma-code .hljs-meta,
+.lma-code .hljs-meta .hljs-keyword {
+  color: var(--fragment-preprocessor);
+}
+.lma-code .hljs-meta .hljs-string {
+  color: #a3be8c;
+}
+.lma-code .hljs-number {
+  color: #bb9ab6;
+}
+.lma-code .hljs-template-tag {
+  color: var(--fragment-preprocessor);
+}
+/* Reference listings follow the page; detailed signatures and code retain Nord. */
+.contents table.memberdecls {
+  max-width: 100%;
+  --fragment-background: var(--lma-surface);
+  --fragment-foreground: var(--lma-ink);
+  --fragment-link: var(--lma-link);
+}
+.contents table.memberdecls:has(#header-groups, #header-files) tr[class^="memitem"] {
+  font-family: var(--font-family);
+  font-size: var(--page-font-size);
+}
+.memItemLeft,
+.memItemRight,
+.memproto,
+.memtitle {
+  --page-foreground-color: var(--fragment-foreground);
+  --primary-color: var(--fragment-link);
+  --primary-dark-color: var(--fragment-link);
+  color: var(--fragment-foreground);
+}
+/* Upstream applies !important to every a:link; scope the Nord override to signatures. */
+.contents :is(.memItemLeft, .memItemRight, .memproto, .memtitle) a {
+  color: var(--fragment-link) !important;
+}
+.lma-code :focus-visible {
+  outline-color: #88c0d0;
+}
+.lma-code ::selection {
+  color: #eceff4;
+  background: #4c566a;
+}
+.lma-theme-toggle,
+.lma-copy,
+.lma-panel-toggle {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: 1px solid var(--separator-color);
+  border-radius: var(--border-radius-small);
+  color: var(--lma-link);
+  background: var(--lma-paper);
+  cursor: pointer;
+}
+.lma-theme-toggle:hover,
+.lma-copy:hover,
+.lma-panel-toggle:hover {
+  color: var(--lma-selection-text);
+  background: var(--lma-selection);
+}
+.lma-reading-controls {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: var(--lma-paper);
+  border-bottom: 1px solid var(--separator-color);
+}
+.lma-reading-controls button {
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+}
+.lma-outline-toggle {
+  margin-left: auto;
+}
+.lma-panel-toggle[aria-expanded="false"] svg {
+  transform: rotate(180deg);
+}
+.lma-tools[hidden] {
+  display: none !important;
+}
+.lma-tools {
+  scroll-margin-top: 76px;
+}
+.lma-graph-description {
+  margin: 0.5rem 0 1.5rem;
+  text-align: left;
+}
+.lma-graph-description > summary {
+  cursor: pointer;
+  min-height: 44px;
+  align-content: center;
+  color: var(--lma-link);
+}
+.lma-graph-description > pre {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.dynheader[role="button"] {
+  min-height: 44px;
+  align-content: center;
+}
+.lma-copy {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  opacity: 0;
+  transition: opacity 120ms ease-out;
+}
+.lma-copy {
+  color: #d8dee9;
+  background: #3b4252;
+  border-color: #4c566a;
+}
+.lma-copy:hover {
+  color: #eceff4;
+  background: #434c5e;
+}
+.lma-copy:disabled {
+  cursor: wait;
+  color: #a3adbf;
+}
+.lma-code:hover .lma-copy,
+.lma-code:focus-within .lma-copy {
+  opacity: 1;
+}
+.lma-table-scroll {
+  overflow-x: auto;
+  margin: 1rem 0;
+}
+.lma-table-scroll > table {
+  margin: 0;
+}
+/* Override upstream's multi-:not selectors so only the focusable wrapper scrolls. */
+.lma-table-scroll > table,
+.lma-table-scroll > table tbody {
+  overflow: visible !important;
+}
+.lma-table-scroll > table {
+  display: table !important;
+}
+.lma-table-scroll > table tbody {
+  display: table-row-group !important;
+}
+.lma-skip {
+  position: fixed;
+  inset: 0.5rem auto auto 0.5rem;
+  z-index: 1000;
+  padding: 0.75rem 1rem;
+  color: var(--lma-selection-text);
+  background: var(--lma-selection);
+  transform: translateY(-200%);
+}
+a.lma-skip {
+  color: var(--lma-selection-text);
+}
+.lma-skip:focus {
+  transform: translateY(0);
+}
+.lma-status {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+#nav-sync,
+#nav-path,
+.footer {
+  display: none !important;
+}
+a[href$="doxygen_crawl.html"] {
+  display: none;
+}
+
+/* The local page outline stays beside the article when both columns fit. */
+@media screen and (min-width: 1200px) {
+  #doc-content.lma-has-outline {
+    margin-right: var(--lma-outline-width);
+  }
+  .lma-has-outline .lma-tools {
+    position: fixed;
+    inset: 80px 16px 80px auto;
+    width: calc(var(--lma-outline-width) - 32px);
+    margin: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+    font-size: 14px;
+    z-index: 10;
+  }
+  .lma-has-outline .lma-toc {
+    border: 0;
+    border-left: 1px solid var(--separator-color);
+    border-radius: 0;
+    background: none;
+    padding-left: 16px;
+  }
+  .lma-toc > summary {
+    min-height: 0;
+    padding: 0 0 12px;
+    list-style: none;
+    cursor: default;
+  }
+  details.lma-toc > summary::marker,
+  details.lma-toc > summary::before {
+    content: none;
+  }
+  .lma-toc > summary::-webkit-details-marker {
+    display: none;
+  }
+  .lma-toc > :not(summary) {
+    max-height: none;
+    overflow: visible;
+    margin: 0 0 12px;
+  }
+  .lma-toc ul {
+    padding-left: 16px;
+  }
+  .lma-toc li {
+    margin-block: 6px;
+  }
+  .lma-toc a {
+    color: var(--page-secondary-foreground-color);
+  }
+  .lma-toc a:hover,
+  .lma-toc a[aria-current="location"] {
+    color: var(--primary-color);
+  }
+  .lma-toc details {
+    padding: 0;
+    margin-block: 12px;
+    border: 0;
+    background: none;
+  }
+  .lma-toc details > summary {
+    cursor: pointer;
+    font-weight: 700;
+  }
+  html.lma-right-collapsed #doc-content.lma-has-outline {
+    margin-right: 0;
+  }
+}
+
+/* One document scrollbar; each open navigation rail owns at most one more. */
+@media screen and (min-width: 768px) {
+  html {
+    --lma-left-width: var(--side-nav-fixed-width);
+  }
+  html.lma-left-collapsed {
+    --lma-left-width: 0px;
+  }
+  html.lma-left-collapsed :is(#top, #side-nav) {
+    display: none !important;
+  }
+  #top {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: var(--side-nav-fixed-width);
+    z-index: 101;
+  }
+  #side-nav {
+    position: fixed;
+  }
+  #nav-tree {
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
+  html #doc-content {
+    margin-left: var(--lma-left-width) !important;
+    padding-top: 80px;
+  }
+  .lma-reading-controls {
+    position: fixed;
+    left: var(--lma-left-width);
+    right: 0;
+  }
+}
+#nav-tree,
+.lma-tools {
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+}
+#nav-tree:hover,
+#nav-tree:focus-within,
+.lma-tools:hover,
+.lma-tools:focus-within {
+  scrollbar-color: var(--lma-muted) transparent;
+}
+#nav-tree .item {
+  display: flex;
+  align-items: center;
+  height: auto;
+  min-height: 32px;
+  overflow: visible;
+  line-height: 1.45;
+}
+#nav-tree .item > a,
+#nav-tree .item > .arrow {
+  flex-shrink: 0;
+}
+#nav-tree .item > a {
+  display: inline-flex;
+  align-items: center;
+  min-width: 24px;
+  min-height: 32px;
+}
+#nav-tree .item > a:focus-visible {
+  outline: 2px solid var(--lma-link);
+  outline-offset: -2px;
+}
+#nav-tree .label {
+  min-width: 0;
+  flex: 1;
+  line-height: 1.45;
+}
+#nav-tree .label a {
+  display: block;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  padding: 6px 8px 6px 0;
+}
+.lma-table-scroll,
+.lma-native-graph,
+.mermaidgraph {
+  scrollbar-width: thin;
+  scrollbar-color: var(--lma-muted) transparent;
+}
+
+/* GitHub Corners, as used by Doxygen Awesome, anchored at the bottom right. */
+a.lma-github-corner {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  width: 64px;
+  height: 64px;
+  z-index: 110;
+  color: var(--page-background-color);
+}
+.lma-github-corner svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  fill: var(--primary-color);
+  color: var(--page-background-color);
+  transform: rotate(90deg);
+}
+.lma-github-corner:hover svg {
+  fill: var(--primary-dark-color);
+}
+.lma-github-corner:focus-visible {
+  outline-offset: -3px;
+}
+.lma-github-corner .octo-arm {
+  transform-origin: 130px 106px;
+}
+.lma-github-corner:is(:hover, :focus-visible) .octo-arm {
+  animation: lma-octocat-wave 560ms ease-in-out;
+}
+@keyframes lma-octocat-wave {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  20%,
+  60% {
+    transform: rotate(-25deg);
+  }
+  40%,
+  80% {
+    transform: rotate(10deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lma-copy {
+    transition: none;
+  }
+}
+@media (hover: none) {
+  .lma-copy {
+    opacity: 1;
+    width: 44px;
+    height: 44px;
+  }
+}
+@media screen and (max-width: 767px) {
+  html {
+    --tree-item-height: 44px;
+  }
+  #top {
+    position: static;
+    background: var(--lma-paper);
+  }
+  #projectlogo img {
+    max-width: 64px;
+    max-height: 72px;
+  }
+  .lma-enhanced #main-nav {
+    display: none;
+  }
+  .lma-mobile-navigation #main-nav {
+    display: block;
+    max-height: none;
+    overflow: visible;
+  }
+  .lma-mobile-navigation #main-menu {
+    display: block !important;
+    height: auto !important;
+  }
+  .lma-enhanced .main-menu-btn {
+    display: none;
+  }
+  .lma-enhanced #main-menu-state {
+    display: none;
+  }
+  .lma-enhanced #main-nav-mobile {
+    min-height: 48px;
+    padding: 4px 0;
+    box-sizing: border-box;
+  }
+  .lma-enhanced #main-nav-mobile #searchBoxPos1 {
+    position: static !important;
+    display: block;
+    margin: 0 10px;
+  }
+  .lma-enhanced #MSearchBox {
+    margin-left: 0;
+    width: 100%;
+    box-sizing: border-box;
+  }
+  #doc-content {
+    height: auto !important;
+    min-height: calc(100dvh - 150px);
+    padding-bottom: 80px;
+  }
+  a.lma-github-corner {
+    width: 48px;
+    height: 48px;
+  }
+  div.header .headertitle::after {
+    width: calc(100% - 2 * var(--spacing-large));
+  }
+  .contents .anchor[id],
+  .contents :is(h1, h2, h3)[id] {
+    scroll-margin-top: 80px;
+  }
+  .lma-theme-toggle {
+    width: 44px;
+    height: 44px;
+  }
+  .lma-toc li a {
+    display: inline-block;
+    padding-block: 0.5rem;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  #nav-tree *,
+  #main-menu {
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+  .lma-github-corner:is(:hover, :focus-visible) .octo-arm {
+    animation: none;
+  }
+}
+@media (forced-colors: active) {
+  :focus-visible {
+    outline-color: Highlight;
+  }
+  .lma-panel-toggle,
+  .lma-theme-toggle,
+  .lma-copy {
+    border: 1px solid ButtonText;
+  }
+  #nav-tree,
+  .lma-tools {
+    scrollbar-color: auto;
+  }
+}
+@media print {
+  #top,
+  #side-nav,
+  .lma-tools,
+  .lma-copy,
+  .lma-reading-controls,
+  .lma-skip,
+  .lma-github-corner {
+    display: none !important;
+  }
+  #doc-content {
+    height: auto !important;
+    margin: 0 !important;
+    overflow: visible;
+  }
+}
+
+/* EOF */
+
