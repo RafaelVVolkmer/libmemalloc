@@ -1,0 +1,34 @@
+# SPDX-FileCopyrightText: 2026 Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
+# SPDX-License-Identifier: GPL-3.0-only
+
+---
+name: Require a complete qualification attempt
+description: Explain rerun policy before setup or artifact downloads.
+
+inputs:
+  plan-attempt:
+    description: Workflow attempt that produced the qualification plan.
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Explain qualification rerun policy
+      shell: bash
+      env:
+        PLAN_ATTEMPT: ${{ inputs.plan-attempt }}
+        CURRENT_ATTEMPT: ${{ github.run_attempt }}
+      run: |
+        {
+          printf '%s\n' '### Qualification rerun policy'
+          printf '%s\n' 'After an infrastructure failure, use **Re-run all jobs**.'
+          printf '%s\n' 'Re-run failed jobs is unsupported: evidence cannot mix workflow attempts.'
+        } >> "${GITHUB_STEP_SUMMARY}"
+
+        if [[ ! "${PLAN_ATTEMPT}" =~ ^[1-9][0-9]*$ || "${PLAN_ATTEMPT}" != "${CURRENT_ATTEMPT}" ]]; then
+          printf '%s\n' 'Qualification plan belongs to another or missing attempt. Use Re-run all jobs.' >&2
+          exit 1
+        fi
+
+# EOF
+
