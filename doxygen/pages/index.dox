@@ -1,0 +1,24 @@
+/*
+ * SPDX-FileCopyrightText: 2026 Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
+ * SPDX-License-Identifier: GPL-3.0-only
+ */
+
+/**
+ * @defgroup PIPELINE_FIXTURE Release-pipeline fixture
+ * @brief Minimal identity operation and executable for packaging checks.
+ */
+
+/**
+ * @defgroup PIPELINE_FIXTURE_CORE_API Public fixture interface
+ * @ingroup PIPELINE_FIXTURE
+ * @brief Library operation used to exercise packaging and linkage.
+ */
+
+/**
+ * @defgroup PIPELINE_FIXTURE_CORE_ENTRY Application entry point
+ * @ingroup PIPELINE_FIXTURE
+ * @brief Hosted executable that calls the public library fixture.
+ */
+
+/* EOF */
+
