@@ -1,0 +1,87 @@
+# SPDX-FileCopyrightText: 2026 Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
+# SPDX-License-Identifier: GPL-3.0-only
+
+---
+name: Execute a qualification batch
+
+on:
+  workflow_call:
+    inputs:
+      plan-attempt:
+        description: Attempt identity exported by the planning job.
+        required: true
+        type: string
+      batch:
+        required: true
+        type: string
+      stage:
+        required: true
+        type: string
+
+permissions: {}
+
+jobs:
+  execute:
+    name: ${{ inputs.batch }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Require a complete qualification attempt
+        id: attempt
+        uses: ./.github/actions/qualification-attempt
+        with:
+          plan-attempt: ${{ inputs.plan-attempt }}
+
+      - uses: ./.github/actions/setup-qualification
+        with:
+          build: ${{ inputs.stage != 'run' && inputs.stage != 'train' && inputs.stage != 'diagnostic_run' }}
+
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: qualification-plan-${{ github.run_attempt }}
+          path: .cache/qualification
+
+      - name: Resolve producer packages once
+        id: dependencies
+        env:
+          QUALIFICATION_BATCH: ${{ inputs.batch }}
+        run: lua scripts/process/playbook.lua --direct qualification-dependencies
+
+      - name: Download producer packages
+        if: steps.dependencies.outputs.required == 'true'
+        # The executor records missing dependencies individually and keeps
+        # running independent cases. The final gate rejects those failures.
+        continue-on-error: true
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          pattern: ${{ steps.dependencies.outputs.pattern }}
+          path: .cache/qualification/inputs
+          merge-multiple: true
+
+      - name: Execute all assigned cases with separate evidence
+        env:
+          QUALIFICATION_BATCH: ${{ inputs.batch }}
+        run: |
+          lua scripts/process/playbook.lua --direct qualification-batch --batch="${QUALIFICATION_BATCH}" \
+            --input=.cache/qualification/inputs/evidence
+
+      - name: Preserve the batch and individual case evidence
+        if: always() && steps.attempt.outcome == 'success'
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: qualification-batch-${{ inputs.batch }}-${{ github.run_attempt }}
+          path: .cache/qualification/output/
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 30
+
+# EOF
+
