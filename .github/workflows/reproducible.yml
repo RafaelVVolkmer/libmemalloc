@@ -1,0 +1,203 @@
+# SPDX-FileCopyrightText: 2026 Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
+# SPDX-License-Identifier: GPL-3.0-only
+
+---
+name: Reproducible Builds tools
+
+on:
+  workflow_call: {}
+  workflow_dispatch: {}
+  schedule:
+    - cron: "41 5 * * 3"
+
+permissions: {}
+
+concurrency:
+  group: reproducible-${{ github.run_id }}
+  cancel-in-progress: false
+
+jobs:
+  rebuild:
+    name: Independent package build ${{ matrix.replica }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+
+    permissions:
+      contents: read
+
+    strategy:
+      fail-fast: false
+      matrix:
+        replica: [a, b]
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: ./.github/actions/setup-qualification
+        with:
+          build: "true"
+
+      - name: Freeze source inputs without compiled caches
+        env:
+          REPLICA: ${{ matrix.replica }}
+        run: >-
+          lua scripts/process/playbook.lua --direct reproducible-prepare
+          --output=".cache/reproducible/${REPLICA}/source"
+
+      - name: Build full static and shared install trees
+        env:
+          REPLICA: ${{ matrix.replica }}
+        run: |
+          cd ".cache/reproducible/${REPLICA}/source"
+          lua scripts/process/playbook.lua --direct reproducible-build
+
+      - name: Preserve exact build inputs and tool identities
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: reproducible-environment-${{ matrix.replica }}
+          path: .cache/reproducible/${{ matrix.replica }}/source/build-environment.json
+          include-hidden-files: true
+          if-no-files-found: error
+
+      - name: Preserve original packages
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: reproducible-original-${{ matrix.replica }}
+          path: .cache/reproducible/${{ matrix.replica }}/source/payload/
+          include-hidden-files: true
+          if-no-files-found: error
+
+  compare:
+    name: Compare independent original packages
+    needs: rebuild
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: ./.github/actions/setup-qualification
+
+      - name: Install pinned reproducibility tools
+        run: lua scripts/process/playbook.lua --direct reproducible-install
+
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          pattern: reproducible-original-*
+          path: .cache/reproducible/downloads
+
+      - name: Verify detector and normalizer behavior
+        run: |
+          lua scripts/process/playbook.lua --direct test-reproducible-tools-test
+          lua scripts/process/playbook.lua --direct test-reproducible-comparison-test \
+            --input=.cache/reproducible/downloads/reproducible-original-a
+
+      - name: Require raw byte identity and retain diffoscope diagnostics
+        run: |
+          lua scripts/process/playbook.lua --direct reproducible-compare \
+            --first=.cache/reproducible/downloads/reproducible-original-a \
+            --second=.cache/reproducible/downloads/reproducible-original-b \
+            --output=.cache/reproducible/comparison
+
+      - name: Preserve comparison evidence even on mismatch
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: reproducible-comparison
+          path: .cache/reproducible/comparison/
+          include-hidden-files: true
+          if-no-files-found: error
+
+  variations:
+    name: Reprotest ${{ matrix.profile }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+
+    permissions:
+      contents: read
+
+    strategy:
+      fail-fast: false
+      matrix:
+        profile: [environment, filesystem]
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: ./.github/actions/setup-qualification
+        with:
+          build: "true"
+
+      - name: Install pinned variation tools
+        run: lua scripts/process/playbook.lua --direct reproducible-install
+
+      - name: Freeze the input tree
+        run: lua scripts/process/playbook.lua --direct reproducible-prepare --output=.cache/reproducible/source
+
+      - name: Exercise declared variations including disorderfs
+        env:
+          PROFILE: ${{ matrix.profile }}
+        run: |
+          lua scripts/process/playbook.lua --direct reproducible-vary --profile="${PROFILE}" \
+            --source=.cache/reproducible/source --output=.cache/reproducible/variation
+
+      - name: Preserve logs and comparison artifacts
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: reproducible-${{ matrix.profile }}
+          path: .cache/reproducible/variation/
+          include-hidden-files: true
+          if-no-files-found: error
+
+  normalizers:
+    name: Qualify diagnostic normalization tools
+    needs: rebuild
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: ./.github/actions/setup-qualification
+
+      - name: Install pinned archive tools
+        run: lua scripts/process/playbook.lua --direct reproducible-install
+
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: reproducible-original-a
+          path: .cache/reproducible/normalizer-input
+
+      - name: Check normalization without changing release evidence
+        run: |
+          lua scripts/process/playbook.lua --direct reproducible-normalizers --install \
+            --input=.cache/reproducible/normalizer-input \
+            --output=.cache/reproducible/normalizers
+
+      - name: Preserve diagnostic copies and scope
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: reproducible-normalizers
+          path: .cache/reproducible/normalizers/
+          include-hidden-files: true
+          if-no-files-found: error
+
+# EOF
+
