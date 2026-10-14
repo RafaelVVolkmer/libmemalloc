@@ -1,0 +1,275 @@
+# SPDX-FileCopyrightText: 2026 Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
+# SPDX-License-Identifier: GPL-3.0-only
+
+---
+name: Semantic and PGO qualification
+
+on:
+  workflow_call:
+    inputs:
+      campaign:
+        type: string
+        default: pr
+
+  workflow_dispatch:
+    inputs:
+      campaign:
+        type: choice
+        options: [pr, nightly, release]
+        default: pr
+
+permissions: {}
+
+concurrency:
+  group: qualification-${{ github.run_id }}-${{ inputs.campaign }}
+  cancel-in-progress: false
+
+jobs:
+  plan:
+    name: Plan semantic and language coverage
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+
+    permissions:
+      contents: read
+
+    outputs:
+      attempt: ${{ github.run_attempt }}
+      build: ${{ steps.plan.outputs.build }}
+      instrument: ${{ steps.plan.outputs.instrument }}
+      train: ${{ steps.plan.outputs.train }}
+      merge: ${{ steps.plan.outputs.merge }}
+      optimize: ${{ steps.plan.outputs.optimize }}
+      run: ${{ steps.plan.outputs.run }}
+      diagnostic_build: ${{ steps.plan.outputs.diagnostic_build }}
+      diagnostic_run: ${{ steps.plan.outputs.diagnostic_run }}
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Require a complete qualification attempt
+        id: attempt
+        uses: ./.github/actions/qualification-attempt
+        with:
+          plan-attempt: ${{ github.run_attempt }}
+
+      - uses: ./.github/actions/setup-qualification
+
+      - name: Validate policy and expand the graph
+        id: plan
+        env:
+          QUALIFICATION_CAMPAIGN: ${{ inputs.campaign }}
+        run: |
+          lua scripts/process/playbook.lua --direct test-qualification-policy-test
+          lua scripts/process/playbook.lua --direct test-qualification-profiles-test
+          lua scripts/process/playbook.lua --direct test-qualification-batch-test
+          lua scripts/process/playbook.lua --direct qualification-plan --campaign="${QUALIFICATION_CAMPAIGN}"
+
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: qualification-plan-${{ github.run_attempt }}
+          path: .cache/qualification/plan.json
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 30
+
+  build:
+    name: Build C libraries, batch ${{ matrix.id }}
+    needs: plan
+
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix: ${{ fromJSON(needs.plan.outputs.build) }}
+    uses: ./.github/workflows/_qualification-batch.yml
+
+    permissions:
+      contents: read
+    with:
+      plan-attempt: ${{ needs.plan.outputs.attempt }}
+      batch: ${{ matrix.id }}
+      stage: build
+
+  instrument:
+    name: Instrument the training builds, batch ${{ matrix.id }}
+    needs: plan
+
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix: ${{ fromJSON(needs.plan.outputs.instrument) }}
+    uses: ./.github/workflows/_qualification-batch.yml
+
+    permissions:
+      contents: read
+    with:
+      plan-attempt: ${{ needs.plan.outputs.attempt }}
+      batch: ${{ matrix.id }}
+      stage: instrument
+
+  train:
+    name: Train the profiles, batch ${{ matrix.id }}
+    if: always() && needs.plan.result == 'success'
+    needs: [plan, instrument]
+
+    strategy:
+      fail-fast: false
+      max-parallel: 4
+      matrix: ${{ fromJSON(needs.plan.outputs.train) }}
+    uses: ./.github/workflows/_qualification-batch.yml
+
+    permissions:
+      contents: read
+    with:
+      plan-attempt: ${{ needs.plan.outputs.attempt }}
+      batch: ${{ matrix.id }}
+      stage: train
+
+  merge:
+    name: Merge accepted profiles, batch ${{ matrix.id }}
+    if: always() && needs.plan.result == 'success'
+    needs: [plan, train]
+
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix: ${{ fromJSON(needs.plan.outputs.merge) }}
+    uses: ./.github/workflows/_qualification-batch.yml
+
+    permissions:
+      contents: read
+    with:
+      plan-attempt: ${{ needs.plan.outputs.attempt }}
+      batch: ${{ matrix.id }}
+      stage: merge
+
+  optimize:
+    name: Build PGO candidates, batch ${{ matrix.id }}
+    if: always() && needs.plan.result == 'success'
+    needs: [plan, merge]
+
+    strategy:
+      fail-fast: false
+      max-parallel: 4
+      matrix: ${{ fromJSON(needs.plan.outputs.optimize) }}
+    uses: ./.github/workflows/_qualification-batch.yml
+
+    permissions:
+      contents: read
+    with:
+      plan-attempt: ${{ needs.plan.outputs.attempt }}
+      batch: ${{ matrix.id }}
+      stage: optimize
+
+  run:
+    name: Run C and C++ consumers, batch ${{ matrix.id }}
+    if: always() && needs.plan.result == 'success'
+    needs: [plan, build, optimize]
+
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix: ${{ fromJSON(needs.plan.outputs.run) }}
+    uses: ./.github/workflows/_qualification-batch.yml
+
+    permissions:
+      contents: read
+    with:
+      plan-attempt: ${{ needs.plan.outputs.attempt }}
+      batch: ${{ matrix.id }}
+      stage: run
+
+  diagnostic-build:
+    name: Build diagnostic fixtures, batch ${{ matrix.id }}
+    needs: plan
+
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix: ${{ fromJSON(needs.plan.outputs.diagnostic_build) }}
+    uses: ./.github/workflows/_qualification-batch.yml
+
+    permissions:
+      contents: read
+    with:
+      plan-attempt: ${{ needs.plan.outputs.attempt }}
+      batch: ${{ matrix.id }}
+      stage: diagnostic_build
+
+  diagnostic-run:
+    name: Run sanitizer variants and controls, batch ${{ matrix.id }}
+    if: always() && needs.plan.result == 'success'
+    needs: [plan, diagnostic-build]
+
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix: ${{ fromJSON(needs.plan.outputs.diagnostic_run) }}
+    uses: ./.github/workflows/_qualification-batch.yml
+
+    permissions:
+      contents: read
+    with:
+      plan-attempt: ${{ needs.plan.outputs.attempt }}
+      batch: ${{ matrix.id }}
+      stage: diagnostic_run
+
+  gate:
+    name: Reconcile qualification evidence
+    if: always()
+    needs: [plan, build, instrument, train, merge, optimize, run, diagnostic-build, diagnostic-run]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Require a complete qualification attempt
+        id: attempt
+        uses: ./.github/actions/qualification-attempt
+        with:
+          plan-attempt: ${{ needs.plan.outputs.attempt }}
+
+      - uses: ./.github/actions/setup-qualification
+
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: qualification-plan-${{ github.run_attempt }}
+          path: .cache/qualification
+
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          pattern: qualification-batch-*-${{ github.run_attempt }}
+          path: .cache/qualification
+          merge-multiple: true
+
+      - name: Reconcile expected evidence and independent rebuilds
+        if: always() && steps.attempt.outcome == 'success'
+        run: lua scripts/process/playbook.lua --direct qualification-report
+
+      - name: Require every graph stage
+        if: always()
+        env:
+          STAGE_RESULTS: ${{ toJSON(needs) }}
+        run: |
+          printf '%s' "${STAGE_RESULTS}" | jq -e 'all(.[]; .result == "success")'
+
+      - name: Preserve qualification decision
+        if: always() && steps.attempt.outcome == 'success'
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: qualification-summary-${{ github.run_attempt }}
+          path: .cache/qualification/summary.json
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 30
+
+# EOF
+
