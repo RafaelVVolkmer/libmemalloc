@@ -1,0 +1,193 @@
+# SPDX-FileCopyrightText: 2026 Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
+# SPDX-License-Identifier: GPL-3.0-only
+
+---
+
+name: Lint python
+
+on:
+  workflow_call:
+    inputs:
+      python:
+        description: Run the python checks.
+        required: true
+        type: boolean
+
+permissions: {}
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  python:
+    name: Python
+    if: inputs.python
+    runs-on: >-
+      ${{
+        (github.event_name == 'pull_request' ||
+        github.event_name == 'merge_group') &&
+        'ubuntu-24.04' ||
+        vars.LIBMEMALLOC_CI_RUNNER ||
+        'ubuntu-24.04'
+      }}
+    timeout-minutes: 20
+
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Configure repository-local caches
+        uses: ./.github/actions/workspace-cache
+
+      - name: Resolve toolchain lock
+        id: toolchain
+        uses: ./.github/actions/toolchain
+
+      - name: Detect Python sources
+        id: detect
+        run: |
+          set -euo pipefail
+
+          found=false
+
+          while IFS= read -r -d '' file; do
+            case "${file}" in
+              *.py|*.pyi)
+                found=true
+                break
+                ;;
+            esac
+
+            first_line="$(head -n 1 -- "${file}" 2>/dev/null || true)"
+
+            if [[ "${first_line}" =~ ^#!.*python([0-9.]*)?([[:space:]]|$) ]]; then
+              found=true
+              break
+            fi
+          done < <(git ls-files -z)
+
+          echo "found=${found}" >> "${GITHUB_OUTPUT}"
+
+          if [[ "${found}" == false ]]; then
+            echo "No tracked Python sources found; skipping Python lint."
+          fi
+
+      - name: Setup Node.js for Pyright
+        if: steps.detect.outputs.found == 'true'
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: ${{ fromJSON(steps.toolchain.outputs.tools).node.version }}
+          package-manager-cache: false
+
+      - name: Restore Ruff archive
+        id: ruff_download
+        if: steps.detect.outputs.found == 'true'
+        uses: ./.github/actions/verified-download
+        with:
+          name: ruff
+          version: ${{ fromJSON(steps.toolchain.outputs.tools).ruff.version }}
+          filename: ruff-x86_64-unknown-linux-gnu.tar.gz
+          sha256: ${{ fromJSON(steps.toolchain.outputs.tools).ruff.sha256 }}
+          origin: https://github.com
+          directory: astral-sh/ruff/releases/download/${{ fromJSON(steps.toolchain.outputs.tools).ruff.version }}
+
+      - name: Restore Pyright archive
+        id: pyright_download
+        if: steps.detect.outputs.found == 'true'
+        uses: ./.github/actions/verified-download
+        with:
+          name: pyright
+          version: ${{ fromJSON(steps.toolchain.outputs.tools).pyright.version }}
+          filename: pyright.tgz
+          sha256: ${{ fromJSON(steps.toolchain.outputs.tools).pyright.sha256 }}
+          origin: https://github.com
+          directory: microsoft/pyright/releases/download/${{ fromJSON(steps.toolchain.outputs.tools).pyright.version }}
+
+      - name: Install Python lint tools
+        if: steps.detect.outputs.found == 'true'
+        env:
+          RUFF_ARCHIVE: ${{ steps.ruff_download.outputs.path }}
+          PYRIGHT_ARCHIVE: ${{ steps.pyright_download.outputs.path }}
+        run: |
+          set -euo pipefail
+
+          ruff_archive="${RUFF_ARCHIVE}"
+
+          mkdir -p "${LIBMEMALLOC_CACHE_ROOT}/tools/ruff"
+          tar -xzf "${ruff_archive}" -C "${LIBMEMALLOC_CACHE_ROOT}/tools/ruff" \
+            --strip-components=1
+
+          pyright_archive="${PYRIGHT_ARCHIVE}"
+
+          mkdir -p "${LIBMEMALLOC_CACHE_ROOT}/tools/pyright"
+          tar -xzf "${pyright_archive}" \
+            -C "${LIBMEMALLOC_CACHE_ROOT}/tools/pyright" \
+            --strip-components=1
+
+          lua5.4 scripts/toolchain/python.lua --groups=quality,python-lint \
+          --directory=.cache/tools/python-lint
+
+      - name: Run Python checks
+        if: steps.detect.outputs.found == 'true'
+        run: |
+          set -euo pipefail
+
+          collect_python_files() {
+            while IFS= read -r -d '' file; do
+              case "${file}" in
+                *.py|*.pyi)
+                  printf '%s\0' "${file}"
+                  continue
+                  ;;
+              esac
+
+              first_line="$(head -n 1 -- "${file}" 2>/dev/null || true)"
+
+              if [[ "${first_line}" =~ ^#!.*python([0-9.]*)?([[:space:]]|$) ]]; then
+                printf '%s\0' "${file}"
+              fi
+            done < <(git ls-files -z)
+          }
+
+          mapfile -d '' files < <(collect_python_files)
+          mapfile -d '' py_files < <(
+            printf '%s\0' "${files[@]}" \
+              | while IFS= read -r -d '' file; do
+                  [[ "${file}" == *.py ]] && printf '%s\0' "${file}"
+                done
+          )
+
+          printf 'Checking %d Python source file(s).\n' "${#files[@]}"
+
+          if (( ${#py_files[@]} > 0 )); then
+            python3 -m compileall -q "${py_files[@]}"
+          fi
+
+          "${LIBMEMALLOC_CACHE_ROOT}/tools/ruff/ruff" \
+            check \
+            --config tools/lint/code/python/ruff.toml \
+            "${files[@]}"
+
+          lua5.4 scripts/check/format.lua python \
+            "${LIBMEMALLOC_CACHE_ROOT}/tools/ruff/ruff" \
+            "${files[@]}"
+
+          node "${LIBMEMALLOC_CACHE_ROOT}/tools/pyright/index.js" \
+            --pythonpath "${GITHUB_WORKSPACE}/.cache/tools/python-lint/bin/python" \
+            --project tools/lint/code/python/pyrightconfig.json \
+            "${files[@]}"
+
+          if (( ${#py_files[@]} > 0 )); then
+            "${GITHUB_WORKSPACE}/.cache/tools/python-lint/bin/bandit" \
+              --configfile tools/lint/code/python/bandit.yaml \
+              "${py_files[@]}"
+          fi
+
+# EOF
+
