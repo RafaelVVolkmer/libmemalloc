@@ -1,0 +1,226 @@
+# SPDX-FileCopyrightText: 2026 Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
+# SPDX-License-Identifier: GPL-3.0-only
+
+---
+name: Declarative build matrix
+
+on:
+  workflow_call:
+    inputs:
+      campaign:
+        type: string
+        default: pr
+      clean:
+        type: boolean
+        default: false
+
+  workflow_dispatch:
+    inputs:
+      campaign:
+        type: choice
+        options: [pr, integration, nightly, exhaustive]
+        default: exhaustive
+      clean:
+        type: boolean
+        default: false
+
+permissions: {}
+
+concurrency:
+  group: build-matrix-${{ github.run_id }}-${{ inputs.campaign }}-${{ inputs.clean }}
+  cancel-in-progress: false
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  plan:
+    name: Plan language and platform coverage
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+
+    permissions:
+      contents: read
+
+    outputs:
+      matrix: ${{ steps.plan.outputs.matrix }}
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: ./.github/actions/setup-build-host
+
+      - name: Resolve mandatory cells
+        id: plan
+        env:
+          CAMPAIGN: ${{ inputs.campaign }}
+        run: |
+          lua scripts/process/playbook.lua --direct test-build-matrix-test
+          lua scripts/process/playbook.lua --direct test-toolchain-provision-test
+          lua scripts/process/playbook.lua --direct test-build-io-test
+          lua scripts/process/playbook.lua --direct test-build-evidence-test
+          lua scripts/process/playbook.lua --direct test-build-junit-test
+          lua scripts/process/playbook.lua --direct build-plan --campaign="${CAMPAIGN}"
+
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: build-plan-${{ inputs.clean && 'clean' || 'cached' }}
+          path: .cache/ci/build-plan.json
+          include-hidden-files: true
+          if-no-files-found: error
+
+  build:
+    name: Build and test ${{ matrix.profile }}
+    needs: plan
+
+    strategy:
+      fail-fast: false
+      max-parallel: 4
+      matrix: ${{ fromJSON(needs.plan.outputs.matrix) }}
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 60
+
+    permissions:
+      contents: read
+    env:
+      BUILD_PROFILE: ${{ matrix.profile }}
+      BUILD_CAMPAIGN: ${{ inputs.campaign }}
+      BUILD_CLEAN: ${{ inputs.clean }}
+      LIBMEMALLOC_DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: ./.github/actions/setup-build-host
+
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: build-plan-${{ inputs.clean && 'clean' || 'cached' }}
+          path: .cache/ci
+
+      - name: Select Apple SDK
+        if: runner.os == 'macOS'
+        run: |
+          version="$(lua scripts/process/playbook.lua --direct toolchain-resolve --field build_xcode.version)"
+          sdk="$(lua scripts/process/playbook.lua --direct toolchain-resolve --field build_macos_sdk.version)"
+          sudo xcode-select -s "/Applications/Xcode_${version}.app/Contents/Developer"
+          test "$(xcrun --sdk macosx --show-sdk-version)" = "${sdk}"
+
+      - name: Verify native process execution
+        shell: bash
+        run: lua scripts/process/playbook.lua --direct test-lib-platform-test
+
+      - name: Provision Unix tools once per group
+        if: runner.os != 'Windows'
+        run: >-
+          lua scripts/process/playbook.lua --direct workspace-cache lua scripts/process/playbook.lua --direct
+          toolchain-install-build --profile="${BUILD_PROFILE}"
+
+      - name: Provision Windows tools once per group
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          lua scripts/process/playbook.lua --direct toolchain-install-build "--profile=$env:BUILD_PROFILE"
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: Build and execute on Unix
+        if: runner.os != 'Windows'
+        run: |
+          set -euo pipefail
+          if [[ "${BUILD_PROFILE}" == wasm-emscripten ]]; then
+            source .cache/tools/emsdk/emsdk_env.sh
+          fi
+          # A nonempty argv also works with nounset in macOS Bash 3.2.
+          set -- --profile="${BUILD_PROFILE}" --campaign="${BUILD_CAMPAIGN}" \
+            --plan=.cache/ci/build-plan.json
+          if [[ "${BUILD_CLEAN}" == true ]]; then set -- "$@" --no-cache; fi
+          lua scripts/process/playbook.lua --direct workspace-cache lua scripts/process/playbook.lua --direct \
+          build-run \
+            "$@"
+
+      - name: Build and execute on Windows
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $extra = @()
+          if ($env:BUILD_CLEAN -eq 'true') { $extra += '--no-cache' }
+          lua scripts/process/playbook.lua --direct build-run "--profile=$env:BUILD_PROFILE" `
+          "--campaign=$env:BUILD_CAMPAIGN" `
+            --plan=.cache/ci/build-plan.json @extra
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: Preserve configuration reports and test evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: build-result-${{ inputs.clean && 'clean' || 'cached' }}-${{ matrix.profile }}
+          path: .cache/ci/build-reports/
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Preserve failed build directories
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: build-debug-${{ inputs.clean && 'clean' || 'cached' }}-${{ matrix.profile }}
+          path: .cache/ci/build-work/
+          include-hidden-files: true
+          if-no-files-found: ignore
+          retention-days: 3
+
+  gate:
+    name: Require all contracted profiles
+    if: always()
+    needs: [plan, build]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: ./.github/actions/setup-build-host
+
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: build-plan-${{ inputs.clean && 'clean' || 'cached' }}
+          path: .cache/ci
+
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          pattern: build-result-${{ inputs.clean && 'clean' || 'cached' }}-*
+          path: .cache/ci/build-reports
+          merge-multiple: true
+
+      - name: Consolidate against the expected plan
+        env:
+          CAMPAIGN: ${{ inputs.campaign }}
+          PLAN_RESULT: ${{ needs.plan.result }}
+          BUILD_RESULT: ${{ needs.build.result }}
+        run: |
+          set -euo pipefail
+          test "${PLAN_RESULT}" = success
+          lua scripts/process/playbook.lua --direct build-report --campaign="${CAMPAIGN}" \
+          --plan=.cache/ci/build-plan.json
+          test "${BUILD_RESULT}" = success
+
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        if: always()
+        with:
+          name: build-summary-${{ inputs.clean && 'clean' || 'cached' }}
+          path: .cache/ci/build-summary.json
+          include-hidden-files: true
+          if-no-files-found: error
+
+# EOF
+

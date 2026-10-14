@@ -1,0 +1,45 @@
+# SPDX-FileCopyrightText: 2026 Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
+# SPDX-License-Identifier: GPL-3.0-only
+
+---
+name: Extended and clean builds
+
+on:
+  schedule:
+    - cron: "13 3 * * *"
+  workflow_dispatch: {}
+
+permissions: {}
+
+concurrency:
+  group: build-nightly-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  qualification:
+    uses: ./.github/workflows/qualification.yml
+
+    permissions:
+      contents: read
+    with:
+      campaign: nightly
+
+  matrix:
+    uses: ./.github/workflows/build-matrix.yml
+
+    permissions:
+      contents: read
+    with:
+      campaign: nightly
+
+  clean:
+    uses: ./.github/workflows/build-matrix.yml
+
+    permissions:
+      contents: read
+    with:
+      campaign: pr
+      clean: true
+
+# EOF
+
