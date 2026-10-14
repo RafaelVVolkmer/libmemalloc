@@ -1,0 +1,34 @@
+# SPDX-FileCopyrightText: 2026 Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
+# SPDX-License-Identifier: GPL-3.0-only
+
+---
+name: Resolve toolchain lock
+description: Load the pinned Libmemalloc toolchain from its canonical lock file.
+
+outputs:
+  tools:
+    description: Compact JSON object containing every locked tool identity.
+    value: ${{ steps.resolve.outputs.tools }}
+
+  digest:
+    description: SHA-256 digest of tools/toolchain/lock.toml.
+    value: ${{ steps.resolve.outputs.digest }}
+
+runs:
+  using: composite
+
+  steps:
+    - name: Resolve canonical toolchain
+      id: resolve
+      shell: bash
+      run: |
+        set -euo pipefail
+
+        if ! command -v lua5.4 >/dev/null 2>&1; then
+          sudo apt-get update
+          sudo apt-get install --yes lua5.4
+        fi
+        lua5.4 scripts/toolchain/resolve.lua
+
+# EOF
+
