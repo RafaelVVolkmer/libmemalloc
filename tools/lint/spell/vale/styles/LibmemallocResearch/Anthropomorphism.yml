@@ -1,0 +1,20 @@
+# SPDX-FileCopyrightText: 2026 Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
+# SPDX-License-Identifier: GPL-3.0-only
+
+---
+extends: existence
+
+message: "Describe the observable behavior instead of saying that software '%s'."
+
+level: error
+
+ignorecase: true
+
+nonword: true
+
+raw:
+  - '\b(?:algorithm|application|compiler|function|library|program|routine|software|system) '
+  - '(?:believes|decides|feels|knows|thinks|understands|wants)\b'
+
+# EOF
+
