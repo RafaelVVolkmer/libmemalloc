@@ -72,7 +72,8 @@ manifest.write_text(
 run("runtime.yml", "--check", succeeds=False)
 manifest.write_text(manifest_text)
 run("infra/ansible/playbooks/prepare.yml")
-assert "changed=0" in run("infra/ansible/playbooks/verify-environment.yml")
+assert "changed=0" in run("infra/ansible/playbooks/prepare.yml")
+run("infra/ansible/playbooks/verify-environment.yml", succeeds=False)
 for category in ("logs", "tests", "tmp"):
     assert (checkout / ".cache" / category).stat().st_mode & 0o777 == 0o700
 print("Ansible runtime: cold checks, reuse, rejection and preparation passed.")
