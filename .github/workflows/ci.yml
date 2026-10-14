@@ -1,0 +1,249 @@
+# SPDX-FileCopyrightText: 2026 Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
+# SPDX-License-Identifier: GPL-3.0-only
+
+---
+name: CI
+
+on:
+  push:
+    branches:
+      - "**"
+    tags:
+      - "**"
+
+  pull_request:
+    branches:
+      - "**"
+  merge_group: {}
+  workflow_dispatch: {}
+
+  workflow_call:
+    outputs:
+      release_root:
+        description: Verified mock release root.
+        value: ${{ jobs.release-checks.outputs.root }}
+
+permissions: {}
+
+concurrency:
+  group: >-
+    ci-${{ github.event_name }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name != 'release' && !startsWith(github.ref, 'refs/tags/') }}
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  changes:
+    name: Changed areas
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+
+    permissions:
+      contents: read
+
+    outputs:
+      engineering: ${{ steps.detect.outputs.engineering }}
+      html: ${{ steps.detect.outputs.html }}
+      css: ${{ steps.detect.outputs.css }}
+      javascript: ${{ steps.detect.outputs.javascript }}
+      typescript: ${{ steps.detect.outputs.typescript }}
+      actions: ${{ steps.detect.outputs.actions }}
+      bazel: ${{ steps.detect.outputs.bazel }}
+      c: ${{ steps.detect.outputs.c }}
+      ci: ${{ steps.detect.outputs.ci }}
+      json: ${{ steps.detect.outputs.json }}
+      lua: ${{ steps.detect.outputs.lua }}
+      markdown: ${{ steps.detect.outputs.markdown }}
+      nushell: ${{ steps.detect.outputs.nushell }}
+      powershell: ${{ steps.detect.outputs.powershell }}
+      python: ${{ steps.detect.outputs.python }}
+      security: ${{ steps.detect.outputs.security }}
+      shell: ${{ steps.detect.outputs.shell }}
+      spelling: ${{ steps.detect.outputs.spelling }}
+      toml: ${{ steps.detect.outputs.toml }}
+      yaml: ${{ steps.detect.outputs.yaml }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Configure repository-local caches
+        uses: ./.github/actions/workspace-cache
+
+      - name: Detect changed areas
+        id: detect
+        uses: ./.github/actions/detect-changes
+        with:
+          base: >-
+            ${{ github.event.pull_request.base.sha || github.event.before || '' }}
+          head: ${{ github.event.pull_request.head.sha || github.sha }}
+          force-all: >-
+            ${{
+              github.event_name == 'merge_group' ||
+              github.event_name == 'workflow_dispatch' ||
+              github.event_name == 'release' ||
+              startsWith(github.ref, 'refs/tags/') ||
+              (github.event_name == 'push' &&
+              github.ref_name == github.event.repository.default_branch)
+            }}
+
+  lint:
+    name: Lint
+    needs:
+      - changes
+    uses: ./.github/workflows/_lint.yml
+
+    permissions:
+      contents: read
+    with:
+      html: ${{ needs.changes.outputs.html == 'true' }}
+      css: ${{ needs.changes.outputs.css == 'true' }}
+      javascript: ${{ needs.changes.outputs.javascript == 'true' }}
+      typescript: ${{ needs.changes.outputs.typescript == 'true' }}
+      actions: ${{ needs.changes.outputs.actions == 'true' }}
+      bazel: ${{ needs.changes.outputs.bazel == 'true' }}
+      c: ${{ needs.changes.outputs.c == 'true' }}
+      ci: ${{ needs.changes.outputs.ci == 'true' }}
+      json: ${{ needs.changes.outputs.json == 'true' }}
+      lua: ${{ needs.changes.outputs.lua == 'true' }}
+      markdown: ${{ needs.changes.outputs.markdown == 'true' }}
+      nushell: ${{ needs.changes.outputs.nushell == 'true' }}
+      powershell: ${{ needs.changes.outputs.powershell == 'true' }}
+      python: ${{ needs.changes.outputs.python == 'true' }}
+      shell: ${{ needs.changes.outputs.shell == 'true' }}
+      toml: ${{ needs.changes.outputs.toml == 'true' }}
+      yaml: ${{ needs.changes.outputs.yaml == 'true' }}
+
+  spelling:
+    name: Spelling and prose
+    needs:
+      - changes
+    uses: ./.github/workflows/_spelling.yml
+
+    permissions:
+      contents: read
+    with:
+      repository: ${{ needs.changes.outputs.spelling == 'true' }}
+
+  reuse:
+    name: REUSE
+    uses: ./.github/workflows/_reuse.yml
+
+    permissions:
+      contents: read
+
+  ci-gate:
+    name: CI gate
+    if: always()
+    needs:
+      - changes
+      - lint
+      - spelling
+      - reuse
+      - release-checks
+      - c-analysis
+      - build-matrix
+      - qualification
+      - reproducibility
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: ./.github/actions/workspace-cache
+
+      - id: lua
+        uses: ./.github/actions/setup-lua
+
+      - name: Require successful CI graph
+        env:
+          LUA: ${{ steps.lua.outputs.lua }}
+          CHANGES_RESULT: ${{ needs.changes.result }}
+          LINT_RESULT: ${{ needs.lint.result }}
+          SPELLING_RESULT: ${{ needs.spelling.result }}
+          REUSE_RESULT: ${{ needs.reuse.result }}
+          RELEASE_RESULT: ${{ needs.release-checks.result }}
+          C_ANALYSIS_RESULT: ${{ needs.c-analysis.result }}
+          ENGINEERING_CHANGED: ${{ needs.changes.outputs.engineering }}
+          SPELLING_CHANGED: ${{ needs.changes.outputs.spelling }}
+          C_CHANGED: ${{ needs.changes.outputs.c }}
+          BUILD_RESULT: ${{ needs.build-matrix.result }}
+          QUALIFICATION_RESULT: ${{ needs.qualification.result }}
+          REPRODUCIBILITY_RESULT: ${{ needs.reproducibility.result }}
+        run: '"${LUA}" scripts/process/playbook.lua --direct check-ci-gate'
+
+  release-checks:
+    needs: changes
+    if: needs.changes.outputs.engineering == 'true'
+    name: Release contract
+    uses: ./.github/workflows/_release-checks.yml
+
+    permissions:
+      contents: read
+
+  c-analysis:
+    name: C semantic and artifact analysis
+    needs: [changes]
+    uses: ./.github/workflows/_c-analysis.yml
+
+    permissions:
+      contents: read
+    with:
+      enabled: ${{ needs.changes.outputs.c == 'true' }}
+      integration: >-
+        ${{ github.event_name == 'release' || github.event_name == 'workflow_dispatch' ||
+            github.event_name == 'merge_group' ||
+            github.ref_name == github.event.repository.default_branch ||
+            startsWith(github.ref, 'refs/tags/') }}
+
+  build-matrix:
+    name: Contracted compilation and runtime profiles
+    needs: changes
+    if: needs.changes.outputs.engineering == 'true'
+    uses: ./.github/workflows/build-matrix.yml
+
+    permissions:
+      contents: read
+    with:
+      campaign: >-
+        ${{ github.event_name == 'release' && 'exhaustive' ||
+            (github.event_name == 'workflow_dispatch' || github.event_name == 'merge_group' ||
+             github.ref_name == github.event.repository.default_branch || startsWith(github.ref, 'refs/tags/')) &&
+            'integration' || 'pr' }}
+
+  qualification:
+    needs: changes
+    if: needs.changes.outputs.engineering == 'true'
+    name: Semantic invariance and independent reconstruction
+    uses: ./.github/workflows/qualification.yml
+
+    permissions:
+      contents: read
+    with:
+      campaign: >-
+        ${{ (github.event_name == 'release' || startsWith(github.ref, 'refs/tags/')) && 'release' ||
+            (github.event_name == 'workflow_dispatch' || github.event_name == 'merge_group' ||
+             github.ref_name == github.event.repository.default_branch) && 'nightly' || 'pr' }}
+
+  reproducibility:
+    needs: changes
+    if: needs.changes.outputs.engineering == 'true'
+    name: Reproducible Builds tools
+    uses: ./.github/workflows/reproducible.yml
+
+    permissions:
+      contents: read
+
+# EOF
+
