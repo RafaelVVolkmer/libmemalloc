@@ -1,0 +1,44 @@
+// SPDX-FileCopyrightText: 2026 Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
+// SPDX-License-Identifier: GPL-3.0-only
+
+#include <stdio.h>
+
+#include "mock.h"
+
+#ifndef LMA_OPERATIONS
+  #define LMA_OPERATIONS 257
+#endif
+
+int main(void)
+{
+	int          ret   = 0;
+	int          value = 0;
+	unsigned int index;
+	int (*volatile operation)(void) = &MOCK_identity;
+
+	for (index = 0; index < LMA_OPERATIONS; ++index)
+	{
+#ifdef LMA_INDIRECT
+		value = operation();
+#else
+		(void)operation;
+		value = MOCK_identity();
+#endif
+		if (value != 0)
+		{
+			ret = 1;
+			goto function_output;
+		}
+	}
+
+	value = printf("mock-identity-v1 operations=%u result=0\n",
+	               (unsigned int)LMA_OPERATIONS);
+	if (value < 0)
+		ret = 2;
+
+function_output:
+	return ret;
+}
+
+/* EOF */
+
