@@ -24,6 +24,15 @@ local function tools_lint_formatters_loadModule()
          },
       },
 
+      cmake = {
+         arguments = {
+            "--check",
+            "--config-files",
+            "{root}/tools/lint/code/cmake/config.json",
+            "--",
+         },
+      },
+
       c = {
          arguments = {
             "--dry-run",

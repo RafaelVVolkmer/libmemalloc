@@ -1,0 +1,13 @@
+{
+  "format": {
+    "line_width": 100,
+    "tab_size": 2,
+    "separate_ctrl_name_with_space": false
+  },
+  "markup": {
+    "enable_markup": false
+  },
+  "lint": {
+    "local_var_pattern": "([a-z][a-z0-9_]+|CMAKE_[A-Z0-9_]+)"
+  }
+}
