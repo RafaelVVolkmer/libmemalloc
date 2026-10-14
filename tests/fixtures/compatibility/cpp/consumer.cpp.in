@@ -1,0 +1,31 @@
+// SPDX-FileCopyrightText: 2026 Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
+// SPDX-License-Identifier: GPL-3.0-only
+
+#include "mock.h"
+
+#if defined(LMA_EXPECT_CPP)
+  #ifdef LMA_CPP_FUTURE
+    #if __cplusplus <= LMA_EXPECT_CPP
+      #error "The compiler did not select a later experimental C++ dialect"
+    #endif
+  #elif __cplusplus != LMA_EXPECT_CPP
+    #error "The compiler did not select the contracted C++ language version"
+  #endif
+
+#endif
+
+int main()
+{
+	int ret                = 0;
+	int (*operation)(void) = &MOCK_identity;
+
+	ret = operation();
+	if (ret != 0)
+		goto function_output;
+
+function_output:
+	return ret;
+}
+
+/* EOF */
+
