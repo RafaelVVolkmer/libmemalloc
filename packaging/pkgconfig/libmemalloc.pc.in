@@ -1,0 +1,15 @@
+# SPDX-FileCopyrightText: 2026 Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
+# SPDX-License-Identifier: GPL-3.0-only
+
+prefix=${pcfiledir}/@LMA_PC_PREFIX_RELATIVE@
+libdir=@LMA_PC_LIBDIR@
+includedir=@LMA_PC_INCLUDEDIR@
+
+Name: libmemalloc-mock
+Description: Distribution fixture, not an allocator implementation
+Version: @PROJECT_VERSION@
+Libs: -L${libdir} -lmemalloc
+Cflags: -I${includedir}@LMA_PC_CFLAGS@
+
+# EOF
+
