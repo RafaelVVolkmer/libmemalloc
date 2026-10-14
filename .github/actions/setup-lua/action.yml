@@ -1,0 +1,67 @@
+# SPDX-FileCopyrightText: 2026 Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
+# SPDX-License-Identifier: GPL-3.0-only
+
+---
+name: Setup pinned Lua
+description: Restore, verify, build, and return the repository Lua runtime.
+
+outputs:
+  lua:
+    description: Absolute path to the Lua interpreter.
+    value: ${{ steps.build.outputs.lua }}
+
+  luac:
+    description: Absolute path to the Lua compiler.
+    value: ${{ steps.build.outputs.luac }}
+
+runs:
+  using: composite
+
+  steps:
+    - name: Resolve toolchain lock
+      id: toolchain
+      uses: ./.github/actions/toolchain
+
+    - name: Restore Lua source archive
+      id: download
+      uses: ./.github/actions/verified-download
+      with:
+        name: lua
+        version: ${{ fromJSON(steps.toolchain.outputs.tools).lua.version }}
+        filename: lua-${{ fromJSON(steps.toolchain.outputs.tools).lua.version }}.tar.gz
+        sha256: ${{ fromJSON(steps.toolchain.outputs.tools).lua.sha256 }}
+        origin: https://www.lua.org
+        directory: ftp
+
+    - name: Build pinned Lua
+      id: build
+      shell: bash
+      env:
+        LUA_ARCHIVE: ${{ steps.download.outputs.path }}
+        LUA_VERSION: ${{ fromJSON(steps.toolchain.outputs.tools).lua.version }}
+      run: |
+        set -euo pipefail
+
+        source_dir="${LIBMEMALLOC_CACHE_ROOT}/tools/lua-${LUA_VERSION}"
+        bin_dir="${LIBMEMALLOC_CACHE_ROOT}/tools/libmemalloc-lua-bin"
+
+        rm --force --recursive "${source_dir}" "${bin_dir}"
+        mkdir --parents "${bin_dir}"
+
+        tar \
+          --extract \
+          --gzip \
+          --file="${LUA_ARCHIVE}" \
+          --directory="${LIBMEMALLOC_CACHE_ROOT}/tools"
+
+        jobs="$(getconf _NPROCESSORS_ONLN 2>/dev/null || printf '1')"
+        make --directory="${source_dir}" --jobs="${jobs}" all
+
+        install --mode=0755 "${source_dir}/src/lua" "${bin_dir}/lua"
+        install --mode=0755 "${source_dir}/src/luac" "${bin_dir}/luac"
+
+        printf 'lua=%s\n' "${bin_dir}/lua" >> "${GITHUB_OUTPUT}"
+        printf 'luac=%s\n' "${bin_dir}/luac" >> "${GITHUB_OUTPUT}"
+
+# EOF
+
