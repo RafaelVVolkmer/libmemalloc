@@ -1,0 +1,23 @@
+{
+  "runtime": {
+    "version": "Lua 5.5"
+  },
+  "workspace": {
+    "checkThirdParty": false,
+    "ignoreDir": [
+      ".cache",
+      ".git",
+      "doxygen/vendor"
+    ]
+  },
+  "telemetry": {
+    "enable": false
+  },
+  "diagnostics": {
+    "severity": {
+      "undefined-global": "Error",
+      "duplicate-set-field": "Error",
+      "redefined-local": "Warning"
+    }
+  }
+}
