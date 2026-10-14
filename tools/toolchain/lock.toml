@@ -1,0 +1,533 @@
+# SPDX-FileCopyrightText: 2026 Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
+# SPDX-License-Identifier: GPL-3.0-only
+
+schema_version = 1
+
+# renovate: datasource=pypi depName=ansible-core
+[tools.ansible_core]
+version = "2.21.4"
+
+# Official node-v24.21.0-linux-x64.tar.xz for the documentation build profile.
+[tools.node]
+version = "24.21.0"
+macos_x86_64_sha256 = "1462cb3b3046b815cf8ea436d3da450ec1a9f11dac7e5a46b0ada5305d7e8097"
+macos_arm64_sha256 = "bed7eea5325e1108f32ce5228ddd6a5f0f08a499ee42aa7442aea583702f6057"
+sha256 = "fd8e59d5a511510f6a298afb548f18c7d2b1be404d8b4a27d94fbe49f56cb2d6"
+
+[tools.lua]
+version = "5.5.1"
+sha256 = "1c4b4068d67061f2a2231ad2b5422e77acea1487ea9890f6320af614f4373dce"
+
+[tools.luv]
+version = "1.52.1-0"
+sha256 = "3e6eb820a3aee034f85f9cce9bd77b5d42f34d128a1ccec877adf28c913577c7"
+
+[tools.actionlint]
+version = "1.7.12"
+macos_x86_64_sha256 = "5b44c3bc2255115c9b69e30efc0fecdf498fdb63c5d58e17084fd5f16324c644"
+macos_arm64_sha256 = "aba9ced2dee8d27fecca3dc7feb1a7f9a52caefa1eb46f3271ea66b6e0e6953f"
+sha256 = "8aca8db96f1b94770f1b0d72b6dddcb1ebb8123cb3712530b08cc387b349a3d8"
+
+# renovate: datasource=npm depName=typescript
+[tools.typescript]
+version = "7.0.2"
+
+# renovate: datasource=npm depName=html-validate
+[tools.html_validate]
+version = "11.16.0"
+
+# renovate: datasource=npm depName=@biomejs/biome
+[tools.biome]
+version = "2.5.10"
+sha256 = "511592536991d4b07179d063b93ff0c092ccedba556a4b1ea70d12d46ea0785a"
+
+# The verified v3.11.2 archive reports v3.11.1 in its embedded version string.
+[tools.editorconfig_checker]
+version = "3.11.2"
+macos_x86_64_sha256 = "1a013573bbd394341168ea95174790ed44d6fc180f6d16e75c2ebc032f05bcc1"
+macos_arm64_sha256 = "9ed40abdc3051c1b76c9557cd58c66ab1784728242dbd9c40cfffe1528195ab2"
+reported_version = "3.11.1"
+sha256 = "bc815e5b3b1891a0ee9e1242fe3475312655f8b0f4c4a79510be0a009294571a"
+
+# renovate: datasource=pypi depName=yamllint
+[tools.yamllint]
+version = "1.38.0"
+
+[tools.taplo]
+version = "0.10.0"
+
+# Official doxygen-1.18.0.linux.bin.tar.gz (doxygen.nl/files).
+[tools.doxygen]
+version = "1.18.0"
+macos_x86_64_sha256 = "a1deed70a6785bbec95a2b2a9e419dc7f7b223a9d74a8644ae611c8e2dcdd354"
+macos_arm64_sha256 = "a1deed70a6785bbec95a2b2a9e419dc7f7b223a9d74a8644ae611c8e2dcdd354"
+sha256 = "14fa81bdc34171edb5f1f02b1d60e74802f0439b77fa44e592565d517d72df90"
+
+# Ubuntu 24.04 amd64 Graphviz package; APT verifies runtime dependencies.
+[tools.graphviz]
+version = "2.42.2-9ubuntu0.1"
+sha256 = "be4e5b1b036babfb1663c095bc645c2fbab79dd57b213fc3b1ab0d48e810dd85"
+
+# renovate: datasource=npm depName=markdownlint-cli2
+[tools.markdownlint]
+version = "0.23.2"
+
+# renovate: datasource=npm depName=mermaid
+[tools.mermaid]
+version = "12.0.0"
+
+# renovate: datasource=npm depName=@highlightjs/cdn-assets
+[tools.highlight_js]
+version = "11.12.0"
+
+# renovate: datasource=npm depName=jsdom
+[tools.jsdom]
+version = "30.0.1"
+
+# renovate: datasource=npm depName=markdown-it
+[tools.markdown_it]
+version = "15.0.1"
+
+# CWE-94 / CWE-1321: patch transitive template injection and prototype pollution.
+# https://github.com/advisories/GHSA-r5fr-rjxr-66jc
+# https://github.com/advisories/GHSA-f23m-r3pf-42rh
+# renovate: datasource=npm depName=lodash-es
+[tools.lodash_es]
+version = "4.18.1"
+
+# CWE-835: patch the transitive TOML parser's unterminated-input loop.
+# https://github.com/advisories/GHSA-7w5x-hrqm-74c2
+# renovate: datasource=npm depName=smol-toml
+[tools.smol_toml]
+version = "1.8.0"
+
+# renovate: datasource=pypi depName=clang-format
+[tools.clang_format]
+version = "22.1.8"
+sha256 = "b00cff6bfd1f1686f073a4fdf1cb937dbd58bf7510c659477805c03afdea0816"
+
+# renovate: datasource=pypi depName=clang-tidy
+[tools.clang_tidy]
+version = "22.1.8"
+sha256 = "1a3de07ba82d4403d8b692ae63a5520d4db5c606014c92c24bbcef9259057bf1"
+
+[tools.selene]
+version = "0.31.0"
+sha256 = "dac452422747999ec4919bbb8bb52992b66aae533b60022bf005669de8616671"
+
+[tools.stylua]
+version = "2.5.2"
+macos_x86_64_sha256 = "53c50a1605d0a6345d160a1a5a21db40bcf2bf9cd23c17f7c277a63a1bff3a7f"
+macos_arm64_sha256 = "92ff0889e16324801bc072692974bb67f8161e62010fc90f96c62a17f81f32c7"
+sha256 = "bcb0d855e91f102f28a370e850f8566b3b44b79e6274d806ea5246837c0fd5ab"
+
+[tools.lua_language_server]
+version = "3.19.1"
+macos_x86_64_sha256 = "eb373c159cbe556711d7cd316315de2dce969bfd54b31edb7eb9cab2937f2cca"
+macos_arm64_sha256 = "0bc077f4447f076b4c92c14e9fd303f5b569eda2ec74b4dca2b55f75fae2e90c"
+sha256 = "e9235d2d72ef55bc41cf8c99cda2ed64777682024b4bb81f5dea425060c5cbb8"
+
+# renovate: datasource=pypi depName=ruff
+[tools.ruff]
+version = "0.16.4"
+sha256 = "9cb1234804ddb0f7f57cef3f81623ce5acb990e40af7cce08dc7778c9d7ee96c"
+
+# renovate: datasource=npm depName=pyright
+[tools.pyright]
+version = "1.1.411"
+sha256 = "bd5c488fc20fa237a944279bf32cae2f986cf10d5d5d9e8705819859daeb2f4a"
+
+# renovate: datasource=pypi depName=bandit
+[tools.bandit]
+version = "1.9.4"
+
+[tools.shellcheck]
+version = "0.11.0"
+sha256 = "8c3be12b05d5c177a04c29e3c78ce89ac86f1595681cab149b65b97c4e227198"
+
+[tools.shfmt]
+version = "3.13.1"
+sha256 = "fb096c5d1ac6beabbdbaa2874d025badb03ee07929f0c9ff67563ce8c75398b1"
+
+[tools.powershell]
+version = "7.6.5"
+sha256 = "b34ab3b19acac1d3d4d0d3cfdb02acf62f457b0b6a962ff008132033f7566844"
+
+[tools.psscriptanalyzer]
+version = "1.25.0"
+sha256 = "14e634c828eb98efb9f40b2918ba90f139ed5eccdf663a2a747736d996995d60"
+
+[tools.nushell]
+version = "0.115.1"
+sha256 = "d11d825241f6504a3617c535fa725a9dd6d009c86d7b19fb3168b47635b9d8b0"
+
+[tools.nufmt]
+revision = "7cfd3b7eacf5a9feb22777230e3076038f2e9e8d"
+
+# renovate: datasource=pypi depName=codespell
+[tools.codespell]
+version = "2.4.1"
+sha256 = "3dadafa67df7e4a3dbf51e0d7315061b80d265f9552ebd699b3dd6834b47e425"
+
+[tools.lychee]
+version = "0.24.1"
+macos_x86_64_sha256 = "59ef444bfbf9f54ca7d045937b15c609e856848b9e39cddb4267fa2ab5cf793d"
+macos_arm64_sha256 = "7485ac758fcaf9f8bd660a2d585a1baba9c2a0d48055fd3259e9284ed659a815"
+sha256 = "3ecad9a6e5ec42efaa9cdbdbad2406fdeef11ee38f7774aaf038f981d3248684"
+
+[tools.typos]
+version = "1.46.0"
+macos_x86_64_sha256 = "ca0bba6c8a80b4981951dbc3519987d51ef3a60e0b0a462db005ad99de47b40d"
+macos_arm64_sha256 = "322f90609f951bc27e204cf8d0370702510ae99e87285b217916fb2c09d76111"
+sha256 = "c62a626df385c96574743fd4974aeb271a41a67d080a0398e36e1a42782f614a"
+
+[tools.vale]
+version = "3.18.0"
+macos_x86_64_sha256 = "7ec47dad588bf1421e12f72f15219dcc96e3adf7204918ee86ea81fe8cddab8d"
+macos_arm64_sha256 = "4d7de9bda8379da14cd45048500199c549413187526d0913383ad822866ad43d"
+sha256 = "a6f71a75a12fe689345b754f2412b90367fe33648abb7d200fa19eaadc2dbf6d"
+
+[tools.gitleaks]
+version = "8.30.1"
+macos_x86_64_sha256 = "dfe101a4db2255fc85120ac7f3d25e4342c3c20cf749f2c20a18081af1952709"
+macos_arm64_sha256 = "b40ab0ae55c505963e365f271a8d3846efbc170aa17f2607f13df610a9aeb6a5"
+sha256 = "551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb"
+
+[tools.gittuf]
+version = "0.15.0"
+sha256 = "e60629e4d165bf47ac450fde834af20d7c5ff1f08f15d685980c37b9d522ae1d"
+remote_sha256 = "7029c8f026b574622087110162dff27a3cb15d73161fdecee9ef65c76e50dedf"
+
+[tools.zizmor]
+version = "1.29.0"
+macos_x86_64_sha256 = "648b72ab9941a7f2a8d65d7b68a8e76cef789538c8df3a3950384d38423375b0"
+macos_arm64_sha256 = "720322fade9e83a9c7953944c438f2ba942636b86b96a8f0e6b15ce94c8a6b6f"
+sha256 = "dd96df044a6e8538d5f423790f453bdd03d49e5b2bcc38214acc41a2f1297839"
+
+# renovate: datasource=pypi depName=reuse
+[tools.reuse]
+version = "6.2.0"
+
+# renovate: datasource=github-releases depName=sigstore/cosign
+[tools.cosign]
+version = "3.1.3"
+sha256 = "4629c757b7618056f8ddd7e2625ae9fdd94c0372a65049520bc7d9df9efc7f71"
+
+# renovate: datasource=pypi depName=conan
+[tools.conan]
+version = "2.32.0"
+
+# renovate: datasource=npm depName=renovate
+[tools.renovate]
+version = "44.105.4"
+
+# renovate: datasource=pypi depName=check-jsonschema
+[tools.check_jsonschema]
+version = "0.38.0"
+
+[tools.cyclonedx_schema]
+version = "1.6"
+sha256 = "3e92dddbc30cf7f6a02b80f0942b1a4cfd4fb1c26f1dfc4310afa9d613cafb93"
+
+[tools.spdx_schema]
+version = "2.3"
+sha256 = "239208b7ac287b3cf5d9a9af23f9d69863971102a5e1587a27a398b43490b89b"
+
+# renovate: datasource=pypi depName=flawfinder
+[tools.flawfinder]
+version = "2.0.20"
+sha256 = "4388670f27574cc42fed6bdb3c2dee42d1c383404240f3f56c8c079cc3fee321"
+
+# renovate: datasource=github-releases depName=cppcheck-opensource/cppcheck
+[tools.cppcheck]
+version = "2.22.0"
+sha256 = "d74945deb2d50393430e07596b766f8a779512c7f60dac2a30ea64e059ece57b"
+
+# renovate: datasource=github-releases depName=bomctl/bomctl
+[tools.bomctl]
+version = "0.4.3"
+
+# renovate: datasource=github-releases depName=ossf/criticality_score
+[tools.criticality_score]
+version = "2.0.4"
+
+# renovate: datasource=pypi depName=cve-bin-tool
+[tools.cve_binary_tool]
+version = "3.4"
+
+[tools.fuzz_introspector]
+revision = "8bc858d7dd66f390e5bbd38c44d31fce41b72103"
+
+# renovate: datasource=github-releases depName=google/osv-scanner
+[tools.osv_scanner]
+version = "2.6.0"
+
+# renovate: datasource=github-releases depName=cue-lang/cue
+[tools.cue]
+version = "0.17.1"
+
+# renovate: datasource=github-releases depName=gemaraproj/gemara
+[tools.gemara]
+version = "1.5.0"
+
+# renovate: datasource=github-releases depName=ossf/security-insights
+[tools.security_insights]
+version = "2.2.0"
+sha256 = "4e4b61470b5484fc8969f2a8a77ffbe0712a7c8a870c2079188f246c14cd58b1"
+
+# GitHub requires literal action references; the lock checker validates mirrors.
+# renovate: datasource=github-tags depName=ossf/scorecard-action
+[tools.scorecard_action]
+version = "2.4.4"
+revision = "2d1146689b8cda280b9bc96326124645441f03bc"
+
+# renovate: datasource=github-tags depName=streetsidesoftware/cspell-action
+[tools.cspell_action]
+version = "9.0.1"
+revision = "e0668cf020899e887ee8ad4d173c31738a79eae8"
+
+# Linux analysis profiles deliberately use independent compiler engines.
+[tools.gcc_analyzer]
+version = "14"
+
+[tools.clang_analyzer]
+version = "18"
+
+# renovate: datasource=pypi depName=codechecker
+[tools.codechecker]
+version = "6.29.1"
+
+[tools.sparse]
+version = "0.6.4"
+
+[tools.msvc_analyzer]
+version = "14.44"
+
+[tools.windows_sdk]
+version = "10.0.26100.0"
+
+# renovate: datasource=github-tags depName=github/codeql-action
+[tools.codeql_action]
+version = "4.38.1"
+revision = "1c5b675653bb5c22dbe9b12b556ec555138e09fd"
+
+[tools.build_gcc13]
+version = "13.3.0"
+
+[tools.build_gcc14]
+version = "14.2.0"
+
+[tools.build_gcc15]
+version = "15.2.0"
+
+[tools.build_clang18]
+version = "18.1.3"
+
+[tools.build_msvc]
+version = "19.44"
+
+[tools.build_appleclang]
+version = "17.0.0.17000013"
+
+[tools.build_xcode]
+version = "16.4"
+
+[tools.build_macos_sdk]
+version = "15.5"
+
+# renovate: datasource=pypi depName=cmake
+[tools.build_cmake]
+version = "4.4.3"
+
+# renovate: datasource=pypi depName=ninja
+[tools.build_ninja]
+version = "1.11.1.1"
+
+[tools.build_qemu]
+version = "8.2.2"
+
+[tools.build_emscripten]
+version = "4.0.14"
+revision = "eff90ca04a3785f571a8095b3a42b63799cf384a"
+
+[tools.build_zig]
+version = "0.14.1"
+sha256 = "24aeeec8af16c381934a6cd7d95c807a8cb2cf7df9fa40d359aa884195c4716c"
+
+[tools.sccache]
+version = "0.15.0"
+sha256 = "782d2b5dd7ae0a55ebe368ab258114d0928d019ac2d949ab85d5d02f3926709e"
+
+[tools.sccache_windows]
+version = "0.15.0"
+sha256 = "b0b257a164bf438b2dea134ca7ded41c100f59a64b3bf275a202f1e8102ab217"
+
+[tools.sccache_macos_arm64]
+version = "0.15.0"
+sha256 = "430ef7b5f54256d3ed5bfe77e8b0afc51aa209aeebe4f95b69c3a52ce3acc6e9"
+
+[tools.sccache_macos_x86_64]
+version = "0.15.0"
+sha256 = "f8da93e0689122268f720ddb48c8357f3da18be8c88aff23a8e75a7a219367db"
+
+# Ubuntu 24.04 packages; apt verifies the signed distribution metadata.
+[tools.reprotest]
+version = "0.7.26"
+
+[tools.diffoscope]
+version = "259"
+
+[tools.disorderfs]
+version = "0.5.11-3build2"
+
+[tools.strip_nondeterminism]
+version = "1.13.1-1"
+
+[tools.faketime]
+version = "0.9.10-2.1"
+
+# Optional diagnostic normalizers; original artifact comparison stays strict.
+[tools.add_determinism]
+version = "0.7.3"
+
+[tools.oss_rebuild]
+revision = "d9cd3c33e2d7c26149054aee16456428a750f89d"
+
+# Official Ubuntu 24.04 amd64 CBMC release package.
+[tools.cbmc]
+version = "6.11.0"
+sha256 = "b3721aa541038384d7801ea3aeabbcddc3e8845ac8f1cbff637cf8dec7481ac8"
+
+[tools.uv]
+version = "0.12.18"
+macos_x86_64_sha256 = "2e4108f5395397c8bc5d43bf83d3bdbb2d0e92b90d0efa607756be704905fa33"
+macos_arm64_sha256 = "cf40e0c6a202190ccd9e0406dcfdd5b2d6668a9a5c779b17948963df32aafe5b"
+sha256 = "e38d97460b98ebfd31b197de0fe9fa578add4bc8ba0179b203dd3f87b99f98e6"
+
+# renovate: datasource=npm depName=cspell
+[tools.cspell]
+version = "10.1.1"
+
+# renovate: datasource=pypi depName=poetry-core
+[tools.poetry_core]
+version = "2.2.1"
+
+# Locked build backends for cryptography on native macOS Intel.
+# renovate: datasource=pypi depName=maturin
+[tools.maturin]
+version = "1.15.0"
+
+# renovate: datasource=pypi depName=setuptools
+[tools.setuptools]
+version = "84.0.0"
+
+# renovate: datasource=pypi depName=lizard
+[tools.lizard]
+version = "1.17.31"
+
+# renovate: datasource=pypi depName=luaparser
+[tools.luaparser]
+version = "4.2.0"
+
+# renovate: datasource=pypi depName=cmakelang
+[tools.cmakelang]
+version = "0.6.13"
+
+[tools.python_min]
+version = "3.12"
+
+[tools.python_max]
+version = "3.13"
+
+[tools.node_min]
+version = "24.13.0"
+
+[tools.nixpkgs]
+revision = "6774f7bc253789b113a4f39285dc0fa100abeacc"
+
+# renovate: datasource=pypi depName=cffi
+[tools.python_cffi]
+version = "2.1.1"
+
+# renovate: datasource=pypi depName=cryptography
+[tools.python_cryptography]
+version = "50.0.1"
+
+# renovate: datasource=pypi depName=jinja2
+[tools.python_jinja2]
+version = "3.1.6"
+
+# renovate: datasource=pypi depName=markupsafe
+[tools.python_markupsafe]
+version = "3.0.3"
+
+# renovate: datasource=pypi depName=packaging
+[tools.python_packaging]
+version = "26.3"
+
+# renovate: datasource=pypi depName=pycparser
+[tools.python_pycparser]
+version = "3.0"
+
+# renovate: datasource=pypi depName=pyyaml
+[tools.python_pyyaml]
+version = "6.0.3"
+
+# renovate: datasource=pypi depName=resolvelib
+[tools.python_resolvelib]
+version = "1.2.1"
+
+# renovate: datasource=pypi depName=pathspec
+[tools.python_pathspec]
+version = "1.1.1"
+
+# renovate: datasource=pypi depName=pygments
+[tools.python_pygments]
+version = "2.21.0"
+
+# renovate: datasource=pypi depName=six
+[tools.python_six]
+version = "1.17.0"
+
+# renovate: datasource=github-tags depName=actions/cache
+[tools.cache_action]
+version = "6.1.0"
+revision = "55cc8345863c7cc4c66a329aec7e433d2d1c52a9"
+
+# renovate: datasource=github-tags depName=actions/checkout
+[tools.checkout_action]
+version = "7.0.1"
+revision = "3d3c42e5aac5ba805825da76410c181273ba90b1"
+
+# renovate: datasource=github-tags depName=actions/deploy-pages
+[tools.deploy_pages_action]
+version = "5.0.1"
+revision = "368f82528645a54fb793d4d04e342629a3f51346"
+
+# renovate: datasource=github-tags depName=actions/download-artifact
+[tools.download_artifact_action]
+version = "4.3.0"
+revision = "d3f86a106a0bac45b974a628896c90dbdf5c8093"
+
+# renovate: datasource=github-tags depName=actions/setup-node
+[tools.setup_node_action]
+version = "7.0.0"
+revision = "820762786026740c76f36085b0efc47a31fe5020"
+
+# renovate: datasource=github-tags depName=actions/upload-artifact
+[tools.upload_artifact_action]
+version = "4.6.2"
+revision = "ea165f8d65b6e75b540449e92b4886f43607fa02"
+
+# renovate: datasource=github-tags depName=actions/upload-pages-artifact
+[tools.upload_pages_artifact_action]
+version = "5.0.0"
+revision = "fc324d3547104276b827a68afc52ff2a11cc49c9"
+
+# renovate: datasource=github-tags depName=renovatebot/github-action
+[tools.renovate_action]
+version = "46.3.0"
+revision = "c314dda4a9a93b08239ec978f2043b9a433b9ac4"
+
+# EOF
+
