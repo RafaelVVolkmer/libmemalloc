@@ -1,0 +1,62 @@
+# SPDX-FileCopyrightText: 2026 Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
+# SPDX-License-Identifier: GPL-3.0-only
+
+---
+name: Reusable REUSE
+
+on:
+  workflow_call: {}
+
+permissions: {}
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  reuse:
+    name: REUSE compliance
+    runs-on: >-
+      ${{
+        (github.event_name == 'pull_request' ||
+        github.event_name == 'merge_group') &&
+        'ubuntu-24.04' ||
+        vars.LIBMEMALLOC_CI_RUNNER ||
+        'ubuntu-24.04'
+      }}
+    timeout-minutes: 10
+
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Configure repository-local caches
+        uses: ./.github/actions/workspace-cache
+
+      - name: Resolve toolchain lock
+        id: toolchain
+        uses: ./.github/actions/toolchain
+
+      - id: lua
+        uses: ./.github/actions/setup-lua
+
+      - name: Install locked REUSE and build backend
+        env:
+          LUA: ${{ steps.lua.outputs.lua }}
+        run: >-
+          "${LUA}" scripts/toolchain/python.lua --groups=reuse
+          --directory=.cache/tools/reuse
+
+      - name: Check REUSE compliance
+        run: |
+          set -euo pipefail
+
+          "${LIBMEMALLOC_CACHE_ROOT}/tools/reuse/bin/reuse" lint
+
+# EOF
+
