@@ -1,0 +1,14 @@
+// SPDX-FileCopyrightText: 2026 Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
+// SPDX-License-Identifier: GPL-3.0-only
+
+module compatibility;
+
+extern fn int identity() @cname("MOCK_identity");
+
+fn int main()
+{
+    return identity();
+}
+
+// EOF
+
