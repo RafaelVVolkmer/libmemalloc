@@ -1,0 +1,56 @@
+# SPDX-FileCopyrightText: 2026 Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
+# SPDX-License-Identifier: GPL-3.0-only
+
+---
+name: Bootstrap native build host
+description: Prepare Lua on Unix and preserve the native compiler environment.
+
+runs:
+  using: composite
+
+  steps:
+    - name: Bootstrap Unix Lua
+      if: runner.os != 'Windows'
+      shell: bash
+      run: |
+        set -euo pipefail
+        if [[ "${RUNNER_OS}" == Linux ]]; then
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends lua5.4 jq
+        else
+          brew install lua jq
+        fi
+
+    - uses: ./.github/actions/workspace-cache
+      if: runner.os != 'Windows'
+
+    - name: Build locked Unix Lua
+      if: runner.os != 'Windows'
+      shell: bash
+      # The exported path contains the verified interpreter, with no line breaks.
+      run: | # zizmor: ignore[github-env]
+        set -euo pipefail
+
+        version="$(lua scripts/process/playbook.lua --direct toolchain-resolve --field lua.version)"
+        digest="$(lua scripts/process/playbook.lua --direct toolchain-resolve --field lua.sha256)"
+        [[ "${version}" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]
+        [[ "${digest}" =~ ^[0-9a-f]{64}$ ]]
+
+        archive=".cache/downloads/build-lua.tar.gz"
+        curl -fsSL --retry 3 "https://www.lua.org/ftp/lua-${version}.tar.gz" -o "${archive}"
+
+        actual="$(shasum -a 256 "${archive}" | cut -d ' ' -f 1)"
+        test "${actual}" = "${digest}"
+
+        tar -xzf "${archive}" -C .cache/tools
+        make -C ".cache/tools/lua-${version}" -j2 all
+
+        binary_dir="${GITHUB_WORKSPACE}/.cache/tools/lua-${version}/src"
+        [[ "${binary_dir}" != *$'\n'* && "${binary_dir}" != *$'\r'* ]]
+        printf '%s\n' "${binary_dir}" >> "${GITHUB_PATH}"
+
+    - uses: ./.github/actions/setup-msvc-analysis
+      if: runner.os == 'Windows'
+
+# EOF
+
