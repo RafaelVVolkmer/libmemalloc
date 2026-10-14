@@ -5,16 +5,8 @@
 # Editor and IDE State
 # ==============================================================================
 
-# VS Code: keep shared workspace files, ignore local/user state.
-.vscode/*
-!.vscode/settings.json
-!.vscode/tasks.json
-!.vscode/launch.json
-!.vscode/extensions.json
-!.vscode/*.code-snippets
-.vscode/.cache/
-.vscode/.lsp/
-.vscode/.logs/
+# VS Code workspace state stays local.
+.vscode/
 
 # JetBrains / CLion
 .idea/
