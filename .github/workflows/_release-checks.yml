@@ -1,0 +1,126 @@
+# SPDX-FileCopyrightText: 2026 Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
+# SPDX-License-Identifier: GPL-3.0-only
+
+---
+name: Reusable release checks
+
+on:
+  workflow_call:
+    outputs:
+      root:
+        description: Verified mock release root.
+        value: ${{ jobs.mock.outputs.root }}
+
+permissions: {}
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  mock:
+    name: Reproducible release fixture
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+
+    permissions:
+      contents: read
+
+    outputs:
+      root: ${{ steps.candidate.outputs.root }}
+
+    steps:
+      - name: Checkout candidate
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Configure repository-local caches
+        uses: ./.github/actions/workspace-cache
+
+      - name: Setup release tools
+        id: tools
+        uses: ./.github/actions/setup-release
+
+      - name: Test release primitives
+        run: |
+          lua scripts/process/playbook.lua --direct check-eof
+          lua scripts/process/playbook.lua --direct check-install
+          lua scripts/process/playbook.lua --direct test-release-release-test
+          lua scripts/process/playbook.lua --direct test-workspace-cache-test
+
+      - name: Build and compare clean mock candidates
+        id: candidate
+        env:
+          MOCK_TAG: ${{ github.event.release.prerelease && github.event.release.tag_name || 'v0.0.0-mock' }}
+        run: lua scripts/process/playbook.lua --direct release-build --mock --version="${MOCK_TAG#v}"
+
+      - name: Validate payload and security evidence
+        env:
+          RELEASE_ROOT: ${{ steps.candidate.outputs.root }}
+        run: |
+          lua scripts/process/playbook.lua --direct check-reproducible --root="${RELEASE_ROOT}"
+          lua scripts/process/playbook.lua --direct check-openssf --root="${RELEASE_ROOT}"
+          lua scripts/process/playbook.lua --direct release-verify --root="${RELEASE_ROOT}" --unsigned
+          lua scripts/process/playbook.lua --direct test-release-release-test --root="${RELEASE_ROOT}"
+
+      - name: Install native Conan client
+        env:
+          CONAN_VERSION: ${{ fromJSON(steps.tools.outputs.tools).conan.version }}
+          SCHEMA_VALIDATOR_VERSION: ${{ fromJSON(steps.tools.outputs.tools).check_jsonschema.version }}
+        run: |
+          python3 -m venv "${LIBMEMALLOC_CACHE_ROOT}/tools/conan"
+          "${LIBMEMALLOC_CACHE_ROOT}/tools/conan/bin/pip" install --disable-pip-version-check \
+            "conan==${CONAN_VERSION}" "check-jsonschema==${SCHEMA_VALIDATOR_VERSION}"
+          printf '%s\n' "${LIBMEMALLOC_CACHE_ROOT}/tools/conan/bin" >> "${GITHUB_PATH}"
+
+      - name: Exercise Conan package variants without upload
+        env:
+          RELEASE_ROOT: ${{ steps.candidate.outputs.root }}
+          CONAN_HOME: ${{ github.workspace }}/.cache/tools/conan-cache
+        run: |
+          lua scripts/process/playbook.lua --direct release-check-schemas --root="${RELEASE_ROOT}"
+          conan profile detect
+          lua scripts/process/playbook.lua --direct release-conan --root="${RELEASE_ROOT}"
+
+      - name: Restore verified Cosign for offline signature tests
+        id: cosign
+        uses: ./.github/actions/verified-download
+        with:
+          name: cosign
+          version: ${{ fromJSON(steps.tools.outputs.tools).cosign.version }}
+          filename: cosign-linux-amd64
+          sha256: ${{ fromJSON(steps.tools.outputs.tools).cosign.sha256 }}
+          origin: https://github.com
+          directory: sigstore/cosign/releases/download/v${{ fromJSON(steps.tools.outputs.tools).cosign.version }}
+
+      - name: Test signatures without release credentials
+        env:
+          COSIGN_BINARY: ${{ steps.cosign.outputs.path }}
+          RELEASE_ROOT: ${{ steps.candidate.outputs.root }}
+        run: |
+          install -m 0755 "${COSIGN_BINARY}" "${LIBMEMALLOC_CACHE_ROOT}/tools/conan/bin/cosign"
+          lua scripts/process/playbook.lua --direct test-release-signature-test --root="${RELEASE_ROOT}"
+
+      - name: Preserve candidate and evidence
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: release-candidate
+          path: |
+            release/
+            !.cache/tests/signatures/**
+            !.cache/cd/publications/**
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Preserve Conan receipts
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: conan-package-receipts
+          path: .cache/cd/publications/
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 30
+
+# EOF
+
