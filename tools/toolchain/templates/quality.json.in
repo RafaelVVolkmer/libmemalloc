@@ -1,0 +1,15 @@
+{
+  "name": "libmemalloc-quality-checks",
+  "private": true,
+  "license": "GPL-3.0-only",
+  "engines": {
+    "node": ">=@node_min.version@"
+  },
+  "dependencies": {
+    "cspell": "@cspell.version@"
+  },
+  "devDependencies": {
+    "renovate": "@renovate.version@",
+    "pyright": "@pyright.version@"
+  }
+}
