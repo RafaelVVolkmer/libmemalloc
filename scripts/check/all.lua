@@ -160,7 +160,7 @@ local function scripts_check_all_main()
       "lua",
       "scripts/check/format.lua",
       "markdown",
-      ".cache/tools/md/node_modules/.bin/markdownlint-cli2",
+      ".cache/tools/md/node_modules/.bin/markdownlint",
    }, markdown)
 
    check_all_check("spelling", { "lua", "scripts/check/spelling.lua" })

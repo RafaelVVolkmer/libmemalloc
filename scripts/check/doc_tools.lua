@@ -28,10 +28,13 @@ const graphs = [
       cspell: "cspell", renovate: "renovate", pyright: "pyright",
    }, overrides: {} },
    { directory: "md", identities: {
-      "markdownlint-cli2": "markdownlint", "markdown-it": "markdown_it",
+      "markdownlint-cli": "markdownlint", "markdown-it": "markdown_it",
       mermaid: "mermaid", jsdom: "jsdom",
       "@highlightjs/cdn-assets": "highlight_js",
-   }, overrides: { "lodash-es": "lodash_es", "smol-toml": "smol_toml" } },
+   }, overrides: {
+      "lodash-es": "lodash_es", "smol-toml": "smol_toml",
+      "js-yaml": "js_yaml", katex: "katex",
+   } },
    { directory: "web", identities: {
       "@biomejs/biome": "biome", "html-validate": "html_validate",
       typescript: "typescript",

@@ -75,7 +75,7 @@ validate one commit independently of pending changes.
 ```sh
 git ls-files -z --cached --others --exclude-standard -- '*.md' | \
   xargs -0 lua scripts/check/format.lua markdown \
-  .cache/tools/md/node_modules/.bin/markdownlint-cli2
+  .cache/tools/md/node_modules/.bin/markdownlint
 lua scripts/check/links.lua --offline
 lua scripts/check/mermaid.lua
 lua scripts/check/eof.lua

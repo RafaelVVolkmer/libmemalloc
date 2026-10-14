@@ -153,7 +153,7 @@ jobs:
           "${LIBMEMALLOC_LUA}" scripts/process/playbook.lua --direct check-documentation
           mapfile -d '' documents < <(git ls-files -z -- '*.md' '*.markdown')
           "${LIBMEMALLOC_LUA}" scripts/process/playbook.lua --direct check-format markdown \
-            .cache/tools/md/node_modules/.bin/markdownlint-cli2 "${documents[@]}"
+            .cache/tools/md/node_modules/.bin/markdownlint "${documents[@]}"
           "${LIBMEMALLOC_LUA}" scripts/process/playbook.lua --direct check-links --offline
           "${LIBMEMALLOC_LUA}" scripts/process/playbook.lua --direct check-mermaid
           "${LIBMEMALLOC_LUA}" scripts/process/playbook.lua --direct test-documentation-filter-test

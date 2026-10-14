@@ -12,7 +12,7 @@ local function tools_lint_formatters_loadModule()
       markdown = {
          arguments = {
             "--config",
-            "{root}/tools/lint/code/md/markdownlint-cli2.jsonc",
+            "{root}/tools/lint/code/md/markdownlint.jsonc",
          },
       },
 

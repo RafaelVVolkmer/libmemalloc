@@ -4897,7 +4897,7 @@ observations have separate authority. Freeze a source revision or digest for an 
 [luals]: https://luals.github.io/wiki/annotations/
 [luals-config]: ../../../tools/lint/code/lua/luals.json
 [luarocks]: https://github.com/luarocks/lua-style-guide
-[markdown-config]: ../../../tools/lint/code/md/markdownlint-cli2.jsonc
+[markdown-config]: ../../../tools/lint/code/md/markdownlint.jsonc
 [modules]: https://hisham.hm/2014/01/02/how-to-write-lua-modules-in-a-post-module-world/
 [olivine]: https://github.com/Olivine-Labs/lua-style-guide
 [repo]: https://github.com/RafaelVVolkmer/libmemalloc

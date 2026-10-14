@@ -58,7 +58,7 @@ lint = [
   "selene",
   "gitleaks",
   "lychee",
-  "markdownlint-cli2",
+  "markdownlint-cli",
   "editorconfig-checker",
 ]
 release = [ "cosign", "syft", "grype", "diffoscopeMinimal", "libabigail", "zstd" ]

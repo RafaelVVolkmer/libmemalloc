@@ -68,13 +68,13 @@ sha256 = "14fa81bdc34171edb5f1f02b1d60e74802f0439b77fa44e592565d517d72df90"
 version = "2.42.2-9ubuntu0.1"
 sha256 = "be4e5b1b036babfb1663c095bc645c2fbab79dd57b213fc3b1ab0d48e810dd85"
 
-# renovate: datasource=npm depName=markdownlint-cli2
+# renovate: datasource=npm depName=markdownlint-cli
 [tools.markdownlint]
-version = "0.23.2"
+version = "0.49.1"
 
 # renovate: datasource=npm depName=mermaid
 [tools.mermaid]
-version = "12.0.0"
+version = "12.2.0"
 
 # renovate: datasource=npm depName=@highlightjs/cdn-assets
 [tools.highlight_js]
@@ -99,7 +99,16 @@ version = "4.18.1"
 # https://github.com/advisories/GHSA-7w5x-hrqm-74c2
 # renovate: datasource=npm depName=smol-toml
 [tools.smol_toml]
-version = "1.8.0"
+version = "1.9.1"
+
+# Patch transitive YAML parsing and math rendering dependencies.
+# renovate: datasource=npm depName=js-yaml
+[tools.js_yaml]
+version = "5.4.3"
+
+# renovate: datasource=npm depName=katex
+[tools.katex]
+version = "0.18.10"
 
 # renovate: datasource=pypi depName=clang-format
 [tools.clang_format]
