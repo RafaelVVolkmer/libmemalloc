@@ -1,0 +1,22 @@
+{
+  "$schema": "https://biomejs.dev/schemas/2.5.10/schema.json",
+  "assist": {
+    "enabled": false
+  },
+  "files": {
+    "includes": ["**/*.json", "**/*.jsonc"]
+  },
+  "formatter": {
+    "enabled": false
+  },
+  "linter": {
+    "enabled": true,
+    "rules": {
+      "recommended": true,
+      "nursery": {
+        "noEmptyObjectKeys": "error",
+        "noTopLevelLiterals": "error"
+      }
+    }
+  }
+}
