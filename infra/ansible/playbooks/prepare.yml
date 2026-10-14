@@ -1,0 +1,69 @@
+# SPDX-FileCopyrightText: 2026 Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
+# SPDX-License-Identifier: GPL-3.0-only
+
+---
+- name: Prepare the local engineering pilot workspace
+  hosts: localhost
+  gather_facts: false
+  become: false
+  connection: local
+  vars_files:
+    - "{{ playbook_dir }}/../../../.cache/tools/automation.yml"
+  vars:
+    lma_workspace: "{{ (playbook_dir ~ '/../../..') | realpath }}"
+    lma_lua_executable: "{{ lma_managed_lua }}"
+    ansible_python_interpreter: "{{ ansible_playbook_python }}"
+  environment:
+    LIBMEMALLOC_LUA: "{{ lma_lua_executable }}"
+    LUA_CPATH: "{{ lma_managed_luv }};;"
+
+  tasks:
+    - name: Require explicit workspace and interpreter
+      ansible.builtin.assert:
+        that:
+          - lma_workspace is defined
+          - lma_lua_executable is defined
+          - lma_workspace is match('^/')
+          - lma_lua_executable is match('^/')
+
+    - name: Read the controller version from the existing toolchain lock
+      ansible.builtin.command:
+        argv:
+          - "{{ lma_lua_executable }}"
+          - scripts/toolchain/resolve.lua
+          - --field
+          - ansible_core.version
+        chdir: "{{ lma_workspace }}"
+        expand_argument_vars: false
+      register: controller_version
+      changed_when: false
+      check_mode: false
+
+    - name: Require the pinned controller
+      ansible.builtin.assert:
+        that:
+          - ansible_version.full == controller_version.stdout
+
+    - name: Create private disposable directories
+      ansible.builtin.file:
+        path: "{{ lma_workspace }}/.cache/{{ item }}"
+        state: directory
+        mode: "0700"
+      loop:
+        - logs
+        - tests
+        - tmp
+
+    - name: Verify that the pilot runtime dependencies load
+      ansible.builtin.command:
+        argv:
+          - "{{ lma_lua_executable }}"
+          - -e
+          - "require('luv'); dofile('scripts/process/lib/exec.lua')"
+        chdir: "{{ lma_workspace }}"
+        expand_argument_vars: false
+      changed_when: false
+      check_mode: false
+
+# EOF
+
