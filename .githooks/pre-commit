@@ -1,0 +1,21 @@
+#!/usr/bin/env lua
+
+-- SPDX-FileCopyrightText: 2026 Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
+-- SPDX-License-Identifier: GPL-3.0-only
+
+--- Apply the libmemalloc pre-commit policy.
+-- Git invokes this adapter from the worktree root.
+-- Workspace modules own the checks.
+
+--- Preserve the Git hook exit status and argument contract.
+-- @return nil: no values.
+local function HOOK_main()
+   local hooks = dofile("scripts/workspace/lib/hooks.lua")
+
+   os.exit(hooks.pre_commit(arg))
+end
+
+return HOOK_main()
+
+-- EOF
+
