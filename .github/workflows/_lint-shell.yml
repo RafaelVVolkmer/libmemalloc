@@ -1,0 +1,534 @@
+# SPDX-FileCopyrightText: 2026 Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
+# SPDX-License-Identifier: GPL-3.0-only
+
+---
+
+name: Lint shell
+
+on:
+  workflow_call:
+    inputs:
+      nushell:
+        description: Run the nushell checks.
+        required: true
+        type: boolean
+      powershell:
+        description: Run the powershell checks.
+        required: true
+        type: boolean
+      shell:
+        description: Run the shell checks.
+        required: true
+        type: boolean
+
+permissions: {}
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  shell:
+    name: POSIX sh and Bash
+    if: inputs.shell
+    runs-on: >-
+      ${{
+        (github.event_name == 'pull_request' ||
+        github.event_name == 'merge_group') &&
+        'ubuntu-24.04' ||
+        vars.LIBMEMALLOC_CI_RUNNER ||
+        'ubuntu-24.04'
+      }}
+    timeout-minutes: 15
+
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Configure repository-local caches
+        uses: ./.github/actions/workspace-cache
+
+      - name: Resolve toolchain lock
+        id: toolchain
+        uses: ./.github/actions/toolchain
+
+      - name: Detect shell sources
+        id: detect
+        run: |
+          set -euo pipefail
+
+          found=false
+
+          while IFS= read -r -d '' file; do
+            first_line="$(head -n 1 -- "${file}" 2>/dev/null || true)"
+
+            case "${file}" in
+              *.sh|*.bash)
+                found=true
+                break
+                ;;
+            esac
+
+            if [[ "${first_line}" =~ ^#!.*(bash|/sh|env[[:space:]]+sh)([[:space:]]|$) ]]; then
+              found=true
+              break
+            fi
+          done < <(git ls-files -z)
+
+          echo "found=${found}" >> "${GITHUB_OUTPUT}"
+
+          if [[ "${found}" == false ]]; then
+            echo "No tracked POSIX sh or Bash sources found; skipping shell lint."
+          fi
+
+      - name: Restore ShellCheck archive
+        id: shellcheck_download
+        if: steps.detect.outputs.found == 'true'
+        uses: ./.github/actions/verified-download
+        with:
+          name: shellcheck
+          version: ${{ fromJSON(steps.toolchain.outputs.tools).shellcheck.version }}
+          filename: >-
+            shellcheck-v${{ fromJSON(steps.toolchain.outputs.tools).shellcheck.version }}.linux.x86_64.tar.xz
+          sha256: ${{ fromJSON(steps.toolchain.outputs.tools).shellcheck.sha256 }}
+          origin: https://github.com
+          directory: >-
+            koalaman/shellcheck/releases/download/v${{ fromJSON(steps.toolchain.outputs.tools).shellcheck.version }}
+
+      - name: Restore shfmt binary
+        id: shfmt_download
+        if: steps.detect.outputs.found == 'true'
+        uses: ./.github/actions/verified-download
+        with:
+          name: shfmt
+          version: ${{ fromJSON(steps.toolchain.outputs.tools).shfmt.version }}
+          filename: shfmt_v${{ fromJSON(steps.toolchain.outputs.tools).shfmt.version }}_linux_amd64
+          sha256: ${{ fromJSON(steps.toolchain.outputs.tools).shfmt.sha256 }}
+          origin: https://github.com
+          directory: mvdan/sh/releases/download/v${{ fromJSON(steps.toolchain.outputs.tools).shfmt.version }}
+
+      - name: Install ShellCheck and shfmt
+        if: steps.detect.outputs.found == 'true'
+        env:
+          SHELLCHECK_VERSION: ${{ fromJSON(steps.toolchain.outputs.tools).shellcheck.version }}
+          SHELLCHECK_ARCHIVE: ${{ steps.shellcheck_download.outputs.path }}
+          SHFMT_BINARY: ${{ steps.shfmt_download.outputs.path }}
+        run: |
+          set -euo pipefail
+
+          shellcheck_archive="${SHELLCHECK_ARCHIVE}"
+
+          tar -xJf "${shellcheck_archive}" -C "${LIBMEMALLOC_CACHE_ROOT}/tools"
+
+          install --mode=0755 \
+            "${LIBMEMALLOC_CACHE_ROOT}/tools/shellcheck-v${SHELLCHECK_VERSION}/shellcheck" \
+            "${LIBMEMALLOC_CACHE_ROOT}/tools/shellcheck"
+
+          shfmt_binary="${LIBMEMALLOC_CACHE_ROOT}/tools/shfmt"
+          install \
+            --mode=0755 \
+            "${SHFMT_BINARY}" \
+            "${shfmt_binary}"
+
+      - name: Run POSIX sh and Bash checks
+        if: steps.detect.outputs.found == 'true'
+        run: |
+          set -euo pipefail
+
+          collect_shell_files() {
+            while IFS= read -r -d '' file; do
+              first_line="$(head -n 1 -- "${file}" 2>/dev/null || true)"
+
+              if [[ "${file}" == *.bash || "${first_line}" =~ bash ]]; then
+                printf 'bash\t%s\0' "${file}"
+              elif [[ "${file}" == *.sh || "${first_line}" =~ ^#!.*(/sh|env[[:space:]]+sh)([[:space:]]|$) ]]; then
+                printf 'posix\t%s\0' "${file}"
+              fi
+            done < <(git ls-files -z)
+          }
+
+          posix_files=()
+          bash_files=()
+
+          while IFS= read -r -d '' record; do
+            dialect="${record%%$'\t'*}"
+            file="${record#*$'\t'}"
+
+            if [[ "${dialect}" == bash ]]; then
+              bash_files+=("${file}")
+            else
+              posix_files+=("${file}")
+            fi
+          done < <(collect_shell_files)
+
+          if (( ${#posix_files[@]} > 0 )); then
+            printf 'Checking %d POSIX sh file(s).\n' "${#posix_files[@]}"
+
+            "${LIBMEMALLOC_CACHE_ROOT}/tools/shellcheck" \
+              --shell=sh \
+              --rcfile=tools/lint/code/shell/posix/shellcheckrc \
+              "${posix_files[@]}"
+
+            lua5.4 scripts/check/format.lua shell_posix \
+              "${LIBMEMALLOC_CACHE_ROOT}/tools/shfmt" \
+              "${posix_files[@]}"
+          fi
+
+          if (( ${#bash_files[@]} > 0 )); then
+            printf 'Checking %d Bash file(s).\n' "${#bash_files[@]}"
+
+            "${LIBMEMALLOC_CACHE_ROOT}/tools/shellcheck" \
+              --shell=bash \
+              --rcfile=tools/lint/code/shell/bash/shellcheckrc \
+              "${bash_files[@]}"
+
+            lua5.4 scripts/check/format.lua shell_bash \
+              "${LIBMEMALLOC_CACHE_ROOT}/tools/shfmt" \
+              "${bash_files[@]}"
+
+            if command -v bash >/dev/null 2>&1; then
+              for file in "${bash_files[@]}"; do
+                bash -n "${file}"
+              done
+            else
+              echo "Bash is unavailable; bash -n parser check skipped."
+            fi
+          fi
+
+  powershell:
+    name: PowerShell 7
+    if: inputs.powershell
+    runs-on: >-
+      ${{
+        (github.event_name == 'pull_request' ||
+        github.event_name == 'merge_group') &&
+        'ubuntu-24.04' ||
+        vars.LIBMEMALLOC_CI_RUNNER ||
+        'ubuntu-24.04'
+      }}
+    timeout-minutes: 20
+
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Configure repository-local caches
+        uses: ./.github/actions/workspace-cache
+
+      - name: Resolve toolchain lock
+        id: toolchain
+        uses: ./.github/actions/toolchain
+
+      - name: Detect PowerShell sources
+        id: detect
+        run: |
+          set -euo pipefail
+
+          found=false
+
+          while IFS= read -r -d '' file; do
+            case "${file}" in
+              tools/lint/code/shell/powershell/*)
+                continue
+                ;;
+              *.ps1|*.psm1|*.psd1)
+                found=true
+                break
+                ;;
+            esac
+
+            first_line="$(head -n 1 -- "${file}" 2>/dev/null || true)"
+
+            if [[ "${first_line}" =~ ^#!.*pwsh([[:space:]]|$) ]]; then
+              found=true
+              break
+            fi
+          done < <(git ls-files -z)
+
+          echo "found=${found}" >> "${GITHUB_OUTPUT}"
+
+          if [[ "${found}" == false ]]; then
+            echo "No tracked PowerShell sources found; skipping PowerShell lint."
+          fi
+
+      - name: Restore PowerShell archive
+        id: powershell_download
+        if: steps.detect.outputs.found == 'true'
+        uses: ./.github/actions/verified-download
+        with:
+          name: powershell
+          version: ${{ fromJSON(steps.toolchain.outputs.tools).powershell.version }}
+          filename: powershell-${{ fromJSON(steps.toolchain.outputs.tools).powershell.version }}-linux-x64.tar.gz
+          sha256: ${{ fromJSON(steps.toolchain.outputs.tools).powershell.sha256 }}
+          origin: https://github.com
+          directory: >-
+            ${{ format(
+              'PowerShell/PowerShell/releases/download/v{0}',
+              fromJSON(steps.toolchain.outputs.tools).powershell.version
+            ) }}
+
+      - name: Restore PSScriptAnalyzer package
+        id: psscriptanalyzer_download
+        if: steps.detect.outputs.found == 'true'
+        uses: ./.github/actions/verified-download
+        with:
+          name: psscriptanalyzer
+          version: ${{ fromJSON(steps.toolchain.outputs.tools).psscriptanalyzer.version }}
+          filename: >-
+            PSScriptAnalyzer.${{ fromJSON(steps.toolchain.outputs.tools).psscriptanalyzer.version }}.nupkg
+          sha256: ${{ fromJSON(steps.toolchain.outputs.tools).psscriptanalyzer.sha256 }}
+          origin: https://github.com
+          directory: >-
+            ${{ format(
+              'PowerShell/PSScriptAnalyzer/releases/download/{0}',
+              fromJSON(steps.toolchain.outputs.tools).psscriptanalyzer.version
+            ) }}
+
+      - name: Install pinned PowerShell and PSScriptAnalyzer
+        if: steps.detect.outputs.found == 'true'
+        env:
+          PSSCRIPTANALYZER_VERSION: ${{ fromJSON(steps.toolchain.outputs.tools).psscriptanalyzer.version }}
+          POWERSHELL_ARCHIVE: ${{ steps.powershell_download.outputs.path }}
+          PSSCRIPTANALYZER_PACKAGE: ${{ steps.psscriptanalyzer_download.outputs.path }}
+        run: |
+          set -euo pipefail
+
+          pwsh_archive="${POWERSHELL_ARCHIVE}"
+
+          mkdir -p "${LIBMEMALLOC_CACHE_ROOT}/tools/powershell"
+          tar -xzf "${pwsh_archive}" -C "${LIBMEMALLOC_CACHE_ROOT}/tools/powershell"
+          chmod 0755 "${LIBMEMALLOC_CACHE_ROOT}/tools/powershell/pwsh"
+
+          analyzer_package="${PSSCRIPTANALYZER_PACKAGE}"
+
+          module_root="${LIBMEMALLOC_CACHE_ROOT}/tools/modules/PSScriptAnalyzer"
+          module_dir="${module_root}/${PSSCRIPTANALYZER_VERSION}"
+          mkdir -p "${module_dir}"
+          unzip -q "${analyzer_package}" -d "${module_dir}"
+
+      - name: Run PowerShell parser and PSScriptAnalyzer
+        if: steps.detect.outputs.found == 'true'
+        env:
+          PSSCRIPTANALYZER_VERSION: ${{ fromJSON(steps.toolchain.outputs.tools).psscriptanalyzer.version }}
+        run: |
+          set -euo pipefail
+
+          collect_powershell_files() {
+            while IFS= read -r -d '' file; do
+              case "${file}" in
+                tools/lint/code/shell/powershell/*)
+                  continue
+                  ;;
+                *.ps1|*.psm1|*.psd1)
+                  printf '%s\0' "${file}"
+                  continue
+                  ;;
+              esac
+
+              first_line="$(head -n 1 -- "${file}" 2>/dev/null || true)"
+
+              if [[ "${first_line}" =~ ^#!.*pwsh([[:space:]]|$) ]]; then
+                printf '%s\0' "${file}"
+              fi
+            done < <(git ls-files -z)
+          }
+
+          mapfile -d '' files < <(collect_powershell_files)
+          pwsh="${LIBMEMALLOC_CACHE_ROOT}/tools/powershell/pwsh"
+          module_root="${LIBMEMALLOC_CACHE_ROOT}/tools/modules/PSScriptAnalyzer"
+          module="${module_root}/${PSSCRIPTANALYZER_VERSION}/PSScriptAnalyzer.psd1"
+          settings="${GITHUB_WORKSPACE}/tools/lint/code/shell/powershell/PSScriptAnalyzerSettings.psd1"
+
+          printf 'Checking %d PowerShell source file(s).\n' "${#files[@]}"
+
+          for file in "${files[@]}"; do
+            # PowerShell expands variables inside this single-quoted payload.
+            # shellcheck disable=SC2016
+            "${pwsh}" -NoLogo -NoProfile -NonInteractive -Command '
+              param([string] $Path)
+              $tokens = $null
+              $errors = $null
+              [System.Management.Automation.Language.Parser]::ParseFile(
+                  (Resolve-Path -LiteralPath $Path),
+                  [ref] $tokens,
+                  [ref] $errors
+              ) | Out-Null
+              if ($errors.Count -ne 0) {
+                  $errors | ForEach-Object {
+                      Write-Error $_.Message
+                  }
+                  exit 1
+              }
+            ' "${file}"
+          done
+
+          # PowerShell expands variables inside this single-quoted payload.
+          # shellcheck disable=SC2016
+          "${pwsh}" -NoLogo -NoProfile -NonInteractive -Command '
+            param(
+                [string] $Module,
+                [string] $Settings,
+                [Parameter(ValueFromRemainingArguments = $true)]
+                [string[]] $Paths
+            )
+            Import-Module -Name $Module -Force
+            $results = foreach ($path in $Paths) {
+                Invoke-ScriptAnalyzer -Path $path -Settings $Settings
+            }
+            if ($results) {
+                $results | Format-Table -AutoSize | Out-String | Write-Host
+                exit 1
+            }
+          ' "${module}" "${settings}" "${files[@]}"
+
+  nushell:
+    name: Nushell
+    if: inputs.nushell
+    runs-on: >-
+      ${{
+        (github.event_name == 'pull_request' ||
+        github.event_name == 'merge_group') &&
+        'ubuntu-24.04' ||
+        vars.LIBMEMALLOC_CI_RUNNER ||
+        'ubuntu-24.04'
+      }}
+    timeout-minutes: 30
+
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Configure repository-local caches
+        uses: ./.github/actions/workspace-cache
+
+      - name: Resolve toolchain lock
+        id: toolchain
+        uses: ./.github/actions/toolchain
+
+      - name: Detect Nushell sources
+        id: detect
+        run: |
+          set -euo pipefail
+
+          found=false
+
+          while IFS= read -r -d '' file; do
+            case "${file}" in
+              tools/lint/code/shell/nushell/*)
+                continue
+                ;;
+              *.nu)
+                found=true
+                break
+                ;;
+            esac
+
+            first_line="$(head -n 1 -- "${file}" 2>/dev/null || true)"
+
+            if [[ "${first_line}" =~ ^#!.*(^|[[:space:]/])nu([[:space:]]|$) ]]; then
+              found=true
+              break
+            fi
+          done < <(git ls-files -z)
+
+          echo "found=${found}" >> "${GITHUB_OUTPUT}"
+
+          if [[ "${found}" == false ]]; then
+            echo "No tracked Nushell sources found; skipping Nushell lint."
+          fi
+
+      - name: Restore Nushell archive
+        id: nushell_download
+        if: steps.detect.outputs.found == 'true'
+        uses: ./.github/actions/verified-download
+        with:
+          name: nushell
+          version: ${{ fromJSON(steps.toolchain.outputs.tools).nushell.version }}
+          filename: >-
+            nu-${{ fromJSON(steps.toolchain.outputs.tools).nushell.version }}-x86_64-unknown-linux-gnu.tar.gz
+          sha256: ${{ fromJSON(steps.toolchain.outputs.tools).nushell.sha256 }}
+          origin: https://github.com
+          directory: nushell/nushell/releases/download/${{ fromJSON(steps.toolchain.outputs.tools).nushell.version }}
+
+      - name: Install pinned Nushell and nufmt
+        if: steps.detect.outputs.found == 'true'
+        env:
+          NUFMT_REVISION: ${{ fromJSON(steps.toolchain.outputs.tools).nufmt.revision }}
+          NUSHELL_ARCHIVE: ${{ steps.nushell_download.outputs.path }}
+        run: |
+          set -euo pipefail
+
+          nu_archive="${NUSHELL_ARCHIVE}"
+
+          mkdir -p "${LIBMEMALLOC_CACHE_ROOT}/tools/nushell"
+          tar -xzf "${nu_archive}" \
+            -C "${LIBMEMALLOC_CACHE_ROOT}/tools/nushell" \
+            --strip-components=1
+
+          cargo install \
+            --git https://github.com/nushell/nufmt \
+            --rev "${NUFMT_REVISION}" \
+            --locked \
+            --root "${LIBMEMALLOC_CACHE_ROOT}/tools/nufmt"
+
+      - name: Run Nushell checks
+        if: steps.detect.outputs.found == 'true'
+        run: |
+          set -euo pipefail
+
+          collect_nushell_files() {
+            while IFS= read -r -d '' file; do
+              case "${file}" in
+                tools/lint/code/shell/nushell/*)
+                  continue
+                  ;;
+                *.nu)
+                  printf '%s\0' "${file}"
+                  continue
+                  ;;
+              esac
+
+              first_line="$(head -n 1 -- "${file}" 2>/dev/null || true)"
+
+              if [[ "${first_line}" =~ ^#!.*(^|[[:space:]/])nu([[:space:]]|$) ]]; then
+                printf '%s\0' "${file}"
+              fi
+            done < <(git ls-files -z)
+          }
+
+          mapfile -d '' files < <(collect_nushell_files)
+
+          printf 'Checking %d Nushell source file(s).\n' "${#files[@]}"
+
+          for file in "${files[@]}"; do
+            "${LIBMEMALLOC_CACHE_ROOT}/tools/nushell/nu" --check "${file}"
+          done
+
+          "${LIBMEMALLOC_CACHE_ROOT}/tools/nufmt/bin/nufmt" \
+            --dry-run \
+            --config tools/lint/code/shell/nushell/nufmt.nuon \
+            "${files[@]}"
+
+          if command -v nu-lint >/dev/null 2>&1; then
+            nu-lint "${files[@]}"
+          else
+            echo "Optional nu-lint executable not installed; skipping."
+          fi
+
+# EOF
+
