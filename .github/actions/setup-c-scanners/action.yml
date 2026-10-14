@@ -1,0 +1,49 @@
+# SPDX-FileCopyrightText: 2026 Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
+# SPDX-License-Identifier: GPL-3.0-only
+
+---
+name: Setup C security analyzers
+description: Install locked Cppcheck and Flawfinder using the Lua installer.
+
+runs:
+  using: composite
+
+  steps:
+    - name: Resolve tool identities
+      id: lock
+      uses: ./.github/actions/toolchain
+
+    - name: Fetch Cppcheck source
+      id: cppcheck
+      uses: ./.github/actions/verified-download
+      with:
+        name: cppcheck
+        version: ${{ fromJSON(steps.lock.outputs.tools).cppcheck.version }}
+        filename: ${{ fromJSON(steps.lock.outputs.tools).cppcheck.version }}
+        sha256: ${{ fromJSON(steps.lock.outputs.tools).cppcheck.sha256 }}
+        origin: https://codeload.github.com
+        directory: cppcheck-opensource/cppcheck/tar.gz/refs/tags
+
+    - name: Fetch Flawfinder wheel
+      id: flawfinder
+      uses: ./.github/actions/verified-download
+      with:
+        name: flawfinder
+        version: ${{ fromJSON(steps.lock.outputs.tools).flawfinder.version }}
+        filename: flawfinder-${{ fromJSON(steps.lock.outputs.tools).flawfinder.version }}-py2.py3-none-any.whl
+        sha256: ${{ fromJSON(steps.lock.outputs.tools).flawfinder.sha256 }}
+        origin: https://files.pythonhosted.org
+        directory: packages/ce/2f/4ebfd9c48136f1475b07fab36899d4cb63eccb9086be78b97d7032d871c6
+
+    - name: Install analyzers
+      shell: bash
+      env:
+        CPPCHECK_ARCHIVE: ${{ steps.cppcheck.outputs.path }}
+        FLAWFINDER_WHEEL: ${{ steps.flawfinder.outputs.path }}
+      run: |
+        lua scripts/process/playbook.lua --direct workspace-cache lua scripts/process/playbook.lua --direct \
+        toolchain-install-c-scanners \
+          --cppcheck="${CPPCHECK_ARCHIVE}" --flawfinder="${FLAWFINDER_WHEEL}"
+
+# EOF
+
