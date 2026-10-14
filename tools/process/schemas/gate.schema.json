@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "libmemalloc process gate",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "scope",
+    "passed",
+    "promotion_authorized",
+    "product_qualified",
+    "failures"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "scope": {
+      "const": "automation-pilot"
+    },
+    "passed": {
+      "type": "boolean"
+    },
+    "promotion_authorized": {
+      "const": false
+    },
+    "product_qualified": {
+      "const": false
+    },
+    "failures": {
+      "type": "array",
+      "minItems": 0,
+      "items": {
+        "type": "string"
+      }
+    },
+    "plan_sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "run_id": {
+      "type": "string"
+    }
+  }
+}
