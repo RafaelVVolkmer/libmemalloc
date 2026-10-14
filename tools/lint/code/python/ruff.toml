@@ -1,0 +1,19 @@
+# SPDX-FileCopyrightText: 2026 Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
+# SPDX-License-Identifier: GPL-3.0-only
+
+line-length = 88
+target-version = "py310"
+respect-gitignore = true
+cache-dir = ".cache/ruff"
+
+[lint]
+select = [ "E4", "E7", "E9", "F", "I", "UP", "B", "SIM", "RUF" ]
+
+[format]
+quote-style = "double"
+indent-style = "space"
+line-ending = "lf"
+docstring-code-format = true
+
+# EOF
+
