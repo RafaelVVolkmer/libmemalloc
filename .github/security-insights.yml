@@ -1,0 +1,48 @@
+# SPDX-FileCopyrightText: 2026 Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
+# SPDX-License-Identifier: GPL-3.0-only
+
+---
+header:
+  schema-version: 2.2.0
+  last-updated: '2026-09-21'
+  last-reviewed: '2026-09-21'
+  url: https://github.com/RafaelVVolkmer/libmemalloc/blob/feature/libmemalloc-refactor/.github/security-insights.yml
+  comment: Draft branch metadata; maintainer approval and public badge license reconciliation remain required.
+
+project:
+  name: libmemalloc
+
+  administrators:
+    - name: Rafael V. Volkmer
+      primary: true
+
+  repositories:
+    - name: libmemalloc
+      url: https://github.com/RafaelVVolkmer/libmemalloc
+      comment: Allocator refactor and release-pipeline qualification repository.
+
+  vulnerability-reporting:
+    reports-accepted: true
+    bug-bounty-available: false
+
+repository:
+  url: https://github.com/RafaelVVolkmer/libmemalloc
+  status: active
+  accepts-change-request: true
+  accepts-automated-change-request: true
+
+  core-team:
+    - name: Rafael V. Volkmer
+      primary: true
+
+  license:
+    url: https://github.com/RafaelVVolkmer/libmemalloc/blob/feature/libmemalloc-refactor/LICENSE
+    expression: GPL-3.0-only
+
+  security:
+    assessments:
+      self:
+        comment: Production qualification is incomplete; the C build is a pipeline fixture.
+
+# EOF
+
