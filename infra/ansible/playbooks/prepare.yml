@@ -59,7 +59,7 @@
         argv:
           - "{{ lma_lua_executable }}"
           - -e
-          - "require('luv'); dofile('scripts/process/lib/exec.lua')"
+          - "require('luv'); dofile('scripts/process/lib/engine.lua')"
         chdir: "{{ lma_workspace }}"
         expand_argument_vars: false
       changed_when: false
