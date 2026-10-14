@@ -1,0 +1,279 @@
+# SPDX-FileCopyrightText: 2026 Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
+# SPDX-License-Identifier: GPL-3.0-only
+
+---
+name: Release
+
+on:
+  release:
+    types:
+      - published
+
+permissions: {}
+
+concurrency:
+  group: release-${{ github.event.release.tag_name }}
+  cancel-in-progress: false
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  validation:
+    name: Validate release
+    uses: ./.github/workflows/ci.yml
+
+    permissions:
+      contents: read
+
+  security:
+    name: Audit release
+    uses: ./.github/workflows/security.yml
+
+    permissions:
+      contents: read
+
+  commits:
+    name: Check release commit
+    uses: ./.github/workflows/commit-policy.yml
+
+    permissions:
+      contents: read
+
+  codeql:
+    name: Audit C data flow
+    uses: ./.github/workflows/codeql.yml
+
+    permissions:
+      contents: read
+      security-events: write # The reusable CodeQL job uploads code-scanning results.
+
+  source:
+    name: Release source
+    needs: [validation, security, commits, codeql]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout release tag
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+          ref: ${{ github.event.release.tag_name }}
+
+      - name: Configure repository-local caches
+        uses: ./.github/actions/workspace-cache
+
+      - name: Verify release source identity
+        env:
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+        run: |
+          set -euo pipefail
+
+          if [[ ! "${RELEASE_TAG}" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$ ]]; then
+            printf '%s\n' 'Release tag must use vMAJOR.MINOR.PATCH[-prerelease].' >&2
+            exit 1
+          fi
+
+          git show-ref \
+            --verify \
+            --quiet \
+            "refs/tags/${RELEASE_TAG}"
+
+          release_commit="$(git rev-list --max-count=1 "refs/tags/${RELEASE_TAG}")"
+
+          if [[ "${release_commit}" != "${GITHUB_SHA}" ]]; then
+            printf '%s\n' \
+              "Release tag ${RELEASE_TAG} does not resolve to ${GITHUB_SHA}." \
+              >&2
+            exit 1
+          fi
+
+          if [[ -n "$(git status --porcelain=v1)" ]]; then
+            printf '%s\n' 'Release checkout is not clean.' >&2
+            exit 1
+          fi
+
+      - name: Summarize release boundary
+        env:
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+        run: |
+          set -euo pipefail
+
+          {
+            printf '%s\n' '### Libmemalloc release boundary'
+            printf '\n'
+            printf 'Release tag: %s\n' "${RELEASE_TAG}"
+            printf 'Source commit: %s\n' "${GITHUB_SHA}"
+            printf '\n'
+            printf '%s\n' \
+              'CI, security, and commit policy passed for this release.'
+          } >> "${GITHUB_STEP_SUMMARY}"
+
+      - name: Package reproducible source
+        env:
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+        run: |
+          set -euo pipefail
+          mkdir --parents dist
+          archive="libmemalloc-${RELEASE_TAG}.tar.gz"
+          git archive --format=tar --prefix="libmemalloc-${RELEASE_TAG}/" "${GITHUB_SHA}" \
+            | gzip -n > "dist/${archive}"
+          (cd dist && sha256sum "${archive}" > SHA256SUMS)
+
+      - name: Preserve validated source artifact
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: libmemalloc-source-${{ github.event.release.tag_name }}
+          path: dist/
+          if-no-files-found: error
+          retention-days: 30
+
+  sign:
+    name: Sign release fixture
+    needs: [validation, security, commits, source]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    environment: release-signing
+
+    permissions:
+      contents: read
+      id-token: write # Sigstore signing identity after release gates.
+
+    steps:
+      - name: Checkout qualified release scripts
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          ref: ${{ github.sha }}
+
+      - name: Configure repository-local caches
+        uses: ./.github/actions/workspace-cache
+
+      - name: Setup release tools
+        id: tools
+        uses: ./.github/actions/setup-release
+
+      - name: Restore verified Cosign
+        id: cosign
+        uses: ./.github/actions/verified-download
+        with:
+          name: cosign
+          version: ${{ fromJSON(steps.tools.outputs.tools).cosign.version }}
+          filename: cosign-linux-amd64
+          sha256: ${{ fromJSON(steps.tools.outputs.tools).cosign.sha256 }}
+          origin: https://github.com
+          directory: sigstore/cosign/releases/download/v${{ fromJSON(steps.tools.outputs.tools).cosign.version }}
+
+      - name: Install verified signing tool
+        env:
+          COSIGN_BINARY: ${{ steps.cosign.outputs.path }}
+        run: |
+          mkdir -p "${LIBMEMALLOC_CACHE_ROOT}/tools/release-tools"
+          install -m 0755 "${COSIGN_BINARY}" "${LIBMEMALLOC_CACHE_ROOT}/tools/release-tools/cosign"
+          printf '%s\n' "${LIBMEMALLOC_CACHE_ROOT}/tools/release-tools" >> "${GITHUB_PATH}"
+
+      - name: Download candidate from this workflow run
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: release-candidate
+          path: release/
+
+      - name: Sign and verify immutable fixture copy
+        env:
+          RELEASE_ROOT: ${{ needs.validation.outputs.release_root }}
+          SIGNER_IDENTITY: https://github.com/${{ github.repository }}/.github/workflows/release.yml@${{ github.ref }}
+        run: |
+          lua scripts/process/playbook.lua --direct release-sign --root="${RELEASE_ROOT}" --output=release/signed
+          lua scripts/process/playbook.lua --direct release-verify --root=release/signed \
+            --identity="${SIGNER_IDENTITY}" --issuer=https://token.actions.githubusercontent.com
+          lua scripts/process/playbook.lua --direct release-package --root=release/signed --sign
+
+      - name: Preserve signed fixture
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: signed-release-fixture
+          path: release/signed/
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Preserve transport archives
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: release-transport
+          path: release/_packages/
+          if-no-files-found: error
+
+  conan:
+    name: Publish authorized Conan test channel
+    needs: sign
+    if: github.event.release.prerelease && vars.LIBMEMALLOC_CONAN_MOCK_CHANNEL == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    environment: conan-release
+
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout release packaging policy
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          ref: ${{ github.sha }}
+
+      - name: Configure repository-local caches
+        uses: ./.github/actions/workspace-cache
+
+      - name: Setup release tools
+        id: tools
+        uses: ./.github/actions/setup-release
+
+      - name: Restore verified Cosign
+        id: cosign
+        uses: ./.github/actions/verified-download
+        with:
+          name: cosign
+          version: ${{ fromJSON(steps.tools.outputs.tools).cosign.version }}
+          filename: cosign-linux-amd64
+          sha256: ${{ fromJSON(steps.tools.outputs.tools).cosign.sha256 }}
+          origin: https://github.com
+          directory: sigstore/cosign/releases/download/v${{ fromJSON(steps.tools.outputs.tools).cosign.version }}
+
+      - name: Install publication clients
+        env:
+          COSIGN_BINARY: ${{ steps.cosign.outputs.path }}
+        run: |
+          lua scripts/process/playbook.lua --direct toolchain-python \
+            --groups=publication --directory=.cache/tools/conan
+          install -m 0755 "${COSIGN_BINARY}" "${LIBMEMALLOC_CACHE_ROOT}/tools/conan/bin/cosign"
+          printf '%s\n' "${LIBMEMALLOC_CACHE_ROOT}/tools/conan/bin" >> "${GITHUB_PATH}"
+
+      - name: Download signed fixture from this run
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: signed-release-fixture
+          path: release/signed/
+
+      - name: Verify, package, and publish to the authorized remote
+        env:
+          CONAN_HOME: ${{ github.workspace }}/.cache/tools/conan-cache
+          CONAN_NON_INTERACTIVE: "1"
+          CONAN_LOGIN_USERNAME_RELEASE: ${{ secrets.CONAN_USERNAME }}
+          CONAN_PASSWORD_RELEASE: ${{ secrets.CONAN_PASSWORD }}
+          LIBMEMALLOC_CONAN_MOCK_CHANNEL: ${{ vars.LIBMEMALLOC_CONAN_MOCK_CHANNEL }}
+          CONAN_REMOTE_URL: ${{ vars.CONAN_REMOTE_URL }}
+          SIGNER_IDENTITY: https://github.com/${{ github.repository }}/.github/workflows/release.yml@${{ github.ref }}
+        run: |
+          conan profile detect
+          lua scripts/process/playbook.lua --direct release-conan --root=release/signed --publish --allow-mock \
+            --remote="${CONAN_REMOTE_URL}" --identity="${SIGNER_IDENTITY}" \
+            --issuer=https://token.actions.githubusercontent.com
+
+# EOF
+
