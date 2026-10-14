@@ -1,0 +1,52 @@
+# SPDX-FileCopyrightText: 2026 Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
+# SPDX-License-Identifier: GPL-3.0-only
+
+---
+- name: Decode and validate the retained task result
+  block:
+    - name: Decode structured task output
+      ansible.builtin.set_fact:
+        lma_task_result: "{{ task_execution.stdout | default('') | from_json }}"
+
+    - name: Require the structured change status
+      ansible.builtin.assert:
+        that:
+          - lma_task_result is mapping
+          - lma_task_result.change_status | default('') in ['changed', 'unchanged', 'unknown']
+        quiet: true
+
+    - name: Mark the structured result as available
+      ansible.builtin.set_fact:
+        lma_task_result_valid: true
+
+  rescue:
+    - name: Retain the original process diagnostics without valid JSON
+      ansible.builtin.set_fact:
+        lma_task_result_valid: false
+        lma_task_result:
+          diagnostic: No valid structured task result; inspect the original process diagnostics.
+          rc: "{{ task_execution.rc | default(-1) }}"
+          stdout: "{{ task_execution.stdout | default('') }}"
+          stderr: "{{ task_execution.stderr | default('') }}"
+          change_status: unknown
+
+- name: Show the retained task result
+  ansible.builtin.debug:
+    msg: "{{ lma_task_result }}"
+  changed_when: lma_task_result.change_status != 'unchanged'
+
+- name: Explain an unknown mutation outcome
+  ansible.builtin.debug:
+    msg: >-
+      The task did not confirm whether it changed state. Inspect change_status=unknown
+      and the original exit status and retained task logs.
+  when: lma_task_result.change_status == 'unknown'
+
+- name: Reject a successful process with an invalid result contract
+  ansible.builtin.assert:
+    that: lma_task_result_valid
+    fail_msg: The process returned success without a valid structured task result.
+  when: task_execution.rc | default(-1) == 0
+
+# EOF
+

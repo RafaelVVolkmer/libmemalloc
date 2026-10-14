@@ -1,0 +1,30 @@
+# SPDX-FileCopyrightText: 2026 Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
+# SPDX-License-Identifier: GPL-3.0-only
+
+---
+- name: Resolve the quality environment candidates
+  ansible.builtin.set_fact:
+    lma_quality_python_override: "{{ lookup('ansible.builtin.env', 'LIBMEMALLOC_QUALITY_PYTHON') }}"
+    lma_quality_profile_root: "{{ lma_workspace }}/.cache/tools/quality/python-{{ lma_preparation_profile }}"
+    lma_quality_python_fallback: >-
+      {{ lookup('ansible.builtin.first_found', {'files': [
+           lma_workspace ~ '/.cache/tools/quality/python-all/bin/python',
+           lma_workspace ~ '/.cache/tools/quality/python-lua/bin/python'], 'skip': true})
+         | default('python3', true) }}
+
+- name: Select the prepared or existing quality interpreter
+  ansible.builtin.set_fact:
+    lma_quality_python_selected: >-
+      {{ lma_quality_profile_root ~ '/bin/python'
+         if lma_preparation_profile != 'none' and lma_prepare_tools | bool
+         else lma_quality_python_fallback }}
+
+- name: Resolve the effective task environment
+  ansible.builtin.set_fact:
+    lma_quality_python: "{{ lma_quality_python_override or lma_quality_python_selected }}"
+    lma_task_path: >-
+      {{ lma_quality_profile_root ~ '/bin:' ~ lma_workspace ~ '/.cache/tools/quality/bin:'
+         ~ (lma_lua_executable | dirname) ~ ':' ~ lma_host_path }}
+
+# EOF
+
