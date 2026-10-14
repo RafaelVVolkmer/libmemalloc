@@ -1,0 +1,151 @@
+# SPDX-FileCopyrightText: 2026 Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
+# SPDX-License-Identifier: GPL-3.0-only
+
+---
+
+name: Reusable Lint
+
+on:
+  workflow_call:
+    inputs:
+      html:
+        description: Run html checks when those sources change.
+        required: true
+        type: boolean
+      css:
+        description: Run css checks when those sources change.
+        required: true
+        type: boolean
+      javascript:
+        description: Run javascript checks when those sources change.
+        required: true
+        type: boolean
+      typescript:
+        description: Run typescript checks when those sources change.
+        required: true
+        type: boolean
+      actions:
+        description: Run the actions lint area.
+        required: true
+        type: boolean
+      bazel:
+        description: Run the bazel lint area.
+        required: true
+        type: boolean
+      c:
+        description: Run the c lint area.
+        required: true
+        type: boolean
+      ci:
+        description: Run the ci lint area.
+        required: true
+        type: boolean
+      json:
+        description: Run the json lint area.
+        required: true
+        type: boolean
+      lua:
+        description: Run the lua lint area.
+        required: true
+        type: boolean
+      markdown:
+        description: Run the markdown lint area.
+        required: true
+        type: boolean
+      nushell:
+        description: Run the nushell lint area.
+        required: true
+        type: boolean
+      powershell:
+        description: Run the powershell lint area.
+        required: true
+        type: boolean
+      python:
+        description: Run the python lint area.
+        required: true
+        type: boolean
+      shell:
+        description: Run the shell lint area.
+        required: true
+        type: boolean
+      toml:
+        description: Run the toml lint area.
+        required: true
+        type: boolean
+      yaml:
+        description: Run the yaml lint area.
+        required: true
+        type: boolean
+
+# CWE-250 / OWASP CICD-SEC-5: each job receives only its required authority.
+permissions: {}
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  automation:
+    name: Lint automation
+    uses: ./.github/workflows/_lint-automation.yml
+    permissions:
+      contents: read
+    with:
+      actions: ${{ inputs.actions }}
+      ci: ${{ inputs.ci }}
+      lua: ${{ inputs.lua }}
+      toml: ${{ inputs.toml }}
+      yaml: ${{ inputs.yaml }}
+
+  documents:
+    name: Lint documents
+    uses: ./.github/workflows/_lint-documents.yml
+    permissions:
+      contents: read
+    with:
+      css: ${{ inputs.css }}
+      html: ${{ inputs.html }}
+      javascript: ${{ inputs.javascript }}
+      json: ${{ inputs.json }}
+      markdown: ${{ inputs.markdown }}
+      toml: ${{ inputs.toml }}
+      typescript: ${{ inputs.typescript }}
+      yaml: ${{ inputs.yaml }}
+
+  native:
+    name: Lint native
+    uses: ./.github/workflows/_lint-native.yml
+    permissions:
+      contents: read
+    with:
+      bazel: ${{ inputs.bazel }}
+      c: ${{ inputs.c }}
+
+  lua:
+    name: Lint lua
+    uses: ./.github/workflows/_lint-lua.yml
+    permissions:
+      contents: read
+    with:
+      lua: ${{ inputs.lua }}
+
+  python:
+    name: Lint python
+    uses: ./.github/workflows/_lint-python.yml
+    permissions:
+      contents: read
+    with:
+      python: ${{ inputs.python }}
+
+  shell:
+    name: Lint shell
+    uses: ./.github/workflows/_lint-shell.yml
+    permissions:
+      contents: read
+    with:
+      nushell: ${{ inputs.nushell }}
+      powershell: ${{ inputs.powershell }}
+      shell: ${{ inputs.shell }}
+
+# EOF
+
