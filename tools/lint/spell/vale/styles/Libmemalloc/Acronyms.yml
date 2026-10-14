@@ -1,0 +1,223 @@
+# SPDX-FileCopyrightText: 2026 Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
+# SPDX-License-Identifier: GPL-3.0-only
+
+---
+extends: conditional
+
+message: "Define '%s' at first use."
+
+level: warning
+
+scope: text
+
+ignorecase: false
+
+first: '\b([A-Z][A-Z0-9]{1,5})s?\b'
+
+second: '(?:\b[A-Z][A-Za-z-]+[ ]?){2,}\(([A-Z][A-Z0-9]{1,5})s?\)'
+
+exceptions:
+  # BEGIN GENERATED ACRONYMS
+  - ABA
+  - ABI
+  - ABIs
+  - ABNT
+  - ACSL
+  - AIAG
+  - ANSI
+  - API
+  - APIs
+  - APQP
+  - AQAP
+  - ASan
+  - ASCII
+  - ASILs
+  - BANNED
+  - BTB
+  - C23
+  - C28719
+  - CAPA
+  - CAPEC
+  - CAS
+  - CBAN
+  - CBMC
+  - CERT
+  - CI
+  - CICD
+  - CISA
+  - CISC
+  - CLEARTID
+  - CLI
+  - CMake
+  - CPERF
+  - CPIT
+  - CPU
+  - CPUs
+  - CSS
+  - CSTYLE
+  - CUDA
+  - CVEs
+  - CWE
+  - DCO
+  - DDIO
+  - DESTDIR
+  - DLL
+  - DLLs
+  - DMA
+  - DO
+  - DOI
+  - DOIs
+  - DONTNEED
+  - DPDK
+  - DSB
+  - DSSE
+  - DTDs
+  - DTLB
+  - DTOs
+  - EAGAIN
+  - EBUSY
+  - ECORRUPT
+  - ECSS
+  - EEPROM
+  - ELF
+  - ENOSYS
+  - EOF
+  - EPERM
+  - EPROTO
+  - ESBMC
+  - ETIMEDOUT
+  - EUROCAE
+  - FFI
+  - FMECA
+  - FP
+  - GC
+  - GDB
+  - GIMPLE
+  - GNU
+  - GNUC
+  - GPU
+  - GUIs
+  - HTML
+  - HTTP
+  - HTTPS
+  - IACS
+  - IATF
+  - ID
+  - IDE
+  - IDs
+  - IEC
+  - IEEE
+  - IKOS
+  - IOMMU
+  - IPC
+  - IRIW
+  - ISO
+  - ISR
+  - JITs
+  - JPL
+  - JSON
+  - JSONC
+  - LASX
+  - LBAN
+  - LLVM
+  - LMOD
+  - LPERF
+  - LPIT
+  - LRU
+  - LSTYLE
+  - LTCG
+  - MAC
+  - MADV
+  - MISRA
+  - MITRE
+  - MMIO
+  - MPMC
+  - MPSC
+  - MSHR
+  - MSVC
+  - NASA
+  - NDEBUG
+  - NUL
+  - NULL
+  - NUMA
+  - NVM
+  - OCI
+  - OOM
+  - OOPSLA
+  - OpenPGP
+  - OSAP
+  - OSPS
+  - OSSF
+  - PCIe
+  - PDG
+  - PII
+  - PLDI
+  - PMU
+  - POSIX
+  - PPAP
+  - PRNG
+  - PRNGs
+  - QEMU
+  - RAM
+  - RBUILD
+  - RCU
+  - README
+  - RELRO
+  - RNG
+  - ROM
+  - RSB
+  - RSTUF
+  - RTCA
+  - RTLD
+  - SARIF
+  - SAST
+  - SATB
+  - SDDs
+  - SDL
+  - SEI
+  - SESE
+  - SETTLS
+  - SI
+  - SILs
+  - SIMD
+  - SLSA
+  - SPDX
+  - SPMC
+  - SPSC
+  - SQL
+  - SSDF
+  - SSRF
+  - STDC
+  - SV
+  - TCHAR
+  - TISAX
+  - TLB
+  - TLS
+  - TLSF
+  - TOML
+  - TS
+  - TSan
+  - UAPI
+  - UB
+  - UBSan
+  - URI
+  - URL
+  - UTF
+  - VLA
+  - VLAs
+  - VMAR
+  - VMAs
+  - WASI
+  - WCET
+  - XFAIL
+  - XML
+  - XOR
+  - XSS
+  - XXE
+  - YAML
+  - Zacas
+  - Ztso
+# END GENERATED ACRONYMS
+
+# EOF
+
