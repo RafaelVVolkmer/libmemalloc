@@ -1,0 +1,21 @@
+# SPDX-FileCopyrightText: 2026 Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
+# SPDX-License-Identifier: GPL-3.0-only
+
+---
+extends: existence
+
+message: "Rewrite the Wh-word setup '%s' as a direct statement."
+
+level: warning
+
+scope: sentence
+
+ignorecase: true
+
+nonword: true
+
+raw:
+  - '^(?:how|what|when|where|which|who|whom|whose|why)\b'
+
+# EOF
+

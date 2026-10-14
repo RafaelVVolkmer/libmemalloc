@@ -1,0 +1,33 @@
+# SPDX-FileCopyrightText: 2026 Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
+# SPDX-License-Identifier: GPL-3.0-only
+
+---
+extends: existence
+
+message: "Replace the promotional claim '%s' with a measurable property or evidence."
+
+level: warning
+
+ignorecase: true
+
+tokens:
+  - best[- ]in[- ]class
+  - cutting[- ]edge
+  - enterprise[- ]grade
+  - effortless(?:ly)?
+  - flawless(?:ly)?
+  - groundbreaking
+  - industry[- ]leading
+  - next[- ]generation
+  - perfect(?:ly)?
+  - powerful
+  - production[- ]ready
+  - revolutionary
+  - robust(?:ness)?
+  - robust and scalable
+  - seamless(?:ly)?
+  - state[- ]of[- ]the[- ]art
+  - world[- ]class
+
+# EOF
+
