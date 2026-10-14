@@ -1,0 +1,9 @@
+{
+  "pythonVersion": "3.12",
+  "typeCheckingMode": "strict",
+  "reportMissingTypeStubs": "none",
+  "reportUnknownMemberType": "warning",
+  "reportUnknownArgumentType": "warning",
+  "reportUnknownVariableType": "warning",
+  "exclude": ["**/.cache", "**/release", "**/.git", "**/.venv", "**/venv", "**/build", "**/dist", "**/vendor"]
+}
