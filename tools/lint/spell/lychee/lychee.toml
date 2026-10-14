@@ -1,0 +1,44 @@
+# SPDX-FileCopyrightText: 2026 Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
+# SPDX-License-Identifier: GPL-3.0-only
+
+# Lychee - Libmemalloc Link Checker Configuration
+
+format = "detailed"
+no_progress = true
+accept_timeouts = false
+# The Lua wrapper enables caching after entering .cache/ci/lychee/.
+# Direct invocations must not create .lycheecache in the source tree.
+cache = false
+cache_exclude_status = [ "429", "500..=599" ]
+max_concurrency = 16
+max_redirects = 10
+max_retries = 3
+retry_wait_time = 2
+timeout = 20
+
+method = "get"
+min_tls = "TLSv1_2"
+require_https = true
+include_fragments = "anchor-only"
+include_mail = false
+include_verbatim = false
+
+exclude_all_private = true
+exclude_path = [
+  "(^|/)LICENSES/",
+  "(^|/)node_modules/",
+  "(^|/)(?:\\.cache|vendor)/",
+  "(^|/).*\\.patch$",
+]
+
+exclude = [
+  "^mailto:",
+  '^https://www\.iso\.org/',
+  '^https://misra\.org\.uk/',
+  """^https://www\\.microsoft\\.com/en-us/security/blog/2012/08/30/\
+  microsofts-free-security-tools-banned-h/$""",
+  '^https://www\.sei\.cmu\.edu/',
+]
+
+# EOF
+
