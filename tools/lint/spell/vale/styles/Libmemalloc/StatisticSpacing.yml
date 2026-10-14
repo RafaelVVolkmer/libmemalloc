@@ -1,0 +1,19 @@
+# SPDX-FileCopyrightText: 2026 Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
+# SPDX-License-Identifier: GPL-3.0-only
+
+---
+extends: existence
+
+message: "Put one space on each side of the statistical operator in '%s'."
+
+level: error
+
+ignorecase: false
+
+nonword: true
+
+raw:
+  - '\b(?:p|r|R|F|t|z)[<=>]|\b(?:p|r|R|F|t|z)\s+[<=>][^\s=]|\b(?:p|r|R|F|t|z)[<=>]\s+'
+
+# EOF
+

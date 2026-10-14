@@ -1,0 +1,18 @@
+# SPDX-FileCopyrightText: 2026 Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
+# SPDX-License-Identifier: GPL-3.0-only
+
+---
+extends: occurrence
+
+message: "Split this sentence or remove nonessential information (more than 30 words)."
+
+level: suggestion
+
+scope: sentence
+
+max: 30
+
+token: '\b(\w+)\b'
+
+# EOF
+

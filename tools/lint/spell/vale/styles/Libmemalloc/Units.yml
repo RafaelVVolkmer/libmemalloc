@@ -1,0 +1,20 @@
+# SPDX-FileCopyrightText: 2026 Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
+# SPDX-License-Identifier: GPL-3.0-only
+
+---
+extends: existence
+
+message: "Insert a space between the value and unit in '%s'."
+
+level: error
+
+nonword: true
+
+raw:
+  - '\b\d+(?:\.\d+)?(?:ns|ms|s|min|Hz|kHz|MHz|GHz|B|kB|MB|GB|KiB|MiB|GiB|V|mV|A|mA|W|mW|K|kPa|MPa)\b'
+
+exceptions:
+  - 802.11
+
+# EOF
+
