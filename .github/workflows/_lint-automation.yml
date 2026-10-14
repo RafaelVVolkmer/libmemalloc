@@ -1,0 +1,292 @@
+# SPDX-FileCopyrightText: 2026 Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
+# SPDX-License-Identifier: GPL-3.0-only
+
+---
+
+name: Lint automation
+
+on:
+  workflow_call:
+    inputs:
+      actions:
+        description: Run the actions checks.
+        required: true
+        type: boolean
+      ci:
+        description: Run the ci checks.
+        required: true
+        type: boolean
+      lua:
+        description: Run the lua checks.
+        required: true
+        type: boolean
+      toml:
+        description: Run the toml checks.
+        required: true
+        type: boolean
+      yaml:
+        description: Run the yaml checks.
+        required: true
+        type: boolean
+
+permissions: {}
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  macos-playbook:
+    name: Native macOS playbook (${{ matrix.runner }})
+    if: inputs.lua || inputs.yaml || inputs.toml || inputs.ci || inputs.actions
+    strategy:
+      fail-fast: false
+      matrix:
+        runner: [macos-15, macos-15-intel]
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 45
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Install native host prerequisites and controller
+        # uv returns its local executable directory, not repository input.
+        run: | # zizmor: ignore[github-env]
+          brew install git lua uv cmake coreutils curl rust jq gnupg \
+            graphviz bison flex openssl@3 pkgconf
+          if ! command -v python3.12 >/dev/null; then
+            brew install python@3.12
+          fi
+          version="$(lua scripts/process/playbook.lua --direct toolchain-resolve --field ansible_core.version)"
+          uv tool install --python python3.12 "ansible-core==${version}"
+          uv tool dir --bin >> "${GITHUB_PATH}"
+
+      - name: Bootstrap a cold checkout and reuse its runtime
+        run: |
+          ansible-playbook playbook.yml
+          ansible-playbook playbook.yml --check
+          ansible-playbook playbook.yml -e lma_task=doctor
+          ansible-playbook playbook.yml -e lma_task=workspace-bootstrap
+
+      - name: Exercise native task preparation and workspace leases
+        run: |
+          ansible-playbook playbook.yml -e lma_task=lua-check
+          ansible-playbook playbook.yml -e lma_task=test-toolchain-host-test
+          ansible-playbook playbook.yml -e lma_task=test-toolchain-python-test
+          ansible-playbook playbook.yml -e lma_task=test-workspace-lease-test
+          ansible-playbook playbook.yml -e lma_task=test-workspace-lock-test
+          ansible-playbook playbook.yml -e lma_task=ansible-setup-test
+          ansible-playbook playbook.yml -e lma_task=build
+          ansible-playbook playbook.yml -e lma_task=clean \
+            -e '{"lma_arguments":["--scope=build"]}'
+          ansible-playbook playbook.yml -e lma_task=build \
+            -e '{"lma_arguments":["--lld=dynamic"]}'
+
+      - name: Prepare the full native tool profile and build documentation
+        run: ansible-playbook playbook.yml -e lma_task=docs-build
+
+      - name: Retain native execution diagnostics
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: native-playbook-${{ matrix.runner }}
+          path: |
+            .cache/logs/
+            .cache/build/
+          include-hidden-files: true
+          if-no-files-found: warn
+          retention-days: 14
+
+  automation-integration:
+    name: Native Ansible and signed Git hooks
+    if: inputs.lua || inputs.yaml || inputs.ci || inputs.actions
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          submodules: recursive
+
+      - uses: ./.github/actions/workspace-cache
+
+      - uses: ./.github/actions/setup-lua
+
+      - name: Bootstrap the hash-verified automation toolchain
+        id: automation
+        run: lua scripts/process/playbook.lua --direct workspace-bootstrap
+
+      - name: Exercise native controller behavior
+        env:
+          CONTROLLER: ${{ steps.automation.outputs.ansible }}
+        run: '"${CONTROLLER}" playbook.yml -e lma_task=ansible-test'
+
+      - name: Exercise native first-run setup and cached tools
+        env:
+          CONTROLLER: ${{ steps.automation.outputs.ansible }}
+        run: '"${CONTROLLER}" playbook.yml -e lma_task=ansible-setup-test'
+
+      - name: Exercise real signed commits and local pushes
+        env:
+          CONTROLLER: ${{ steps.automation.outputs.ansible }}
+        run: '"${CONTROLLER}" playbook.yml -e lma_task=hooks-test'
+
+      - name: Exercise process controls and evidence rejection
+        env:
+          CONTROLLER: ${{ steps.automation.outputs.ansible }}
+        run: '"${CONTROLLER}" playbook.yml -e lma_task=process-test'
+
+      - name: Produce the automation requirement evidence graph
+        env:
+          CONTROLLER: ${{ steps.automation.outputs.ansible }}
+        run: |
+          policy_sha256="$(sha256sum tools/process/controls.json)"
+          "${CONTROLLER}" infra/ansible/playbooks/verify-environment.yml \
+            -e "lma_run_id=ci-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" \
+            -e "lma_policy_sha256=${policy_sha256%% *}"
+
+      - name: Retain execution diagnostics
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: automation-integration
+          path: .cache/logs/
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 14
+
+  cache-plane:
+    name: CI cache plane
+    if: inputs.ci
+    runs-on: >-
+      ${{
+        (github.event_name == 'pull_request' ||
+        github.event_name == 'merge_group') &&
+        'ubuntu-24.04' ||
+        vars.LIBMEMALLOC_CI_RUNNER ||
+        'ubuntu-24.04'
+      }}
+    timeout-minutes: 5
+
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Configure repository-local caches
+        uses: ./.github/actions/workspace-cache
+
+      - name: Setup pinned Lua
+        id: lua
+        uses: ./.github/actions/setup-lua
+
+      - name: Validate runner-near cache plane
+        uses: ./.github/actions/cache-plane
+
+      - name: Enforce toolchain lock authority
+        env:
+          LIBMEMALLOC_LUA: ${{ steps.lua.outputs.lua }}
+        run: |
+          set -euo pipefail
+
+          "${LIBMEMALLOC_LUA}" scripts/process/playbook.lua --direct check-toolchain
+          "${LIBMEMALLOC_LUA}" scripts/process/playbook.lua --direct check-workflows
+          "${LIBMEMALLOC_LUA}" scripts/process/playbook.lua --direct test-toolchain-lock-test
+          "${LIBMEMALLOC_LUA}" scripts/process/playbook.lua --direct test-workspace-commits-test
+          "${LIBMEMALLOC_LUA}" scripts/process/playbook.lua --direct test-workspace-commit-range-test
+          "${LIBMEMALLOC_LUA}" scripts/process/playbook.lua --direct test-workspace-changes-test
+          "${LIBMEMALLOC_LUA}" scripts/process/playbook.lua --direct test-lib-git-test
+          "${LIBMEMALLOC_LUA}" scripts/process/playbook.lua --direct test-github-specifications-test
+          "${LIBMEMALLOC_LUA}" scripts/process/playbook.lua --direct test-process-playbook-test
+
+  actionlint:
+    name: GitHub Actions
+    if: inputs.actions
+    runs-on: >-
+      ${{
+        (github.event_name == 'pull_request' ||
+        github.event_name == 'merge_group') &&
+        'ubuntu-24.04' ||
+        vars.LIBMEMALLOC_CI_RUNNER ||
+        'ubuntu-24.04'
+      }}
+    timeout-minutes: 10
+
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Configure repository-local caches
+        uses: ./.github/actions/workspace-cache
+
+      - name: Resolve toolchain lock
+        id: toolchain
+        uses: ./.github/actions/toolchain
+
+      - name: Restore actionlint archive
+        id: actionlint_download
+        uses: ./.github/actions/verified-download
+        with:
+          name: actionlint
+          version: ${{ fromJSON(steps.toolchain.outputs.tools).actionlint.version }}
+          filename: actionlint_${{ fromJSON(steps.toolchain.outputs.tools).actionlint.version }}_linux_amd64.tar.gz
+          sha256: ${{ fromJSON(steps.toolchain.outputs.tools).actionlint.sha256 }}
+          origin: https://github.com
+          directory: >-
+            ${{ format(
+              'rhysd/actionlint/releases/download/v{0}',
+              fromJSON(steps.toolchain.outputs.tools).actionlint.version
+            ) }}
+
+      - name: Install actionlint
+        env:
+          ACTIONLINT_ARCHIVE: ${{ steps.actionlint_download.outputs.path }}
+        run: |
+          set -euo pipefail
+
+          destination="${ACTIONLINT_ARCHIVE}"
+
+          tar \
+            --extract \
+            --gzip \
+            --file="${destination}" \
+            --directory="${LIBMEMALLOC_CACHE_ROOT}/tools" \
+            actionlint
+
+      - name: Run actionlint
+        run: |
+          set -euo pipefail
+
+          mapfile -d '' workflows < <(
+            find .github/workflows \
+              -maxdepth 1 \
+              -type f \
+              \( -name '*.yml' -o -name '*.yaml' \) \
+              -print0 \
+              | sort -z
+          )
+
+          printf 'Auditing %d GitHub Actions workflow(s):\n' "${#workflows[@]}"
+          printf '  %s\n' "${workflows[@]}"
+
+          "${LIBMEMALLOC_CACHE_ROOT}/tools/actionlint" \
+            -color \
+            -config-file tools/lint/code/actions/actionlint.yaml \
+            "${workflows[@]}"
+
+# EOF
+
