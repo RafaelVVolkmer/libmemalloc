@@ -1,0 +1,29 @@
+{
+  "schema": 1,
+  "source_roots": [
+    "core"
+  ],
+  "extensions": [
+    ".c",
+    ".h",
+    ".cpp",
+    ".cc",
+    ".cxx",
+    ".hpp"
+  ],
+  "limits": {
+    "cyclomatic": 10,
+    "cognitive": 15,
+    "duplicate_blocks": 0,
+    "duplicate_min_tokens": 70
+  },
+  "formal": {
+    "unwind": 16,
+    "timeout_seconds": 120,
+    "campaigns": [],
+    "excluded_sources": {
+      "core/main.c": "Distribution consumer; no allocator property.",
+      "core/mock.c": "Distribution fixture; mock-specific proofs were removed."
+    }
+  }
+}
