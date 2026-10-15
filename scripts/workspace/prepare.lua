@@ -217,7 +217,9 @@ local function PREPARE_main()
       function()
          artifacts.run({
             lua,
-            "scripts/toolchain/install/quality.lua",
+            "scripts/process/playbook.lua",
+            "--result-json",
+            "quality-setup",
             "--profile=" .. profile,
          })
       end

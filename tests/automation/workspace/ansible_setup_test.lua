@@ -43,6 +43,9 @@ print("Bootstrap tools changed: true")
 (checkout / "scripts/toolchain/install/quality.lua").write_text("""
 local a = dofile("scripts/lib/artifacts.lua")
 local profile = arg[1]:match("^%-%-profile=(.+)$")
+io.stdout:write(string.char(128))
+io.stderr:write(string.char(255))
+assert(not a.exists("fail-quality"), "fixture install failure")
 local selected = dofile("tools/toolchain/quality_profiles.lua")[profile]
 local count = io.open("quality-installs", "a")
 count:write(profile .. " install\\n")
@@ -125,7 +128,21 @@ run("-e", "lma_task=lua-check", "--check")
 assert not (checkout / "quality-installs").exists()
 run("-e", "lma_task=unknown-task", code=2)
 assert not (checkout / "quality-installs").exists()
+(checkout / "fail-quality").touch()
+output = run("-e", "lma_task=lua-check", code=2)
+assert "non-UTF-8 output" in output
+assert not (checkout / ".cache/tools/quality/.ansible-lua").exists()
+(checkout / "fail-quality").unlink()
 run("-e", "lma_task=lua-check")
+attempts = list(
+    (checkout / ".cache/logs/tasks").glob("quality-setup-*/result.json")
+)
+assert {json.loads(path.read_text())["state"] for path in attempts} == {
+    "PASS", "FAIL",
+}
+for result in attempts:
+    assert (result.parent / "stdout.log").read_bytes() == bytes([128])
+    assert (result.parent / "stderr.log").read_bytes().startswith(bytes([255]))
 assert "changed=0" in run("-e", "lma_task=check-lua")
 assert (checkout / "quality-installs").read_text().count("install") == 1
 (checkout / ".cache/tools/quality/bin/stylua").unlink()
