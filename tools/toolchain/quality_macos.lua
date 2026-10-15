@@ -18,12 +18,14 @@ local function QUALITY_MACOS_loadModule()
                short = "arm64",
                rust = "aarch64",
                vale = "arm64",
+               doxygen = "arm",
             },
             x86_64 = {
                go = "amd64",
                short = "x64",
                rust = "x86_64",
                vale = "64-bit",
+               doxygen = "intel",
             },
          })[architecture],
          "unsupported macOS architecture"
@@ -42,7 +44,7 @@ local function QUALITY_MACOS_loadModule()
          lua_language_server = "lua-language-server-{version}-darwin-"
             .. short
             .. ".tar.gz",
-         doxygen = "doxygen-{version}.src.tar.gz",
+         doxygen = "doxygen-{version}-mac-" .. cpu.doxygen .. ".zip",
       }
 
       for name, filename in pairs(files) do
@@ -56,9 +58,9 @@ local function QUALITY_MACOS_loadModule()
       catalog.lychee.bin = "lychee-" .. rust .. "-apple-darwin"
       catalog.doxygen.url = "https://github.com/doxygen/doxygen/releases/"
          .. "download/Release_{underscored_version}/"
-         .. "doxygen-{version}.src.tar.gz"
-      catalog.doxygen.archive = "source"
-      catalog.doxygen.bin = "install/bin"
+         .. files.doxygen
+      catalog.doxygen.archive = "zip"
+      catalog.doxygen.bin = "doxygen-{version}"
 
       return catalog
    end

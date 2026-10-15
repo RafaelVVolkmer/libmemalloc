@@ -28,8 +28,14 @@ local function QUALITY_CATALOG_TEST_main()
          end
       end
 
-      assert(catalog.doxygen.archive == "source", "Doxygen is not native")
-      assert(catalog.doxygen.bin == "install/bin", "Doxygen install layout")
+      assert(catalog.doxygen.archive == "zip", "Doxygen release archive")
+      assert(catalog.doxygen.bin == "doxygen-{version}", "Doxygen layout")
+      local releases = { arm64 = "mac-arm.zip", x86_64 = "mac-intel.zip" }
+
+      assert(
+         catalog.doxygen.url:find(releases[architecture], 1, true),
+         "Doxygen architecture mismatch"
+      )
       assert(
          catalog.stylua.url:find(
             architecture == "arm64" and "aarch64.zip" or "x86_64.zip",

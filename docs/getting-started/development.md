@@ -88,13 +88,13 @@ Install [Homebrew](https://docs.brew.sh/Installation), apply its shell configura
 
 ```sh
 brew install git lua python@3.12 uv cmake coreutils curl rust jq gnupg graphviz \
-  bison flex openssl@3 pkgconf
+  openssl@3 pkgconf
 ```
 
 Return to the README's Python and Ansible step. The playbook selects native tool paths
 on Apple Silicon and Intel; no VM, container or Rosetta is required. Intel Ansible setup
-may compile `cryptography` with Rust and OpenSSL. Doxygen builds from verified source,
-using `bison` and `flex`. Cleanup uses Python's native kernel locking.
+may compile `cryptography` with Rust and OpenSSL. Doxygen uses the official native
+release archive with its locked SHA-256. Cleanup uses Python's native kernel locking.
 See Homebrew's [Python 3.12](https://formulae.brew.sh/formula/python@3.12) and
 [GNU utilities](https://formulae.brew.sh/formula/coreutils) packages.
 

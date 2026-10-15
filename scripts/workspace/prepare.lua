@@ -173,7 +173,6 @@ local function PREPARE_main()
          "tools/toolchain/quality.lua",
          "tools/toolchain/quality_macos.lua",
          "scripts/toolchain/lib/host.lua",
-         "scripts/toolchain/lib/source.lua",
          "tools/toolchain/quality_profiles.lua",
          "tools/python/pyproject.toml",
          "tools/python/uv.lock",

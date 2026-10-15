@@ -111,12 +111,6 @@ local function QUALITY_main()
          artifacts.mkdir(destination)
          if tool.archive == "zip" then
             artifacts.run({ "unzip", "-oq", archive, "-d", destination })
-         elseif tool.archive == "source" then
-            dofile("scripts/toolchain/lib/source.lua").install(
-               artifacts,
-               archive,
-               destination
-            )
          else
             artifacts.run({ "tar", "-xf", archive, "-C", destination })
          end

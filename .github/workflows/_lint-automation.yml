@@ -56,7 +56,7 @@ jobs:
         # uv returns its local executable directory, not repository input.
         run: | # zizmor: ignore[github-env]
           brew install git lua uv cmake coreutils curl rust jq gnupg \
-            graphviz bison flex openssl@3 pkgconf
+            graphviz openssl@3 pkgconf
           if ! command -v python3.12 >/dev/null; then
             brew install python@3.12
           fi
