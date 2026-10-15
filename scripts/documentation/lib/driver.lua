@@ -673,7 +673,12 @@ local function scripts_documentation_lib_driver_loadModule()
          -- build.
          -- @return nil: no values.
          function()
-            artifact_io.run({ executable, output .. "/Doxyfile" })
+            local code = artifact_io.platform.execute({
+               executable,
+               output .. "/Doxyfile",
+            })
+
+            assert(code == 0, "Doxygen exited with status " .. code)
             assert(
                artifact_io.read(output .. "/warnings.log") == "",
                "Doxygen emitted warnings"
@@ -734,7 +739,12 @@ local function scripts_documentation_lib_driver_loadModule()
 
       manifest.status = ok and "passed" or "failed"
       artifact_io.document(output .. "/manifest.json", manifest)
-      assert(ok, message)
+      assert(
+         ok,
+         tostring(message)
+            .. "\n"
+            .. artifact_io.read(output .. "/warnings.log")
+      )
 
       print("Doxygen " .. options.mode .. " passed: " .. output)
 

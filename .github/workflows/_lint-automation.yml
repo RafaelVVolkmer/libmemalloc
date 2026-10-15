@@ -96,6 +96,9 @@ jobs:
           path: |
             .cache/logs/
             .cache/build/
+            .cache/docs/doxygen-build/warnings.log
+            .cache/docs/doxygen-build/manifest.json
+            .cache/docs/doxygen-build/Doxyfile
           include-hidden-files: true
           if-no-files-found: warn
           retention-days: 14

@@ -311,6 +311,16 @@ int extra(void);
    assert(R.read(root .. "/negative/warnings.log"):find("nonexistent", 1, true))
    assert(R.read(root .. "/negative/manifest.json"):find('"failed"', 1, true))
 
+   --- Include retained Doxygen warnings in the raised failure diagnostic.
+   -- @return nil: no values.
+   reject(function()
+      D.run({
+         mode = "eval",
+         source = { root .. "/first" },
+         output = root .. "/negative",
+      })
+   end, "nonexistent")
+
    R.write(root .. "/broken.md", "# Broken page\n\n[Missing](#missing)\n")
 
    local broken_accepted = R.platform.command_succeeded_silent({
