@@ -88,6 +88,20 @@ jobs:
       - name: Prepare the full native tool profile and build documentation
         run: ansible-playbook playbook.yml -e lma_task=docs-build
 
+      - name: Diagnose native documentation failures
+        if: failure()
+        timeout-minutes: 3
+        run: |
+          if [[ -f .cache/docs/doxygen-build/Doxyfile ]]; then
+            lldb --batch \
+              -o 'settings set target.disable-aslr false' \
+              -o run \
+              -k 'thread backtrace all' \
+              -- .cache/tools/quality/bin/doxygen \
+              .cache/docs/doxygen-build/Doxyfile \
+              > .cache/logs/doxygen-debugger.log 2>&1
+          fi
+
       - name: Retain native execution diagnostics
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
