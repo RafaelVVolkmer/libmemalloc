@@ -56,12 +56,17 @@ version = "1.38.0"
 [tools.taplo]
 version = "0.10.0"
 
-# Official Linux and native macOS release archives.
+# Official Linux binary and macOS source archives.
 [tools.doxygen]
 version = "1.18.0"
-macos_x86_64_sha256 = "8045d72f6f900fd430042339c1493d6eefcc85a7f990361fb57685682f16a2f9"
-macos_arm64_sha256 = "31d1c74467a9f6f456b4e6a4eff0c03e93d1ffa92da5fdf2d53a2f14ebaabbd7"
+macos_x86_64_sha256 = "a1deed70a6785bbec95a2b2a9e419dc7f7b223a9d74a8644ae611c8e2dcdd354"
+macos_arm64_sha256 = "a1deed70a6785bbec95a2b2a9e419dc7f7b223a9d74a8644ae611c8e2dcdd354"
 sha256 = "14fa81bdc34171edb5f1f02b1d60e74802f0439b77fa44e592565d517d72df90"
+
+# Upstream scanner bounds fix; required before compiling on macOS.
+[tools.doxygen_scanner_patch]
+revision = "26e908779f448574c6b8918aff21a40565a89a57"
+sha256 = "a61f3afa120a0c264cf0e847b46f1add98abf211670ddb6c4f596630da896e15"
 
 # Ubuntu 24.04 amd64 Graphviz package; APT verifies runtime dependencies.
 [tools.graphviz]

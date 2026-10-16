@@ -43,6 +43,33 @@ local function QUALITY_main()
       artifacts.run({ "ln", "-sfn", target, prefix .. "/bin/" .. name })
    end
 
+   --- Extract verified archives or build the patched native source package.
+   -- @param name string: locked tool name.
+   -- @param tool table: archive layout from the native catalog.
+   -- @param digest string: verified archive identity.
+   -- @param archive string: downloaded archive path.
+   -- @return string: installed package directory.
+   local function quality_unpack(name, tool, digest, archive)
+      local destination = prefix .. "/packages/" .. name .. "/" .. digest
+      if tool.archive == "source" then
+         destination = destination .. "-" .. lock.doxygen_scanner_patch.sha256
+      end
+      artifacts.mkdir(destination)
+      if tool.archive == "zip" then
+         artifacts.run({ "unzip", "-oq", archive, "-d", destination })
+      elseif tool.archive == "source" then
+         dofile("scripts/toolchain/lib/source.lua").install(
+            artifacts,
+            archive,
+            destination,
+            lock.doxygen_scanner_patch
+         )
+      else
+         artifacts.run({ "tar", "-xf", archive, "-C", destination })
+      end
+      return destination
+   end
+
    --- Install selected, hash-verified tool archives into the local prefix.
    -- @return nil: no values.
    local function quality_installArchives()
@@ -82,6 +109,8 @@ local function QUALITY_main()
             .. "-"
             .. identity.version
             .. (host.key == "linux_x86_64" and "" or "-" .. host.key)
+            .. "-"
+            .. digest
 
          if not artifacts.exists(archive) then
             artifacts.run({
@@ -106,14 +135,7 @@ local function QUALITY_main()
             artifacts.digest(archive) == digest,
             "archive hash mismatch: " .. name
          )
-         local destination = prefix .. "/packages/" .. name .. "/" .. digest
-
-         artifacts.mkdir(destination)
-         if tool.archive == "zip" then
-            artifacts.run({ "unzip", "-oq", archive, "-d", destination })
-         else
-            artifacts.run({ "tar", "-xf", archive, "-C", destination })
-         end
+         local destination = quality_unpack(name, tool, digest, archive)
 
          for key, command in pairs(tool.commands) do
             local executable = type(key) == "number" and command or key

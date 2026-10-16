@@ -78,7 +78,11 @@ local function tests_build_provision_test_suite_main()
          local value = ""
 
          for _, entry in pairs(lock) do
-            if entry.sha256 and path:find(entry.version, 1, true) then
+            if
+               entry.sha256
+               and entry.version
+               and path:find(entry.version, 1, true)
+            then
                value = entry.sha256
             end
          end

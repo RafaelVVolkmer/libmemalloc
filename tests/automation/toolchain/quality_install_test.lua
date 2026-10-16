@@ -11,9 +11,14 @@ local function QUALITY_INSTALL_TEST_main()
    --- Record one profile while preserving its real catalog and identities.
    -- @param profile string: selected installation profile.
    -- @param fault string|nil: injected integrity or prerequisite failure.
+   -- @param architecture string|nil: macOS architecture; defaults to Linux.
    -- @return table, boolean: captured command vectors and reported change.
-   local function capture(profile, fault)
+   local function capture(profile, fault, architecture)
       local commands, changed = {}, false
+      local host = hosts.resolve(
+         architecture and "Darwin" or "Linux",
+         architecture or "x86_64"
+      )
       local port = setmetatable({}, { __index = artifacts })
       local platform = setmetatable({}, { __index = artifacts.platform })
       port.platform = platform
@@ -32,8 +37,14 @@ local function QUALITY_INSTALL_TEST_main()
       end
 
       --- Retain path handling for workspaces containing spaces.
+      -- @param command table: repository or native host query.
       -- @return string: fixture workspace root.
-      function port.output()
+      function port.output(command)
+         if command[1] == "uname" then
+            return architecture and "Darwin" or "Linux"
+         elseif command[1] == "brew" then
+            return "/fixture with spaces/opt/" .. command[3]
+         end
          return "/fixture with spaces"
       end
 
@@ -55,9 +66,15 @@ local function QUALITY_INSTALL_TEST_main()
       -- @param path string: archive path selected by the installer.
       -- @return string: reviewed digest or injected invalid digest.
       function port.digest(path)
-         local name = assert(path:match("quality/([^/]+)%-[%d]"))
+         if path:match("scanner%-fix%.patch$") then
+            return lock.doxygen_scanner_patch.sha256
+         end
+         local name = assert(path:match("quality/([^/]-)%-[%d]"))
          return fault == "digest" and string.rep("0", 64)
-            or assert(lock[name]).sha256
+            or hosts.digest(
+               assert(lock[name], "missing fixture identity"),
+               host
+            )
       end
 
       --- Inject the absence of a required host executable.
@@ -88,6 +105,12 @@ local function QUALITY_INSTALL_TEST_main()
       -- @param path string: requested module path.
       -- @return table: fixture ports or the real policy module.
       function environment.dofile(path)
+         if path == "tools/toolchain/quality.lua" and architecture then
+            return dofile("tools/toolchain/quality_macos.lua")(
+               dofile(path),
+               architecture
+            )
+         end
          local modules = {
             ["scripts/lib/artifacts.lua"] = port,
             ["scripts/workspace/lib/lock.lua"] = {
@@ -102,10 +125,10 @@ local function QUALITY_INSTALL_TEST_main()
                end,
             },
             ["scripts/toolchain/lib/host.lua"] = {
-               --- Select the supported Linux fixture host.
+               --- Select the requested native fixture host.
                -- @return table: native host identity.
                current = function()
-                  return hosts.resolve("Linux", "x86_64")
+                  return host
                end,
                digest = hosts.digest,
             },
@@ -163,6 +186,134 @@ local function QUALITY_INSTALL_TEST_main()
       not pcall(capture, "lua", "digest"),
       "invalid archive digest accepted"
    )
+   for _, architecture in ipairs({ "arm64", "x86_64" }) do
+      local commands = capture("all", nil, architecture)
+      local installed = false
+      for _, command in ipairs(commands) do
+         if command[1] == "ln" and command[4]:match("/bin/doxygen$") then
+            assert(
+               command[3]:find(lock.doxygen_scanner_patch.sha256, 1, true),
+               "patched Doxygen cache omitted the patch identity"
+            )
+            installed = true
+         end
+      end
+      assert(installed, "native Doxygen was not published")
+   end
+
+   --- Reject altered scanner patches before patching or compiling sources.
+   -- @return nil: no values.
+   local function verify_source_integrity()
+      local source = dofile("scripts/toolchain/lib/source.lua")
+      local commands = {}
+      local port = {}
+
+      --- Keep extraction and downloads inside the recorded fixture.
+      -- @param command table: command arguments recorded in execution order.
+      -- @return nil: no values.
+      function port.run(command)
+         commands[#commands + 1] = command
+      end
+
+      --- Model a writable tool cache without host writes.
+      -- @return nil: no values.
+      function port.mkdir() end
+
+      --- Return an invalid digest for the downloaded patch.
+      -- @return string: deliberately altered patch identity.
+      function port.digest()
+         return string.rep("0", 64)
+      end
+
+      local ok, message = pcall(
+         source.install,
+         port,
+         "/verified-source.tar.gz",
+         "/fixture with spaces",
+         lock.doxygen_scanner_patch
+      )
+      assert(
+         not ok and tostring(message):find("patch hash mismatch", 1, true),
+         "altered scanner patch was accepted"
+      )
+      for _, command in ipairs(commands) do
+         assert(command[1] ~= "patch", "unverified patch was applied")
+         assert(command[1] ~= "cmake", "unverified sources were compiled")
+      end
+   end
+
+   verify_source_integrity()
+
+   --- Check native parser selection and stop installation after build errors.
+   -- @param fail_build boolean: inject a compiler failure.
+   -- @return nil: no values.
+   local function verify_source_build(fail_build)
+      local commands, port = {}, {}
+
+      --- Record commands and model a failed native compilation.
+      -- @param command table: literal command vector.
+      -- @return nil: no values.
+      function port.run(command)
+         commands[#commands + 1] = table.concat(command, " ")
+         assert(not (fail_build and command[2] == "--build"), "build failed")
+      end
+
+      --- Keep directory creation inside the fixture.
+      -- @return nil: no values.
+      function port.mkdir() end
+
+      --- Accept the reviewed scanner correction.
+      -- @return string: expected patch identity.
+      function port.digest()
+         return lock.doxygen_scanner_patch.sha256
+      end
+
+      --- Model Homebrew tools outside the system executable directory.
+      -- @param command table: requested host query.
+      -- @return string: host name or package prefix containing spaces.
+      function port.output(command)
+         if command[1] == "uname" then
+            return "Darwin"
+         end
+         assert(
+            command[1] == "brew" and command[2] == "--prefix",
+            "unexpected host query"
+         )
+         return "/fixture with spaces/opt/" .. command[3]
+      end
+
+      local ok, message = pcall(
+         dofile("scripts/toolchain/lib/source.lua").install,
+         port,
+         "/verified-source.tar.gz",
+         "/fixture with spaces",
+         lock.doxygen_scanner_patch
+      )
+      assert(ok ~= fail_build, tostring(message))
+      local recorded = table.concat(commands, "\n")
+      for _, name in ipairs({ "bison", "flex" }) do
+         assert(
+            recorded:find(
+               "-D"
+                  .. name:upper()
+                  .. "_EXECUTABLE=/fixture with spaces/opt/"
+                  .. name
+                  .. "/bin/"
+                  .. name,
+               1,
+               true
+            ),
+            "system parser selected instead of Homebrew"
+         )
+      end
+      assert(
+         (recorded:find("cmake --install", 1, true) ~= nil) == not fail_build,
+         "failed build was installed"
+      )
+   end
+
+   verify_source_build(false)
+   verify_source_build(true)
    print(
       "Quality installation: profile boundaries and failure propagation passed."
    )
