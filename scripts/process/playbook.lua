@@ -2,8 +2,7 @@
 -- SPDX-License-Identifier: GPL-3.0-only
 
 --- Describe or execute the shared engineering task registry.
--- Ansible retains bounded task logs. Hosted runners use direct dispatch with
--- native job timeouts, preserving stdout for outputs and command substitutions.
+-- Ansible and direct dispatch retain bounded logs and native resource containment.
 
 --- Resolve only reviewed tasks and preserve each literal argument boundary.
 -- @return nil: no values.
@@ -36,6 +35,7 @@ local function PLAYBOOK_main()
          effects = task.effects,
          simulation = task.simulation,
          timeout_seconds = task.timeout_seconds,
+         resource_profile = task.resource_profile,
       }
    end
 
@@ -57,23 +57,24 @@ local function PLAYBOOK_main()
       return { tasks = catalog, effects = "read" }
    end
 
-   --- Execute on the host shell through the shared literal-argv adapter.
-   -- @param task table: reviewed command prefix, never a caller-owned path.
-   -- @param arguments table: literal arguments appended after that prefix.
-   -- @param interpreter string: selected Lua runtime on this runner.
-   -- @return number: native child exit code; task output is not decorated.
-   local function playbook_direct(task, arguments, interpreter)
-      local command = { interpreter }
-
-      for _, value in ipairs(task.command) do
-         command[#command + 1] = value
+   --- Run supervised tasks while preserving direct-mode failure exit codes.
+   -- @param task table: registered task and resource profile.
+   -- @param arguments table: literal domain arguments.
+   -- @param interpreter string: selected Lua executable.
+   -- @return number: child status or a generic supervisor failure.
+   local function playbook_supervised(task, arguments, interpreter)
+      local runner = dofile("scripts/process/lib/tasks.lua")
+      local passed, _, report = runner.run(
+         action,
+         task,
+         arguments,
+         interpreter,
+         { json = json_result, direct = direct }
+      )
+      if direct and report and report.exit_code > 0 then
+         return report.exit_code
       end
-
-      for _, value in ipairs(arguments) do
-         command[#command + 1] = value
-      end
-
-      return artifacts.platform.execute(command)
+      return passed and 0 or 1
    end
 
    --- Execute a selected task using the caller's explicit execution boundary.
@@ -92,20 +93,7 @@ local function PLAYBOOK_main()
          arguments[#arguments + 1] = arg[index]
       end
 
-      if direct then
-         code = playbook_direct(task, arguments, interpreter)
-      else
-         local runner = dofile("scripts/process/lib/tasks.lua")
-         local passed = runner.run(
-            action,
-            task,
-            arguments,
-            interpreter,
-            { json = json_result }
-         )
-
-         code = passed and 0 or 1
-      end
+      code = playbook_supervised(task, arguments, interpreter)
 
       return code
    end

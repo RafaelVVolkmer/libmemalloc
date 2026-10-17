@@ -392,6 +392,22 @@ local function PLAYBOOK_loadModule()
       end
    end
 
+   --- Assign every registered workflow a bounded host resource profile.
+   -- @return nil: no values.
+   local function profiles()
+      for name, record in pairs(tasks) do
+         if not record.resource_profile then
+            local heavy = name:find("build", 1, true)
+               or name:find("analysis", 1, true)
+               or name == "tests"
+               or name == "checks"
+               or name == "lua-check"
+            record.resource_profile = heavy and "build" or "standard"
+         end
+      end
+   end
+   profiles()
+
    return tasks
 end
 

@@ -49,6 +49,7 @@ ASan
 ASCII
 asctime
 ASILs
+assertIn
 Assisted
 Async
 async
@@ -184,6 +185,7 @@ cyber
 cybersecurity
 Cyclomatic
 CycloneDX
+DAGs
 DCMAKE
 DCO
 DDIO
@@ -411,6 +413,7 @@ IDE
 idempotence
 idempotency
 idempotently
+IDEs
 IDs
 IEC
 IEEE
@@ -752,7 +755,9 @@ PRNGs
 profdata
 profiler
 profraw
+propext
 Protobom
+PRs
 pseudocode
 pthread
 ptrdiff

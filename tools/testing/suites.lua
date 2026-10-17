@@ -80,6 +80,7 @@ local function SUITES_CATALOG_loadModule()
          "documentation/navigation_test.cjs",
       },
       domain = {
+         ["process/native_supervisor_test.lua"] = "Native resource containment regressions.",
          ["workspace/ansible_runtime_test.lua"] = "Native runtime tests.",
          ["workspace/lock_integration_test.lua"] = "Command locking tests.",
          ["analysis/lua_metrics_test.py"] = "Lua complexity gate.",

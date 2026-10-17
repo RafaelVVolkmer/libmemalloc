@@ -75,6 +75,19 @@ local function TASK_TEST_main()
       },
    }
 
+   for _, source in ipairs({
+      "local p=os.getenv('LIBMEMALLOC_CHANGE_FILE'); local f=assert(io.open(p,'w')); f:write('invalid'); f:close()",
+      "require('luv').fs_mkdir(os.getenv('LIBMEMALLOC_CHANGE_FILE'),448)",
+      "dofile('scripts/lib/platform.lua').execute({'mkfifo',os.getenv('LIBMEMALLOC_CHANGE_FILE')})",
+   }) do
+      cases[#cases + 1] = {
+         name = "supervisor-invalid-change",
+         source = source,
+         state = "INFRA_ERROR",
+         change_status = "unknown",
+      }
+   end
+
    for _, case in ipairs(cases) do
       local passed, directory = runner.run(case.name, {
          command = { "-e", case.source },
@@ -98,6 +111,8 @@ local function TASK_TEST_main()
          )
       end
 
+      -- Special-node fixtures must not reach artifact upload readers.
+      require("luv").fs_unlink(directory .. "/changed")
       local junit = artifacts.read(directory .. "/junit.xml")
 
       assert(

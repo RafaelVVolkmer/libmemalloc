@@ -12,6 +12,12 @@ local function PLAYBOOK_TEST_main()
 
    for name, task in pairs(tasks) do
       assert(loadfile(task.command[1]), "missing command: " .. name)
+      if task.command[1]:match("^scripts/verification/") then
+         assert(
+            task.resource_profile == "formal",
+            "uncontained formal task: " .. name
+         )
+      end
       assert(
          type(task.description) == "string" and #task.description > 10,
          "task lacks a useful description"
@@ -69,12 +75,29 @@ local function PLAYBOOK_TEST_main()
                   -- operation.
                   -- @param interpreter string: Lua or host interpreter selected
                   -- by the runtime owner.
+                  -- @param options table: selected output mode.
                   -- @return boolean: all argument boundaries and inject the
                   -- outcome.
-                  run = function(selected, record, arguments, interpreter)
-                     captured = { selected, record, arguments, interpreter }
-
-                     return expected == 0
+                  run = function(
+                     selected,
+                     record,
+                     arguments,
+                     interpreter,
+                     options
+                  )
+                     if options.direct then
+                        assert(
+                           record.resource_profile ~= nil,
+                           "unexpected bounded direct task"
+                        )
+                        captured = { interpreter, table.unpack(record.command) }
+                        for _, value in ipairs(arguments) do
+                           captured[#captured + 1] = value
+                        end
+                     else
+                        captured = { selected, record, arguments, interpreter }
+                     end
+                     return expected == 0, nil, { exit_code = expected }
                   end,
                }
             end
@@ -211,7 +234,8 @@ local function PLAYBOOK_TEST_main()
 
          for command in source:gmatch("scripts/[%w_./%-]+%.lua") do
             assert(
-               command == "scripts/process/playbook.lua" or (bootstrap[path] and bootstrap[path][command]),
+               command == "scripts/process/playbook.lua"
+                  or (bootstrap[path] and bootstrap[path][command]),
                "workflow bypasses playbook: " .. path .. ": " .. command
             )
          end

@@ -7,6 +7,14 @@
 -- Ansible.
 local function WORKFLOW_TASKS_loadModule()
    return {
+      ["native-resources-test"] = {
+         command = { "scripts/process/native/check.lua" },
+         description = "Test native resource containment, live logs and supervisor death",
+         dependencies = { "python3" },
+         effects = "read",
+         simulation = "plan",
+         timeout_seconds = 300,
+      },
       ["check-workflows"] = {
          command = { "scripts/check/workflows.lua" },
          description = "Check documentation publication migration consistency",

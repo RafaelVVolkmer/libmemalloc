@@ -15,6 +15,7 @@ Arial
 arity
 armeabi
 Armv
+assertIn
 Assisted
 Async
 async
@@ -64,6 +65,7 @@ crosslifetime
 crossnamespace
 CSpell
 cyber
+DAGs
 deallocator
 deduplicate
 deduplicated
@@ -135,6 +137,7 @@ hugepage
 hugepages
 icx
 idempotently
+IDEs
 imac
 impl
 implementor
@@ -281,6 +284,8 @@ prequalified
 prereleases
 profdata
 profraw
+propext
+PRs
 pseudocode
 pyproject
 QMC
