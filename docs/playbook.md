@@ -186,5 +186,24 @@ The canonical [LMA-ENG-001 requirement](runbooks/process-pilot.md#lma-eng-001), 
 the Ansible invocations now live in the process pilot runbook. Only the `local` profile is implemented.
 Its passing gate records `promotion_authorized: false` and `product_qualified: false`.
 
+## Resource supervision
+
+Every registered task uses a resource profile, including direct execution.
+The standard profile allows at most 2 GiB; build and formal profiles allow
+at most 4 GiB, further capped by half of physical memory. The process budget
+is 128 and the CPU budget is two cores where the backend supports it.
+
+Linux uses a shared cgroup slice. Windows uses a Job Object per invocation.
+macOS samples and throttles a process group, with possible short overshoots
+and escape by detached children. Windows and macOS invocations do not share
+a global budget.
+
+The supervisor requires Lua 5.5, libuv and jq. Windows and macOS also require
+the pinned `cffi` module. Linux requires a systemd user manager. The runtime
+bootstrap installs native modules before the official executor starts.
+Formal checks additionally require the pinned verification tools.
+Logs persist during execution; interrupted tasks retain incomplete receipts.
+See the [formal runbook](runbooks/formal-verification.md).
+
 <!-- EOF -->
 

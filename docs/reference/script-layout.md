@@ -159,5 +159,9 @@ The table records historical names; the old directories are not compatibility la
 | `scripts/process/gate.lua` | `scripts/process/main.lua gate` |
 | `scripts/process/report.lua` | `scripts/process/main.lua report` |
 
+Native resource boundaries under `scripts/process/native/` are implemented in Lua.
+The Windows and macOS backends access operating system APIs through the pinned
+`cffi` module. The source policy has no Python exception.
+
 <!-- EOF -->
 

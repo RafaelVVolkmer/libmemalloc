@@ -23,5 +23,7 @@ its declared project scope; a proposed framework mapping still needs adoption an
 Review evidence against its declared scope. Passing an automation control does not grant a badge,
 establish organizational capability or qualify the planned allocator.
 
+- [Formal trust boundary](formal-trust.md)
+
 <!-- EOF -->
 

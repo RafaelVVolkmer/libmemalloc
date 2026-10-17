@@ -228,5 +228,7 @@ Update document indexes, validate Markdown and links, and parse Mermaid diagrams
 with `lua scripts/check/mermaid.lua`. See the
 [local CI commands](../reference/automation.md#local-checks) for the remaining checks.
 
+- [Formal engine contract](formal-engine.md)
+
 <!-- EOF -->
 

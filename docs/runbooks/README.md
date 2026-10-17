@@ -20,5 +20,7 @@ Check its scope before interpreting a passing result.
 For documentation generation, use [documentation validation](../getting-started/documentation.md).
 For hosted entry points and coverage, use the [workflow catalog](../reference/workflow-catalog.md).
 
+- [Formal verification](formal-verification.md)
+
 <!-- EOF -->
 
