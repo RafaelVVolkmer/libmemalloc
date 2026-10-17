@@ -14,12 +14,16 @@ runs:
   using: composite
 
   steps:
+    - uses: ./.github/actions/workspace-cache
+
     - name: Install evidence tools
       shell: bash
       run: |
         set -euo pipefail
         sudo apt-get update -qq
         sudo apt-get install -y --no-install-recommends lua5.4 jq cmake
+
+    - uses: ./.github/actions/setup-lua
 
     - name: Install compiler families
       if: inputs.build == 'true'

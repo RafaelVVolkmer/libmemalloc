@@ -28,7 +28,7 @@ runs:
           sudo apt-get update
           sudo apt-get install --yes lua5.4
         fi
-        lua5.4 scripts/process/playbook.lua --direct toolchain-resolve
+        lua5.4 scripts/toolchain/resolve.lua
 
 # EOF
 

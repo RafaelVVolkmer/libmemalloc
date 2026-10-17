@@ -39,7 +39,8 @@ runs:
       env:
         LUA_ARCHIVE: ${{ steps.download.outputs.path }}
         LUA_VERSION: ${{ fromJSON(steps.toolchain.outputs.tools).lua.version }}
-      run: |
+      # Only the verified interpreter directory is exported to subsequent steps.
+      run: | # zizmor: ignore[github-env]
         set -euo pipefail
 
         source_dir="${LIBMEMALLOC_CACHE_ROOT}/tools/lua-${LUA_VERSION}"
@@ -54,13 +55,17 @@ runs:
           --file="${LUA_ARCHIVE}" \
           --directory="${LIBMEMALLOC_CACHE_ROOT}/tools"
 
-        jobs="$(getconf _NPROCESSORS_ONLN 2>/dev/null || printf '1')"
+        jobs="2"
         make --directory="${source_dir}" --jobs="${jobs}" all
 
         install --mode=0755 "${source_dir}/src/lua" "${bin_dir}/lua"
         install --mode=0755 "${source_dir}/src/luac" "${bin_dir}/luac"
 
+        sudo apt-get install --yes cmake ninja-build python3
+        "${bin_dir}/lua" scripts/workspace/native-runtime.lua "${source_dir}/src" "${bin_dir}/lua"
+
         printf 'lua=%s\n' "${bin_dir}/lua" >> "${GITHUB_OUTPUT}"
+        printf '%s\n' "${bin_dir}" >> "${GITHUB_PATH}"
         printf 'luac=%s\n' "${bin_dir}/luac" >> "${GITHUB_OUTPUT}"
 
 # EOF

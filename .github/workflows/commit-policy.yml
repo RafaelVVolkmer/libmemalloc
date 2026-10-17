@@ -60,19 +60,7 @@ jobs:
 
       - name: Setup pinned Lua
         id: lua
-        env:
-          LIBMEMALLOC_BOOTSTRAP_RUNTIME_ONLY: "1"
-        run: |
-          set -euo pipefail
-
-          if ! command -v lua5.4 >/dev/null 2>&1; then
-            sudo apt-get update
-            sudo apt-get install --yes lua5.4
-          fi
-          lua5.4 scripts/process/playbook.lua --direct workspace-bootstrap
-          version="$(lua5.4 scripts/process/playbook.lua --direct toolchain-resolve --field lua.version)"
-          printf 'lua=%s/tools/lua/%s/src/lua\n' \
-            "${LIBMEMALLOC_CACHE_ROOT}" "${version}" >> "${GITHUB_OUTPUT}"
+        uses: ./.github/actions/setup-lua
 
       - name: Select commits
         env:
