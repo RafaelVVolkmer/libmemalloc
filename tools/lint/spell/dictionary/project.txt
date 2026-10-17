@@ -36,6 +36,7 @@ callgraph
 catch_unwind
 cdata
 cdylib
+cffi
 cgroup
 checklevel
 clatest

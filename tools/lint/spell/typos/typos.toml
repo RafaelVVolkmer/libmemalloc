@@ -141,6 +141,7 @@ unicode = true
 "cdata" = "cdata"
 "cdylib" = "cdylib"
 "CERT" = "CERT"
+"cffi" = "cffi"
 "cgroup" = "cgroup"
 "chdir" = "chdir"
 "checkasm" = "checkasm"

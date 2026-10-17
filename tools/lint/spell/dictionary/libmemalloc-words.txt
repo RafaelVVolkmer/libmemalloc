@@ -114,6 +114,7 @@ CBMC
 cdata
 cdylib
 CERT
+cffi
 cgroup
 chdir
 checkasm
