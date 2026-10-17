@@ -409,6 +409,37 @@ __pycache__/
 .ruff_cache/
 
 # ==============================================================================
+# Lean / Lake and Haskell / Cabal / Stack
+# ==============================================================================
+
+.lake/
+*.olean
+*.olean.private
+*.olean.server
+*.ilean
+# Keep source IR fixtures; generated Lean IR stays in build directories.
+dist-newstyle/
+.stack-work/
+.liquid/
+.ghc.environment.*
+cabal.project.local
+cabal.project.local~
+*.hi
+*.hi-boot
+*.o-boot
+*.dyn_hi
+*.dyn_o
+*.p_hi
+*.p_o
+*.hie
+*.tix
+*.prof
+*.hp
+*.eventlog
+.hpc/
+# Keep lean-toolchain, lake-manifest.json, *.cabal and *.project.freeze tracked.
+
+# ==============================================================================
 # Containers and Virtualization
 # ==============================================================================
 
@@ -463,6 +494,31 @@ node_modules/
 # Nix output links remain local build products.
 /result
 /result-*
+
+# Additional local compiler, package, coverage and crash outputs.
+.ghc/
+.cabal-sandbox/
+cabal.sandbox.config
+*.dyn_hi-boot
+*.dyn_o-boot
+*.hp.aux
+.coverage
+.coverage.*
+.tox/
+.nox/
+*.egg-info/
+pip-wheel-metadata/
+*.tsbuildinfo
+/tmp/
+/temp/
+/artifacts/
+/reports/
+/core.[0-9]*
+/core/core.[0-9]*
+*.core
+*.dmp
+*.stackdump
+# Keep source, contracts, proof inputs, lockfiles and baselines visible.
 
 # EOF
 
