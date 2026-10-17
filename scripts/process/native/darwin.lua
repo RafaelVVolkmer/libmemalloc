@@ -19,9 +19,11 @@ local function DARWIN_loadModule()
          unsigned long long start_seconds, start_microseconds;
       } LMA_BSD_INFO;
       typedef struct {
-         unsigned long long virtual_size, resident_size, total_user, total_system;
+         unsigned long long virtual_size, resident_size;
+         unsigned long long total_user, total_system;
          unsigned long long threads_user, threads_system;
-         int policy, faults, pageins, cow_faults, messages_sent, messages_received;
+         int policy, faults, pageins, cow_faults;
+         int messages_sent, messages_received;
          int syscalls_mach, syscalls_unix, csw, threadnum, numrunning, priority;
       } LMA_TASK_INFO;
       typedef struct { unsigned long long current, maximum; } LMA_RLIMIT;
@@ -44,12 +46,13 @@ local function DARWIN_loadModule()
       then
          return nil
       end
-      return tostring(tonumber(info[0].start_seconds))
+      return tostring(ffi.tonumber(info[0].start_seconds))
          .. ":"
-         .. tostring(tonumber(info[0].start_microseconds))
+         .. tostring(ffi.tonumber(info[0].start_microseconds))
    end
 
-   --- Bound a process group with RSS sampling, CPU throttling and native CPU limits.
+   --- Bound a process group with RSS sampling, CPU throttling and native CPU
+   -- limits.
    -- @param memory number: aggregate resident memory ceiling.
    -- @param timeout number: wall-clock deadline in seconds.
    -- @return table: sample and cleanup operations.
@@ -66,12 +69,13 @@ local function DARWIN_loadModule()
 
       --- Aggregate the current group while retaining cumulative CPU accounting.
       -- @param size number: bytes returned by the process inventory API.
-      -- @return number, number, table: resident bytes, population and live identities.
+      -- @return number, number, table: resident bytes, population and live
+      -- identities.
       local function sample(size)
          local rss, count = 0, 0
          local live = {}
          for index = 0, math.floor(size / ffi.sizeof("int")) - 1 do
-            local member = tonumber(members[index])
+            local member = ffi.tonumber(members[index])
             if member > 0 and member ~= group then
                local token = exports.identity(member)
                local info = ffi.new("LMA_TASK_INFO[1]")
@@ -81,12 +85,13 @@ local function DARWIN_loadModule()
                      == ffi.sizeof(info)
                then
                   local key = tostring(member) .. ":" .. token
-                  local spent = tonumber(
+                  local spent = ffi.tonumber(
                      info[0].total_user + info[0].total_system
                   ) / 1000000000
                   consumed = consumed + math.max(0, spent - (tracked[key] or 0))
                   tracked[key], live[member] = spent, token
-                  rss, count = rss + tonumber(info[0].resident_size), count + 1
+                  rss, count =
+                     rss + ffi.tonumber(info[0].resident_size), count + 1
                end
             end
          end
@@ -95,7 +100,8 @@ local function DARWIN_loadModule()
 
       --- Inspect the bounded group and preserve CPU spent by exited members.
       -- @param pid number: child identifier; zero denotes the prelaunch check.
-      -- @return string|nil: infrastructure failure when a sampled budget is exceeded.
+      -- @return string|nil: infrastructure failure when a sampled budget is
+      -- exceeded.
       function exports_monitor.poll(pid)
          if pid == 0 then
             return nil
@@ -119,12 +125,14 @@ local function DARWIN_loadModule()
          return nil
       end
 
-      --- Terminate group members while allowing the guardian to finish its receipt.
+      --- Terminate group members while allowing the guardian to finish its
+      -- receipt.
       -- @return nil: no values.
       function exports_monitor.close()
          local size = api.proc_listpids(2, group, members, ffi.sizeof(members))
-         for index = 0, math.min(4096, math.floor(math.max(0, size) / ffi.sizeof("int"))) - 1 do
-            local member = tonumber(members[index])
+         local count = math.floor(math.max(0, size) / ffi.sizeof("int"))
+         for index = 0, math.min(4096, count) - 1 do
+            local member = ffi.tonumber(members[index])
             if member > 0 and member ~= group then
                uv.kill(member, 9)
             end

@@ -18,7 +18,8 @@ local function NATIVE_RUNTIME_main()
       or (platform.is_windows and "python" or "python3")
    local bin = destination .. "/bin"
 
-   --- Create bootstrap directories using the same portable build tool on all hosts.
+   --- Create bootstrap directories using the same portable build tool on all
+   -- hosts.
    -- @param path string: destination directory.
    -- @return nil: no values.
    local function mkdir(path)
@@ -36,7 +37,8 @@ local function NATIVE_RUNTIME_main()
       )
    end
 
-   --- Verify immutable source bytes before extracting into a private build tree.
+   --- Verify immutable source bytes before extracting into a private build
+   -- tree.
    -- @param name string: locked dependency name.
    -- @param url string: reviewed upstream archive endpoint.
    -- @param path string: extraction destination.
@@ -80,7 +82,8 @@ local function NATIVE_RUNTIME_main()
          "-e",
          "package.cpath="
             .. string.format("%q", path .. ";")
-            .. "..package.cpath;assert(require('luv').version());assert(require('cffi').sizeof('int')==4)",
+            .. "..package.cpath;assert(require('luv').version());"
+            .. "assert(require('cffi').sizeof('int')==4)",
       })
       local environment = os.getenv("GITHUB_ENV")
       if environment then
@@ -187,6 +190,15 @@ local function NATIVE_RUNTIME_main()
             .. lock.lua_libffi.revision,
          cffi .. "/source/subprojects/libffi"
       )
+      -- Backport libffi/libffi@8308bed5b2423878aa20d7884a99cf2e30b8daf7.
+      -- Mach-O labels must precede the start of their unwind procedure.
+      local assembly = cffi .. "/source/subprojects/libffi/src/aarch64/sysv.S"
+      local patched, count = artifacts.read(assembly):gsub(
+         "\tcfi_startproc\n(CNAME%([%w_]+%):)",
+         "%1\n\tcfi_startproc"
+      )
+      assert(count == 3, "unexpected libffi unwind source")
+      artifacts.write(assembly, patched)
       extract(
          "meson",
          "https://files.pythonhosted.org/packages/source/m/meson/meson-"
@@ -196,7 +208,8 @@ local function NATIVE_RUNTIME_main()
       )
       local deps = cffi .. "/source/deps"
       mkdir(deps .. "/include")
-      for _, header in ipairs({ "lua.h", "luaconf.h", "lauxlib.h", "lualib.h" }) do
+      local headers = { "lua.h", "luaconf.h", "lauxlib.h", "lualib.h" }
+      for _, header in ipairs(headers) do
          artifacts.run({
             "cmake",
             "-E",

@@ -19,18 +19,23 @@ local function WINDOWS_loadModule()
          LMA_DWORD PriorityClass, SchedulingClass;
       } LMA_BASIC_LIMITS;
       typedef struct {
-         unsigned long long ReadOperationCount, WriteOperationCount, OtherOperationCount;
-         unsigned long long ReadTransferCount, WriteTransferCount, OtherTransferCount;
+         unsigned long long ReadOperationCount, WriteOperationCount;
+         unsigned long long OtherOperationCount;
+         unsigned long long ReadTransferCount, WriteTransferCount;
+         unsigned long long OtherTransferCount;
       } LMA_IO_COUNTERS;
       typedef struct {
          LMA_BASIC_LIMITS BasicLimitInformation;
          LMA_IO_COUNTERS IoInfo;
-         size_t ProcessMemoryLimit, JobMemoryLimit, PeakProcessMemoryUsed, PeakJobMemoryUsed;
+         size_t ProcessMemoryLimit, JobMemoryLimit;
+         size_t PeakProcessMemoryUsed, PeakJobMemoryUsed;
       } LMA_EXTENDED_LIMITS;
       typedef struct { LMA_DWORD ControlFlags, CpuRate; } LMA_CPU_RATE;
       LMA_HANDLE __stdcall CreateJobObjectW(void *, const unsigned short *);
-      LMA_BOOL __stdcall SetInformationJobObject(LMA_HANDLE, int, void *, LMA_DWORD);
-      LMA_BOOL __stdcall QueryInformationJobObject(LMA_HANDLE, int, void *, LMA_DWORD, void *);
+      LMA_BOOL __stdcall SetInformationJobObject(
+         LMA_HANDLE, int, void *, LMA_DWORD);
+      LMA_BOOL __stdcall QueryInformationJobObject(
+         LMA_HANDLE, int, void *, LMA_DWORD, void *);
       LMA_BOOL __stdcall AssignProcessToJobObject(LMA_HANDLE, LMA_HANDLE);
       LMA_BOOL __stdcall CloseHandle(LMA_HANDLE);
       LMA_HANDLE __stdcall OpenProcess(LMA_DWORD, LMA_BOOL, LMA_DWORD);
@@ -47,7 +52,7 @@ local function WINDOWS_loadModule()
       assert(
          value ~= ffi.nullptr and value ~= 0,
          "Windows resource API failed: "
-            .. tostring(tonumber(api.GetLastError()))
+            .. tostring(ffi.tonumber(api.GetLastError()))
       )
       return value
    end
@@ -122,10 +127,12 @@ local function WINDOWS_loadModule()
                nil
             )
          )
+         local basic = actual[0].BasicLimitInformation
+         local requested = limit[0].BasicLimitInformation
          assert(
-            tonumber(actual[0].JobMemoryLimit) == memory
-               and actual[0].BasicLimitInformation.ActiveProcessLimit == processes
-               and actual[0].BasicLimitInformation.LimitFlags == limit[0].BasicLimitInformation.LimitFlags
+            ffi.tonumber(actual[0].JobMemoryLimit) == memory
+               and basic.ActiveProcessLimit == processes
+               and basic.LimitFlags == requested.LimitFlags
                and rate[0].ControlFlags == cpu[0].ControlFlags
                and rate[0].CpuRate == cpu[0].CpuRate,
             "Windows did not apply job limits"
@@ -142,7 +149,7 @@ local function WINDOWS_loadModule()
       function exports_job.assign(pid)
          local process = checked(api.OpenProcess(0x100 | 0x1, 0, pid))
          local assigned = api.AssignProcessToJobObject(handle, process)
-         local failure_code = tonumber(api.GetLastError())
+         local failure_code = ffi.tonumber(api.GetLastError())
          checked(api.CloseHandle(process))
          assert(
             assigned ~= 0,
