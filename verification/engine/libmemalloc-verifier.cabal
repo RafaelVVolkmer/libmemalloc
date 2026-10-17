@@ -15,6 +15,7 @@ flag liquid
 library
   hs-source-dirs: src
   exposed-modules:
+    LibMemAlloc.Verifier.CMachine
     LibMemAlloc.Verifier.IR
     LibMemAlloc.Verifier.Import.CN
     LibMemAlloc.Verifier.Layout
