@@ -36,6 +36,33 @@ defaults:
     shell: bash
 
 jobs:
+  native-resources:
+    name: Native resource limits (${{ matrix.runner }})
+    if: inputs.lua || inputs.ci || inputs.actions || inputs.yaml
+    strategy:
+      fail-fast: false
+      matrix:
+        runner: [ubuntu-24.04, macos-15, windows-2025]
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup-build-host
+      - name: Exercise native limits and cancellation
+        run: lua scripts/process/playbook.lua --direct native-resources-test
+      - name: Retain resource receipts
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: native-resources-${{ matrix.runner }}
+          path: .cache/logs/tasks/
+          include-hidden-files: true
+          if-no-files-found: warn
+
   macos-playbook:
     name: Native macOS playbook (${{ matrix.runner }})
     if: inputs.lua || inputs.yaml || inputs.toml || inputs.ci || inputs.actions
@@ -55,12 +82,12 @@ jobs:
       - name: Install native host prerequisites and controller
         # uv returns its local executable directory, not repository input.
         run: | # zizmor: ignore[github-env]
-          brew install git lua uv cmake coreutils curl rust jq gnupg \
+          brew install git lua uv cmake ninja coreutils curl rust jq gnupg \
             graphviz bison flex openssl@3 pkgconf
           if ! command -v python3.12 >/dev/null; then
             brew install python@3.12
           fi
-          version="$(lua scripts/process/playbook.lua --direct toolchain-resolve --field ansible_core.version)"
+          version="$(lua scripts/toolchain/resolve.lua --field ansible_core.version)"
           uv tool install --python python3.12 "ansible-core==${version}"
           uv tool dir --bin >> "${GITHUB_PATH}"
 

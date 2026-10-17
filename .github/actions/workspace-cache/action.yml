@@ -9,6 +9,14 @@ runs:
   using: composite
 
   steps:
+    - name: Prepare Linux resource controller
+      if: runner.os == 'Linux'
+      shell: bash
+      run: |
+        set -euo pipefail
+        runner_uid="$(id -u)"
+        sudo systemctl start "user@${runner_uid}.service"
+
     - name: Create isolated cache directories
       shell: bash
       run: |
