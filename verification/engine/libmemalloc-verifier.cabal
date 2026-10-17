@@ -16,6 +16,8 @@ library
   hs-source-dirs: src
   exposed-modules:
     LibMemAlloc.Verifier.IR
+    LibMemAlloc.Verifier.Import.CN
+    LibMemAlloc.Verifier.Layout
     LibMemAlloc.Verifier.Protocol
     LibMemAlloc.Verifier.Refined
   build-depends: base >=4.17 && <4.18, containers >=0.6 && <0.7
