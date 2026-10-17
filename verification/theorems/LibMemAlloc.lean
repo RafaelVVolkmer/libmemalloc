@@ -15,5 +15,5 @@ import LibMemAllocImp.Semantics.Translation
 /-!
 # Verification engine
 
-Reusable scalar semantics and certificate rules.
+Reusable semantics and certificate rules, independent of production operations.
 -/

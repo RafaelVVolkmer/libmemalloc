@@ -22,5 +22,8 @@ name = "LibMemAlloc"
 roots = [ "LibMemAlloc", "LibMemAllocImp" ]
 globs = [ "LibMemAlloc", "LibMemAllocImp.+" ]
 
+[[lean_lib]]
+name = "LibMemAllocAudit"
+
 # EOF
 
