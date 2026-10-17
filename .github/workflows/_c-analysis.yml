@@ -53,7 +53,6 @@ jobs:
       - name: Run analysis, formal, complexity and CMake gates
         if: ${{ !cancelled() }}
         env:
-          LIBMEMALLOC_LUA: /usr/bin/lua5.4
           LIBMEMALLOC_QUALITY_PYTHON: .cache/tools/c-quality/bin/python
           LIBMEMALLOC_CBMC: .cache/tools/cbmc/usr/bin/cbmc
           LIBMEMALLOC_CMAKE_LINT: .cache/tools/c-quality/bin/cmake-lint
