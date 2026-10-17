@@ -45,6 +45,9 @@ jobs:
       - name: Configure repository-local caches
         uses: ./.github/actions/workspace-cache
 
+      - name: Prepare supervised Lua runtime
+        uses: ./.github/actions/setup-lua
+
       - name: Resolve toolchain lock
         id: toolchain
         uses: ./.github/actions/toolchain
@@ -141,7 +144,7 @@ jobs:
 
           tar -xzf "${lua_archive}" -C "${LIBMEMALLOC_CACHE_ROOT}/tools"
           make --directory="${LIBMEMALLOC_CACHE_ROOT}/tools/lua-${LUA_VERSION}" \
-            --jobs="$(nproc)" all
+            --jobs=2 all
 
           # Upstream binaries omit the Lua 5.4 grammar feature.
           cargo install selene --version "${SELENE_VERSION}" --locked \
@@ -162,7 +165,7 @@ jobs:
       - name: Install locked Lua analysis dependencies
         if: steps.detect.outputs.found == 'true'
         run: >-
-          lua5.4 scripts/process/playbook.lua --direct toolchain-python
+          lua scripts/process/playbook.lua --direct toolchain-python
           --groups=quality --directory=.cache/tools/lua-quality
 
       - name: Run Lua checks

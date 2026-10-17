@@ -45,6 +45,9 @@ jobs:
       - name: Configure repository-local caches
         uses: ./.github/actions/workspace-cache
 
+      - name: Prepare supervised Lua runtime
+        uses: ./.github/actions/setup-lua
+
       - name: Resolve toolchain lock
         id: toolchain
         uses: ./.github/actions/toolchain
@@ -130,7 +133,7 @@ jobs:
             -C "${LIBMEMALLOC_CACHE_ROOT}/tools/pyright" \
             --strip-components=1
 
-          lua5.4 scripts/process/playbook.lua --direct toolchain-python --groups=quality,python-lint \
+          lua scripts/process/playbook.lua --direct toolchain-python --groups=quality,python-lint \
           --directory=.cache/tools/python-lint
 
       - name: Run Python checks
@@ -174,7 +177,7 @@ jobs:
             --config tools/lint/code/python/ruff.toml \
             "${files[@]}"
 
-          lua5.4 scripts/process/playbook.lua --direct check-format python \
+          lua scripts/process/playbook.lua --direct check-format python \
             "${LIBMEMALLOC_CACHE_ROOT}/tools/ruff/ruff" \
             "${files[@]}"
 

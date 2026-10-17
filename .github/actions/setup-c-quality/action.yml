@@ -7,6 +7,7 @@ description: Install locked compiler checks, CMake linters and the CBMC proof ex
 runs:
   using: composite
   steps:
+    - uses: ./.github/actions/setup-lua
     - id: toolchain
       uses: ./.github/actions/toolchain
     - id: cbmc
@@ -27,7 +28,7 @@ runs:
         sudo apt-get update
         sudo apt-get install --yes --no-install-recommends \
           ninja-build cmake python3-venv lua5.4 lua-luv
-        lua5.4 scripts/process/playbook.lua --direct toolchain-python --groups=quality,c-tools \
+        lua scripts/process/playbook.lua --direct toolchain-python --groups=quality,c-tools \
         --directory=.cache/tools/c-quality
         printf '%s/.cache/tools/c-quality/bin\n' "${GITHUB_WORKSPACE}" >> "${GITHUB_PATH}"
         dpkg-deb -x "${CBMC_PACKAGE}" .cache/tools/cbmc

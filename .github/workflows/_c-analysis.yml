@@ -58,7 +58,7 @@ jobs:
           LIBMEMALLOC_CBMC: .cache/tools/cbmc/usr/bin/cbmc
           LIBMEMALLOC_CMAKE_LINT: .cache/tools/c-quality/bin/cmake-lint
           LIBMEMALLOC_CMAKE_FORMAT: .cache/tools/c-quality/bin/cmake-format
-        run: lua5.4 scripts/process/playbook.lua --direct analysis-run --group=rules
+        run: lua scripts/process/playbook.lua --direct analysis-run --group=rules
 
       - name: Preserve reports including failures
         if: always()

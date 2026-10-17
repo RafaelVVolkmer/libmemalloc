@@ -346,6 +346,9 @@ jobs:
       - name: Configure repository-local caches
         uses: ./.github/actions/workspace-cache
 
+      - name: Prepare supervised Lua runtime
+        uses: ./.github/actions/setup-lua
+
       - name: Resolve toolchain lock
         id: toolchain
         uses: ./.github/actions/toolchain
@@ -395,7 +398,7 @@ jobs:
             exit 0
           fi
 
-          lua5.4 scripts/process/playbook.lua --direct check-format toml taplo \
+          lua scripts/process/playbook.lua --direct check-format toml taplo \
             "${files[@]}"
 
   markdownlint:
@@ -483,7 +486,7 @@ jobs:
 
           printf 'Linting %d Markdown file(s).\n' "${#files[@]}"
 
-          lua5.4 scripts/process/playbook.lua --direct check-format markdown \
+          lua scripts/process/playbook.lua --direct check-format markdown \
             .cache/tools/md/node_modules/.bin/markdownlint \
             "${files[@]}"
 
