@@ -155,11 +155,13 @@ local function scripts_lib_platform_loadModule()
 
    --- Create an exclusively owned temporary directory without optional modules.
    -- @param category string|nil: fixed cache category; defaults to tmp.
+   -- @param cache_root string|nil: explicit controller cache, otherwise environment or repository.
    -- @return string: absolute directory path, private to this process.
-   local function PLATFORM_temporaryDirectory(category)
-      local root = os.getenv("LIBMEMALLOC_CACHE_ROOT")
+   local function PLATFORM_temporaryDirectory(category, cache_root)
+      local root = cache_root or os.getenv("LIBMEMALLOC_CACHE_ROOT")
       local categories = {
          tmp = true,
+         cleanup = true,
          build = true,
          tests = true,
          tools = true,

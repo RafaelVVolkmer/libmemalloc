@@ -182,6 +182,27 @@ local function PLAYBOOK_TEST_main()
       local artifacts = dofile("scripts/lib/artifacts.lua")
       local git = dofile("scripts/lib/git.lua").new(artifacts.platform, ".")
 
+      -- Cold runtime construction and lock reads precede the native executor.
+      -- Keep exceptions bound to both the reviewed action and command path.
+      local bootstrap = {
+         [".github/actions/toolchain/action.yml"] = {
+            ["scripts/toolchain/resolve.lua"] = true,
+         },
+         [".github/actions/setup-build-host/action.yml"] = {
+            ["scripts/toolchain/resolve.lua"] = true,
+            ["scripts/workspace/native-runtime.lua"] = true,
+         },
+         [".github/actions/setup-lua/action.yml"] = {
+            ["scripts/workspace/native-runtime.lua"] = true,
+         },
+         [".github/actions/setup-msvc-analysis/action.yml"] = {
+            ["scripts/workspace/native-runtime.lua"] = true,
+         },
+         [".github/workflows/_lint-automation.yml"] = {
+            ["scripts/toolchain/resolve.lua"] = true,
+         },
+      }
+
       --- Check dispatch references without interpreting shell or YAML data.
       -- @param path string: filesystem path selected by the caller.
       -- @return nil: no values.
@@ -190,7 +211,7 @@ local function PLAYBOOK_TEST_main()
 
          for command in source:gmatch("scripts/[%w_./%-]+%.lua") do
             assert(
-               command == "scripts/process/playbook.lua",
+               command == "scripts/process/playbook.lua" or (bootstrap[path] and bootstrap[path][command]),
                "workflow bypasses playbook: " .. path .. ": " .. command
             )
          end
