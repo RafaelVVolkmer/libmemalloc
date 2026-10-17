@@ -3,6 +3,23 @@
 
 schema_version = 1
 
+# Official Linux x86-64 Haskell lint binaries.
+# renovate: datasource=github-releases depName=ndmitchell/hlint
+[tools.hlint]
+version = "3.10"
+sha256 = "ccabc8802a58154699a3583b8dddc5ea2e6d65753a62c45c0e80088ebb16b42b"
+
+# renovate: datasource=github-releases depName=fourmolu/fourmolu
+[tools.fourmolu]
+version = "0.21.0.0"
+sha256 = "aadf6931653df7b96f52014cf8eb4285a3e8778cd0b531499fc3ee013e1e00c7"
+
+# Official lean-4.35.0-linux.tar.zst, Linux x86_64; includes Lake and checkers.
+# renovate: datasource=github-releases depName=leanprover/lean4
+[tools.lean]
+version = "4.35.0"
+sha256 = "7289597a44543246c9227b8cae501767e095ce17f6d448b95fc4a8dc97268f6d"
+
 # renovate: datasource=pypi depName=ansible-core
 [tools.ansible_core]
 version = "2.21.4"
@@ -542,6 +559,22 @@ revision = "fc324d3547104276b827a68afc52ff2a11cc49c9"
 [tools.renovate_action]
 version = "46.3.0"
 revision = "c314dda4a9a93b08239ec978f2043b9a433b9ac4"
+
+# Lua 5.5-compatible FFI and its immutable native dependency.
+[tools.lua_cffi]
+version = "0.2.4"
+revision = "2621884230c9072ad77f7379609b74c9d6dbeb86"
+sha256 = "889c8b1dd63e2203a9dfbfb4a6482bbb7ba929a12b513085ed304bb4e661e4fc"
+
+[tools.lua_libffi]
+version = "3.4.4"
+revision = "41fc1ec58b987922d66bdc7a7531d3a1b34b3983"
+sha256 = "2dafa63a9184e40fe3b90c4bf129c7f72a9ab9fc306ca3b76437b01b0da0d3d2"
+
+# Upstream build tool; no repository automation is implemented in Python.
+[tools.meson]
+version = "1.9.1"
+sha256 = "4e076606f2afff7881d195574bddcd8d89286f35a17b4977a216f535dc0c74ac"
 
 # EOF
 

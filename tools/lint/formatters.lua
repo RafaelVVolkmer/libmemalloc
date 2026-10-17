@@ -9,6 +9,16 @@
 -- @return table: this module within its own initialization scope.
 local function tools_lint_formatters_loadModule()
    return {
+      haskell = {
+         arguments = {
+            "--no-cabal",
+            "--mode",
+            "check",
+            "--check-idempotence",
+            "--config",
+            "{root}/tools/lint/code/haskell/fourmolu.yaml",
+         },
+      },
       markdown = {
          arguments = {
             "--config",

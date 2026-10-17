@@ -29,6 +29,21 @@ globals:
     args:
       - required: false
         type: "..."
+  table.unpack:
+    args:
+      - type: table
+      - required: false
+        type: number
+      - required: false
+        type: number
+    must_use: true
+  utf8.offset:
+    args:
+      - type: string
+      - type: number
+      - required: false
+        type: number
+    must_use: true
   utf8.codes:
     args:
       - type: string

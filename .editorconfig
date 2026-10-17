@@ -70,6 +70,23 @@ tab_width = 2
 max_line_length = 120
 
 # ==============================================================================
+# Lean (Mathlib style)
+# ==============================================================================
+
+[*.lean]
+indent_style = space
+indent_size = 2
+tab_width = 2
+max_line_length = 100
+
+# Haskell engine (Fourmolu).
+[*.{hs,lhs}]
+indent_style = space
+indent_size = 2
+tab_width = 2
+max_line_length = 100
+
+# ==============================================================================
 # Lua
 # ==============================================================================
 
@@ -384,6 +401,14 @@ tab_width = 2
 max_line_length = 100
 
 [{uv.lock,flake.lock}]
+max_line_length = off
+
+# Lean exports canonical, indivisible proposition strings as JSON values.
+[verification/contracts/contracts.json]
+max_line_length = off
+
+# C policy patterns are indivisible JSON regular expressions.
+[tools/analysis/c/gates.json]
 max_line_length = off
 
 # EOF

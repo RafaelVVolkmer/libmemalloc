@@ -7,6 +7,7 @@
 local function MANIFESTS_loadModule()
    return {
       templates = {
+         ["verification/theorems/lean-toolchain"] = "lean-toolchain.in",
          ["tools/python/pyproject.toml"] = "pyproject.toml.in",
          ["tools/nix/flake.nix"] = "flake.nix.in",
          ["tools/lint/code/quality/package.json"] = "quality.json.in",
