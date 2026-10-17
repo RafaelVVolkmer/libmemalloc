@@ -1,0 +1,17 @@
+-- SPDX-FileCopyrightText: 2026 Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
+-- SPDX-License-Identifier: GPL-3.0-only
+packages: .
+with-compiler: ghc-9.4.7
+index-state: 2024-08-01T00:00:00Z
+jobs: 1
+optimization: False
+tests: True
+
+source-repository-package
+  type: git
+  location: https://github.com/ucsd-progsys/liquidhaskell.git
+  tag: b3a5ac99a534a539e9758fd008f14d66b241682c
+  subdir: . liquidhaskell-boot liquid-fixpoint
+
+-- EOF
+
