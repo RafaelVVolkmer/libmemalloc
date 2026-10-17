@@ -12,6 +12,7 @@ local function ARGUMENTS_loadModule()
    local artifacts = dofile("scripts/lib/artifacts.lua")
    local exports = {}
    local required = {
+      ["scripts/verification/engine.lua"] = { "stage", "run-id" },
       ["scripts/analysis/run.lua"] = { "group" },
       ["scripts/build/run.lua"] = { "profile" },
       ["scripts/check/c_analysis.lua"] = { "campaign" },
@@ -56,6 +57,40 @@ local function ARGUMENTS_loadModule()
    end
 
    local validators = {}
+
+   --- Keep mutually exclusive proof and Haskell modes consistent with their CLI.
+   -- @param options table: parsed flag values.
+   -- @return nil: no values.
+   validators["scripts/verification/check.lua"] = function(options)
+      assert(not (options.kernel and options.engine), "conflicting Lean modes")
+   end
+
+   --- Admit only one Haskell check mode at a time.
+   -- @param options table: parsed flag values.
+   -- @return nil: no values.
+   validators["scripts/verification/check-haskell.lua"] = function(options)
+      assert(not (options.lint and options.test), "conflicting Haskell modes")
+   end
+
+   --- Validate the formal stage identity before command execution.
+   -- @param options table: parsed stage, run identity options.
+   -- @return nil: no values.
+   validators["scripts/verification/engine.lua"] = function(options)
+      member(options, "stage", {
+         start = true,
+         prepare = true,
+         lean = true,
+         haskell = true,
+         proof = true,
+         tests = true,
+         check = true,
+      })
+      assert(
+         options["run-id"]:match("^[A-Za-z0-9][A-Za-z0-9_-]*$")
+            and #options["run-id"] <= ARGUMENTS_MAX_RUN_ID_BYTES,
+         "invalid run identity"
+      )
+   end
 
    --- Validate build identities using the same catalog as the build driver.
    -- @param options table: operation settings; omitted fields use the

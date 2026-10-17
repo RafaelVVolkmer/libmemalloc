@@ -373,6 +373,37 @@ local function PLAYBOOK_loadModule()
       },
    }
 
+   for _, stage in ipairs({
+      "start",
+      "prepare",
+      "lean",
+      "haskell",
+      "proof",
+      "tests",
+      "check",
+   }) do
+      local name = "formal-" .. stage
+      tasks[name] = { "scripts/verification/engine.lua", "--stage=" .. stage }
+      metadata[name] = {
+         description = "Run the "
+            .. stage
+            .. " stage of the formal C verification campaign",
+         resource_profile = "formal",
+         dependencies = {
+            "git",
+            "jq",
+            "sha256sum",
+            "cc",
+            "flock",
+            "systemctl",
+            "systemd-run",
+         },
+         effects = "read",
+         simulation = "plan",
+         timeout_seconds = 7200,
+      }
+   end
+
    for name, command in pairs(tasks) do
       local record = assert(metadata[name], "missing task metadata: " .. name)
 

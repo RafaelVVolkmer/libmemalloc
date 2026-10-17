@@ -44,6 +44,20 @@ local function ARGUMENTS_TEST_main()
       { "toolchain-resolve", { "--field", "ansible_core.version" }, true },
       { "toolchain-resolve", { "--field", "missing.version" }, false },
       { "nix-setup", { "--anything" }, false },
+      { "formal-start", { "--run-id=engine-001" }, true },
+      { "formal-start", {}, false },
+      { "formal-start", { "--run-id=../escape" }, false },
+      { "formal-check", { "--run-id=mock-001", "--fixture=fake" }, false },
+      { "formal-lean", { "--run-id=mock-001" }, true },
+      { "check-lean", { "--kernel" }, true },
+      { "check-lean", { "--engine" }, true },
+      { "check-lean", { "--kernel", "--engine" }, false },
+      { "check-haskell", { "--lint" }, true },
+      { "check-haskell", { "--test" }, true },
+      { "check-haskell", { "--lint", "--test" }, false },
+      { "formal-bootstrap", { "--haskell-only" }, true },
+      { "check-lean", { "--kernel=false" }, false },
+      { "check-lean", { "--unknown" }, false },
    }
 
    for _, case in ipairs(cases) do

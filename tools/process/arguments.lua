@@ -7,6 +7,21 @@
 -- @return table: side-effect-free CLI contracts for playbook planning.
 local function ARGUMENTS_CATALOG_loadModule()
    return {
+      ["scripts/verification/check-haskell.lua"] = {
+         ["lint"] = "flag",
+         ["test"] = "flag",
+      },
+      ["scripts/verification/bootstrap-engine.lua"] = {
+         ["haskell-only"] = "flag",
+      },
+      ["scripts/verification/check.lua"] = {
+         ["engine"] = "flag",
+         ["kernel"] = "flag",
+      },
+      ["scripts/verification/engine.lua"] = {
+         ["stage"] = "value",
+         ["run-id"] = "value",
+      },
       ["scripts/check/workflows.lua"] = {},
       ["scripts/github/cache_plane.lua"] = {},
       ["scripts/analysis/run.lua"] = {

@@ -41,9 +41,16 @@ local function PROOF_CHECK_main()
       )
       return result.state == "PASS"
    end
+   if arg[1] == "--engine" then
+      assert(
+         arg[2] == nil,
+         "usage: lua scripts/verification/check.lua [--engine]"
+      )
+      return dofile("scripts/verification/engine.lua")
+   end
    assert(
       (arg[1] == nil or arg[1] == "--kernel") and arg[2] == nil,
-      "usage: lua scripts/verification/check.lua [--kernel]"
+      "usage: lua scripts/verification/check.lua [--engine|--kernel]"
    )
    local lock = dofile("scripts/toolchain/lib/lock.lua").load().lean
    assert(

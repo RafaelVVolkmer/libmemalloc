@@ -80,8 +80,10 @@ local function SUITES_CATALOG_loadModule()
          "documentation/navigation_test.cjs",
       },
       domain = {
-         ["process/formal_boundary_test.lua"] = "Bounded artifact and toolchain admission.",
-         ["process/native_supervisor_test.lua"] = "Native resource containment regressions.",
+         ["process/native_supervisor_test.lua"] = "Native resource limits, live logs and supervisor death.",
+         ["process/resources_test.lua"] = "Linux cgroup resource limits and recovery.",
+         ["process/formal_executor_test.lua"] = "Official formal dispatch and kernel lease recovery.",
+         ["process/formal_boundary_test.lua"] = "Bounded artifact I/O and toolchain admission.",
          ["workspace/ansible_runtime_test.lua"] = "Native runtime tests.",
          ["workspace/lock_integration_test.lua"] = "Command locking tests.",
          ["analysis/lua_metrics_test.py"] = "Lua complexity gate.",
