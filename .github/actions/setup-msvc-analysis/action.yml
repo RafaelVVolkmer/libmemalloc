@@ -64,11 +64,17 @@ runs:
         $source = Join-Path $cache "tools/lua-$lua/src"
         Push-Location $source
         try {
-          $files = Get-ChildItem -Filter '*.c' | Where-Object Name -ne 'luac.c' | ForEach-Object FullName
-          & cl.exe /nologo /O2 /MD /std:c17 /Fe:lua.exe $files
+          $files = Get-ChildItem -Filter '*.c' |
+            Where-Object { $_.Name -notin @('lua.c', 'luac.c') } | ForEach-Object FullName
+          & cl.exe /nologo /O2 /MD /std:c17 /DLUA_BUILD_AS_DLL /LD $files `
+            /link /OUT:lua55.dll /IMPLIB:lua55.lib
+          if ($LASTEXITCODE -ne 0) { throw 'Lua library compilation failed' }
+          & cl.exe /nologo /O2 /MD /std:c17 /DLUA_BUILD_AS_DLL /Fe:lua.exe lua.c lua55.lib
           if ($LASTEXITCODE -ne 0) { throw 'Lua compilation failed' }
         } finally { Pop-Location }
         $source >> $env:GITHUB_PATH
+        & "$source/lua.exe" scripts/workspace/native-runtime.lua $source "$source/lua.exe"
+        if ($LASTEXITCODE -ne 0) { throw 'Native Lua module compilation failed' }
         Get-Command jq.exe -ErrorAction Stop | Out-Null
 
 # EOF
