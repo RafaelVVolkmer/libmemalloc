@@ -1,0 +1,68 @@
+# SPDX-FileCopyrightText: 2026 Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
+# SPDX-License-Identifier: GPL-3.0-only
+
+---
+- name: Read the formal campaign receipt
+  ansible.builtin.slurp:
+    src: "{{ lma_workspace }}/.cache/verification/attempts/{{ lma_run_id }}/report.json"
+  register: lma_formal_receipt
+  failed_when: false
+  no_log: true
+
+- name: Show the contract, proof scope and acceptance status
+  when: lma_formal_receipt.content is defined
+  vars:
+    lma_formal_report: "{{ lma_formal_receipt.content | b64decode | from_json }}"
+  ansible.builtin.debug:
+    msg:
+      run: "{{ lma_run_id }}"
+      stage: "{{ lma_formal_stage }}"
+      status: "{{ lma_formal_report.status }}"
+      technical_evidence_passed: "{{ lma_formal_report.technical_evidence_passed }}"
+      requirement: "{{ lma_formal_report.requirement | default('not yet bound') }}"
+      profiles: "{{ lma_formal_report.profiles }}"
+      limitations: "{{ lma_formal_report.limitations }}"
+      report: "{{ lma_workspace }}/.cache/verification/attempts/{{ lma_run_id }}/report.json"
+
+- name: Read the last 60 lines of each stage evidence log
+  vars:
+    lma_formal_evidence:
+      start: []
+      prepare: [ghc-version, lean-version]
+      lean: [lean-audit, lean-kernel]
+      haskell: [engine-build, liquid, liquid-negative, liquid-permission-negative]
+      proof: [mock-proof]
+      tests: [engine-tests, formal-boundaries]
+      check: []
+  ansible.builtin.command:
+    argv:
+      - tail
+      - -n
+      - "60"
+      - --
+      - "{{ lma_workspace }}/.cache/verification/attempts/{{ lma_run_id }}/{{ item }}.log"
+    expand_argument_vars: false
+  loop: "{{ lma_formal_evidence[lma_formal_stage] }}"
+  register: lma_formal_evidence_logs
+  changed_when: false
+  failed_when: false
+
+- name: Show proof and rejection diagnostics
+  when: lma_formal_receipt.content is defined
+  vars:
+    lma_formal_step: >-
+      {{ ((lma_formal_receipt.content | b64decode | from_json).steps
+          | selectattr('name', 'equalto', item.item) | first) | default({}) }}
+  ansible.builtin.debug:
+    msg:
+      log: "{{ lma_workspace }}/.cache/verification/attempts/{{ lma_run_id }}/{{ item.item }}.log"
+      state: "{{ lma_formal_step.state | default('not recorded') }}"
+      expected_rejection: "{{ lma_formal_step.expected_rejection | default(false) }}"
+      output: "{{ item.stdout_lines | default([]) }}"
+      diagnostic: "{{ item.stderr | default('') }}"
+  loop: "{{ lma_formal_evidence_logs.results }}"
+  loop_control:
+    label: "{{ item.item }}"
+
+# EOF
+

@@ -1,0 +1,39 @@
+# SPDX-FileCopyrightText: 2026 Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
+# SPDX-License-Identifier: GPL-3.0-only
+
+---
+- name: Validate the formal verification engine
+  hosts: localhost
+  gather_facts: false
+  become: false
+  connection: local
+  vars:
+    lma_workspace: "{{ (playbook_dir ~ '/../../..') | realpath }}"
+    lma_formal_stages: [start, prepare, lean, haskell, proof, tests, check]
+    ansible_python_interpreter: "{{ ansible_playbook_python }}"
+  tasks:
+    - name: Validate the campaign identity and selected stages
+      ansible.builtin.assert:
+        that:
+          - lma_run_id is defined
+          - lma_run_id is match('^[A-Za-z0-9][A-Za-z0-9_-]{0,63}$')
+          - lma_formal_stages is sequence
+          - lma_formal_stages is not string
+          - >-
+            lma_formal_stages | difference(['start', 'prepare', 'lean', 'haskell', 'proof', 'tests', 'check'])
+            | length == 0
+        fail_msg: Supply a new run identity; resume only the next incomplete stage.
+
+    - name: Prepare the managed Lua and libuv runtime
+      ansible.builtin.include_tasks: ../tasks/runtime.yml
+
+    - name: Execute ordered commands and check their retained evidence
+      ansible.builtin.include_tasks: ../tasks/formal-stage.yml
+      loop: "{{ lma_formal_stages }}"
+      loop_control:
+        loop_var: lma_formal_stage
+      vars:
+        lma_lua_executable: "{{ lma_managed_lua }}"
+
+# EOF
+
