@@ -40,6 +40,34 @@ local function tests_process_exec_test_suite_main()
       "output exceeded the declared bound"
    )
 
+   local streamed = ""
+   local live = E.run({ "printf", "%s", literal }, {
+      --- Observe the same accepted bytes returned by the bounded capture.
+      -- @param stream string: captured stream name.
+      -- @param chunk string: accepted output bytes.
+      -- @return nil: no values.
+      on_output = function(stream, chunk)
+         assert(stream == "stdout", "unexpected output stream")
+         streamed = streamed .. chunk
+      end,
+   })
+   assert(
+      live.stdout == streamed and streamed == literal,
+      "live output differs from retained bytes"
+   )
+   local broken = E.run({ "yes" }, {
+      timeout_ms = 1000,
+      --- Simulate failure of a retained log sink.
+      -- @return nil: no values.
+      on_output = function()
+         error("log sink unavailable")
+      end,
+   })
+   assert(
+      broken.state == "INFRA_ERROR" and broken.output_error,
+      "log failure was not retained"
+   )
+
    local env = E.run({ "env" }, { env = { "LMA_EXPLICIT=value" } })
 
    assert(

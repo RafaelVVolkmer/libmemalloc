@@ -1,7 +1,7 @@
 -- SPDX-FileCopyrightText: 2026 Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
 -- SPDX-License-Identifier: GPL-3.0-only
 
---- Native argv execution for a POSIX pilot, with bounded output and time.
+--- Native argv execution across supported hosts, with bounded output and time.
 -- Part of local process planning and evidence assessment.
 
 --- Construct this module within its own initialization scope.
@@ -73,7 +73,6 @@ local function scripts_process_lib_exec_loadModule()
    -- @return table: exit, signal, bounded streams and infrastructure status.
    local function PROCESS_EXEC_run(argv, options)
       options = options or {}
-      assert(uv.os_uname().sysname ~= "Windows_NT", "POSIX pilot only")
       local args = process_exec_arguments(argv)
       local timeout_ms = EXEC_TIMEOUT_MS
       local max_bytes = EXEC_MAX_OUTPUT_BYTES
@@ -99,6 +98,8 @@ local function scripts_process_lib_exec_loadModule()
       local out, err, input =
          uv.new_pipe(false), uv.new_pipe(false), uv.new_pipe(false)
       local timer = uv.new_timer()
+      local poll = uv.new_timer()
+      local drain = uv.new_timer()
 
       ---@type ProcessChildHandle?
       local handle = nil
@@ -126,10 +127,31 @@ local function scripts_process_lib_exec_loadModule()
 
             -- detached=true starts a POSIX process group; include child
             -- descendants.
-            uv.kill(-pid, EXEC_KILL_SIGNAL)
+            if options.on_stop then
+               local ok, failure = pcall(options.on_stop)
+               if not ok then
+                  result.stop_error = tostring(failure)
+               end
+            end
+            if
+               uv.os_uname().sysname ~= "Windows_NT"
+               and options.detached ~= false
+            then
+               uv.kill(-pid, EXEC_KILL_SIGNAL)
+            end
             if not exited and handle then
                handle:kill(EXEC_KILL_SIGNAL)
             end
+            --- Close inherited pipes after the bounded cancellation drain.
+            -- @return nil: callback result is consumed by its owner.
+            drain:start(2000, 0, function()
+               process_exec_close(out)
+               process_exec_close(err)
+               process_exec_close(input)
+               process_exec_close(timer)
+               process_exec_close(poll)
+               process_exec_close(drain)
+            end)
          end
       end
 
@@ -141,6 +163,8 @@ local function scripts_process_lib_exec_loadModule()
             timer:stop()
 
             process_exec_close(timer)
+            process_exec_close(poll)
+            process_exec_close(drain)
          end
       end
 
@@ -149,7 +173,7 @@ local function scripts_process_lib_exec_loadModule()
          {
             args = args,
             stdio = { input, out, err },
-            detached = true,
+            detached = options.detached ~= false,
             env = options.env,
             cwd = options.cwd,
          },
@@ -180,6 +204,8 @@ local function scripts_process_lib_exec_loadModule()
          process_exec_close(err)
 
          process_exec_close(timer)
+         process_exec_close(poll)
+         process_exec_close(drain)
 
          uv.run()
 
@@ -208,7 +234,18 @@ local function scripts_process_lib_exec_loadModule()
                if data then
                   local remaining = math.max(0, max_bytes - bytes)
 
-                  chunks[name][#chunks[name] + 1] = data:sub(1, remaining)
+                  local chunk = data:sub(1, remaining)
+                  if #chunk > 0 then
+                     chunks[name][#chunks[name] + 1] = chunk
+                     if options.on_output then
+                        local ok, failure =
+                           pcall(options.on_output, name, chunk)
+                        if not ok then
+                           result.output_error = tostring(failure)
+                           process_exec_stop("INFRA_ERROR")
+                        end
+                     end
+                  end
                   bytes = bytes + #data
                   if #data > remaining then
                      process_exec_stop("OUTPUT_LIMIT")
@@ -236,7 +273,30 @@ local function scripts_process_lib_exec_loadModule()
             process_exec_stop("TIMEOUT")
          end
       )
-      if options.stdin then
+      if options.on_tick then
+         --- Poll resource ownership and stop on monitor failure.
+         -- @return nil: callback result is consumed by its owner.
+         poll:start(0, 100, function()
+            if stopped then
+               return
+            end
+            local ok, state = pcall(options.on_tick, pid)
+            if not ok then
+               result.monitor_error = tostring(state)
+               process_exec_stop("INFRA_ERROR")
+            elseif state then
+               process_exec_stop(state)
+            end
+         end)
+      end
+      if options.on_spawn then
+         local ok, failure = pcall(options.on_spawn, pid)
+         if not ok then
+            result.launch_error = tostring(failure)
+            process_exec_stop("INFRA_ERROR")
+         end
+      end
+      if options.stdin and not stopped then
          input:write(
             options.stdin,
             --- Handle input-write failure before shutting down the owned input
