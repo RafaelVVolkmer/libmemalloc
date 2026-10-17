@@ -8,6 +8,42 @@ local function CHANGES_POLICY_loadModule()
    return {
       rules = {
          {
+            areas = { "haskell", "lean" },
+            exact = {
+               ".github/workflows/_lint-haskell.yml",
+               "tests/automation/process/resources_test.lua",
+               "tests/automation/process/formal_executor_test.lua",
+            },
+            patterns = {
+               "^verification/engine/",
+               "^scripts/verification/",
+               "^scripts/process/native/",
+               "^scripts/process/lib/",
+               "^tests/automation/process/native_supervisor_test%.py$",
+               "^tools/lint/code/haskell/",
+            },
+         },
+         {
+            areas = { "lean" },
+            exact = { ".github/workflows/_lint-lean.yml" },
+            patterns = {
+               "^verification/",
+               "^docs/specs/",
+               "^tools/specs/",
+               "^core/",
+               "^tests/automation/process/adequacy_test%.lua$",
+               "^tests/automation/process/evidence_binding_test%.lua$",
+               "^tests/automation/process/formal_boundary_test%.lua$",
+               "^tests/fixtures/formal/",
+               "^tests/automation/process/translation_test%.lua$",
+               "^docs/.*formal",
+               "^docs/standards/haskell/",
+               "^docs/standards/lean/",
+               "^infra/ansible/.*formal",
+               "^tools/process/",
+            },
+         },
+         {
             areas = { "lua" },
             exact = {
                "tools/analysis/c/gates.json",
@@ -50,6 +86,8 @@ local function CHANGES_POLICY_loadModule()
                "^%.githooks/",
                "^%.github/ISSUE_TEMPLATE/",
                "^scripts/github/",
+               "^scripts/process/native/",
+               "^tests/automation/process/native_supervisor_test%.py$",
                "^tests/automation/github/",
             },
          },
@@ -269,6 +307,10 @@ local function CHANGES_POLICY_loadModule()
          h = { "c", "bazel", "spelling" },
          i = { "c", "bazel", "spelling" },
          lua = { "lua", "spelling" },
+         hs = { "haskell", "spelling" },
+         lhs = { "haskell", "spelling" },
+         cabal = { "haskell", "spelling" },
+         lean = { "lean", "spelling" },
          py = { "python", "spelling" },
          pyi = { "python", "spelling" },
          sh = { "shell", "spelling" },

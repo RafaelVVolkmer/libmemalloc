@@ -50,6 +50,17 @@ local function SETTINGS_TEST_main()
       "attempt.retry",
       ".cache/tmp/commit-message.md",
       ".cache/logs/process-001/report.md",
+      "verification/theorems/.lake/build/lib/lean/LibMemAlloc.olean",
+      "verification/theorems/LibMemAlloc.olean",
+      "verification/theorems/LibMemAlloc.olean.private",
+      "verification/theorems/LibMemAlloc.ilean",
+      "verification/engine/dist-newstyle/cache/plan.json",
+      "verification/engine/.stack-work/lock",
+      "verification/engine/.liquid/Refined.json",
+      "verification/engine/src/LibMemAlloc/Verifier/Refined.hi",
+      "verification/engine/src/LibMemAlloc/Verifier/Refined.dyn_hi",
+      "verification/engine/cabal.project.local",
+      "verification/engine/.ghc.environment.x86_64-linux-9.4.7",
    }) do
       assert(
          platform.command_succeeded_silent({
@@ -70,6 +81,14 @@ local function SETTINGS_TEST_main()
       "tools/example.env.example",
       "scripts/build/plan.lua",
       "tests/automation/release/release_test.lua",
+      "verification/theorems/lean-toolchain",
+      "verification/theorems/lake-manifest.json",
+      "verification/theorems/lakefile.toml",
+      "verification/theorems/LibMemAlloc.lean",
+      "verification/engine/cabal.project",
+      "verification/engine/cabal.project.freeze",
+      "verification/engine/libmemalloc-verifier.cabal",
+      "verification/engine/src/LibMemAlloc/Verifier/Refined.hs",
    }) do
       assert(not platform.command_succeeded_silent({
          "git",

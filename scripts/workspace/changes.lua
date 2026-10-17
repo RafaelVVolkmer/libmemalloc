@@ -31,6 +31,8 @@ local function scripts_workspace_changes_main()
       "javascript",
       "typescript",
       "json",
+      "haskell",
+      "lean",
       "lua",
       "markdown",
       "nushell",

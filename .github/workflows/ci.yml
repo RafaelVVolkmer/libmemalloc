@@ -55,6 +55,8 @@ jobs:
       ci: ${{ steps.detect.outputs.ci }}
       json: ${{ steps.detect.outputs.json }}
       lua: ${{ steps.detect.outputs.lua }}
+      lean: ${{ steps.detect.outputs.lean }}
+      haskell: ${{ steps.detect.outputs.haskell }}
       markdown: ${{ steps.detect.outputs.markdown }}
       nushell: ${{ steps.detect.outputs.nushell }}
       powershell: ${{ steps.detect.outputs.powershell }}
@@ -111,6 +113,8 @@ jobs:
       ci: ${{ needs.changes.outputs.ci == 'true' }}
       json: ${{ needs.changes.outputs.json == 'true' }}
       lua: ${{ needs.changes.outputs.lua == 'true' }}
+      lean: ${{ needs.changes.outputs.lean == 'true' }}
+      haskell: ${{ needs.changes.outputs.haskell == 'true' }}
       markdown: ${{ needs.changes.outputs.markdown == 'true' }}
       nushell: ${{ needs.changes.outputs.nushell == 'true' }}
       powershell: ${{ needs.changes.outputs.powershell == 'true' }}

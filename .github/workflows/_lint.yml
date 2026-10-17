@@ -48,6 +48,14 @@ on:
         description: Run the lua lint area.
         required: true
         type: boolean
+      lean:
+        description: Run Lean lint, proof and trust audits.
+        required: true
+        type: boolean
+      haskell:
+        description: Run Haskell lint, formatting and engine tests.
+        required: true
+        type: boolean
       markdown:
         description: Run the markdown lint area.
         required: true
@@ -85,6 +93,22 @@ defaults:
     shell: bash
 
 jobs:
+  haskell:
+    name: Lint and test Haskell
+    uses: ./.github/workflows/_lint-haskell.yml
+    permissions:
+      contents: read
+    with:
+      haskell: ${{ inputs.haskell }}
+
+  lean:
+    name: Lint Lean
+    uses: ./.github/workflows/_lint-lean.yml
+    permissions:
+      contents: read
+    with:
+      lean: ${{ inputs.lean }}
+
   automation:
     name: Lint automation
     uses: ./.github/workflows/_lint-automation.yml

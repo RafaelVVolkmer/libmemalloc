@@ -55,6 +55,12 @@ outputs:
   lua:
     value: ${{ steps.detect.outputs.lua }}
 
+  lean:
+    value: ${{ steps.detect.outputs.lean }}
+
+  haskell:
+    value: ${{ steps.detect.outputs.haskell }}
+
   markdown:
     value: ${{ steps.detect.outputs.markdown }}
 

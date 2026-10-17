@@ -199,6 +199,10 @@ local function tests_lint_changed_areas_test_suite_main()
       end
 
       for _, fixture in ipairs({
+         { "sample.lean", "lean" },
+         { "sample.hs", "haskell" },
+         { "sample.lhs", "haskell" },
+         { "sample.cabal", "haskell" },
          { "sample.html", "html" },
          { "sample.css", "css" },
          { "sample.js", "javascript" },
@@ -220,6 +224,69 @@ local function tests_lint_changed_areas_test_suite_main()
          git({ "commit", "--quiet", "-m", "web removal fixture" })
          assert(classify(base)[fixture[2]], "web deletion was omitted")
       end
+
+      --- Proof sources, specification premises and their runner select Lean.
+      -- @return nil: no values.
+      local function changes_test_assertLean()
+         for _, path in ipairs({
+            "verification/theorems/lean-toolchain",
+            "verification/baselines/content.sha256",
+            "verification/theorems/LibMemAllocImp/MemoryAllocator/Heap.lean",
+            "docs/specs/lean-fixture.md",
+            "tools/specs/lean-fixture.lua",
+            "tests/automation/process/evidence_binding_test.lua",
+            "tests/automation/process/formal_boundary_test.lua",
+            ".github/workflows/_lint-lean.yml",
+         }) do
+            command({ "mkdir", "-p", assert(path:match("^(.*)/[^/]+$")) })
+            base = git({ "rev-parse", "HEAD" })
+            write(path)
+            git({ "add", path })
+            git({ "commit", "--quiet", "-m", "Lean input fixture" })
+            assert(classify(base).lean, "Lean input was omitted: " .. path)
+            base = git({ "rev-parse", "HEAD" })
+            git({ "rm", "--quiet", path })
+            git({ "commit", "--quiet", "-m", "remove Lean input fixture" })
+            assert(classify(base).lean, "Lean deletion was omitted: " .. path)
+         end
+      end
+
+      changes_test_assertLean()
+
+      --- Keep engine inputs connected to Haskell checks and the formal
+      -- campaign.
+      -- @return nil: no values.
+      local function changes_test_assertHaskell()
+         for _, path in ipairs({
+            "verification/engine/cabal.project.freeze",
+            "verification/engine/test/fixtures/cursor.ail",
+            "scripts/verification/bootstrap-engine.lua",
+            "tools/lint/code/haskell/hlint.yaml",
+            ".github/workflows/_lint-haskell.yml",
+            "tests/automation/process/formal_executor_test.lua",
+         }) do
+            command({ "mkdir", "-p", assert(path:match("^(.*)/[^/]+$")) })
+            base = git({ "rev-parse", "HEAD" })
+            write(path)
+            git({ "add", path })
+            git({ "commit", "--quiet", "-m", "Haskell input fixture" })
+            local selected = classify(base)
+            assert(
+               selected.haskell and selected.lean,
+               "Haskell checks omitted: " .. path
+            )
+            base = git({ "rev-parse", "HEAD" })
+            git({ "rm", "--quiet", path })
+            git({ "commit", "--quiet", "-m", "remove Haskell input fixture" })
+            selected = classify(base)
+            assert(
+               selected.haskell and selected.lean,
+               "Haskell deletion omitted: " .. path
+            )
+         end
+      end
+
+      changes_test_assertHaskell()
 
       --- Check that toolchain changes invalidate their dependent workflows.
       -- @param path string: filesystem path selected by the caller.
