@@ -1,0 +1,26 @@
+# SPDX-FileCopyrightText: 2026 Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
+# SPDX-License-Identifier: GPL-3.0-only
+
+name = "libmemalloc-verification"
+version = "0.1.0"
+# check.lua builds LibMemAllocAudit explicitly; keep Lean metaprogramming out of kernel exports.
+defaultTargets = [ "LibMemAlloc" ]
+builtinLint = true
+buildDir = "../../.cache/verification/lean"
+# lake check sanitizes the environment, so keep the compiler thread limit here.
+moreLeanArgs = [ "-j2" ]
+
+[leanOptions]
+autoImplicit = false
+warningAsError = true
+linter.unusedVariables = true
+linter.unusedSimpArgs = true
+linter.deprecated = true
+
+[[lean_lib]]
+name = "LibMemAlloc"
+roots = [ "LibMemAlloc", "LibMemAllocImp" ]
+globs = [ "LibMemAlloc", "LibMemAllocImp.+" ]
+
+# EOF
+
