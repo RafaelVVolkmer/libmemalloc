@@ -64,6 +64,16 @@ jobs:
 
           sudo apt-get update
           sudo apt-get install --yes bubblewrap zstd
+          # Grant only the sandbox executable access to user namespaces.
+          sudo tee /etc/apparmor.d/libmemalloc-bwrap >/dev/null <<'PROFILE'
+          abi <abi/4.0>,
+          include <tunables/global>
+          profile bwrap /usr/bin/bwrap flags=(unconfined) {
+            userns,
+          }
+          PROFILE
+          sudo apparmor_parser -r /etc/apparmor.d/libmemalloc-bwrap
+          bwrap --unshare-user --uid 0 --gid 0 --ro-bind / / true
           mkdir -p "${LIBMEMALLOC_CACHE_ROOT}/tools/lean"
           tar --zstd -xf "${LEAN_ARCHIVE}" \
             --directory "${LIBMEMALLOC_CACHE_ROOT}/tools/lean" --strip-components=1
