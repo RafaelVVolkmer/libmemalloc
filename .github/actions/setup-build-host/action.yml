@@ -16,9 +16,9 @@ runs:
         set -euo pipefail
         if [[ "${RUNNER_OS}" == Linux ]]; then
           sudo apt-get update -qq
-          sudo apt-get install -y --no-install-recommends lua5.4 jq
+          sudo apt-get install -y --no-install-recommends lua5.4 jq cmake ninja-build python3
         else
-          brew install lua jq
+          brew install lua jq cmake ninja coreutils
         fi
 
     - uses: ./.github/actions/workspace-cache
@@ -31,8 +31,8 @@ runs:
       run: | # zizmor: ignore[github-env]
         set -euo pipefail
 
-        version="$(lua scripts/process/playbook.lua --direct toolchain-resolve --field lua.version)"
-        digest="$(lua scripts/process/playbook.lua --direct toolchain-resolve --field lua.sha256)"
+        version="$(lua scripts/toolchain/resolve.lua --field lua.version)"
+        digest="$(lua scripts/toolchain/resolve.lua --field lua.sha256)"
         [[ "${version}" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]
         [[ "${digest}" =~ ^[0-9a-f]{64}$ ]]
 
@@ -48,6 +48,7 @@ runs:
         binary_dir="${GITHUB_WORKSPACE}/.cache/tools/lua-${version}/src"
         [[ "${binary_dir}" != *$'\n'* && "${binary_dir}" != *$'\r'* ]]
         printf '%s\n' "${binary_dir}" >> "${GITHUB_PATH}"
+        "${binary_dir}/lua" scripts/workspace/native-runtime.lua "${binary_dir}" "${binary_dir}/lua"
 
     - uses: ./.github/actions/setup-msvc-analysis
       if: runner.os == 'Windows'
