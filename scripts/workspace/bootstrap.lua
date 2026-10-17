@@ -44,6 +44,7 @@ local function BOOTSTRAP_main()
       "cc",
       "make",
       "cmake",
+      "ninja",
       "curl",
       "tar",
       "sha256sum",
@@ -301,10 +302,22 @@ local function BOOTSTRAP_main()
       ) or changed
    end
 
+   stage(
+      "native-runtime",
+      { lua, "scripts/workspace/native-runtime.lua", lua_root .. "/src", lua }
+   )
+
    local automation = "lma_managed_lua: "
       .. artifacts.text_json(lua)
       .. "\nlma_managed_luv: "
-      .. artifacts.text_json(luv_root .. "/build/?.so")
+      .. artifacts.text_json(
+         root
+            .. "/.cache/tools/native/"
+            .. lock.lua.version
+            .. "/bin/?.so;"
+            .. luv_root
+            .. "/build/?.so"
+      )
       .. "\n"
    if
       not artifacts.exists(".cache/tools/automation.yml")

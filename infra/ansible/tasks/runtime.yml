@@ -55,6 +55,7 @@
         local version = platform.command_output({arg[0], '-v'});
         assert(version and version:match('^Lua ([^ ]+)') == lock.lua.version);
         assert(require('luv').version_string() == lock.luv.version:gsub('%-.*', ''))
+        assert(require('cffi').sizeof('int') == 4)
     chdir: "{{ lma_workspace }}"
     expand_argument_vars: false
   environment:
@@ -86,7 +87,7 @@
         macos = platform.system() == "Darwin"
         names = {
             "git": "git", "cc": "build-essential", "make": "build-essential",
-            "cmake": "cmake", "curl": "curl", "tar": "tar",
+            "cmake": "cmake", "ninja": "ninja-build", "curl": "curl", "tar": "tar",
             "sha256sum": "coreutils", "timeout": "coreutils", "flock": "util-linux",
             "python3": "python3.12-venv",
         }
@@ -94,6 +95,7 @@
             names.update({"cc": "Command Line Tools", "make": "Command Line Tools",
                 "python3": "python@3.12"})
             names.pop("flock")
+            names["ninja"] = "ninja"
         missing = {package for name, package in names.items() if not shutil.which(name)}
         candidates = [sys.argv[1]] if sys.argv[1] else ["lua", "lua5.4", "lua5.5"]
         lua = next((shutil.which(name) for name in candidates if shutil.which(name)), "")

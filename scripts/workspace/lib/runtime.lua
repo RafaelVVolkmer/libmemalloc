@@ -16,7 +16,16 @@ local function RUNTIME_loadModule()
 
    exports.paths = {
       lua = root .. "/.cache/tools/lua/" .. lock.lua.version .. "/src/lua",
-      luv = root .. "/.cache/tools/luv/" .. lock.luv.version .. "/build/?.so",
+      luv = root
+         .. "/.cache/tools/native/"
+         .. lock.lua.version
+         .. "/bin/?."
+         .. (platform.is_windows and "dll" or "so")
+         .. ";"
+         .. root
+         .. "/.cache/tools/luv/"
+         .. lock.luv.version
+         .. "/build/?.so",
       ansible = root
          .. "/.cache/tools/ansible/"
          .. lock.ansible_core.version
