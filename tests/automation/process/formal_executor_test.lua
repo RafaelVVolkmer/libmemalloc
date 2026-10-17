@@ -9,8 +9,9 @@ local function FORMAL_EXECUTOR_TEST_main()
    local runner = dofile("scripts/process/lib/tasks.lua")
    local lua = os.getenv("LIBMEMALLOC_LUA") or arg[-1] or "lua"
    local root = ".cache/tests/formal-executor-" .. tostring(ioTools.uv.hrtime())
+   local directories = { "mkdir", "-p", root, ".cache/formal" }
    assert(
-      ioTools.exec.run({ "mkdir", "-p", root, ".cache/formal" }).state == "PASS",
+      ioTools.exec.run(directories).state == "PASS",
       "cannot create executor fixtures"
    )
    local probe = root .. "/controller.lua"
@@ -19,14 +20,24 @@ local function FORMAL_EXECUTOR_TEST_main()
       [[
 local resources = dofile("scripts/verification/lib/resources.lua")
 local file = assert(io.open("/proc/self/cgroup"))
-local own = assert(file:read("*a"):match("/(libmemalloc%-verification%-[%w%-]+%.scope)\n"))
+local own = assert(
+   file:read("*a"):match("/(libmemalloc%-verification%-[%w%-]+%.scope)\n")
+)
 file:close()
-local child = resources.run({"/bin/true"})
+local child = resources.run({ "/bin/true" })
 assert(child.state == "PASS", child.stderr)
-assert(child.resources.parent_scope == own, "child escaped controller lifecycle")
-local directory = assert(os.getenv("LIBMEMALLOC_TASK_DIRECTORY"), "task environment missing")
-local report = dofile("scripts/process/lib/io.lua").load(directory .. "/result.json")
-assert(report.state == "INCOMPLETE" and report.resource_profile == "formal", "initial receipt missing")
+assert(
+   child.resources.parent_scope == own,
+   "child escaped controller lifecycle"
+)
+local directory =
+   assert(os.getenv("LIBMEMALLOC_TASK_DIRECTORY"), "task environment missing")
+local report =
+   dofile("scripts/process/lib/io.lua").load(directory .. "/result.json")
+assert(
+   report.state == "INCOMPLETE" and report.resource_profile == "formal",
+   "initial receipt missing"
+)
 print(own)
 ]]
    )
@@ -54,7 +65,7 @@ local uv = require("luv")
 local exec = dofile("scripts/process/lib/exec.lua")
 dofile("scripts/verification/lib/lock.lua").guard()
 if arg[1] == "hold" then
-   local other = exec.run({arg[-1], arg[0], "probe"})
+   local other = exec.run({ arg[-1], arg[0], "probe" })
    assert(other.exit_code == 75, other.stderr)
    print("live owner rejected competing campaign")
    io.stdout:flush()
@@ -145,8 +156,13 @@ end
    }, { timeout_ms = 30000 })
    assert(lifecycle.state == "PASS", lifecycle.stdout .. lifecycle.stderr)
    for _, source in ipairs({
-      "local f=assert(io.open(os.getenv('LIBMEMALLOC_CHANGE_FILE'),'w')); f:write('invalid'); f:close()",
-      "dofile('scripts/lib/platform.lua').execute({'mkfifo',os.getenv('LIBMEMALLOC_CHANGE_FILE')})",
+      "local "
+         .. "f=assert(io.open(os.getenv('LIBMEMALLOC_CH"
+         .. "ANGE_FILE'),'w')); f:write('invalid'); f:c"
+         .. "lose()",
+      "dofile('scripts/lib/platform.lua').execute"
+         .. "({'mkfifo',os.getenv('LIBMEMALLOC_CHANGE_F"
+         .. "ILE')})",
    }) do
       local valid, invalidDirectory, invalid = runner.run(
          "formal-invalid-change",
@@ -166,7 +182,8 @@ end
       assert(ioTools.uv.fs_unlink(invalidDirectory .. "/changed"))
    end
    print(
-      "Formal executor: controller containment, dispatch modes and kernel lease recovery passed."
+      "Formal executor: controller containment, dispatch modes "
+         .. "and kernel lease recovery passed."
    )
 end
 

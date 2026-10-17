@@ -173,9 +173,11 @@ import LibMemAllocImp.Certificates.Program
 -- Mathematical statement: Expected.Claim.
 example : Expected.Claim := Generated.verified
 -- Mathematical statement: the certificate covers exactly the admitted program.
-example : Allocator.Certificates.checkCoverage Expected.program Generated.coverage = true :=
+example : Allocator.Certificates.checkCoverage
+    Expected.program Generated.coverage = true :=
   Generated.coverageAccepted
--- Mathematical statement: unsigned execution refines the admitted program and precondition.
+-- Mathematical statement: unsigned execution refines the admitted program and
+-- precondition.
 example : Allocator.Translation.Refines 18446744073709551615 Expected.program
     (fun s : Allocator.C.Unsigned.State => %s s.cells)
     Allocator.C.Unsigned.State.cells
@@ -255,7 +257,8 @@ example : Allocator.Translation.Refines 18446744073709551615 Expected.program
             "unsupported target"
          )
       end
-      -- Preserve native compiler macros; normalize only admitted linkage metadata.
+      -- Preserve native compiler macros; normalize only admitted linkage
+      -- metadata.
       local flags = preprocessing.command(source)
       local compiler =
          run("compiler", { "sh", "-c", "command -v cc" }):match("([^\n]+)")

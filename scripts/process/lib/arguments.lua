@@ -58,7 +58,8 @@ local function ARGUMENTS_loadModule()
 
    local validators = {}
 
-   --- Keep mutually exclusive proof and Haskell modes consistent with their CLI.
+   --- Keep mutually exclusive proof and Haskell modes consistent with their
+   -- CLI.
    -- @param options table: parsed flag values.
    -- @return nil: no values.
    validators["scripts/verification/check.lua"] = function(options)

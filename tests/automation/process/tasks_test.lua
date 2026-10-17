@@ -76,9 +76,12 @@ local function TASK_TEST_main()
    }
 
    for _, source in ipairs({
-      "local p=os.getenv('LIBMEMALLOC_CHANGE_FILE'); local f=assert(io.open(p,'w')); f:write('invalid'); f:close()",
+      "local p=os.getenv('LIBMEMALLOC_CHANGE_FILE'); local "
+         .. "f=assert(io.open(p,'w')); f:write('invalid'); f:close()",
       "require('luv').fs_mkdir(os.getenv('LIBMEMALLOC_CHANGE_FILE'),448)",
-      "dofile('scripts/lib/platform.lua').execute({'mkfifo',os.getenv('LIBMEMALLOC_CHANGE_FILE')})",
+      "dofile('scripts/lib/platform.lua').execute"
+         .. "({'mkfifo',os.getenv('LIBMEMALLOC_CHANGE_F"
+         .. "ILE')})",
    }) do
       cases[#cases + 1] = {
          name = "supervisor-invalid-change",

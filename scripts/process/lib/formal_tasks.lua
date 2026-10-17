@@ -67,7 +67,8 @@ local function TASKS_loadModule()
    -- owner.
    -- @param options table|nil: operation settings; omitted fields use the
    -- documented defaults.
-   -- @return boolean, string, table: run a literal argv task, preserving failures and
+   -- @return boolean, string, table: run a literal argv task, preserving
+   -- failures and
    -- infrastructure states.
    local function TASKS_run(name, task, arguments, interpreter, options)
       options = options or {}
@@ -119,7 +120,8 @@ local function TASKS_loadModule()
       end
 
       local selected = dofile("scripts/process/native/resources.lua")
-      --- Persist formal controller state before execution, including abrupt death.
+      --- Persist formal controller state before execution, including abrupt
+      -- death.
       -- @param report table: current controller receipt.
       -- @return nil: no values.
       local function save_report(report)
@@ -147,7 +149,8 @@ local function TASKS_loadModule()
       end
       --- Persist each bounded chunk before publishing live direct output.
       -- @param stream string: stdout or stderr.
-      -- @param chunk string: bytes accepted by the executor's shared output cap.
+      -- @param chunk string: bytes accepted by the executor's shared output
+      -- cap.
       -- @return nil: no values.
       local function retain_output(stream, chunk)
          local offset = 0

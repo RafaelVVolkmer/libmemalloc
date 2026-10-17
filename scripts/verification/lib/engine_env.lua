@@ -45,7 +45,8 @@ local function FORMAL_ENV_loadModule()
          )
          assert(
             files.read(bin .. "/ghc") == expected,
-            "unbounded or stale GHC wrapper; rerun bootstrap-engine.lua --haskell-only"
+            "unbounded or stale GHC wrapper; rerun bootstrap-engine.lua "
+               .. "--haskell-only"
          )
       end
       local argv = { table.unpack(environment) }

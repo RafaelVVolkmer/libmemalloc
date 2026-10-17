@@ -31,7 +31,9 @@ boundedRead path = withFile path ReadMode $ \handle -> do
 usage :: IO ()
 usage =
   die
-    "usage: libmemalloc-verifier COMMAND ARGS; commands: refute-generic, evaluate-generic, produce-generic, replay-generic"
+    ( "usage: libmemalloc-verifier COMMAND ARGS; commands: "
+        <> "refute-generic, evaluate-generic, produce-generic, replay-generic"
+    )
 
 {-@ runRefuteGeneric :: [String] -> IO () @-}
 runRefuteGeneric :: [String] -> IO ()

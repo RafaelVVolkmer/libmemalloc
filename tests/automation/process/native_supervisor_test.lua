@@ -66,12 +66,18 @@ local function NATIVE_TEST_main()
          root .. "/driver.lua"
       files.write(
          child,
-         "local uv=require('luv'); print('ready'); io.stdout:flush(); while true do local f=assert(io.open(arg[1],'w')); f:write(tostring(uv.hrtime())); f:close(); uv.sleep(40) end"
+         "local uv=require('luv'); print('ready'); "
+            .. "io.stdout:flush(); while true do local "
+            .. "f=assert(io.open(arg[1],'w')); "
+            .. "f:write(tostring(uv.hrtime())); f:close(); uv.sleep(40) end"
       )
       files.write(
          driver,
          string.format(
-            "dofile('scripts/process/lib/tasks.lua').run('native-owner-probe',{command={%q,%q},effects='read',resource_profile=%q,timeout_seconds=25},{},%q)",
+            "dofile('scripts/process/lib/tasks.lua').ru"
+               .. "n('native-owner-probe',{command={%q,%q},ef"
+               .. "fects='read',resource_profile=%q,timeout_s"
+               .. "econds=25},{},%q)",
             child,
             pulse,
             profile,
@@ -186,13 +192,16 @@ local function NATIVE_TEST_main()
          uv.fs_stat(output.directory .. "/stdout.log").size <= 8 * 1024 * 1024,
          "retained output exceeded its cap"
       )
-      --- Reject malformed or special mutation markers and accept exact booleans.
+      --- Reject malformed or special mutation markers and accept exact
+      -- booleans.
       -- @return nil: no values.
       local function markers()
          for _, value in ipairs({ "bad", "true\nignored", "" }) do
             local report = run(
                string.format(
-                  "local f=assert(io.open(os.getenv('LIBMEMALLOC_CHANGE_FILE'),'w'));f:write(%q);f:close()",
+                  "local "
+                     .. "f=assert(io.open(os.getenv('LIBMEMALLOC_CH"
+                     .. "ANGE_FILE'),'w'));f:write(%q);f:close()",
                   value
                )
             )
@@ -205,7 +214,9 @@ local function NATIVE_TEST_main()
          for _, value in ipairs({ "true\n", "false\n" }) do
             local report = run(
                string.format(
-                  "local f=assert(io.open(os.getenv('LIBMEMALLOC_CHANGE_FILE'),'w'));f:write(%q);f:close()",
+                  "local "
+                     .. "f=assert(io.open(os.getenv('LIBMEMALLOC_CH"
+                     .. "ANGE_FILE'),'w'));f:write(%q);f:close()",
                   value
                )
             )
@@ -218,20 +229,26 @@ local function NATIVE_TEST_main()
          end
          assert(
             run(
-               "assert(require('luv').fs_mkdir(os.getenv('LIBMEMALLOC_CHANGE_FILE'),448))"
+               "assert(require('luv').fs_mkdir(os.getenv('"
+                  .. "LIBMEMALLOC_CHANGE_FILE'),448))"
             ).state == "INFRA_ERROR",
             "special change marker accepted"
          )
          if uv.os_uname().sysname ~= "Windows_NT" then
             assert(
                run(
-                  "dofile('scripts/lib/platform.lua').run({'mkfifo',os.getenv('LIBMEMALLOC_CHANGE_FILE')})"
+                  "dofile('scripts/lib/platform.lua').run({'m"
+                     .. "kfifo',os.getenv('LIBMEMALLOC_CHANGE_FILE'"
+                     .. ")})"
                ).state == "INFRA_ERROR",
                "special change marker accepted"
             )
             assert(
                run(
-                  "local p=os.getenv('LIBMEMALLOC_CHANGE_FILE'); local f=assert(io.open(p..'.target','w'));f:write('true\\n');f:close();assert(require('luv').fs_symlink(p..'.target',p))"
+                  "local p=os.getenv('LIBMEMALLOC_CHANGE_FILE'); local "
+                     .. "f=assert(io.open(p..'.target','w'));f:writ"
+                     .. "e('true\\n');f:close();assert(require('luv"
+                     .. "').fs_symlink(p..'.target',p))"
                ).state == "INFRA_ERROR",
                "special change marker accepted"
             )
@@ -243,7 +260,8 @@ local function NATIVE_TEST_main()
    local memory = resources.run({
       lua,
       "-e",
-      "local x={};for i=1,128 do x[i]=string.rep('x',1024*1024);require('luv').sleep(20) end",
+      "local x={};for i=1,128 do "
+         .. "x[i]=string.rep('x',1024*1024);require('luv').sleep(20) end",
    }, { memory_bytes = 64 * 1024 * 1024, timeout_ms = 15000 })
    assert(memory.state ~= "PASS", "memory ceiling did not stop allocation")
    assert(run("print('recovered')").state == "PASS", "resource recovery failed")
@@ -261,7 +279,8 @@ local function NATIVE_TEST_main()
    )
    owner_death("standard")
    print(
-      "Native Lua supervision: receipts, output, markers, memory, recovery and owner death passed."
+      "Native Lua supervision: receipts, output, markers, memory, "
+         .. "recovery and owner death passed."
    )
 end
 

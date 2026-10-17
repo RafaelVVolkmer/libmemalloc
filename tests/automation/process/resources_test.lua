@@ -19,21 +19,22 @@ local function RESOURCES_TEST_main()
       lua,
       "-e",
       [[
-      assert(os.getenv("GHCRTS") == nil)
-      assert(os.getenv("LEAN_NUM_THREADS") == "2")
-      local file = assert(io.open("/proc/self/cgroup"))
-      local group = assert(file:read("*a"):match("0::([^\n]+)"))
-      file:close()
-      assert(group:match("libmemalloc%-verification.*%.scope$"))
-      local base = "/sys/fs/cgroup" .. group .. "/"
-      for key, value in pairs({["memory.max"]="67108864", ["memory.swap.max"]="0"}) do
-         file = assert(io.open(base .. key))
-         assert(file:read("*l") == value)
-         file:close()
-      end
-      assert(arg[1] == "literal $HOME ; spaces")
-      print("kernel limits and literal arguments verified")
-   ]],
+assert(os.getenv("GHCRTS") == nil)
+assert(os.getenv("LEAN_NUM_THREADS") == "2")
+local file = assert(io.open("/proc/self/cgroup"))
+local group = assert(file:read("*a"):match("0::([^\n]+)"))
+file:close()
+assert(group:match("libmemalloc%-verification.*%.scope$"))
+local base = "/sys/fs/cgroup" .. group .. "/"
+local limits = { ["memory.max"] = "67108864", ["memory.swap.max"] = "0" }
+for key, value in pairs(limits) do
+   file = assert(io.open(base .. key))
+   assert(file:read("*l") == value)
+   file:close()
+end
+assert(arg[1] == "literal $HOME ; spaces")
+print("kernel limits and literal arguments verified")
+]],
       "--",
       "/dev/null",
       "literal $HOME ; spaces",
@@ -50,7 +51,8 @@ local function RESOURCES_TEST_main()
    -- @return nil: no values.
    local function checkCpuAdmission()
       local replacement = directory .. "/cpu-max"
-      --- Replace only CPU metadata while keeping real systemd setup and memory checks.
+      --- Replace only CPU metadata while keeping real systemd setup and memory
+      -- checks.
       -- @param name string: requested kernel metadata path.
       -- @param mode string: file access mode.
       -- @return file*|nil: actual file or substituted CPU metadata.
@@ -111,7 +113,8 @@ local function RESOURCES_TEST_main()
             .. ioTools.uv.cwd()
             .. "/"
             .. directory
-            .. '/compiler"\nlibdir="/probe"\nexec "$executablename" -B"$libdir" ${1+"$@"}\n'
+            .. '/compiler"\nlibdir="/probe"\nexec "$execut'
+            .. 'ablename" -B"$libdir" ${1+"$@"}\n'
       )
    )
    local compiler = resources.run(
@@ -189,7 +192,8 @@ int main(void) {
    local heapOverflow = resources.run({
       "sh",
       "-c",
-      "printf 'panic! (the impossible happened)\\nGHC version 9.4.7:\\n\\theap overflow\\n' >&2; exit 1",
+      "printf 'panic! (the impossible happened)\\nGHC version "
+         .. "9.4.7:\\n\\theap overflow\\n' >&2; exit 1",
    }, { memory_bytes = cap })
    files.write(directory .. "/heap-overflow.json", ioTools.json(heapOverflow))
    assert(heapOverflow.state == "INFRA_ERROR", ioTools.json(heapOverflow))
@@ -221,18 +225,24 @@ local uv = require("luv")
 local exec = dofile("scripts/process/lib/exec.lua")
 local mode, prefix, lua = arg[1], arg[2], arg[3]
 local group = assert(io.open("/proc/self/cgroup", "r"))
-local scope = assert(group:read(4096):match("/(libmemalloc%-verification%-[%w%-]+%.scope)\n"))
+local scope = assert(
+   group:read(4096):match("/(libmemalloc%-verification%-[%w%-]+%.scope)\n")
+)
 group:close()
 if mode == "timeout" or mode == "cancel" then
    files.write(prefix .. ".outer", scope)
-   resources.run({lua, arg[0], "leaf", prefix, lua, mode}, {memory_bytes=67108864, timeout_ms=30000})
+   resources.run(
+      { lua, arg[0], "leaf", prefix, lua, mode },
+      { memory_bytes = 67108864, timeout_ms = 30000 }
+   )
 else
    files.write(prefix .. ".pid", tostring(uv.os_getpid()))
    files.write(prefix .. ".scope", scope)
    if arg[4] == "cancel" then
-      exec.run({"systemctl", "--user", "stop", files.read(prefix .. ".outer")})
+      local outer = files.read(prefix .. ".outer")
+      exec.run({ "systemctl", "--user", "stop", outer })
    end
-   exec.run({"sh", "-c", "setsid sleep 30 & wait"}, {timeout_ms=30000})
+   exec.run({ "sh", "-c", "setsid sleep 30 & wait" }, { timeout_ms = 30000 })
 end
 ]]
    )
@@ -244,7 +254,10 @@ end
       launcher,
       [[
 local resources = dofile("scripts/verification/lib/resources.lua")
-resources.run({arg[1], arg[2], "neighbor", arg[3], arg[1]}, {memory_bytes=67108864, timeout_ms=30000})
+resources.run(
+   { arg[1], arg[2], "neighbor", arg[3], arg[1] },
+   { memory_bytes = 67108864, timeout_ms = 30000 }
+)
 ]]
    )
    local handle
@@ -340,7 +353,8 @@ resources.run({arg[1], arg[2], "neighbor", arg[3], arg[1]}, {memory_bytes=671088
    )
    files.write(directory .. "/unavailable.json", ioTools.json(denied))
    print(
-      "Resource containment: kernel caps, OOM recovery, nested timeout and cancellation passed."
+      "Resource containment: kernel caps, OOM recovery, nested "
+         .. "timeout and cancellation passed."
    )
 end
 

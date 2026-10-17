@@ -83,7 +83,8 @@ local function TOOLCHAIN_loadModule()
       )
    end
 
-   --- Validate configuration, binaries, versions and source revisions identically.
+   --- Validate configuration, binaries, versions and source revisions
+   -- identically.
    -- @param env table: repository and pinned tool locations.
    -- @param run function: bounded command runner retaining receipts.
    -- @return table: admitted tool and configuration identities.

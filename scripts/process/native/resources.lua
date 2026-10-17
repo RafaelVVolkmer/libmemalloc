@@ -29,7 +29,8 @@ local function NATIVE_RESOURCES_loadModule()
          for _, entry in ipairs(options.env) do
             present[entry:match("^([^=]+)=")] = true
          end
-         for _, key in ipairs({ "XDG_RUNTIME_DIR", "DBUS_SESSION_BUS_ADDRESS" }) do
+         local keys = { "XDG_RUNTIME_DIR", "DBUS_SESSION_BUS_ADDRESS" }
+         for _, key in ipairs(keys) do
             if not present[key] then
                options.env[#options.env + 1] = key
                   .. "="

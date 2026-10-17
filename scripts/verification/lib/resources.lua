@@ -20,12 +20,15 @@ local function RESOURCES_loadModule()
       local start =
          assert(script:find(marker, 1, true), "unexpected GHC wrapper")
       return script:sub(1, start - 1)
-         .. 'exec env -u GHCRTS "$executablename" -B"$libdir" ${1+"$@"} +RTS -M1536m -RTS'
+         .. 'exec env -u GHCRTS "$executablename" -B"$l'
+         .. 'ibdir" ${1+"$@"} +RTS -M1536m -RTS'
          .. script:sub(start + #marker)
    end
 
-   --- Find the actual enclosing verification scope, even with a cleared environment.
-   -- @return string|nil: kernel-reported parent scope for dependency propagation.
+   --- Find the actual enclosing verification scope, even with a cleared
+   -- environment.
+   -- @return string|nil: kernel-reported parent scope for dependency
+   -- propagation.
    local function parentScope()
       local file = io.open("/proc/self/cgroup", "r")
       if not file then
@@ -164,7 +167,8 @@ local function RESOURCES_loadModule()
       local parent = parentScope()
       if parent then
          -- After also orders shutdown: the child stops before its parent.
-         -- BindsTo propagates timeout, explicit stop and unexpected parent death.
+         -- BindsTo propagates timeout, explicit stop and unexpected parent
+         -- death.
          command[#command + 1] = "--property=BindsTo=" .. parent
          command[#command + 1] = "--property=After=" .. parent
       end

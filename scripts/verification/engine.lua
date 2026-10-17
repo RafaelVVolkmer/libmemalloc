@@ -1,7 +1,8 @@
 -- SPDX-FileCopyrightText: 2026 Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
 -- SPDX-License-Identifier: GPL-3.0-only
 
--- Validate the reusable engines without claiming acceptance of a production feature.
+-- Validate the reusable engines without claiming acceptance of a production
+-- feature.
 -- Product proofs use explicit source and contract inputs through c.lua.
 
 --- Execute the formal engine module within its explicit boundary.
@@ -94,7 +95,8 @@ local function FORMAL_ENGINE_main()
          limitations = io.array({
             "No source-to-IR preservation theorem",
             "No binary correctness theorem",
-            "Engine regression evidence is not a proof of a production operation",
+            "Engine regression evidence is not a proof of a production "
+               .. "operation",
             "Liquid Haskell checks Refined.hs; the complete "
                .. "Haskell engine is not refinement-proved",
          }),
@@ -247,7 +249,8 @@ local function FORMAL_ENGINE_main()
          dofile("scripts/verification/lib/toolchain.lua").validate(env, run)
       checkpoint("prepare")
    end
-   --- Check engines and their rejection controls without selecting an operation.
+   --- Check engines and their rejection controls without selecting an
+   -- operation.
    -- @return nil: no values.
    local function main()
       startStage()

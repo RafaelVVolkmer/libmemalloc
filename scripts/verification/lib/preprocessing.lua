@@ -1,7 +1,8 @@
 -- SPDX-FileCopyrightText: 2026 Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
 -- SPDX-License-Identifier: GPL-3.0-only
 
---- Preserve native preprocessing while admitting only scalar-irrelevant metadata.
+--- Preserve native preprocessing while admitting only scalar-irrelevant
+-- metadata.
 -- @return table: compiler arguments and frontend normalization.
 local function PREPROCESSING_loadModule()
    --- Use native predefined macros and the declared C99 source profile.
@@ -75,7 +76,8 @@ local function PREPROCESSING_loadModule()
       return result
    end
 
-   --- Remove only default symbol visibility, which has no scalar-body semantics.
+   --- Remove only default symbol visibility, which has no scalar-body
+   -- semantics.
    -- @param source string: native compiler preprocessing output.
    -- @return string, number: frontend input and number of removed attributes.
    local function normalize(source)

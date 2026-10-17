@@ -9,7 +9,8 @@ local function PROOF_FILES_loadModule()
    local uv = require("luv")
    local maximum = 16 * 1024 * 1024
 
-   --- Read only the checked regular-file descriptor, with a fixed allocation cap.
+   --- Read only the checked regular-file descriptor, with a fixed allocation
+   -- cap.
    -- @param fd number: open nonblocking descriptor.
    -- @param before table: file metadata checked before opening.
    -- @return string: complete bounded file contents.
@@ -74,7 +75,8 @@ local function PROOF_FILES_loadModule()
       assert(uv.fs_fsync(fd))
    end
 
-   --- Publish a complete receipt by renaming a private file in the same directory.
+   --- Publish a complete receipt by renaming a private file in the same
+   -- directory.
    -- @param path string: destination path.
    -- @param contents string: bounded receipt bytes.
    -- @param mode number: final owner and access permissions.
@@ -134,7 +136,8 @@ local function PROOF_FILES_loadModule()
             "git ls-files --cached --others --exclude-standard --"
                .. " verification scripts/verification"
                .. " docs/specs/formal-engine.md docs/reference/formal-engine.md"
-               .. " docs/assurance/formal-trust.md docs/runbooks/formal-verification.md"
+               .. " docs/assurance/formal-trust.md docs/runbo"
+               .. "oks/formal-verification.md"
                .. " tests/automation/process/*test.lua"
                .. " scripts/process scripts/lib/platform.lua"
                .. " tools/process tools/toolchain/lock.toml"

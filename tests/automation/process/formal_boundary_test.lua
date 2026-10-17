@@ -29,7 +29,7 @@ assert(files.read(regular, 8) == "12345678")
 assert(not pcall(files.read, regular, 7))
 files.write(root .. "/empty", "")
 assert(files.read(root .. "/empty", 0) == "")
-assert(exec.run({"mkfifo", root .. "/pipe"}).state == "PASS")
+assert(exec.run({ "mkfifo", root .. "/pipe" }).state == "PASS")
 assert(not pcall(files.read, root .. "/pipe"))
 assert(not pcall(files.write, root .. "/pipe", "blocked write"))
 assert(uv.fs_symlink(regular, root .. "/link"))
@@ -41,15 +41,16 @@ assert(uv.fs_ftruncate(fd, 4 * 1024 * 1024 + 1))
 assert(uv.fs_close(fd))
 local ok, failure = pcall(files.read, root .. "/large")
 assert(not ok and failure:find("oversized proof file", 1, true))
--- Replace the path after lstat to exercise the descriptor check, not only lstat.
+-- Replace the path after lstat to exercise the descriptor check, not only
+-- lstat.
 local open = uv.fs_open
-for _, kind in ipairs({"fifo", "symlink", "regular"}) do
+for _, kind in ipairs({ "fifo", "symlink", "regular" }) do
    files.write(root .. "/race", "old")
    local opened
    uv.fs_open = function(path, flags, mode)
       assert(uv.fs_unlink(path))
       if kind == "fifo" then
-         assert(exec.run({"mkfifo", path}).state == "PASS")
+         assert(exec.run({ "mkfifo", path }).state == "PASS")
       elseif kind == "symlink" then
          assert(uv.fs_symlink(regular, path))
       else
@@ -61,7 +62,9 @@ for _, kind in ipairs({"fifo", "symlink", "regular"}) do
    local accepted = pcall(files.read, root .. "/race")
    uv.fs_open = open
    assert(not accepted, "path replacement accepted: " .. kind)
-   if opened then assert(uv.fs_fstat(opened) == nil, "descriptor leaked") end
+   if opened then
+      assert(uv.fs_fstat(opened) == nil, "descriptor leaked")
+   end
    assert(uv.fs_unlink(root .. "/race"))
 end
 files.atomic_write(root .. "/receipt", "old")
@@ -71,7 +74,11 @@ files.atomic_write(root .. "/link", "receipt")
 assert(files.read(regular) == "12345678", "receipt write followed a symlink")
 assert(files.read(root .. "/link") == "receipt")
 assert(not pcall(files.atomic_write, root, "cannot replace a directory"))
-print("Bounded reads, FIFO and symlink rejection, path races, descriptor cleanup and atomic receipts passed.")
+print(
+   "Bounded reads, FIFO and symlink rejection,"
+      .. " path races, descriptor cleanup and atomic"
+      .. " receipts passed."
+)
 ]]
    )
    local ioResult = env.resources.run(
@@ -99,14 +106,16 @@ print("Bounded reads, FIFO and symlink rejection, path races, descriptor cleanup
       ["liquid-source-diff"] = "",
    }
    local calls = 0
-   --- Supply controlled tool responses while exercising real configuration files.
+   --- Supply controlled tool responses while exercising real configuration
+   -- files.
    -- @param name string: validation step.
    -- @return string: controlled tool output.
    local function response(name)
       calls = calls + 1
       return assert(responses[name], "unexpected admission command")
    end
-   --- Require a specific admission rejection and optionally forbid subprocesses.
+   --- Require a specific admission rejection and optionally forbid
+   -- subprocesses.
    -- @param diagnostic string: required error text.
    -- @param beforeCommands boolean|nil: reject before any tool is launched.
    -- @return nil: no values.
@@ -199,7 +208,9 @@ print("Bounded reads, FIFO and symlink rejection, path races, descriptor cleanup
       })
    )
    print(
-      "Formal boundaries: bounded I/O, atomic receipts, configuration drift, versions, digests and source revisions passed."
+      "Formal boundaries: bounded I/O, atomic receipts, "
+         .. "configuration drift, versions, digests and source "
+         .. "revisions passed."
    )
 end
 

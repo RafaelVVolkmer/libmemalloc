@@ -2,7 +2,8 @@
 -- SPDX-License-Identifier: GPL-3.0-only
 
 --- Describe or execute the shared engineering task registry.
--- Ansible and direct dispatch retain bounded logs and native resource containment.
+-- Ansible and direct dispatch retain bounded logs and native resource
+-- containment.
 
 --- Resolve only reviewed tasks and preserve each literal argument boundary.
 -- @return nil: no values.

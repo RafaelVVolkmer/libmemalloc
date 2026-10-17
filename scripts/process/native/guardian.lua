@@ -4,11 +4,13 @@
 --- Supervise descendants independently of the invoking task controller.
 -- @return nil: exits with the bounded child outcome.
 local function GUARDIAN_main()
-   --- Execute the guardian while converting setup faults to infrastructure exits.
+   --- Execute the guardian while converting setup faults to infrastructure
+   -- exits.
    -- @return nil: exits with the supervised outcome.
    local function execute()
       local uv = require("luv")
-      --- Resolve guardian modules independently of the requested child directory.
+      --- Resolve guardian modules independently of the requested child
+      -- directory.
       -- @return string, string: repository root and child working directory.
       local function working_directory()
          local directory = assert(uv.cwd())
@@ -123,7 +125,8 @@ local function GUARDIAN_main()
             { timeout_ms = 2000 }
          )
       end
-      --- Translate the child outcome without treating resource failure as rejection.
+      --- Translate the child outcome without treating resource failure as
+      -- rejection.
       -- @return nil: exits the guardian process.
       local function finish()
          if result.state == "TIMEOUT" then
