@@ -71,7 +71,8 @@ jobs:
       matrix:
         runner: [macos-15, macos-15-intel]
     runs-on: ${{ matrix.runner }}
-    timeout-minutes: 45
+    # Cold Intel builds compile the full tool profile before documentation.
+    timeout-minutes: ${{ matrix.runner == 'macos-15-intel' && 90 || 45 }}
     permissions:
       contents: read
     steps:
