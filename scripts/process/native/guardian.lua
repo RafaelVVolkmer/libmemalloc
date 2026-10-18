@@ -105,14 +105,7 @@ local function GUARDIAN_main()
             on_spawn = windows and job.assign or nil,
             on_tick = poll,
             on_stop = stop,
-            --- Forward accepted output while the independent guardian is alive.
-            -- @param stream string: stdout or stderr.
-            -- @param data string: bytes accepted by the executor.
-            -- @return nil: callback result is consumed by its owner.
-            on_output = function(stream, data)
-               assert(io[stream]:write(data))
-               assert(io[stream]:flush())
-            end,
+            on_output = exec.forward_output,
          })
       end
       stop()

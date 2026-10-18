@@ -55,6 +55,21 @@ local function tests_process_exec_test_suite_main()
       live.stdout == streamed and streamed == literal,
       "live output differs from retained bytes"
    )
+   local binary = "LF\nCRLF\r\n" .. string.char(0, 26, 128, 255)
+   local forwarded = E.run({
+      require("luv").exepath(),
+      "-e",
+      "local e=dofile('scripts/process/lib/exec.lua'); "
+         .. "local bytes='LF\\nCRLF\\r\\n'..string.char(0,26,128,255); "
+         .. "e.forward_output('stdout',bytes); "
+         .. "e.forward_output('stderr',bytes)",
+   })
+   assert(
+      forwarded.state == "PASS"
+         and forwarded.stdout == binary
+         and forwarded.stderr == binary,
+      "forwarding changed binary output"
+   )
    local broken = E.run({ "yes" }, {
       timeout_ms = 1000,
       --- Simulate failure of a retained log sink.

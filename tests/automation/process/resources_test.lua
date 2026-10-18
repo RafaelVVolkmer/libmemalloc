@@ -113,8 +113,8 @@ print("kernel limits and literal arguments verified")
             .. ioTools.uv.cwd()
             .. "/"
             .. directory
-            .. '/compiler"\nlibdir="/probe"\nexec "$execut'
-            .. 'ablename" -B"$libdir" ${1+"$@"}\n'
+            .. '/compiler"\nlibdir="/probe"\n'
+            .. 'exec "$executablename" -B"$libdir" ${1+"$@"}\n'
       )
    )
    local compiler = resources.run(

@@ -130,7 +130,7 @@ run("-e", "lma_task=unknown-task", code=2)
 assert not (checkout / "quality-installs").exists()
 (checkout / "fail-quality").touch()
 output = run("-e", "lma_task=lua-check", code=2)
-assert "non-UTF-8 output" in output
+assert "non-UTF-8 output" in output, output
 assert not (checkout / ".cache/tools/quality/.ansible-lua").exists()
 (checkout / "fail-quality").unlink()
 run("-e", "lma_task=lua-check")

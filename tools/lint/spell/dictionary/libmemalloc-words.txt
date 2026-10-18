@@ -31,6 +31,7 @@ anonymization
 ANSI
 Ansible
 ANSSI
+anyclass
 API
 APIs
 apksigcopier
@@ -86,6 +87,7 @@ boolean
 booleans
 borrow
 BTB
+bubblewrap
 buffer_t
 bugprone
 buildable
@@ -111,6 +113,7 @@ CAS
 catch_unwind
 CBAN
 CBMC
+ccall
 cdata
 cdylib
 CERT
@@ -236,6 +239,9 @@ dlopen
 DMA
 DO
 docset
+docstring
+docstrings
+doctest
 doctests
 docummentation
 dofile
@@ -257,6 +263,7 @@ DTLB
 DTOs
 dtos
 DUT's
+Dwarning
 EACCES
 EAGAIN
 EBUSY
@@ -268,6 +275,7 @@ EFAULT
 effectful
 EINTR
 EINVAL
+elaborators
 ELF
 elidable
 elif
@@ -293,6 +301,7 @@ EOVERFLOW
 EPERM
 ephemerons
 EPROTO
+equational
 ERANGE
 errno
 ESBMC
@@ -325,8 +334,10 @@ fixpoints
 fixup
 Flawfinder
 Flink
+fmap
 FMECA
 Fo
+foldl
 Follows
 fopen
 foreach
@@ -337,6 +348,7 @@ formatter
 formatters
 FP
 fplan
+fplugin
 fprintf
 fprofile
 Frama
@@ -432,6 +444,7 @@ includedbygraph
 includer
 includer's
 incrementality
+infixr
 initializer
 initializers
 injectable
@@ -443,6 +456,8 @@ interleavings
 interop
 interposers
 interprocess
+interruptibility
+interruptible
 intoto
 intptr
 intrinsics
@@ -574,6 +589,7 @@ metacharacters
 metamethod
 metamethods
 metaprogramming
+metaprograms
 metatable
 metatables
 metavariables
@@ -581,6 +597,7 @@ microarchitectural
 microarchitecture
 microbenchmark
 microcontroller
+Millis
 mimalloc
 minimizers
 Miri
@@ -603,6 +620,7 @@ mock's
 Mockable
 modelines
 module_table
+monomorphism
 monomorphization
 MPMC
 mprotect
@@ -653,15 +671,21 @@ NOLINTNEXTLINE
 nonallocating
 nonblocking
 nonces
+noncomputability
+noncomputable
 nonconformities
+nonfinite
 nonliteral
 nonlocal
 nonlocally
+nonnegativity
 nonoverlapping
 nonpanicking
 nonrecursive
 Nonrepresentative
 nonterminated
+nonterminating
+nontermination
 nonthrowing
 Nord
 nosuid
@@ -680,6 +704,7 @@ OCI
 Octocat
 Od
 od
+odir
 Ofast
 offsetof
 onboarding
@@ -700,6 +725,8 @@ overalignment
 overapproximation
 overbroad
 overcommit
+overlength
+overread
 pacman
 pahole
 parameterization
@@ -784,6 +811,7 @@ RCU's
 RDONLY
 reachability
 README
+realizability
 realloc
 reallocations
 realpath
@@ -917,6 +945,7 @@ signingkey
 Sigstore
 SILs
 SIMD
+simpa
 sizeof
 SLAs
 SLSA
@@ -1029,6 +1058,7 @@ trydiffoscope
 TS
 TSan
 tsd
+typeclass
 typedef
 typedefs
 typestate
@@ -1036,6 +1066,7 @@ typos
 UAPI
 UB
 UBSan
+UInt
 uintptr
 ultoa
 umask
@@ -1046,7 +1077,10 @@ uncommented
 uncompromised
 uncontended
 uncopyable
+underflows
+unescaped
 unexecuted
+unimported
 Uninit
 uninit
 uninstrumented
@@ -1127,6 +1161,7 @@ Wbidi
 WCAG
 WCET
 wchar
+Wcompat
 Wconversion
 wcscat
 wcscpy
@@ -1137,8 +1172,10 @@ Wdeclaration
 webmcp
 Werror
 Wextra
+wfail
 Wformat
 whitebox
+Wincomplete
 Wireshark
 Wireshark's
 wmem
@@ -1148,6 +1185,7 @@ worklist
 worklists
 worktree
 worktrees
+Wpartial
 Wpedantic
 writability
 writeback

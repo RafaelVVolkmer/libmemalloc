@@ -29,6 +29,7 @@ local function DARWIN_loadModule()
       typedef struct { unsigned long long current, maximum; } LMA_RLIMIT;
       int proc_pidinfo(int, int, unsigned long long, void *, int);
       int proc_listpids(unsigned int, unsigned int, void *, int);
+      int getrlimit(int, LMA_RLIMIT *);
       int setrlimit(int, const LMA_RLIMIT *);
    ]])
    local api = ffi.load("/usr/lib/libproc.dylib")
@@ -60,7 +61,10 @@ local function DARWIN_loadModule()
       local core = ffi.new("LMA_RLIMIT[1]")
       assert(ffi.C.setrlimit(4, core) == 0, "cannot disable core dumps")
       local cpu = ffi.new("LMA_RLIMIT[1]")
-      cpu[0].current, cpu[0].maximum = timeout * 2, timeout * 2
+      assert(ffi.C.getrlimit(0, cpu) == 0, "cannot read CPU deadline")
+      -- Nested tasks retain tighter limits inherited from their controller.
+      cpu[0].current = math.min(ffi.tonumber(cpu[0].current), timeout * 2)
+      cpu[0].maximum = math.min(ffi.tonumber(cpu[0].maximum), timeout * 2)
       assert(ffi.C.setrlimit(0, cpu) == 0, "cannot set CPU deadline")
       local group, started = uv.os_getpid(), uv.hrtime()
       local members = ffi.new("int[4096]")

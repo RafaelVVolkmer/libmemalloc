@@ -16,6 +16,21 @@ local function scripts_process_lib_exec_loadModule()
    local EXEC_OUTPUT_STREAMS = 2
    local EXEC_KILL_SIGNAL = 9 -- POSIX SIGKILL for an expired process group.
 
+   --- Forward child bytes without applying host text-mode newline conversion.
+   -- @param stream string: stdout or stderr.
+   -- @param data string: exact bytes accepted by the executor.
+   -- @return nil: completes every write or raises on a broken output sink.
+   function exports.forward_output(stream, data)
+      local descriptor =
+         assert(({ stdout = 1, stderr = 2 })[stream], "invalid output stream")
+      local offset = 0
+      while offset < #data do
+         local count = assert(uv.fs_write(descriptor, data:sub(offset + 1), -1))
+         assert(count > 0, "incomplete output write")
+         offset = offset + count
+      end
+   end
+
    ---@class ProcessChildHandle
    ---@field kill fun(self: ProcessChildHandle, signal: integer)
    ---@field close fun(self: ProcessChildHandle)

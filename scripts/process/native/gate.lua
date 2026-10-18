@@ -11,17 +11,11 @@ local function GATE_main()
    end
    local script = arg[0]:gsub("\\", "/")
    local root = assert(script:match("^(.*)/scripts/process/native/gate.lua$"))
-   local result = dofile(root .. "/scripts/process/lib/exec.lua").run(command, {
+   local exec = dofile(root .. "/scripts/process/lib/exec.lua")
+   local result = exec.run(command, {
       detached = false,
       timeout_ms = 86400000,
-      --- Forward accepted output from the contained child.
-      -- @param stream string: stdout or stderr.
-      -- @param data string: bytes accepted by the executor.
-      -- @return nil: callback result is consumed by its owner.
-      on_output = function(stream, data)
-         assert(io[stream]:write(data))
-         assert(io[stream]:flush())
-      end,
+      on_output = exec.forward_output,
    })
    os.exit(
       result.state == "PASS" and 0

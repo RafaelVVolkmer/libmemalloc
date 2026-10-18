@@ -11,6 +11,7 @@ local function TASKS_loadModule()
    local TASKS_DIAGNOSTIC_TAIL_BYTES = 4096
 
    local artifacts = dofile("scripts/lib/artifacts.lua")
+   local exec = dofile("scripts/process/lib/exec.lua")
    local files = dofile("scripts/verification/lib/files.lua")
    local exports = {}
    local TASKS_MILLISECONDS_PER_SECOND = 1000
@@ -162,8 +163,7 @@ local function TASKS_loadModule()
          end
          written[stream] = written[stream] + #chunk
          if options.direct then
-            assert(io[stream]:write(chunk))
-            assert(io[stream]:flush())
+            exec.forward_output(stream, chunk)
          end
       end
       local result = selected.run(command, {

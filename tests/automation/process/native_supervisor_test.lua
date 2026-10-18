@@ -175,10 +175,11 @@ local function NATIVE_TEST_main()
             :find("spaces ; $HOME `literal`", 1, true)
       )
       local failed = run("io.stderr:write('failure\\n'); os.exit(7)")
+      local newline = uv.os_uname().sysname == "Windows_NT" and "\r\n" or "\n"
       assert(
          failed.state == "FAIL"
             and failed.exit_code == 7
-            and failed.stderr_tail == "failure\n",
+            and failed.stderr_tail == "failure" .. newline,
          "ordinary failure was not preserved"
       )
       assert(
@@ -201,7 +202,7 @@ local function NATIVE_TEST_main()
                string.format(
                   "local "
                      .. "f=assert(io.open(os.getenv('LIBMEMALLOC_CH"
-                     .. "ANGE_FILE'),'w'));f:write(%q);f:close()",
+                     .. "ANGE_FILE'),'wb'));f:write(%q);f:close()",
                   value
                )
             )
@@ -216,7 +217,7 @@ local function NATIVE_TEST_main()
                string.format(
                   "local "
                      .. "f=assert(io.open(os.getenv('LIBMEMALLOC_CH"
-                     .. "ANGE_FILE'),'w'));f:write(%q);f:close()",
+                     .. "ANGE_FILE'),'wb'));f:write(%q);f:close()",
                   value
                )
             )
@@ -257,6 +258,43 @@ local function NATIVE_TEST_main()
       markers()
    end
    receipt_checks()
+   --- Preserve binary streams across the native guardian and launch gate.
+   -- @return nil: no values.
+   local function binary_output()
+      local bytes = "LF\nCRLF\r\n" .. string.char(0, 26, 128, 255)
+      local report = run(
+         string.format(
+            "local uv=require('luv'); "
+               .. "assert(uv.fs_write(1,%q,-1)); "
+               .. "assert(uv.fs_write(2,%q,-1)); os.exit(7)",
+            bytes,
+            bytes
+         )
+      )
+      assert(
+         report.state == "FAIL" and report.exit_code == 7,
+         "binary failure lost its exit status"
+      )
+      for _, stream in ipairs({ "stdout", "stderr" }) do
+         assert(
+            files.read(report.directory .. "/" .. stream .. ".log") == bytes,
+            "native relay changed output bytes"
+         )
+         assert(report[stream .. "_tail"]:find("non-UTF-8", 1, true))
+      end
+   end
+   binary_output()
+   if uv.os_uname().sysname == "Darwin" then
+      local nested = run([[
+local uv = require("luv")
+local result = dofile("scripts/process/native/resources.lua").run({
+   uv.exepath(), "-e", "print('nested task passed')",
+}, { timeout_ms = 20000 })
+assert(result.state == "PASS", result.stderr)
+assert(result.stdout == "nested task passed\n")
+]])
+      assert(nested.state == "PASS", nested.stderr_tail)
+   end
    local memory = resources.run({
       lua,
       "-e",
