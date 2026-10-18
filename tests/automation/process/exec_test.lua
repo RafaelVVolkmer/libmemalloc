@@ -70,6 +70,35 @@ local function tests_process_exec_test_suite_main()
          and forwarded.stderr == binary,
       "forwarding changed binary output"
    )
+   --- Keep the launch gate's resource outcome distinct from child failures.
+   -- @return nil: no values.
+   local function gate_outcomes()
+      local uv = require("luv")
+      local gate = uv.cwd() .. "/scripts/process/native/gate.lua"
+      for _, case in ipairs({
+         { source = "print('gate passed')", code = 0 },
+         { source = "os.exit(7)", code = 7 },
+         {
+            source = "for i=1,144 do "
+               .. "io.stdout:write(string.rep('x',65536)) end",
+            code = 123,
+            bytes = 8 * 1024 * 1024,
+         },
+      }) do
+         local result = E.run(
+            { uv.exepath(), gate, uv.exepath(), "-e", case.source },
+            { stdin = "go\n", max_bytes = 16 * 1024 * 1024 }
+         )
+         assert(
+            result.exit_code == case.code and result.signal == 0,
+            "launch gate lost the child or resource exit code"
+         )
+         if case.bytes then
+            assert(#result.stdout == case.bytes, "gate output cap changed")
+         end
+      end
+   end
+   gate_outcomes()
    local broken = E.run({ "yes" }, {
       timeout_ms = 1000,
       --- Simulate failure of a retained log sink.

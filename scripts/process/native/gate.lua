@@ -17,6 +17,15 @@ local function GATE_main()
       timeout_ms = 86400000,
       on_output = exec.forward_output,
    })
+   if result.state == "OUTPUT_LIMIT" then
+      os.exit(123)
+   end
+   if result.state == "TIMEOUT" then
+      os.exit(124)
+   end
+   if result.state == "INFRA_ERROR" or result.signal ~= 0 then
+      os.exit(125)
+   end
    os.exit(
       result.state == "PASS" and 0
          or result.exit_code > 0 and result.exit_code
