@@ -223,6 +223,7 @@ local function PLAYBOOK_TEST_main()
          },
          [".github/workflows/_lint-automation.yml"] = {
             ["scripts/toolchain/resolve.lua"] = true,
+            ["scripts/workspace/bootstrap.lua"] = true,
          },
       }
 

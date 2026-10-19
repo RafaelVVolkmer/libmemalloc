@@ -87,9 +87,10 @@ jobs:
           if ! command -v python3.12 >/dev/null; then
             brew install python@3.12
           fi
-          LIBMEMALLOC_PYTHON=python3.12 lua scripts/process/playbook.lua --direct toolchain-python \
-            --groups=automation --directory=.cache/tools/controller
-          printf '%s\n' "${GITHUB_WORKSPACE}/.cache/tools/controller/bin" >> "${GITHUB_PATH}"
+          # The supervised dispatcher requires the native modules built here.
+          LIBMEMALLOC_PYTHON=python3.12 lua scripts/workspace/bootstrap.lua
+          version="$(lua scripts/toolchain/resolve.lua --field ansible_core.version)"
+          printf '%s\n' "${GITHUB_WORKSPACE}/.cache/tools/ansible/${version}/bin" >> "${GITHUB_PATH}"
 
       - name: Bootstrap a cold checkout and reuse its runtime
         run: |
