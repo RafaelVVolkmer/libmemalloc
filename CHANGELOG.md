@@ -92,6 +92,26 @@ The entries below record completed changes. Proposed work belongs in the
 
 ## [Unreleased]
 
+## [v0.0.1-alpha.1] - 2026-10-19: libmemalloc First Blueprint
+
+This initial preview records the first design of the CI/CD infrastructure,
+development workflow and supporting documentation. This first alpha uses a
+SemVer pre-release identifier for the infrastructure preview; no supported
+allocation API is announced.
+
+### Features
+
+- Establish automated build, installation, packaging, security and documentation
+  checks, with an aggregate CI gate and signed-commit validation.
+- Add release evidence generation and verification, including reproducibility,
+  software inventories and provenance for the distribution fixture.
+- Define locked tool installation, contribution and review workflows, and
+  required technical checks for integration into `develop`.
+- Add formal verification infrastructure for the mock, with explicit limits on
+  source refinement, binary correctness and product acceptance.
+
+- Publish validated documentation to GitHub Pages from `main`.
+
 ### Documentation
 
 - Establish governance, ownership, community conduct, security reporting,
@@ -113,10 +133,20 @@ The entries below record completed changes. Proposed work belongs in the
 - Add community issue and pull request templates.
 - Add GPL-3.0-only license files and REUSE metadata.
 
+### Fixes
+
+- Restrict x86-only build flags to x86 targets and use supported relaxed
+  floating-point flags on Apple Clang.
+- Use the compiler-aware archiver for GNU link-time optimization builds.
+- Allow the full WebAssembly build campaign to finish within its bounded
+  execution deadline.
+
 ### Migration Notes
 
-These entries describe repository setup and documentation. They do not announce
-an allocator release or changes to a supported allocation API.
+This version identifies an infrastructure and documentation preview. The C
+library remains a distribution fixture; the allocator and garbage collector
+are not implemented. The checks do not establish allocator correctness,
+performance or completion of M0/G0. No supported allocation API is announced.
 
 ---
 
@@ -125,6 +155,7 @@ an allocator release or changes to a supported allocation API.
 <!-- ======================================================================= -->
 
 [Unreleased]: https://github.com/RafaelVVolkmer/libmemalloc
+[v0.0.1-alpha.1]: https://github.com/RafaelVVolkmer/libmemalloc/tree/v0.0.1-alpha.1
 
 <!-- ======================================================================= -->
 <!-- Standards Badge References                                              -->
