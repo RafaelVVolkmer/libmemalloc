@@ -334,6 +334,12 @@ local function scripts_build_run_main()
             -- @return nil: no values.
             local function build_run_configureFlags()
                if cell.flags then
+                  for _, flag in ipairs(cell.flags) do
+                     if flag == "-flto" and profile.compiler == "GNU" then
+                        configure[#configure + 1] = "-DLMA_IPO=ON"
+                     end
+                  end
+
                   if cell.semantic_profile == "freestanding-core" then
                      configure[#configure + 1] = "-DLMA_CORE_FLAGS="
                         .. table.concat(cell.flags, ";")

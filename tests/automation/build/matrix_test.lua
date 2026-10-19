@@ -24,6 +24,48 @@ local function tests_build_matrix_test_suite_main()
       assert(cell.support == "required", "flags downgraded a supported cell")
    end
 
+   --- Require architecture flags and supported floating-point semantics.
+   -- @return nil: rejects incompatible flags or lost platform coverage.
+   local function checkPlatformFlags()
+      local red_zone_profiles = {}
+
+      for _, cell in ipairs(plan.cells) do
+         if cell.semantic_profile == "x86-64" then
+            local profile = M.profile(catalog, cell.profile)
+
+            assert(
+               profile.arch == "X86_64",
+               "x86-only flag planned for " .. profile.id
+            )
+            red_zone_profiles[profile.id] = true
+         end
+      end
+
+      for _, profile in ipairs(catalog.profiles) do
+         if profile.arch == "X86_64" and profile.compiler ~= "MSVC" then
+            assert(
+               red_zone_profiles[profile.id],
+               "x86 flag coverage lost for " .. profile.id
+            )
+         end
+      end
+
+      for _, cell in ipairs(plan.cells) do
+         if cell.profile == "macos-arm64" and cell.id:match("%-Ofast$") then
+            assert(
+               cell.semantic_profile == "relaxed-fp",
+               "Apple Clang lost the relaxed floating-point contract"
+            )
+            assert(
+               table.concat(cell.flags, " ") == "-O3 -ffast-math",
+               "Apple Clang requires the supported relaxed floating-point flags"
+            )
+         end
+      end
+   end
+
+   checkPlatformFlags()
+
    local trial_catalog = dofile("tools/build/matrix.lua")
 
    trial_catalog.optimizations[1].support = "experimental"

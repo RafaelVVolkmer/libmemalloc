@@ -238,14 +238,19 @@ local function scripts_build_lib_matrix_loadModule()
                   for _, flags in
                      ipairs(variants(catalog.flag_profiles, "flag_profiles"))
                   do
-                     build_matrix_addCell(
-                        "Release",
-                        profile.c[#profile.c],
-                        "flags-" .. flags.id,
-                        flags.flags,
-                        flags.contract,
-                        flags.support
-                     )
+                     if
+                        flags.contract ~= "x86-64"
+                        or profile.arch == "X86_64"
+                     then
+                        build_matrix_addCell(
+                           "Release",
+                           profile.c[#profile.c],
+                           "flags-" .. flags.id,
+                           flags.flags,
+                           flags.contract,
+                           flags.support
+                        )
+                     end
                   end
                end
             end

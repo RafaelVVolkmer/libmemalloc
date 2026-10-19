@@ -242,7 +242,7 @@ local function PLAYBOOK_loadModule()
          description = "Execute a reviewed build campaign",
          effects = "read",
          dependencies = { "git", "cmake", "cc" },
-         timeout_seconds = 1800,
+         timeout_seconds = 7200,
          simulation = "plan",
       },
       ["build-report"] = {
