@@ -143,6 +143,39 @@ TUF signing keys serve different purposes.
 
 ---
 
+<a id="gittuf-recovery"></a>
+
+## gittuf recovery
+
+The security workflow fetches historical targets named by the RSL for the selected reference and gittuf
+metadata before running `gittuf verify-ref`. An RSL message contains an object ID; it does not keep that
+object reachable in Git. A full-history checkout can therefore omit a replaced annotated tag object.
+Recovery fetches exact object IDs from `origin`. It does not change tags, policy, RSL entries or signatures.
+
+If recovery fails, a maintainer must restore the original object from a trusted clone or backup and retain
+it under an archival reference. Do not recreate an equivalent tag: its object ID and signature would differ.
+If verification then reports a reference mismatch, inspect the RSL and the published tag with an authorized
+signing identity. Do not move a published tag to make the check pass. Follow the
+[signature guide](../standards/versioning/signature-guide.md) and publish a new version when needed.
+
+For a reviewed, newly created release tag, gittuf 0.15.0 supports the following local preparation, using the
+signing key authorized by the repository policy:
+
+```sh
+release_ref='refs/tags/<new-version>'
+gittuf rsl record --local-only "${release_ref}"
+gittuf verify-ref "${release_ref}"
+git push --atomic origin "${release_ref}" refs/gittuf/reference-state-log
+```
+
+Synchronize the existing gittuf metadata before preparing the entry. The atomic push publishes the tag and
+its signed record together, so tag-triggered verification sees both. Never force-push the RSL. CI has read
+permission only and cannot create maintainer signatures. Optional mode skips an absent policy; an initialized
+policy still has to verify successfully. Re-running an old tag uses the workflow stored in that tag, so a
+workflow fix must be included in the next reviewed release candidate.
+
+---
+
 ## Actions coverage
 
 `openssf.yml` schedules and manually dispatches a catalog-generated matrix of twenty projects.

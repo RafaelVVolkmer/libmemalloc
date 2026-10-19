@@ -279,6 +279,103 @@ local function tests_lint_ci_policy_test_suite_main()
       read(".github/workflows/documentation.yml")
    )
 
+   -- Exercise real Git transfers: RSL messages do not retain old tag objects.
+   local directory = platform.temporary_directory()
+   local restore = directory .. "/restore.sh"
+
+   write(restore, script(".github/actions/gittuf-objects/action.yml"))
+
+   local fixture = [=[
+set -euo pipefail
+cd "$1"
+restore="$2"
+export TARGET_REF=refs/tags/fixture
+git init --quiet --initial-branch=main seed
+git -C seed commit --quiet --allow-empty -m initial
+git -C seed tag -a fixture -m original
+old="$(git -C seed rev-parse refs/tags/fixture)"
+tree="$(git -C seed mktree </dev/null)"
+entry="$(printf 'RSL Reference Entry\n\nref: %s\ntargetID: %s\nnumber: 1\n' \
+  "$TARGET_REF" "$old" | git -C seed commit-tree "$tree")"
+git -C seed update-ref refs/gittuf/reference-state-log "$entry"
+git -C seed tag --force -a fixture -m replacement
+git clone --quiet --no-local seed replica
+cd replica
+git fetch --quiet origin \
+  refs/gittuf/reference-state-log:refs/gittuf/reference-state-log
+if git cat-file -e "$old" 2>/dev/null; then
+  printf '%s\n' 'Fixture unexpectedly contains the replaced tag.' >&2
+  exit 1
+fi
+refs="$(git show-ref)"
+fetch_head="$(cat .git/FETCH_HEAD)"
+bash "$restore"
+git cat-file -e "$old^{commit}"
+[[ "$(git show-ref)" == "$refs" ]]
+[[ "$(cat .git/FETCH_HEAD)" == "$fetch_head" ]]
+
+# Already recovered targets must not require a working remote.
+git remote set-url origin "$1/absent"
+bash "$restore"
+
+# Unrelated references must not block the selected tag's recovery.
+missing=1111111111111111111111111111111111111111
+other="$(printf 'RSL Reference Entry\n\nref: refs/tags/other\ntargetID: %s\n' \
+  "$missing" | git commit-tree "$tree" -p "$entry")"
+git update-ref refs/gittuf/reference-state-log "$other"
+bash "$restore"
+
+# A required target unavailable from origin must fail closed.
+bad="$(printf 'RSL Reference Entry\n\nref: %s\ntargetID: %s\n' \
+  "$TARGET_REF" "$missing" | git commit-tree "$tree" -p "$entry")"
+git update-ref refs/gittuf/reference-state-log "$bad"
+if bash "$restore" >missing.log 2>&1; then
+  exit 1
+fi
+grep -q 'Cannot recover gittuf target' missing.log
+
+# RSL values are data, never shell commands or fetch options.
+bad="$(printf 'RSL Reference Entry\n\nref: %s\ntargetID: %s\n' \
+  "$TARGET_REF" '$(touch injected)' | git commit-tree "$tree" -p "$entry")"
+git update-ref refs/gittuf/reference-state-log "$bad"
+if bash "$restore" >invalid.log 2>&1; then
+  exit 1
+fi
+grep -q 'Invalid object ID' invalid.log
+[[ ! -e injected ]]
+
+git update-ref -d refs/gittuf/reference-state-log
+if bash "$restore" >absent.log 2>&1; then
+  exit 1
+fi
+]=]
+   local success = platform.command_succeeded({
+      "env",
+      "-i",
+      "PATH=" .. assert(os.getenv("PATH")),
+      "HOME=" .. directory,
+      "GIT_CONFIG_NOSYSTEM=1",
+      "GIT_CONFIG_GLOBAL=/dev/null",
+      "GIT_AUTHOR_NAME=CI fixture",
+      "GIT_AUTHOR_EMAIL=fixture@example.invalid",
+      "GIT_COMMITTER_NAME=CI fixture",
+      "GIT_COMMITTER_EMAIL=fixture@example.invalid",
+      "timeout",
+      "30",
+      "bash",
+      "--noprofile",
+      "--norc",
+      "-c",
+      fixture,
+      "gittuf-fixture",
+      directory,
+      restore,
+   })
+
+   platform.remove_temporary_directory(directory)
+   assert(success, "gittuf object recovery regression failed")
+   count = count + 6
+
    print(
       string.format("CI security: %d adversarial policy cases passed.", count)
    )

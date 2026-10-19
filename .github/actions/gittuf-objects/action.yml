@@ -1,0 +1,80 @@
+# SPDX-FileCopyrightText: 2026 OpenAI
+# SPDX-License-Identifier: GPL-3.0-only
+
+---
+name: Restore gittuf objects
+description: Fetch historical RSL targets without changing refs or trust metadata.
+
+inputs:
+  reference:
+    description: Full branch or tag reference that will be verified.
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Restore objects referenced by the RSL
+      shell: bash
+      env:
+        TARGET_REF: ${{ inputs.reference }}
+      run: |
+        set -euo pipefail
+
+        git check-ref-format "${TARGET_REF}"
+        [[ "${TARGET_REF}" == refs/heads/* || "${TARGET_REF}" == refs/tags/* ]]
+
+        # RSL messages name objects but do not make them reachable by Git.
+        # Full-history checkout alone cannot recover replaced tag objects.
+        rsl="$(git log --format=%B refs/gittuf/reference-state-log --)"
+        declare -A restored=()
+        selected=false
+
+        while IFS= read -r line; do
+          case "${line}" in
+            'RSL '*Entry)
+              selected=false
+              ;;
+            'ref: '*)
+              reference="${line#ref: }"
+              selected=false
+              if [[ "${reference}" == "${TARGET_REF}" || "${reference}" == refs/gittuf/* ]]; then
+                selected=true
+              fi
+              ;;
+          esac
+          if [[ "${selected}" != true || "${line}" != targetID:* ]]; then
+            continue
+          fi
+
+          target="${line#targetID: }"
+          if [[ ! "${target}" =~ ^[0-9a-f]{40}([0-9a-f]{24})?$ ]]; then
+            printf '%s\n' 'Invalid object ID in gittuf RSL.' >&2
+            exit 1
+          fi
+          if [[ -n "${restored[${target}]:-}" ]]; then
+            continue
+          fi
+          restored["${target}"]=true
+
+          if ! git cat-file -e "${target}^{commit}" 2>/dev/null; then
+            printf 'Fetching historical gittuf target: %s\n' "${target}"
+            if ! timeout 60 git fetch \
+              --no-tags --no-write-fetch-head --no-recurse-submodules \
+              origin "${target}"; then
+              printf 'Cannot recover gittuf target %s from origin.\n' \
+                "${target}" >&2
+              printf '%s\n' \
+                'A maintainer must restore the original object from a trusted clone.' \
+                'See docs/runbooks/security-services.md#gittuf-recovery.' >&2
+              exit 1
+            fi
+          fi
+
+          git cat-file -e "${target}^{commit}"
+        done <<< "${rsl}"
+
+        # Fetching an object does not authorize it. The caller must still
+        # run gittuf verify-ref against the unchanged reference and policy.
+
+# EOF
+
