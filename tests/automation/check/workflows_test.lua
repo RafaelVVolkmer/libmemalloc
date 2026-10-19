@@ -8,7 +8,9 @@ local function WORKFLOWS_TEST_main()
    local policy = dofile("scripts/check/lib/workflows.lua")
    local source = artifacts.read(".github/workflows/documentation.yml")
    local branch = policy.documentation(source)
-   local escaped = branch:gsub("([^%w])", "%%%1")
+   local escaped = "%f[%w_.%-]"
+      .. branch:gsub("([^%w])", "%%%1")
+      .. "%f[^%w_./%-]"
    local migrated, count = source:gsub(escaped, "migration-target")
 
    assert(count == 3, "unexpected number of branch policy sites")

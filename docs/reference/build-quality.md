@@ -121,8 +121,7 @@ remain platform responsibilities. It has no runtime passing claim.
 uploads the accepted HTML through `upload-pages-artifact`. The deploy job consumes that artifact through
 `deploy-pages`; it has no checkout or rebuild step. Only this job receives `pages: write` and `id-token: write`.
 
-The temporary publication branch is `feature/libmemalloc-refactor`. On migration to `master`, update the push
-branch and both artifact/deploy ref conditions as noted beside the deploy job. The
+The publication branch is `main`. Keep the push branch and both artifact/deploy ref conditions aligned. The
 [workflow checker](../../scripts/check/workflows.lua) rejects inconsistent values across these locations;
 run it after a migration edit. Pull requests validate only.
 In repository Settings, select **Pages > Build and deployment > GitHub Actions** and allow the publication

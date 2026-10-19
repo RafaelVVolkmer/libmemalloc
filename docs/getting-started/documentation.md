@@ -102,13 +102,13 @@ The default HTML entry point is `.cache/docs/doxygen-build/html/index.html`.
 ## Hosted validation and publication
 
 The [documentation workflow](../../.github/workflows/documentation.yml) runs on pull requests, merge queues,
-pushes to `feature/libmemalloc-refactor` and manual requests. Its validation job checks document policy,
+pushes to `main` and manual requests. Its validation job checks document policy,
 Markdown, local links,
 Mermaid and Doxygen, then retains the generated site and diagnostics as a review artifact. Dependency installation uses
 the toolchain digests and npm lock integrity; checkout pins the theme submodule to its recorded commit.
 
 Only the separate deploy job receives `pages: write` and `id-token: write`. It consumes the accepted Pages
-artifact from the same run and runs only for a push or manual request on `feature/libmemalloc-refactor`.
+artifact from the same run and runs only for a push or manual request on `main`.
 Configure GitHub Pages
 to use Actions and protect the `github-pages` environment before the first hosted publication. PR validation
 uses per-ref concurrency; deployments share a separate queue.
