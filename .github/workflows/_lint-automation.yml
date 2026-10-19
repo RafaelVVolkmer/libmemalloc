@@ -81,16 +81,15 @@ jobs:
           persist-credentials: false
 
       - name: Install native host prerequisites and controller
-        # uv returns its local executable directory, not repository input.
-        run: | # zizmor: ignore[github-env]
+        run: |
           brew install git lua uv cmake ninja coreutils curl rust jq gnupg \
             graphviz bison flex openssl@3 pkgconf
           if ! command -v python3.12 >/dev/null; then
             brew install python@3.12
           fi
-          version="$(lua scripts/toolchain/resolve.lua --field ansible_core.version)"
-          uv tool install --python python3.12 "ansible-core==${version}"
-          uv tool dir --bin >> "${GITHUB_PATH}"
+          LIBMEMALLOC_PYTHON=python3.12 lua scripts/process/playbook.lua --direct toolchain-python \
+            --groups=automation --directory=.cache/tools/controller
+          printf '%s\n' "${GITHUB_WORKSPACE}/.cache/tools/controller/bin" >> "${GITHUB_PATH}"
 
       - name: Bootstrap a cold checkout and reuse its runtime
         run: |

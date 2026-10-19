@@ -64,14 +64,10 @@ jobs:
           lua scripts/process/playbook.lua --direct release-verify --root="${RELEASE_ROOT}" --unsigned
           lua scripts/process/playbook.lua --direct test-release-release-test --root="${RELEASE_ROOT}"
 
-      - name: Install native Conan client
-        env:
-          CONAN_VERSION: ${{ fromJSON(steps.tools.outputs.tools).conan.version }}
-          SCHEMA_VALIDATOR_VERSION: ${{ fromJSON(steps.tools.outputs.tools).check_jsonschema.version }}
+      - name: Install locked publication clients
         run: |
-          python3 -m venv "${LIBMEMALLOC_CACHE_ROOT}/tools/conan"
-          "${LIBMEMALLOC_CACHE_ROOT}/tools/conan/bin/pip" install --disable-pip-version-check \
-            "conan==${CONAN_VERSION}" "check-jsonschema==${SCHEMA_VALIDATOR_VERSION}"
+          lua scripts/process/playbook.lua --direct toolchain-python \
+            --groups=publication --directory=.cache/tools/conan
           printf '%s\n' "${LIBMEMALLOC_CACHE_ROOT}/tools/conan/bin" >> "${GITHUB_PATH}"
 
       - name: Exercise Conan package variants without upload

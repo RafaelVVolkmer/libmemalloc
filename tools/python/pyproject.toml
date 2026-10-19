@@ -15,7 +15,7 @@ dependencies = [  ]
 automation = [ "ansible-core==2.21.4" ]
 quality = [ "cmakelang==0.6.13", "lizard==1.17.31", "luaparser==4.2.0" ]
 python-lint = [ "bandit==1.9.4", "conan==2.32.0", "ruff==0.16.4" ]
-publication = [ "conan==2.32.0" ]
+publication = [ "conan==2.32.0", "check-jsonschema==0.38.0" ]
 
 c-tools = [
   "cmake==4.4.3",

@@ -13,30 +13,7 @@ local function scripts_check_reproducible_main()
 
    artifact_io.verify(root)
 
-   local report = root .. "/attestations/reproducibility.json"
-
-   artifact_io.query(
-      report,
-      (
-         ".comparisons | length == 10 and all(.[]; .status "
-         .. '== "PASS" and .first == .second and (.first | '
-         .. 'test("^[a-f0-9]{64}$")))'
-      )
-   )
-
-   for row in
-      artifact_io
-         .query(report, ".comparisons[] | [.path, .first] | @tsv")
-         :gmatch("[^\n]+")
-   do
-      local path, digest = row:match("^([^\t]+)\t([a-f0-9]+)$")
-
-      artifact_io.safe_path(assert(path, "missing comparison path"))
-      assert(
-         artifact_io.digest(root .. "/" .. path) == digest,
-         "rebuild report does not match payload"
-      )
-   end
+   dofile("scripts/release/lib/evidence.lua").reproducible(root)
 
    print(
       (

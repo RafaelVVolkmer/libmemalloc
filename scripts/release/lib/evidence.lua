@@ -197,118 +197,217 @@ local function scripts_release_lib_evidence_loadModule()
 
    exports.provenance = RELEASE_EVIDENCE_provenance
 
-   --- Reject release evidence whose subjects, inventories or required
-   -- observations
-   -- disagree.
-   -- @param root string: root directory for this operation.
-   -- @return boolean: reject release evidence whose subjects, inventories or
-   -- required observations disagree.
-   local function RELEASE_EVIDENCE_validate(root)
-      local identity = root .. "/identity/build-id.json"
-      local digest = artifact_io.query(identity, ".sha256")
+   --- Require a report to cover each expected subject exactly once.
+   -- @param root string: candidate directory.
+   -- @param report string: report path.
+   -- @param expression string: jq projection to path and SHA-256 TSV rows.
+   -- @param expected table: required paths mapped to their payload digests.
+   -- @return nil: raises on duplicate, missing, foreign or changed subjects.
+   local function evidence_subjects(root, report, expression, expected)
+      local seen = {}
+      for row in artifact_io.query(report, expression):gmatch("[^\n]+") do
+         local path, sha = row:match("^([^\t]+)\t([a-f0-9]+)$")
+         artifact_io.safe_path(assert(path, "missing evidence path"))
+         assert(not seen[path], "duplicate evidence subject: " .. path)
+         assert(expected[path] == sha, "unexpected evidence subject: " .. path)
+         assert(
+            artifact_io.digest(root .. "/" .. path) == sha,
+            "evidence subject mismatch: " .. path
+         )
+         seen[path] = true
+      end
+      for path in pairs(expected) do
+         assert(seen[path], "missing evidence subject: " .. path)
+      end
+   end
 
+   --- Bind the product inventory to the fixed mock build profile and variants.
+   -- @param root string: candidate directory.
+   -- @return table, string: per-variant subject maps and canonical basename.
+   local function evidence_products(root)
+      local manifest = artifact_io.input_manifest(root)
+      local digest = artifact_io.digest(manifest)
+      assert(
+         artifact_io.query(root .. "/identity/build-id.json", ".sha256")
+            == digest,
+         "build input mismatch"
+      )
+      artifact_io.query(
+         manifest,
+         ".mock == true and " .. '(.variants | sort == ["debug", "release"])'
+      )
+      local version =
+         artifact_io.semver(artifact_io.query(manifest, ".version"))
+      local basename = "libmemalloc-" .. version .. "-" .. digest:sub(1, 16)
+      local variants, all = {}, {}
+      local suffixes = { ".a", ".so", ".map", "-static", "-shared" }
+      for _, variant in ipairs({ "release", "debug" }) do
+         local expected = {}
+         for _, suffix in ipairs(suffixes) do
+            local path = "bins/" .. variant .. "/" .. basename .. suffix
+            expected[path] = artifact_io.digest(root .. "/" .. path)
+            all[path] = expected[path]
+         end
+         variants[variant] = expected
+      end
+      local inventory = root .. "/identity/artifacts.json"
+      artifact_io.query(inventory, ".mock == true")
+      evidence_subjects(
+         root,
+         inventory,
+         ".artifacts[] | [.path, .sha256] | @tsv",
+         all
+      )
+      for _, path in ipairs(artifact_io.files(root)) do
+         assert(
+            not path:match("^bins/") or all[path],
+            "unregistered product: " .. path
+         )
+      end
+      variants.all = all
+      return variants, basename
+   end
+
+   --- Validate complete byte-comparison coverage of the product inventory.
+   -- @param root string: candidate directory.
+   -- @return boolean: true only after all ten distinct products match.
+   local function RELEASE_EVIDENCE_reproducible(root)
+      local products = evidence_products(root)
+      local report = root .. "/attestations/reproducibility.json"
+      artifact_io.query(
+         report,
+         ".mock == true and (.comparisons | "
+            .. 'all(.[]; .status == "PASS" and .first == .second))'
+      )
+      evidence_subjects(
+         root,
+         report,
+         ".comparisons[] | [.path, .first] | @tsv",
+         products.all
+      )
+      return true
+   end
+
+   exports.reproducible = RELEASE_EVIDENCE_reproducible
+
+   --- Check suite identities, variant subjects and retained execution logs.
+   -- @param root string: candidate directory.
+   -- @param variant string: release or debug.
+   -- @param basename string: canonical product basename.
+   -- @return nil: raises on incomplete or incorrectly bound test evidence.
+   local function evidence_tests(root, variant, basename)
+      local report = root .. "/test_logs/" .. variant .. "/index.json"
+      artifact_io.query(
+         report,
+         ".mock == true and (.tests | length == 3 "
+            .. 'and all(.[]; .status == "PASS") and '
+            .. "(map(.suite) | sort == "
+            .. '["reproducibility", "shared-smoke", "static-smoke"]))'
+      )
+      local execution = artifact_io.query(report, ".execution")
+      artifact_io.safe_path(execution)
+      assert(not execution:find("/", 1, true), "invalid test execution")
+      for suite, suffix in pairs({
+         ["static-smoke"] = "-static",
+         ["shared-smoke"] = "-shared",
+         reproducibility = ".a",
+      }) do
+         local select = ".tests[] | select(.suite == "
+            .. artifact_io.json(suite)
+            .. ")"
+         local path = "bins/" .. variant .. "/" .. basename .. suffix
+         evidence_subjects(
+            root,
+            report,
+            select .. " | [.subject, .sha256] | @tsv",
+            { [path] = artifact_io.digest(root .. "/" .. path) }
+         )
+         if suite == "reproducibility" then
+            artifact_io.query(
+               report,
+               select .. ' | .comparison == "attestations/reproducibility.json"'
+            )
+         else
+            local log = "test_logs/"
+               .. variant
+               .. "/"
+               .. suite
+               .. "/"
+               .. execution
+               .. "/stdout.log"
+            artifact_io.query(
+               report,
+               select
+                  .. " | .exit_code == 0 and "
+                  .. '(.timeout_seconds | type == "number" and . > 0)'
+            )
+            evidence_subjects(
+               root,
+               report,
+               select .. " | [.log, .log_sha256] | @tsv",
+               { [log] = artifact_io.digest(root .. "/" .. log) }
+            )
+         end
+      end
+   end
+
+   --- Reject incomplete product, provenance, SBOM and test inventories.
+   -- @param root string: candidate directory.
+   -- @return boolean: true only after every required relationship is checked.
+   local function RELEASE_EVIDENCE_validate(root)
+      local products, basename = evidence_products(root)
+      RELEASE_EVIDENCE_reproducible(root)
       for _, variant in ipairs({ "release", "debug" }) do
          local directory = root .. "/sbom/product/" .. variant
-
+         local cdx, spdx =
+            directory .. "/cyclonedx.json", directory .. "/spdx.json"
          artifact_io.query(
-            directory .. "/cyclonedx.json",
-            (
-               '.bomFormat == "CycloneDX" and .specVersion == "1.'
-               .. '6" and (.components | length >= 4)'
-            )
+            cdx,
+            '.bomFormat == "CycloneDX" and '
+               .. '.specVersion == "1.6" and all(.components[]; '
+               .. '.hashes[0].alg == "SHA-256")'
          )
-
          artifact_io.query(
-            directory .. "/spdx.json",
-            (
-               '.spdxVersion == "SPDX-2.3" and .dataLicense == '
-               .. '"CC0-1.0" and (.files | length >= 4)'
-            )
+            spdx,
+            '.spdxVersion == "SPDX-2.3" and '
+               .. '.dataLicense == "CC0-1.0" and all(.files[]; '
+               .. '.checksums[0].algorithm == "SHA256")'
          )
-
-         for _, format in ipairs({ "cyclonedx", "spdx" }) do
-            local expression = format == "cyclonedx"
-                  and ".components[] | [.name, .hashes[0].content] | @tsv"
-               or (
-                  '.files[] | [(.fileName | ltrimstr("./")), .'
-                  .. "checksums[0].checksumValue] | @tsv"
-               )
-
-            for row in
-               artifact_io
-                  .query(directory .. "/" .. format .. ".json", expression)
-                  :gmatch("[^\n]+")
-            do
-               local path, sha = row:match("^([^\t]+)\t([a-f0-9]+)$")
-
-               artifact_io.safe_path(assert(path, "missing SBOM path"))
-               assert(
-                  artifact_io.digest(root .. "/" .. path) == sha,
-                  "SBOM subject mismatch"
-               )
-            end
-         end
-
+         evidence_subjects(
+            root,
+            cdx,
+            ".components[] | [.name, .hashes[0].content] | @tsv",
+            products[variant]
+         )
+         evidence_subjects(
+            root,
+            spdx,
+            '.files[] | [(.fileName | ltrimstr("./")), '
+               .. ".checksums[0].checksumValue] | @tsv",
+            products[variant]
+         )
          local provenance = root
             .. "/attestations/slsa/"
             .. variant
             .. "/provenance.intoto.json"
-
          artifact_io.query(
             provenance,
-            (
-               "._type == "
+            "._type == "
                .. artifact_io.json(EVIDENCE_IN_TOTO_IO_STATEMENT_V1_URL)
                .. " and .predicateType == "
                .. artifact_io.json(EVIDENCE_SLSA_DEV_PROVENANCE_V1_URL)
-               .. " and (.subject | length >= 4)"
-            )
+               .. " and .predicate.buildDefinition.externalParameters"
+               .. ".variant == "
+               .. artifact_io.json(variant)
          )
-
-         for row in
-            artifact_io
-               .query(provenance, ".subject[] | [.name, .digest.sha256] | @tsv")
-               :gmatch("[^\n]+")
-         do
-            local path, sha = row:match("^([^\t]+)\t([a-f0-9]+)$")
-
-            artifact_io.safe_path(assert(path, "missing provenance path"))
-            assert(
-               artifact_io.digest(root .. "/" .. path) == sha,
-               "provenance subject mismatch"
-            )
-         end
-
-         local logs = root .. "/test_logs/" .. variant .. "/index.json"
-
-         artifact_io.query(
-            logs,
-            (
-               ".mock == true and (.tests | length == 3 and all(."
-               .. '[]; .status == "PASS"))'
-            )
+         evidence_subjects(
+            root,
+            provenance,
+            ".subject[] | [.name, .digest.sha256] | @tsv",
+            products[variant]
          )
-
-         for row in
-            artifact_io
-               .query(logs, ".tests[] | [.subject, .sha256] | @tsv")
-               :gmatch("[^\n]+")
-         do
-            local path, sha = row:match("^([^\t]+)\t([a-f0-9]+)$")
-
-            artifact_io.safe_path(assert(path, "missing test path"))
-            assert(
-               artifact_io.digest(root .. "/" .. path) == sha,
-               "test subject mismatch"
-            )
-         end
+         evidence_tests(root, variant, basename)
       end
-
-      assert(
-         digest == artifact_io.digest(artifact_io.input_manifest(root)),
-         "build input mismatch"
-      )
-
       return true
    end
 

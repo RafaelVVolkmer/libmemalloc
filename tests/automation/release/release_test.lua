@@ -107,6 +107,92 @@ local function tests_release_release_test_suite_main()
 
    local temporary = R.platform.temporary_directory()
 
+   --- Reject incomplete reports on a private copy of a built candidate.
+   -- @return nil: validates restored evidence after every negative control.
+   local function check_semantic_evidence()
+      local candidate = temporary .. "/candidate"
+      R.run({ "cp", "-a", options.root, candidate })
+      local evidence = dofile("scripts/release/lib/evidence.lua")
+
+      --- Reindex a semantic mutation so rejection cannot rely on stale hashes.
+      -- @param path string: report path relative to the copied candidate.
+      -- @param expression string: jq mutation of the selected document.
+      -- @param reproducible boolean|nil: select the comparison verifier.
+      -- @return nil: restores the original document after rejection.
+      local function reject_evidence(path, expression, reproducible)
+         local full = candidate .. "/" .. path
+         local original = R.read(full)
+         R.write(full, R.output({ "jq", expression, full }) .. "\n")
+         R.index(candidate)
+         check(R.verify(candidate), "mutation broke byte integrity")
+         --- Require rejection even when every indexed digest is valid.
+         -- @return nil: invokes the independent evidence verifier.
+         rejects(function()
+            if reproducible then
+               evidence.reproducible(candidate)
+            else
+               evidence.validate(candidate)
+            end
+         end, "incomplete evidence accepted: " .. path .. ": " .. expression)
+         R.write(full, original)
+         R.index(candidate)
+      end
+
+      for _, expression in ipairs({
+         ".comparisons |= [range(10) as $i | .[0]]",
+         ".comparisons |= .[1:]",
+         '.comparisons[0].second = ("0" * 64)',
+      }) do
+         reject_evidence("attestations/reproducibility.json", expression, true)
+      end
+      for _, variant in ipairs({ "release", "debug" }) do
+         local prefix = "sbom/product/" .. variant .. "/"
+         for _, format in ipairs({ "cyclonedx", "spdx" }) do
+            local field = format == "cyclonedx" and ".components" or ".files"
+            reject_evidence(
+               prefix .. format .. ".json",
+               field .. " |= [range(5) as $i | .[0]]"
+            )
+            reject_evidence(prefix .. format .. ".json", field .. " |= .[1:]")
+            local other = variant == "release" and "debug" or "release"
+            reject_evidence(
+               prefix .. format .. ".json",
+               'walk(if type == "string" then gsub("bins/'
+                  .. variant
+                  .. '/"; "bins/'
+                  .. other
+                  .. '/") else . end)'
+            )
+         end
+         local provenance = "attestations/slsa/"
+            .. variant
+            .. "/provenance.intoto.json"
+         reject_evidence(provenance, ".subject |= [range(5) as $i | .[0]]")
+         reject_evidence(provenance, ".subject |= .[1:]")
+         reject_evidence(
+            provenance,
+            '.predicate.buildDefinition.externalParameters.variant = "foreign"'
+         )
+         local tests = "test_logs/" .. variant .. "/index.json"
+         reject_evidence(tests, ".tests |= [range(3) as $i | .[0]]")
+         reject_evidence(tests, ".tests |= .[1:]")
+         reject_evidence(tests, '.tests[0].suite = "foreign"')
+         reject_evidence(
+            tests,
+            ".tests[0].subject = .tests[1].subject "
+               .. "| .tests[0].sha256 = .tests[1].sha256"
+         )
+         reject_evidence(tests, '.tests[0].log_sha256 = ("0" * 64)')
+         reject_evidence(tests, ".tests[0].exit_code = 77")
+      end
+      reject_evidence(
+         "identity/artifacts.json",
+         ".artifacts |= [range(10) as $i | .[0]]"
+      )
+      reject_evidence("identity/artifacts.json", ".artifacts |= .[1:]")
+      check(evidence.validate(candidate), "restored evidence rejected")
+   end
+
    --- Exercise release integrity mutations before temporary-tree cleanup.
    -- @return nil: no values.
    local success, failure = xpcall(function()
@@ -213,6 +299,8 @@ local function tests_release_release_test_suite_main()
             dofile("scripts/release/lib/evidence.lua").validate(options.root),
             "evidence failed"
          )
+         check_semantic_evidence()
+
          check(not R.platform.command_succeeded_silent({
             "lua",
             "scripts/check/openssf.lua",
