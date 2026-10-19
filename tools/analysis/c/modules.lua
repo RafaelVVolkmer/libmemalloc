@@ -9,6 +9,7 @@ local function tools_analysis_c_modules_loadModule()
    return {
       build_interface = {
          include = "include",
+         paths = { "include", "include/libmemalloc" },
          headers = { ["libmemalloc/mock.h"] = "core/mock.h" },
       },
       modules = {
@@ -16,7 +17,6 @@ local function tools_analysis_c_modules_loadModule()
             name = "mock",
             root = "core/",
             public = { "core/mock.h" },
-            public_include = "core/",
          },
       },
       forbidden_references = {

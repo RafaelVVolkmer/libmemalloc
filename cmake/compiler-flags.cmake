@@ -2,11 +2,9 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 # -----------------------------------------------------------------------------
-# File: cmake/compiler-flags.cmake
-# Purpose:
-#   Probe compiler-specific diagnostics, instrumentation and hardening.
-# Notes:
-#   Policies apply to owned targets; installed consumers retain their own flags.
+# File: cmake/compiler-flags.cmake Purpose: Probe compiler-specific diagnostics,
+# instrumentation and hardening. Notes: Policies apply to owned targets;
+# installed consumers retain their own flags.
 # -----------------------------------------------------------------------------
 
 include_guard(GLOBAL)
@@ -16,8 +14,8 @@ include(CheckCSourceCompiles)
 # -----------------------------------------------------------------------------
 # 1. Capability probes: unsupported optional flags are reported and omitted.
 # -----------------------------------------------------------------------------
-# lma_compile_option(target, flag, configurations)
-# Add a supported C-only option privately; an empty configuration means all.
+# lma_compile_option(target, flag, configurations) Add a supported C-only option
+# privately; an empty configuration means all.
 function(lma_compile_option target flag configurations)
   string(SHA256 identity "${CMAKE_C_COMPILER};${CMAKE_C_COMPILER_VERSION};${flag}")
   if(MSVC)
@@ -39,7 +37,8 @@ function(lma_compile_option target flag configurations)
 endfunction()
 
 # Probe compatible diagnostic groups together, splitting only rejected groups.
-# Results remain in this configuration's cache; dialect/link checks stay separate.
+# Results remain in this configuration's cache; dialect/link checks stay
+# separate.
 function(lma_warning_group target)
   set(flags ${ARGN})
   list(LENGTH flags count)
@@ -68,10 +67,10 @@ function(lma_warning_group target)
 endfunction()
 
 # -----------------------------------------------------------------------------
-# 2. Wide diagnostics without ABI changes or weakened language semantics.
+# 1. Wide diagnostics without ABI changes or weakened language semantics.
 # -----------------------------------------------------------------------------
-# lma_compiler_flags(target)
-# Apply owned-source warnings and configuration-specific defenses to one target.
+# lma_compiler_flags(target) Apply owned-source warnings and
+# configuration-specific defenses to one target.
 function(lma_warning_flags target)
   if(MSVC)
     set(warnings /W4 /sdl /Zc:preprocessor /utf-8)
@@ -155,7 +154,7 @@ endfunction()
 # Apply build-type diagnostics and remove absolute source/build paths.
 function(lma_configuration_flags target)
   # ---------------------------------------------------------------------------
-  # 3. Debug retains evidence; Release minimizes metadata without unsafe math.
+  # 1. Debug retains evidence; Release minimizes metadata without unsafe math.
   # ---------------------------------------------------------------------------
   if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang" AND NOT MSVC)
     lma_compile_option(${target} -g3 "Debug")
@@ -188,7 +187,7 @@ endfunction()
 # Apply target-compatible stack and initialization defenses.
 function(lma_runtime_defenses target)
   # ---------------------------------------------------------------------------
-  # 4. Runtime defenses: never infer CPU features from the build host.
+  # 1. Runtime defenses: never infer CPU features from the build host.
   # ---------------------------------------------------------------------------
   if(LMA_HARDENING)
     if(MSVC)
@@ -213,11 +212,16 @@ function(lma_runtime_defenses target)
       else()
         set(fortify 2)
       endif()
-      # Respect a caller-owned FORTIFY definition and require an optimized build.
+      # Respect a caller-owned FORTIFY definition and require an optimized
+      # build.
       if(NOT CMAKE_C_FLAGS MATCHES "_FORTIFY_SOURCE")
-        target_compile_definitions(
-          ${target}
-          PRIVATE "$<$<CONFIG:Release,RelWithDebInfo,MinSizeRel>:_FORTIFY_SOURCE=${fortify}>")
+        foreach(configuration IN ITEMS Release RelWithDebInfo MinSizeRel)
+          string(TOUPPER "${configuration}" configuration_upper)
+          if(NOT CMAKE_C_FLAGS_${configuration_upper} MATCHES "_FORTIFY_SOURCE")
+            target_compile_definitions(
+              ${target} PRIVATE "$<$<CONFIG:${configuration}>:_FORTIFY_SOURCE=${fortify}>")
+          endif()
+        endforeach()
       endif()
     endif()
   endif()
@@ -226,7 +230,8 @@ endfunction()
 
 # Select branch protection from the target architecture and explicit policy.
 function(lma_branch_defenses target)
-  # Architecture controls describe target code generation, not detected host CPUs.
+  # Architecture controls describe target code generation, not detected host
+  # CPUs.
   set(branch_flag "")
   set(branch_policy OFF)
   if(CMAKE_SYSTEM_PROCESSOR MATCHES "^(x86_64|AMD64|amd64|i.86)$")

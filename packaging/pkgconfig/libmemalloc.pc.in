@@ -8,7 +8,7 @@ includedir=@LMA_PC_INCLUDEDIR@
 Name: libmemalloc-mock
 Description: Distribution fixture, not an allocator implementation
 Version: @PROJECT_VERSION@
-Libs: -L${libdir} -lmemalloc
+Libs: -L${libdir} -lmemalloc@LMA_PC_LINK_FLAGS@
 Cflags: -I${includedir}@LMA_PC_CFLAGS@
 
 # EOF

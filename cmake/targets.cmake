@@ -2,17 +2,16 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 # -----------------------------------------------------------------------------
-# File: cmake/targets.cmake
-# Purpose:
-#   Create the library, apply shared target policy and expose optional smoke tests.
-# Notes:
-#   Policies apply to owned targets; installed consumers retain their own flags.
+# File: cmake/targets.cmake Purpose: Create the library, apply shared target
+# policy and expose optional smoke tests. Notes: Policies apply to owned
+# targets; installed consumers retain their own flags.
 # -----------------------------------------------------------------------------
 
 # -----------------------------------------------------------------------------
 # 1. Library interface and explicitly exported ABI.
 # -----------------------------------------------------------------------------
-add_library(memalloc core/mock.c)
+include("${CMAKE_CURRENT_LIST_DIR}/sources.cmake")
+add_library(memalloc ${LMA_LIBRARY_SOURCES})
 add_library(LMA::memalloc ALIAS memalloc)
 set_target_properties(
   memalloc
@@ -23,8 +22,8 @@ target_compile_features(memalloc PUBLIC c_std_99)
 configure_file(core/mock.h "${PROJECT_BINARY_DIR}/include/libmemalloc/mock.h" COPYONLY)
 target_include_directories(
   memalloc
-  PUBLIC $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/core>
-         $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
+  PUBLIC $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
+         $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include/libmemalloc>
          $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
 if(BUILD_SHARED_LIBS)
   target_compile_definitions(
@@ -36,10 +35,11 @@ lma_compiler_flags(memalloc)
 lma_linker_flags(memalloc)
 
 # -----------------------------------------------------------------------------
-# 2. An owned consumer checks the actual target; no mock-specific analysis waiver.
+# 1. An owned consumer checks the actual target; no mock-specific analysis
+#   waiver.
 # -----------------------------------------------------------------------------
 if(LMA_BUILD_MOCK_CONSUMER OR LMA_BUILD_TESTS)
-  add_executable(memalloc_mock_consumer core/main.c)
+  add_executable(memalloc_mock_consumer ${LMA_CONSUMER_SOURCES})
   target_link_libraries(memalloc_mock_consumer PRIVATE LMA::memalloc)
   lma_compiler_flags(memalloc_mock_consumer)
   lma_linker_flags(memalloc_mock_consumer)
@@ -51,7 +51,8 @@ if(LMA_BUILD_TESTS)
 endif()
 
 # -----------------------------------------------------------------------------
-# 3. Documentation and coverage reuse installed tools, without configure downloads.
+# 1. Documentation and coverage reuse installed tools, without configure
+#   downloads.
 # -----------------------------------------------------------------------------
 if(LMA_BUILD_DOCS)
   find_program(LMA_LUA_EXECUTABLE NAMES lua lua5.5 lua5.4 REQUIRED)

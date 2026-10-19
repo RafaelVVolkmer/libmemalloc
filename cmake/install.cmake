@@ -2,11 +2,9 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 # -----------------------------------------------------------------------------
-# File: cmake/install.cmake
-# Purpose:
-#   Install the library, public interface and relocatable package metadata.
-# Notes:
-#   Policies apply to owned targets; installed consumers retain their own flags.
+# File: cmake/install.cmake Purpose: Install the library, public interface and
+# relocatable package metadata. Notes: Policies apply to owned targets;
+# installed consumers retain their own flags.
 # -----------------------------------------------------------------------------
 
 install(
@@ -42,6 +40,14 @@ endforeach()
 set(LMA_PC_CFLAGS "")
 if(BUILD_SHARED_LIBS)
   set(LMA_PC_CFLAGS " -DLMA_SHARED_LIBRARY")
+endif()
+# Match the instrumented target's consumer link contract, including static
+# archives.
+get_target_property(LMA_PC_LINK_FLAGS memalloc LMA_INSTRUMENTATION_LINK_FLAG)
+if(LMA_PC_LINK_FLAGS)
+  set(LMA_PC_LINK_FLAGS " ${LMA_PC_LINK_FLAGS}")
+else()
+  set(LMA_PC_LINK_FLAGS "")
 endif()
 configure_file(packaging/pkgconfig/libmemalloc.pc.in libmemalloc.pc @ONLY)
 configure_file(packaging/cmake/fixture-version.txt.in fixture-version.txt @ONLY)

@@ -6,10 +6,21 @@
 --- Construct this module within its own initialization scope.
 -- @return table: this module within its own initialization scope.
 local function tools_analysis_c_profile_loadModule()
+   local inventory = dofile("scripts/build/lib/sources.lua")
+   local sources = {}
+   for _, list in ipairs({
+      inventory.LMA_LIBRARY_SOURCES,
+      inventory.LMA_CONSUMER_SOURCES,
+   }) do
+      for _, path in ipairs(list) do
+         sources[#sources + 1] = path
+      end
+   end
+   table.sort(sources)
    return {
       name = "hosted-lp64",
-      sources = { "core/main.c", "core/mock.c" },
-      headers = { "core/mock.h" },
+      sources = sources,
+      headers = inventory.LMA_CORE_HEADERS,
       dialect = "c99",
       csa_checkers = { "core", "unix", "deadcode", "prefix:security" },
       limitations = {

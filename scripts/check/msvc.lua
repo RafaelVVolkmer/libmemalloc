@@ -134,31 +134,50 @@ local function scripts_check_msvc_main()
       return success, log, sarif
    end
 
+   --- Bind every analyzed source and header to the evidence identity.
+   -- @return nil: no values.
+   local function check_msvc_inputs()
+      local actual = {}
+      local git = dofile("scripts/lib/git.lua").new(artifact_io.platform, ".")
+      for _, path in ipairs(assert(git.working_files())) do
+         if path:match("^core/[^/]+%.c$") then
+            actual[#actual + 1] = path
+         end
+      end
+      table.sort(actual)
+      assert(
+         table.concat(actual, "\n") == table.concat(profile.sources, "\n"),
+         "MSVC source inventory changed"
+      )
+
+      local inputs = {}
+      for _, list in ipairs({ profile.sources, profile.headers }) do
+         for _, path in ipairs(list) do
+            inputs[#inputs + 1] = path
+         end
+      end
+      for _, path in ipairs({
+         "cmake/sources.cmake",
+         "scripts/build/lib/sources.lua",
+         "tools/toolchain/lock.toml",
+         "scripts/check/msvc.lua",
+         "tools/analysis/c/profile.lua",
+      }) do
+         inputs[#inputs + 1] = path
+      end
+      table.sort(inputs)
+      for _, path in ipairs(inputs) do
+         report.inputs[#report.inputs + 1] =
+            { path = path, sha256 = check_msvc_digest(path) }
+      end
+   end
+
    local success, message = xpcall(
       --- Run the declared Windows source and diagnostic fixtures under error
       -- capture.
       -- @return nil: no values.
       function()
-         local actual = artifact_io
-            .output({ "git", "ls-files", "--", "core/*.c" })
-            :gsub("\r", "")
-
-         assert(
-            actual == table.concat(profile.sources, "\n"),
-            "MSVC source inventory changed"
-         )
-
-         for _, path in ipairs({
-            "core/main.c",
-            "core/mock.c",
-            "core/mock.h",
-            "tools/toolchain/lock.toml",
-            "scripts/check/msvc.lua",
-            "tools/analysis/c/profile.lua",
-         }) do
-            report.inputs[#report.inputs + 1] =
-               { path = path, sha256 = check_msvc_digest(path) }
-         end
+         check_msvc_inputs()
 
          check_msvc_write(
             directory .. "/inputs.json",

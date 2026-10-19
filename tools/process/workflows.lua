@@ -223,6 +223,14 @@ local function WORKFLOW_TASKS_loadModule()
          simulation = "plan",
          timeout_seconds = 7200,
       },
+      ["check-compilation"] = {
+         command = { "scripts/check/compilation.lua" },
+         description = "Validate owned compile commands and source coverage",
+         dependencies = {},
+         effects = "read",
+         simulation = "plan",
+         timeout_seconds = 7200,
+      },
       ["check-lua"] = {
          command = { "scripts/check/lua.lua" },
          description = "Run the repository Lua quality policy locally or in "

@@ -39,6 +39,7 @@ local function CMAKE_TEST_main()
       "-DLMA_BUILD_MOCK=ON",
       "-DLMA_BUILD_TESTS=ON",
       "-DBUILD_SHARED_LIBS=ON",
+      "-DCMAKE_C_FLAGS_RELEASE=-O3 -DNDEBUG -D_FORTIFY_SOURCE=2",
    })
    local ctest = cmake:match("^(.*)/cmake$")
 
@@ -104,6 +105,113 @@ local function CMAKE_TEST_main()
          "--no-tests=error",
       })
    end
+
+   --- Compile native capture fixtures and reject incomplete source inventories.
+   -- @return nil: no values.
+   local function check_capture()
+      -- Exercise the same inventory checker as the matrix and CodeQL on real
+      -- builds.
+      local sources = dofile("scripts/build/lib/sources.lua")
+      local io_tools = dofile("scripts/build/lib/io.lua")
+      local architecture = assert(
+         ({ x86_64 = "X86_64", arm64 = "AARCH64", aarch64 = "AARCH64" })[run({
+            "uname",
+            "-m",
+         }):match("%S+")],
+         "capture regression requires a supported native architecture"
+      )
+      local system = assert(
+         ({ Linux = "LINUX", Darwin = "DARWIN" })[run({ "uname", "-s" }):match(
+            "%S+"
+         )],
+         "capture regression requires Linux or Darwin"
+      )
+      local cases = {
+         { name = "c", standards = "", tests = { "c-api", "target-model" } },
+         {
+            name = "cpp",
+            standards = "11;17",
+            tests = { "c-api", "target-model", "cpp-11", "cpp-17" },
+         },
+      }
+      for _, case in ipairs(cases) do
+         local directory = root .. "/matrix-" .. case.name
+         run({
+            cmake,
+            "-S",
+            ".",
+            "-B",
+            directory,
+            "-G",
+            "Ninja",
+            "-DLMA_BUILD_MOCK=ON",
+            "-DLMA_BUILD_MATRIX=ON",
+            "-DCMAKE_BUILD_TYPE=Debug",
+            "-DLMA_C_VERSION=199901",
+            "-DLMA_POINTER_BYTES=8",
+            "-DLMA_LONG_BYTES=8",
+            "-DLMA_BIG_ENDIAN=0",
+            "-DLMA_ARCH=" .. architecture,
+            "-DLMA_OS=" .. system,
+            "-DLMA_CPP_STANDARDS=" .. case.standards,
+            "-DLMA_CPP_REQUIRED=" .. case.standards,
+         })
+         run({ cmake, "--build", directory })
+         run({
+            ctest,
+            "--test-dir",
+            directory,
+            "--output-on-failure",
+            "--no-tests=error",
+         })
+         local actual = io_tools.lines(
+            io_tools.query(directory .. "/compile_commands.json", ".[ ].file")
+         )
+         local expected = sources.expected(io_tools.root, directory, case.tests)
+         sources.check(actual, expected)
+         local first = actual[1]
+         actual[1] = actual[2]
+         assert(
+            not pcall(sources.check, actual, expected),
+            "substituted compilation accepted"
+         )
+         actual[1] = first
+         actual[#actual + 1] = first
+         assert(
+            not pcall(sources.check, actual, expected),
+            "extra compilation accepted"
+         )
+         actual[#actual] = nil
+         actual[#actual] = nil
+         assert(
+            not pcall(sources.check, actual, expected),
+            "missing compilation accepted"
+         )
+      end
+      local capture = root .. "/capture"
+      run({
+         cmake,
+         "-S",
+         ".",
+         "-B",
+         capture,
+         "-G",
+         "Ninja",
+         "-DLMA_BUILD_MOCK=ON",
+         "-DLMA_BUILD_MOCK_CONSUMER=ON",
+         "-DCMAKE_BUILD_TYPE=Debug",
+      })
+      run({ cmake, "--build", capture })
+      run({
+         os.getenv("LIBMEMALLOC_LUA") or arg[-1] or "lua",
+         "scripts/process/playbook.lua",
+         "--direct",
+         "check-compilation",
+         capture .. "/compile_commands.json",
+      })
+   end
+
+   check_capture()
 
    for index, invalid in ipairs({ "-DLMA_IPO=invalid", "-DLMA_CET=invalid" }) do
       local result = execution.run({

@@ -47,6 +47,43 @@ local function scripts_check_c_architecture_main()
       return generated
    end
 
+   --- Reject public include paths outside the declared module policy.
+   -- @param includes table: compiler-observed include paths.
+   -- @return nil: no values.
+   local function checkIncludes(includes)
+      for _, include in ipairs(includes) do
+         local accepted = false
+
+         for _, path in ipairs(policy.build_interface.paths) do
+            if
+               include
+               == analysis_context.root
+                  .. "/"
+                  .. analysis_context.output
+                  .. "/build/"
+                  .. path
+            then
+               accepted = true
+            end
+         end
+
+         for _, module in ipairs(policy.modules) do
+            local public = module.public_include
+            if
+               public
+               and include .. "/" == analysis_context.root .. "/" .. public
+            then
+               accepted = true
+            end
+         end
+
+         assert(
+            accepted,
+            "consumer inherits an undeclared public include path: " .. include
+         )
+      end
+   end
+
    analysis_context:finish(
       --- Compare compiler-observed dependencies and symbols with module policy.
       -- @return nil: no values.
@@ -101,26 +138,9 @@ local function scripts_check_c_architecture_main()
 
          assert(#includes > 0, "consumer has no captured include paths")
 
-         local generated = generated_include()
+         generated_include()
 
-         for _, include in ipairs(includes) do
-            local accepted = include == generated
-
-            for _, module in ipairs(policy.modules) do
-               if
-                  include .. "/"
-                  == analysis_context.root .. "/" .. module.public_include
-               then
-                  accepted = true
-               end
-            end
-
-            assert(
-               accepted,
-               "consumer inherits an undeclared public include path: "
-                  .. include
-            )
-         end
+         checkIncludes(includes)
 
          --- Capture compiler-resolved include dependencies for one source and
          -- include

@@ -259,6 +259,7 @@ local function scripts_check_c_main()
          "--",
          "-std=c23",
          "-I.",
+         "-Icore",
       })
    end
 end

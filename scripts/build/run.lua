@@ -477,9 +477,10 @@ local function scripts_build_run_main()
             local commands =
                build_io.lines(build_io.query(database, ".[ ].command"))
 
-            assert(
-               #commands == #expected_tests + 1,
-               "unexpected compiled source count"
+            local sources = dofile("scripts/build/lib/sources.lua")
+            sources.check(
+               build_io.lines(build_io.query(database, ".[ ].file")),
+               sources.expected(build_io.root, build, expected_tests)
             )
 
             for _, command in ipairs(commands) do

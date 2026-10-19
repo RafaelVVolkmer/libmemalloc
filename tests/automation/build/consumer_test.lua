@@ -125,6 +125,90 @@ target_link_libraries(consumer PRIVATE LMA::memalloc)
       })
    end
 
+   --- Exercise both pkg-config query modes against an installed runtime
+   -- profile.
+   -- @param build string: output directory for the external consumer.
+   -- @param prefix string: installed package prefix.
+   -- @return nil: no values.
+   local function check_instrumented_pkg(build, prefix)
+      for _, static in ipairs({ false, true }) do
+         local query = {
+            "env",
+            "PKG_CONFIG_PATH=",
+            "PKG_CONFIG_LIBDIR=" .. prefix .. "/lib/pkgconfig",
+            "pkg-config",
+            "--cflags",
+            "--libs",
+            "libmemalloc",
+         }
+         if static then
+            query[#query + 1] = "--static"
+         end
+         local flags = run(query)
+         local command = {
+            "cc",
+            root .. "/parent/main.c",
+            "-o",
+            build .. "/pkg-consumer",
+         }
+         for flag in flags:gmatch("%S+") do
+            command[#command + 1] = flag
+         end
+         run(command)
+         run({
+            "env",
+            "LD_LIBRARY_PATH=" .. prefix .. "/lib",
+            "DYLD_LIBRARY_PATH=" .. prefix .. "/lib",
+            build .. "/pkg-consumer",
+         })
+      end
+   end
+
+   --- Link and execute consumers of the instrumented package contracts.
+   -- @return nil: no values.
+   local function check_instrumentation()
+      -- Instrumented packages must carry the same runtime link flags through
+      -- both APIs.
+      for _, shared in ipairs({ false, true }) do
+         for _, profile in ipairs({ "coverage", "undefined" }) do
+            local name = profile .. (shared and "-shared" or "-static")
+            local build = root .. "/" .. name
+            local prefix = build .. "/install"
+            run({
+               cmake,
+               "-S",
+               ".",
+               "-B",
+               build,
+               "-G",
+               "Ninja",
+               "-DLMA_BUILD_MOCK=ON",
+               "-DCMAKE_BUILD_TYPE=Debug",
+               "-DBUILD_SHARED_LIBS=" .. (shared and "ON" or "OFF"),
+               "-DCMAKE_INSTALL_PREFIX=" .. prefix,
+               "-DCMAKE_INSTALL_LIBDIR=lib",
+               profile == "coverage" and "-DLMA_ENABLE_COVERAGE=ON"
+                  or "-DLMA_SANITIZERS=undefined",
+            })
+            run({ cmake, "--build", build })
+            run({ cmake, "--install", build })
+            run({
+               cmake,
+               "-S",
+               "tests/fixtures/install",
+               "-B",
+               build .. "/consumer",
+               "-Dlibmemalloc_DIR=" .. prefix .. "/lib/cmake/libmemalloc",
+            })
+            run({ cmake, "--build", build .. "/consumer" })
+            run({ build .. "/consumer/consumer" })
+            check_instrumented_pkg(build, prefix)
+         end
+      end
+   end
+
+   check_instrumentation()
+
    artifacts.platform.remove_temporary_directory(root)
    print(
       "Consumer integration: static/shared subproject, relocated CMake "

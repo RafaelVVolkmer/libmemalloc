@@ -57,7 +57,15 @@ local function tests_analysis_analysis_test_suite_main()
       "private public-path header accepted"
    )
 
-   print("Analysis policy: 9 parser and boundary assertions passed.")
+   -- Generated public include trees need not expose a source directory.
+   modules[2].public_include = nil
+   assert(A.public_headers({ "b/private.h" }, modules))
+   assert(
+      not pcall(A.check, "a/main.c", { "b/private.h" }, modules),
+      "generated include policy weakened private dependency rejection"
+   )
+
+   print("Analysis policy: 11 parser and boundary assertions passed.")
 end
 
 return tests_analysis_analysis_test_suite_main()

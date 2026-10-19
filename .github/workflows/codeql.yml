@@ -70,7 +70,7 @@ jobs:
             -DLMA_BUILD_MOCK_CONSUMER=ON -DCMAKE_BUILD_TYPE=Debug \
             -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
           cmake --build .cache/build/codeql --clean-first --parallel 2
-          jq -e 'length == 2 and all(.[]; .file | test("/core/(main|mock)\\.c$"))' \
+          lua scripts/process/playbook.lua --direct check-compilation \
             .cache/build/codeql/compile_commands.json
 
       - name: Analyze and upload security results

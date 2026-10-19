@@ -2,11 +2,9 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 # -----------------------------------------------------------------------------
-# File: cmake/linker-flags.cmake
-# Purpose:
-#   Select linker defenses, tested IPO, instrumentation and symbol reduction.
-# Notes:
-#   Policies apply to owned targets; installed consumers retain their own flags.
+# File: cmake/linker-flags.cmake Purpose: Select linker defenses, tested IPO,
+# instrumentation and symbol reduction. Notes: Policies apply to owned targets;
+# installed consumers retain their own flags.
 # -----------------------------------------------------------------------------
 
 include_guard(GLOBAL)
@@ -17,8 +15,8 @@ include(CheckPIESupported)
 # -----------------------------------------------------------------------------
 # 1. Linker probes use CMake's driver-independent LINKER spelling.
 # -----------------------------------------------------------------------------
-# lma_link_option(target, flag, configurations)
-# Add an optional link flag privately after the selected toolchain accepts it.
+# lma_link_option(target, flag, configurations) Add an optional link flag
+# privately after the selected toolchain accepts it.
 function(lma_link_option target flag configurations)
   string(SHA256 identity "${CMAKE_C_COMPILER};${CMAKE_LINKER_TYPE};${flag}")
   check_linker_flag(C "${flag}" "LMA_LD_${identity}")
@@ -34,10 +32,10 @@ function(lma_link_option target flag configurations)
 endfunction()
 
 # -----------------------------------------------------------------------------
-# 2. Instrumentation is explicit and compile/link tested as one option set.
+# 1. Instrumentation is explicit and compile/link tested as one option set.
 # -----------------------------------------------------------------------------
-# lma_instrumentation(target)
-# Keep runtime link requirements on instrumented libraries for their consumers.
+# lma_instrumentation(target) Keep runtime link requirements on instrumented
+# libraries for their consumers.
 function(lma_instrumentation target)
   if(NOT LMA_SANITIZERS AND NOT LMA_ENABLE_COVERAGE)
     return()
@@ -71,13 +69,15 @@ function(lma_instrumentation target)
   endif()
   target_compile_options(${target} PRIVATE "${flag}" -fno-omit-frame-pointer)
   target_link_options(${target} PUBLIC "${flag}")
+  set_property(TARGET ${target} PROPERTY LMA_INSTRUMENTATION_LINK_FLAG "${flag}")
 endfunction()
 
 # -----------------------------------------------------------------------------
-# 3. IPO belongs to CMake; AUTO avoids compiler-specific portable static archives.
+# 1. IPO belongs to CMake; AUTO avoids compiler-specific portable static
+#   archives.
 # -----------------------------------------------------------------------------
-# lma_ipo(target)
-# Enable tested release IPO without instrumented or portable static archives.
+# lma_ipo(target) Enable tested release IPO without instrumented or portable
+# static archives.
 function(lma_ipo target)
   get_target_property(kind ${target} TYPE)
   set(ipo FALSE)
@@ -103,7 +103,8 @@ function(lma_ipo target)
                INTERPROCEDURAL_OPTIMIZATION_MINSIZEREL "${ipo}")
 endfunction()
 
-# Configure target linkage after capability-checked optimization and instrumentation.
+# Configure target linkage after capability-checked optimization and
+# instrumentation.
 function(lma_linker_flags target)
   get_target_property(kind ${target} TYPE)
   lma_ipo(${target})

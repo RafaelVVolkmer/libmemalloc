@@ -119,7 +119,8 @@ local function scripts_analysis_lib_architecture_loadModule()
       local function analysis_architecture_collectHeaders(module)
          for _, path in ipairs(paths) do
             if
-               path:sub(1, #module.public_include) == module.public_include
+               module.public_include
+               and path:sub(1, #module.public_include) == module.public_include
                and path:match("%.h$")
             then
                local public = false
