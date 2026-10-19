@@ -77,5 +77,9 @@ Use the [workflow catalog](../reference/workflow-catalog.md) to select platform 
 C analysis or reproducibility. The [process pilot](process-pilot.md) runs a separate parser contract check;
 its Ansible entry point does not wrap this aggregate checker.
 
+The aggregate also requires the [formal toolchain](formal-verification.md): Lean
+model/axiom checks, Haskell quality checks and the complete production C campaign.
+The formal campaign has a 90-minute deadline; unavailable tools remain failures.
+
 <!-- EOF -->
 

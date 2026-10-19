@@ -28,11 +28,12 @@ the resulting requirement evidence graph.
 Paths in the command column are repository entry points. Follow the linked runbook for arguments, required
 tools and evidence handling. Local adapters reproduce their stated work, not the entire hosted workflow.
 
-The reusable lint entry point delegates to six responsibility groups:
+The reusable lint entry point delegates to eight responsibility groups:
 [automation](../../.github/workflows/_lint-automation.yml),
 [documents and web](../../.github/workflows/_lint-documents.yml),
 [native builds](../../.github/workflows/_lint-native.yml), [Lua](../../.github/workflows/_lint-lua.yml),
-[Python](../../.github/workflows/_lint-python.yml) and [shells](../../.github/workflows/_lint-shell.yml).
+[Python](../../.github/workflows/_lint-python.yml), [shells](../../.github/workflows/_lint-shell.yml),
+[Lean](../../.github/workflows/_lint-lean.yml) and [Haskell](../../.github/workflows/_lint-haskell.yml).
 Each group retains explicit input filters, permissions and job timeouts. Cache service validation is a
 separate [Lua policy](../../scripts/github/lib/cache_plane.lua); the composite action handles runner inputs.
 
@@ -53,6 +54,8 @@ See [uv's locked synchronization contract](https://docs.astral.sh/uv/concepts/pr
 | [`documentation.yml`](../../.github/workflows/documentation.yml) | PR, merge queue, push to `feature/libmemalloc-refactor` and manual execution. | `lua scripts/documentation/main.lua build`; [documentation guide](../getting-started/documentation.md). | Read-only validation and full Doxygen build; Pages deployment after validation on the configured publication branch. |
 | [ci.yml](../../.github/workflows/ci.yml) | Push, PR, merge group, manual, reusable call | [Local checks](../runbooks/local-checks.md) | Selects reusable checks and campaigns; `CI gate` reconciles required jobs. |
 | [_lint.yml](../../.github/workflows/_lint.yml) | Reusable call | `scripts/check/c.lua`, `scripts/check/lua.lua`, `scripts/check/doc_examples.lua`, `scripts/check/mermaid.lua`, `scripts/check/sdd.lua`; [documentation checks](../getting-started/documentation.md) | Declared lint tools; languages, configuration, examples and diagrams. Native Ansible bootstrap, tools, cleanup, builds and documentation on macOS ARM and Intel. |
+| [_lint-lean.yml](../../.github/workflows/_lint-lean.yml) | Reusable call from lint | `lua scripts/verification/check.lua`; `cd verification/theorems && lake check`; [proof guide](../../docs/runbooks/formal-verification.md) | Pinned Lean, built-in linters, transitive axiom audit, content and statement drift, negative controls and isolated kernel replay. |
+| [_lint-haskell.yml](../../.github/workflows/_lint-haskell.yml) | Reusable call from lint | `lua scripts/verification/check-haskell.lua`; [engine guide](../../docs/runbooks/formal-verification.md#haskell-quality-checks) | Digest-pinned HLint and Fourmolu; GHC warnings as errors; engine parser, permission, exploration and certificate tests. Liquid Haskell remains required by the Lean integration campaign. |
 | [_spelling.yml](../../.github/workflows/_spelling.yml) | Reusable call | `scripts/check/links.lua`; spelling tools from the workflow | CSpell, codespell, typos, Vale and links. |
 | [_reuse.yml](../../.github/workflows/_reuse.yml) | Reusable call | `reuse lint` with repository configuration | SPDX and license metadata. |
 | [specifications.yml](../../.github/workflows/specifications.yml) | Issue label events and manual execution. | [Specification procedure](../procedures/specifications.md). | Trusted default-branch metadata reconciliation; maintainer roster and current write permission. |

@@ -5,13 +5,25 @@ SPDX-License-Identifier: GPL-3.0-only
 
 # Run formal verification
 
+## Prepare tools
+
 Use Linux x86-64, Lua 5.5 with libuv, jq, a C compiler,
 a systemd user manager and the bootstrap prerequisites.
 The official executor limits resources and retains logs from launch.
 
 ```sh
 lua scripts/process/playbook.lua --direct formal-bootstrap
+```
+
+## Haskell quality checks
+
+```sh
 lua scripts/process/playbook.lua --direct check-haskell
+```
+
+## Lean and engine checks
+
+```sh
 lua scripts/process/playbook.lua --direct check-lean
 lua scripts/process/playbook.lua --direct check-lean --kernel
 lua scripts/process/playbook.lua --direct check-lean --engine
@@ -19,6 +31,8 @@ lua scripts/process/playbook.lua --direct check-lean --engine
 
 The full campaign verifies only `core/mock.c`, the engines and their negative
 controls. Success is not acceptance of a final allocator implementation.
+
+## Staged Ansible campaign
 
 For staged execution, use one fresh run identity:
 

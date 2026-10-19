@@ -97,6 +97,12 @@ exceptions:
   - GNUC
   - GPU
   - GUIs
+  - HCOMP
+  - HDOC
+  - HMOD
+  - HPIT
+  - HSTYLE
+  - HTEST
   - HTML
   - HTTP
   - HTTPS
@@ -119,6 +125,9 @@ exceptions:
   - JSONC
   - LASX
   - LBAN
+  - LCOMP
+  - LEANPIT
+  - LFV
   - LLVM
   - LMOD
   - LPERF
@@ -210,6 +219,7 @@ exceptions:
   - WASI
   - WCET
   - XFAIL
+  - XLANG
   - XML
   - XOR
   - XSS

@@ -67,8 +67,9 @@ local function scripts_check_all_main()
    -- @param name string: entry or operation name to resolve.
    -- @param command table: executable and literal command arguments.
    -- @param files table: ordered source or artifact paths.
+   -- @param seconds number|nil: timeout override for a long formal campaign.
    -- @return nil: no values.
-   local function check_all_check(name, command, files)
+   local function check_all_check(name, command, files, seconds)
       if files then
          for _, path in ipairs(files) do
             command[#command + 1] = path
@@ -80,7 +81,8 @@ local function scripts_check_all_main()
       local state = "UNAVAILABLE"
 
       if available then
-         local bounded = { "timeout", tostring(CHECK_TIMEOUT_SECONDS) }
+         local bounded =
+            { "timeout", tostring(seconds or CHECK_TIMEOUT_SECONDS) }
 
          for _, value in ipairs(command) do
             bounded[#bounded + 1] = value
@@ -146,6 +148,18 @@ local function scripts_check_all_main()
    }) do
       check_all_check(script, { "lua", "scripts/check/" .. script .. ".lua" })
    end
+
+   check_all_check("lean-audit", { "lua", "scripts/verification/check.lua" })
+   check_all_check(
+      "haskell",
+      { "lua", "scripts/verification/check-haskell.lua" }
+   )
+   check_all_check(
+      "formal-engine",
+      { "lua", "scripts/verification/engine.lua" },
+      nil,
+      5400
+   )
 
    check_all_check(
       "automation-tests",

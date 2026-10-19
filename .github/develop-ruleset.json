@@ -1,0 +1,50 @@
+{
+  "name": "develop required engineering checks",
+  "target": "branch",
+  "enforcement": "active",
+  "bypass_actors": [],
+  "conditions": {
+    "ref_name": {
+      "include": [
+        "refs/heads/develop"
+      ],
+      "exclude": []
+    }
+  },
+  "rules": [
+    {
+      "type": "deletion"
+    },
+    {
+      "type": "non_fast_forward"
+    },
+    {
+      "type": "required_signatures"
+    },
+    {
+      "type": "required_status_checks",
+      "parameters": {
+        "required_status_checks": [
+          {
+            "context": "CI gate",
+            "integration_id": 15368
+          },
+          {
+            "context": "Commit policy",
+            "integration_id": 15368
+          },
+          {
+            "context": "Gitleaks",
+            "integration_id": 15368
+          },
+          {
+            "context": "GitHub Actions security",
+            "integration_id": 15368
+          }
+        ],
+        "strict_required_status_checks_policy": true,
+        "do_not_enforce_on_create": false
+      }
+    }
+  ]
+}

@@ -348,6 +348,13 @@ root; later matching rules take precedence.
 GitHub uses the ownership map to request reviews. Required owner approval
 must also be enabled in branch protection rules or rulesets.
 
+The versioned [develop ruleset](.github/develop-ruleset.json) requires the `CI gate`, `Commit policy`,
+`Gitleaks` and `GitHub Actions security` checks from GitHub Actions before updating `develop`.
+It also requires signed commits and blocks branch deletion and force pushes. No actor has a configured
+bypass. The ruleset does not require approval from a second maintainer while the project has one maintainer.
+Administrators apply this file through the GitHub rulesets API and verify the resulting server state;
+committing the file alone does not enable protection. This configuration applies only to `develop`.
+
 Path ownership rules:
 
 - changes to owned paths require review from the listed owner;

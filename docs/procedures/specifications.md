@@ -51,23 +51,39 @@ linked issues so each issue has a clear acceptance boundary. Keep vulnerability 
    and required evidence. Link the rationale and evidence required by the [review procedure](decision-making.md).
 3. A maintainer reviews the proposal, records scope acceptance and applies `spec` plus the area label.
    The author may propose work through the public form; the form grants no reserved label.
-4. Implement the approved scope through reviewed PRs. Use `Refs #NUMBER` for partial work. Link tests and
-   retained results to the exact implementation and SDD revisions.
-5. Use `Closes #NUMBER` only when the PR satisfies the issue's complete acceptance conditions. GitHub closes
+4. Create or adapt the canonical Lean model, contracts and proofs for the approved behavior. Then create
+   or adapt the Haskell model adapter, exploration and proof construction under the
+   [formal engine design](../../docs/reference/formal-engine.md). Record required evidence kinds,
+   trust profile, target configurations and remaining representation obligations in the issue.
+5. Implement the production C and verify its actual body against the contracts. Run the required Lean,
+   Haskell/certificate, CN/refinement, C regression and project checks for the same candidate revision.
+   Keep failed, unsupported and missing results visible; required open obligations block acceptance.
+6. Complete affected project documentation, including API behavior, model/C correspondence, assumptions,
+   operation instructions and formal evidence. A reviewer assesses the complete issue scope and a
+   maintainer approves the candidate under the review policy. Use `Refs #NUMBER` for partial work.
+7. Use `Closes #NUMBER` only when the PR satisfies the issue's complete acceptance conditions. GitHub closes
    the issue after the PR merges into the default branch. Opening a PR does not complete the issue.
-6. For a large SDD, maintain a parent issue and bounded implementation issues. Each accepted PR closes its own
+8. For a large SDD, maintain a parent issue and bounded implementation issues. Each accepted PR closes its own
    issue. The maintainer closes the parent after reviewing coverage of its remaining requirements.
+
+The engine integration is planned; the [verification guide](../../docs/runbooks/formal-verification.md) identifies
+the checks implemented today. An unavailable required engine stage remains incomplete. For changes
+without runtime or formal impact, record applicability and run the relevant checks rather than invent
+a C implementation or proof. Complete documentation and review remain acceptance requirements.
 
 ```mermaid
 flowchart TD
     SDD[Write or revise SDD] --> Issue[Open bounded specification issue]
     Issue --> Review[Maintainer reviews scope and acceptance]
     Review --> Labels[Apply spec and one area label]
-    Labels --> PR[Implement and verify in a PR]
+    Labels --> Lean[Create or adapt Lean model and proofs]
+    Lean --> Haskell[Adapt Haskell analysis and proof construction]
+    Haskell --> C[Implement production C]
+    C --> PR[Joint verification and complete documentation]
     PR --> Partial[Partial work references the open issue]
     Partial --> PR
     PR --> Complete[Reviewer accepts the complete issue scope]
-    Complete --> Merge[Merge closing PR into default branch]
+    Complete --> Merge[Approve and merge closing PR]
     Merge --> Closed[Close issue with retained evidence]
 ```
 

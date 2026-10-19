@@ -368,6 +368,7 @@ rollout
 RPERF
 RPIT
 rseq
+ruleset
 rulesets
 runbook
 runbooks

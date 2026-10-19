@@ -118,13 +118,18 @@ conditions, target/configuration scope and initial risk/compatibility assessment
 
 Use the [specification issue procedure](specifications.md) for SDD approval, reserved area labels and
 PR closure. The implementation loop below operates within that approved issue scope.
+For allocator and GC behavior, the [formal engine workflow](../../docs/reference/formal-engine.md)
+adds Lean model/proof development and Haskell analysis before C implementation, followed by joint
+validation and complete affected documentation. The model checks exist; the engine integration is planned.
 
 1. The author identifies the requested behavior, affected interfaces, invariants and failure paths. Update
    the relevant SDD with acceptance conditions that a reviewer can evaluate. Keep the change linked to its
    requirement and design decisions in both directions.
 2. The specification owner reviews the change's meaning and impact. Record authorization to implement under
    the selected change policy. The existing reviewed issue or PR may hold this decision.
-3. The author adds an acceptance or regression test and records its failure against the appropriate baseline.
+3. The author creates or adapts the Lean definitions and proofs, then the Haskell model adapter and proof
+   construction for affected formal contracts. Record the required trust profile and evidence in the issue.
+   Add an acceptance or regression test and record its failure against the appropriate baseline.
    Check the failure reason: a missing compiler, unavailable host or unrelated crash does not demonstrate the
    missing behavior. Where the feature is new, identify how the test detects the absent implementation.
 4. The author implements the smallest coherent behavior, then runs the same test to demonstrate success.
@@ -135,22 +140,26 @@ PR closure. The implementation loop below operates within that approved issue sc
    concurrency, undefined behavior and supported profiles. TDD does not replace those verification measures.
 6. Lua planners select the applicable campaign from the final revision. Ansible or CI executes the plan on
    declared hosts and collects reports. The aggregator compares returned results with expected work.
-7. A reviewer evaluates specification consistency, implementation, tests, findings and evidence. A maintainer
+7. The author completes affected API, architecture, operation and verification documentation. A reviewer
+   evaluates specification consistency, models, implementation, tests, formal evidence and findings. A maintainer
    accepts or returns the change under the review policy. Automation records the decision; it does not invent it.
 8. The maintainer binds acceptance to the final revision. A later edit invalidates affected evidence and
-   approvals according to policy. Preserve the released artifact's connection to this accepted source.
+   approvals according to policy. Merge the accepted PR and close the completed issue with retained evidence
+   and documentation links. Preserve the released artifact's connection to this accepted source.
 
 ```mermaid
 flowchart TD
     Change[Change request and baseline] --> Spec[Specification and acceptance criteria]
     Spec --> Review[Scope and impact review]
-    Review --> Red[Test exposes the missing behavior]
+    Review --> Models[Lean proofs and Haskell analysis for formal contracts]
+    Models --> Red[Test exposes the missing behavior]
     Red --> Green[Implementation passes the test]
     Green --> Refactor[Refactor and run regressions]
     Refactor --> Plan[Lua creates expected verification plan]
     Plan --> Run[CI or Ansible coordinates execution]
     Run --> Evidence[Collect results and missing work]
-    Evidence --> Gate{Evidence and review accepted?}
+    Evidence --> Docs[Complete affected project documentation]
+    Docs --> Gate{Evidence and review accepted?}
     Gate -->|Yes| Accepted[Accepted revision and retained records]
     Gate -->|No| Findings[Record findings and required changes]
     Findings --> Spec

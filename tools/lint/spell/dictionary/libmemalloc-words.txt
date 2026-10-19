@@ -346,6 +346,7 @@ Forin
 forkserver
 formatter
 formatters
+Fourmolu
 FP
 fplan
 fplugin
@@ -354,6 +355,7 @@ fprofile
 Frama
 fread
 freelist
+Fromherz
 fs
 fsanitize
 fscanf
@@ -402,15 +404,22 @@ Hardcoded
 hardened_malloc
 hardlink
 hardlinks
+HCOMP
+HDOC
 Helgrind
 highwater
 Hisham
+HLint
+HMOD
 hoc
 hostname
 hotfix
 hotfixes
 hotloop
 hotspot
+HPIT
+HSTYLE
+HTEST
 HTML
 HTTP
 HTTPS
@@ -481,6 +490,7 @@ jdump
 jemalloc
 JITs
 joff
+Johan
 Johnstone
 JPL
 jq
@@ -492,13 +502,17 @@ Kernighan
 keyid
 keyless
 Klocwork
+Kowainik
 kref
 Lamport
 LASX
 LBAN
+LCOMP
 lcore
 LDoc
+LEANPIT
 lets
+LFV
 libabigail
 libatomic
 libc
@@ -510,6 +524,7 @@ libgcc
 libgcov
 Libmemalloc
 libmemalloc
+LibMemAllocImp
 LibmemallocStr
 libSystem
 libuv
@@ -569,6 +584,7 @@ malloc
 markdownlint
 marm
 Masmano
+Mathlib
 mbscat
 mbscpy
 mbsncpy
@@ -652,6 +668,7 @@ namespace
 namespaced
 namespaces
 NASA
+Naumann
 NDEBUG
 newindex
 Newtype
@@ -785,6 +802,7 @@ profiler
 profraw
 propext
 Protobom
+Protzenko
 PRs
 pseudocode
 pthread
@@ -843,6 +861,7 @@ regs
 reimplementing
 reindent
 reinitialization
+Reitz
 rejectable
 reliances
 relocations
@@ -884,6 +903,7 @@ rseq
 RSTUF
 RTCA
 RTLD
+ruleset
 rulesets
 runbook
 runbooks
@@ -1028,6 +1048,7 @@ Teoria
 Tested
 thr
 thrd
+Tibell
 tid
 timeframe
 TISAX
@@ -1058,6 +1079,7 @@ trydiffoscope
 TS
 TSan
 tsd
+Tweag
 typeclass
 typedef
 typedefs
@@ -1200,6 +1222,7 @@ xchg
 Xcode
 XFAIL
 xffffffffu
+XLANG
 xlarge
 Xmake
 XML
