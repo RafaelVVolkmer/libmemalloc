@@ -155,18 +155,21 @@ local function AUTOMATION_main()
    report.results = artifacts.array(report.results)
    report.failures = artifacts.array(report.failures)
    report.blocked = artifacts.array(report.blocked)
+   report.skipped = artifacts.array(report.skipped)
 
    artifacts.write(root .. "/report.json", artifacts.text_json(report) .. "\n")
    print(
       string.format(
-         "Automation: %d suites; %d failures; %d blocked.",
+         "Automation: %d suites; %d failures; %d blocked; %d skipped.",
          #catalog.lua + #catalog.node,
          #report.failures,
-         #report.blocked
+         #report.blocked,
+         #report.skipped
       )
    )
    print("Failed: " .. table.concat(report.failures, ", "))
    print("Blocked: " .. table.concat(report.blocked, ", "))
+   print("Skipped: " .. table.concat(report.skipped, ", "))
    print("Report: " .. root .. "/report.json")
 
    os.exit(report.state == "PASS" and 0 or 1)

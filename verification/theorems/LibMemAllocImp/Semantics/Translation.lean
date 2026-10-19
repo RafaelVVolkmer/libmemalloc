@@ -56,3 +56,6 @@ theorem transfer {Concrete : Type} (limit : Nat) (program : IR.Program)
   exact correct
 
 end Allocator.Translation
+
+-- EOF
+

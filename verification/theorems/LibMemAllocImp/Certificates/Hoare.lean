@@ -75,3 +75,6 @@ theorem satisfies_of_wp (limit : Nat) (program : Program) (pre : Store → Prop)
   exact wp_sound limit program (post initial) initial (obligations initial admitted)
 
 end Allocator.IR
+
+-- EOF
+

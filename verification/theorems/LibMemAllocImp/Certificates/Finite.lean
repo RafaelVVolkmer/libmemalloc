@@ -41,3 +41,6 @@ theorem checkFinite_sound (m : Semantics.Machine) (states : List Nat)
   exact (h.2 s member).1
 
 end Allocator.Certificates
+
+-- EOF
+

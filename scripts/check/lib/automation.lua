@@ -7,6 +7,7 @@ local function AUTOMATION_RUNNER_loadModule()
    local exports = {}
    local AUTOMATION_NS_PER_MS = 1000000
    local AUTOMATION_UNKNOWN_EXIT = -1
+   local AUTOMATION_SKIP_EXIT = 77
 
    --- Retain each process result even when an earlier suite raises.
    -- @param entry table: named argv, timeout and optional environment.
@@ -31,6 +32,15 @@ local function AUTOMATION_RUNNER_loadModule()
          }
       end
 
+      if
+         result.state == "FAIL"
+         and result.exit_code == AUTOMATION_SKIP_EXIT
+         and result.signal == 0
+      then
+         result.state = "SKIP"
+         result.reason = "Suite prerequisite unavailable (exit 77)"
+      end
+
       result.name = entry.name
       result.duration_ms =
          math.floor((ports.clock() - started) / AUTOMATION_NS_PER_MS)
@@ -45,8 +55,13 @@ local function AUTOMATION_RUNNER_loadModule()
    -- @param max_bytes number: combined stdout/stderr bound for each child.
    -- @return table: ordered results, failures, blocked names and overall state.
    local function AUTOMATION_RUNNER_run(plan, ports, max_bytes)
-      local report =
-         { results = {}, failures = {}, blocked = {}, state = "PASS" }
+      local report = {
+         results = {},
+         failures = {},
+         blocked = {},
+         skipped = {},
+         state = "PASS",
+      }
 
       --- Append evidence in catalog order and aggregate unsuccessful outcomes.
       -- @param result table: recorded process result or dependency-blocked row.
@@ -54,7 +69,9 @@ local function AUTOMATION_RUNNER_loadModule()
       local function automation_collect(result)
          report.results[#report.results + 1] = result
 
-         if result.state == "BLOCKED" then
+         if result.state == "SKIP" then
+            report.skipped[#report.skipped + 1] = result.name
+         elseif result.state == "BLOCKED" then
             report.blocked[#report.blocked + 1] = result.name
          elseif result.state ~= "PASS" then
             report.failures[#report.failures + 1] = result.name
@@ -85,7 +102,7 @@ local function AUTOMATION_RUNNER_loadModule()
          end
       end
 
-      if #report.failures > 0 or #report.blocked > 0 then
+      if #report.failures > 0 or #report.blocked > 0 or #report.skipped > 0 then
          report.state = "FAIL"
       end
 

@@ -84,3 +84,6 @@ def Satisfies (limit : Nat) (program : Program) (pre : Store → Prop)
     ∃ result final, run limit program initial = some (result, final) ∧ post initial result final
 
 end Allocator.IR
+
+-- EOF
+

@@ -11,7 +11,7 @@ local function WINDOWS_PKGCONFIG_TEST_main()
    if not artifacts.platform.command_exists(compiler) then
       print("Windows pkg-config: SKIP; install the MinGW x86_64 compiler.")
 
-      return
+      os.exit(77)
    end
 
    local root = artifacts.platform.temporary_directory("tests")

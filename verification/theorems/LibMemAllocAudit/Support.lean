@@ -34,3 +34,6 @@ elab "#audit_allocator" : command => do
       checked := checked + 1
   logInfo m!"Axiom audit: {checked} theorem declarations; \
     only propext, Quot.sound, Classical.choice allowed."
+
+-- EOF
+

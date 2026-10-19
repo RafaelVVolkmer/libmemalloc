@@ -26,3 +26,6 @@ inductive Reach (m : Machine) : Nat → Prop
   | next {s input : Nat} : Reach m s → input ∈ m.inputs → Reach m (m.step s input)
 
 end Allocator.Semantics
+
+-- EOF
+

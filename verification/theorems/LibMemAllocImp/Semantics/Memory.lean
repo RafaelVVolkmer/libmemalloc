@@ -102,3 +102,6 @@ theorem write_implies_read (budget : Nat) (region : Region) (permission : Permis
   exact ⟨validity, by omega, by omega⟩
 
 end Allocator.Memory
+
+-- EOF
+

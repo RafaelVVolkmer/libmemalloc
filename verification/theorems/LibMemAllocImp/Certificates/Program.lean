@@ -48,3 +48,6 @@ theorem coverage_nonempty (program : IR.Program) : 0 < nodes (coverage program) 
   cases program <;> simp [coverage, nodes] <;> omega
 
 end Allocator.Certificates
+
+-- EOF
+

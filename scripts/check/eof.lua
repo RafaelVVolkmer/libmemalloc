@@ -13,6 +13,7 @@ local function scripts_check_eof_main()
 
    local markers = {
       lua = "-- EOF",
+      lean = "-- EOF",
       c = "/* EOF */",
       dox = "/* EOF */",
       h = "/* EOF */",

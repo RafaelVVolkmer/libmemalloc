@@ -67,7 +67,10 @@ local function PROOF_STYLE_main()
       documented = documented + math.lean(source, path)
       local imports = {}
       local previous = ""
-      assert(source:sub(-1) == "\n", path .. ": missing final newline")
+      assert(
+         source:sub(-10) == "\n\n-- EOF\n\n",
+         path .. ": expected blank line, EOF comment, blank line"
+      )
       assert(
          source:find("SPDX-License-" .. "Identifier:", 1, true),
          path .. ": license header"

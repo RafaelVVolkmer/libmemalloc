@@ -25,3 +25,6 @@ def identity (initial : IR.Store) (result : Nat) (_ : IR.Store) : Prop :=
   result = initial 0
 
 end Allocator.C.Scalar
+
+-- EOF
+

@@ -110,6 +110,28 @@ local function AUTOMATION_TEST_main()
       "web suite did not run after successful compilation"
    )
 
+   plan.lua = {
+      {
+         name = "unavailable-suite",
+         argv = { "sh", "-c", "exit 77" },
+         timeout_ms = AUTOMATION_TEST_PROCESS_MS,
+      },
+   }
+   results = {}
+   report = runner.run(plan, {
+      run = executor.run,
+      clock = uv.hrtime,
+      record = automation_test_record,
+   }, AUTOMATION_TEST_MAX_BYTES)
+   assert(
+      results[1].state == "SKIP" and results[1].exit_code == 77,
+      "skip protocol lost state or exit code"
+   )
+   assert(report.skipped[1] == "unavailable-suite", "skipped suite name lost")
+   assert(report.state == "FAIL", "required skipped suite approved campaign")
+   assert(results[3].state == "PASS", "skip suppressed independent suites")
+   plan.lua = {}
+
    --- Simulate an adapter exception without suppressing subsequent reporting.
    -- @return nil: raises the injected infrastructure failure.
    local function automation_test_throw()

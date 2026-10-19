@@ -155,8 +155,10 @@ an eight-MiB combined stdout/stderr limit, declared in `tools/testing/suites.lua
 has a separate three-minute timeout. The outer `tests` task retains a one-hour campaign limit.
 The runner prints its fresh `.cache/logs/run.*` evidence directory before execution and records each
 suite's state, integer elapsed milliseconds, exit code, signal and separate stdout/stderr logs.
-`report.json` lists failed and blocked names in catalog order. Spawn errors, timeouts and output-limit
+`report.json` lists failed, blocked and skipped names in catalog order. Spawn errors, timeouts and output-limit
 failures remain distinct, and independent suites continue after a failure.
+A suite exits with code 77 when a prerequisite is unavailable. The runner records SKIP with that exit code;
+required skipped suites prevent campaign approval. The Windows pkg-config suite requires MinGW.
 
 Web suites run only after successful compilation into that invocation's private `web/` directory.
 The runner sets their asset paths explicitly; compiler failure marks them BLOCKED without invoking Node
