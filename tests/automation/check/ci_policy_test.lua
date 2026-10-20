@@ -39,24 +39,30 @@ local function tests_lint_ci_policy_test_suite_main()
    --- Copy a real entrypoint into the isolated test repository.
    -- @param path string: filesystem path selected by the caller.
    -- @param target any|nil: selected target configuration or path.
+   -- @param padding number|nil: indentation of the run field.
    -- @return any: copy a real entrypoint into the isolated test repository.
-   local function script(path, target)
+   local function script(path, target, padding)
       local blocks = {}
       local current = nil
+      local prefix = string.rep(" ", padding or 6)
+      local body = prefix .. "  "
 
       for line in (read(path) .. "\n"):gmatch("(.-)\n") do
-         if line == "      run: |" then
+         if line == prefix .. "run: |" then
             current = {}
             blocks[#blocks + 1] = current
-         elseif current and (line == "" or line:match("^        ")) then
-            current[#current + 1] = line:gsub("^        ", "")
+         elseif current and (line == "" or line:sub(1, #body) == body) then
+            current[#current + 1] = line:sub(#body + 1)
          else
             current = nil
          end
       end
 
       return table.concat(
-         assert(blocks[target or 1], "Missing action script"),
+         assert(
+            blocks[target == -1 and #blocks or target or 1],
+            "Missing action script"
+         ),
          "\n"
       )
    end
@@ -278,6 +284,146 @@ local function tests_lint_ci_policy_test_suite_main()
    dofile("scripts/check/lib/workflows.lua").documentation(
       read(".github/workflows/documentation.yml")
    )
+
+   -- Execute the workflow's verification command with a recording binary.
+   local verification = platform.temporary_directory()
+   platform.run({ "mkdir", "-p", verification .. "/tools" })
+   write(
+      verification .. "/tools/gittuf",
+      '#!/bin/sh\nprintf \'%s\\n\' "$@" > "$LIBMEMALLOC_CACHE_ROOT/arguments"\n'
+         .. 'exit "$VERIFY_EXIT"\n'
+   )
+   platform.run({ "chmod", "700", verification .. "/tools/gittuf" })
+   for _, case in ipairs({
+      { "refs/heads/main", "0", "verify-ref\nrefs/heads/main\n", true },
+      {
+         "refs/tags/fixture",
+         "0",
+         "verify-ref\n--latest-only\nrefs/tags/fixture\n",
+         true,
+      },
+      {
+         "refs/tags/fixture",
+         "1",
+         "verify-ref\n--latest-only\nrefs/tags/fixture\n",
+         false,
+      },
+      { "refs/heads/main", "1", "verify-ref\nrefs/heads/main\n", false },
+   }) do
+      local passed = platform.command_succeeded_silent({
+         "env",
+         "GITHUB_REF=" .. case[1],
+         "VERIFY_EXIT=" .. case[2],
+         "LIBMEMALLOC_CACHE_ROOT=" .. verification,
+         "bash",
+         "-c",
+         script(".github/workflows/security.yml", -1, 8),
+      })
+      assert(passed == case[4], "gittuf verification failure was ignored")
+      assert(
+         read(verification .. "/arguments") == case[3],
+         "wrong gittuf verification scope"
+      )
+      count = count + 1
+   end
+   platform.remove_temporary_directory(verification)
+
+   -- Exercise real Git transfers: RSL messages do not retain old tag objects.
+   local directory = platform.temporary_directory()
+   local restore = directory .. "/restore.sh"
+
+   write(restore, script(".github/actions/gittuf-objects/action.yml"))
+
+   local fixture = [=[
+set -euo pipefail
+cd "$1"
+restore="$2"
+export TARGET_REF=refs/tags/fixture
+git init --quiet --initial-branch=main seed
+git -C seed commit --quiet --allow-empty -m initial
+git -C seed tag -a fixture -m original
+old="$(git -C seed rev-parse refs/tags/fixture)"
+tree="$(git -C seed mktree </dev/null)"
+entry="$(printf 'RSL Reference Entry\n\nref: %s\ntargetID: %s\nnumber: 1\n' \
+  "$TARGET_REF" "$old" | git -C seed commit-tree "$tree")"
+git -C seed update-ref refs/gittuf/reference-state-log "$entry"
+git -C seed tag --force -a fixture -m replacement
+git clone --quiet --no-local seed replica
+cd replica
+git fetch --quiet origin \
+  refs/gittuf/reference-state-log:refs/gittuf/reference-state-log
+if git cat-file -e "$old" 2>/dev/null; then
+  printf '%s\n' 'Fixture unexpectedly contains the replaced tag.' >&2
+  exit 1
+fi
+refs="$(git show-ref)"
+fetch_head="$(cat .git/FETCH_HEAD)"
+bash "$restore"
+git cat-file -e "$old^{commit}"
+[[ "$(git show-ref)" == "$refs" ]]
+[[ "$(cat .git/FETCH_HEAD)" == "$fetch_head" ]]
+
+# Already recovered targets must not require a working remote.
+git remote set-url origin "$1/absent"
+bash "$restore"
+
+# Unrelated references must not block the selected tag's recovery.
+missing=1111111111111111111111111111111111111111
+other="$(printf 'RSL Reference Entry\n\nref: refs/tags/other\ntargetID: %s\n' \
+  "$missing" | git commit-tree "$tree" -p "$entry")"
+git update-ref refs/gittuf/reference-state-log "$other"
+bash "$restore"
+
+# A required target unavailable from origin must fail closed.
+bad="$(printf 'RSL Reference Entry\n\nref: %s\ntargetID: %s\n' \
+  "$TARGET_REF" "$missing" | git commit-tree "$tree" -p "$entry")"
+git update-ref refs/gittuf/reference-state-log "$bad"
+if bash "$restore" >missing.log 2>&1; then
+  exit 1
+fi
+grep -q 'Cannot recover gittuf target' missing.log
+
+# RSL values are data, never shell commands or fetch options.
+bad="$(printf 'RSL Reference Entry\n\nref: %s\ntargetID: %s\n' \
+  "$TARGET_REF" '$(touch injected)' | git commit-tree "$tree" -p "$entry")"
+git update-ref refs/gittuf/reference-state-log "$bad"
+if bash "$restore" >invalid.log 2>&1; then
+  exit 1
+fi
+grep -q 'Invalid object ID' invalid.log
+[[ ! -e injected ]]
+
+git update-ref -d refs/gittuf/reference-state-log
+if bash "$restore" >absent.log 2>&1; then
+  exit 1
+fi
+]=]
+   local success = platform.command_succeeded({
+      "env",
+      "-i",
+      "PATH=" .. assert(os.getenv("PATH")),
+      "HOME=" .. directory,
+      "GIT_CONFIG_NOSYSTEM=1",
+      "GIT_CONFIG_GLOBAL=/dev/null",
+      "GIT_AUTHOR_NAME=CI fixture",
+      "GIT_AUTHOR_EMAIL=fixture@example.invalid",
+      "GIT_COMMITTER_NAME=CI fixture",
+      "GIT_COMMITTER_EMAIL=fixture@example.invalid",
+      "timeout",
+      "30",
+      "bash",
+      "--noprofile",
+      "--norc",
+      "-c",
+      fixture,
+      "gittuf-fixture",
+      directory,
+      restore,
+   })
+
+   platform.remove_temporary_directory(directory)
+   assert(success, "gittuf object recovery regression failed")
+   count = count + 6
 
    print(
       string.format("CI security: %d adversarial policy cases passed.", count)

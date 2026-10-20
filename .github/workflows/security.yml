@@ -345,6 +345,12 @@ jobs:
             "${GITTUF_BINARY}" \
             "${LIBMEMALLOC_CACHE_ROOT}/tools/gittuf"
 
+      - name: Restore historical gittuf objects
+        if: steps.metadata.outputs.initialized == 'true'
+        uses: ./.github/actions/gittuf-objects
+        with:
+          reference: ${{ github.ref }}
+
       - name: Verify gittuf policy
         if: steps.metadata.outputs.initialized == 'true'
         run: |
@@ -356,7 +362,20 @@ jobs:
             ref="refs/heads/main"
           fi
 
-          "${LIBMEMALLOC_CACHE_ROOT}/tools/gittuf" verify-ref "${ref}"
+          verify=(verify-ref)
+          # A recreated tag has one current object, so validate its latest RSL state.
+          # Branches retain complete change-history verification.
+          if [[ "${ref}" == refs/tags/* ]]; then
+            verify+=(--latest-only)
+          fi
+
+          if ! "${LIBMEMALLOC_CACHE_ROOT}/tools/gittuf" "${verify[@]}" "${ref}"; then
+            printf '%s\n' \
+              'gittuf verification failed after restoring historical objects.' \
+              'Check the signed RSL entry, current ref and authorized signing keys.' \
+              'See docs/runbooks/security-services.md#gittuf-recovery.' >&2
+            exit 1
+          fi
 
 # EOF
 

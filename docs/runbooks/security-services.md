@@ -11,6 +11,7 @@ SPDX-License-Identifier: GPL-3.0-only
 - [Current state](#current-state)
 - [Variables and secrets](#variables-and-secrets)
 - [Provisioning order](#provisioning-order)
+- [gittuf recovery](#gittuf-recovery)
 - [Actions coverage](#actions-coverage)
 - [References](#references)
 
@@ -140,6 +141,45 @@ root-key custody and a signature threshold through a maintainer ceremony. Distri
 and test expiration, rotation, rollback rejection, and target digest verification. Keep offline root private
 keys outside GitHub Secrets; use a supported KMS/HSM for online keys when available. The API credential and
 TUF signing keys serve different purposes.
+
+---
+
+<a id="gittuf-recovery"></a>
+
+## gittuf recovery
+
+The security workflow fetches historical targets named by the RSL for the selected reference and gittuf
+metadata before running `gittuf verify-ref`. An RSL message contains an object ID; it does not keep that
+object reachable in Git. A full-history checkout can therefore omit a replaced annotated tag object.
+Recovery fetches exact object IDs from `origin`. It does not change tags, policy, RSL entries or signatures.
+
+Branches use complete change-history verification. Tags use `gittuf verify-ref --latest-only` to check the
+current tag against its latest RSL entry and applicable policy. Policy history is still validated. Older
+states of the same tag are not revalidated against its current object: gittuf 0.15.0 rejects that comparison
+after a tag replacement, even when the earlier entry has a withdrawal annotation. Replacing a published tag
+requires explicit maintainer authorization and a new signed RSL entry; CI cannot authorize the replacement.
+
+If recovery fails, a maintainer must restore the original object from a trusted clone or backup and retain
+it under an archival reference. Do not recreate an equivalent tag: its object ID and signature would differ.
+If verification then reports a reference mismatch, inspect the RSL and the published tag with an authorized
+signing identity. Do not move a published tag to make the check pass. Follow the
+[signature guide](../standards/versioning/signature-guide.md) and publish a new version when needed.
+
+For a reviewed, newly created release tag, gittuf 0.15.0 supports the following local preparation, using the
+signing key authorized by the repository policy:
+
+```sh
+release_ref='refs/tags/<new-version>'
+gittuf rsl record --local-only "${release_ref}"
+gittuf verify-ref --latest-only "${release_ref}"
+git push --atomic origin "${release_ref}" refs/gittuf/reference-state-log
+```
+
+Synchronize the existing gittuf metadata before preparing the entry. The atomic push publishes the tag and
+its signed record together, so tag-triggered verification sees both. Never force-push the RSL. CI has read
+permission only and cannot create maintainer signatures. Optional mode skips an absent policy; an initialized
+policy still has to verify successfully. Re-running an old tag uses the workflow stored in that tag, so a
+workflow fix must be included in the next reviewed release candidate.
 
 ---
 
