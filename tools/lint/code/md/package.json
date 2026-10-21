@@ -8,7 +8,7 @@
   },
   "dependencies": {
     "jsdom": "30.0.1",
-    "markdown-it": "15.0.1",
+    "markdown-it": "15.0.3",
     "markdownlint-cli": "0.49.1",
     "mermaid": "12.2.0",
     "@highlightjs/cdn-assets": "11.12.0"

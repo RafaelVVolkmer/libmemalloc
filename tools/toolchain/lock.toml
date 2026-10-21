@@ -108,7 +108,7 @@ version = "30.0.1"
 
 # renovate: datasource=npm depName=markdown-it
 [tools.markdown_it]
-version = "15.0.1"
+version = "15.0.3"
 
 # CWE-94 / CWE-1321: patch transitive template injection and prototype pollution.
 # https://github.com/advisories/GHSA-r5fr-rjxr-66jc

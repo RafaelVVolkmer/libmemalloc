@@ -11,5 +11,8 @@
   "devDependencies": {
     "renovate": "@renovate.version@",
     "pyright": "@pyright.version@"
+  },
+  "overrides": {
+    "markdown-it": "@markdown_it.version@"
   }
 }

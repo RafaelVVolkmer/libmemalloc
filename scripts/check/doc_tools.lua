@@ -26,7 +26,7 @@ const tools = JSON.parse(process.env.TOOLCHAIN_TOOLS);
 const graphs = [
    { directory: "quality", identities: {
       cspell: "cspell", renovate: "renovate", pyright: "pyright",
-   }, overrides: {} },
+   }, overrides: { "markdown-it": "markdown_it" } },
    { directory: "md", identities: {
       "markdownlint-cli": "markdownlint", "markdown-it": "markdown_it",
       mermaid: "mermaid", jsdom: "jsdom",

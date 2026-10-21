@@ -11,5 +11,8 @@
   "devDependencies": {
     "renovate": "44.105.4",
     "pyright": "1.1.411"
+  },
+  "overrides": {
+    "markdown-it": "15.0.3"
   }
 }
