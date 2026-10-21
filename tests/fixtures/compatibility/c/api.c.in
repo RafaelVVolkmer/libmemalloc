@@ -1,0 +1,37 @@
+// SPDX-FileCopyrightText: 2026 Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
+// SPDX-License-Identifier: GPL-3.0-only
+
+#include <stdio.h>
+
+#include "mock.h"
+
+#if !defined(__STDC_VERSION__) || __STDC_VERSION__ != LMA_EXPECT_C
+  #error "The compiler did not select the contracted C language version"
+#endif
+
+int main(void)
+{
+	int          ret   = 0;
+	int          value = 0;
+	unsigned int index;
+
+	for (index = 0; index < 257; ++index)
+	{
+		value = MOCK_identity();
+		if (value != 0)
+		{
+			ret = 1;
+			goto function_output;
+		}
+	}
+
+	value = puts("mock-identity-v1 operations=257 result=0");
+	if (value < 0)
+		ret = 2;
+
+function_output:
+	return ret;
+}
+
+/* EOF */
+

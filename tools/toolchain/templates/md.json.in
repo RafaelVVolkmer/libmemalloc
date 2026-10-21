@@ -1,0 +1,22 @@
+{
+  "name": "libmemalloc-document-checks",
+  "private": true,
+  "license": "GPL-3.0-only",
+  "type": "module",
+  "engines": {
+    "node": ">=@node_min.version@"
+  },
+  "dependencies": {
+    "jsdom": "@jsdom.version@",
+    "markdown-it": "@markdown_it.version@",
+    "markdownlint-cli": "@markdownlint.version@",
+    "mermaid": "@mermaid.version@",
+    "@highlightjs/cdn-assets": "@highlight_js.version@"
+  },
+  "overrides": {
+    "lodash-es": "@lodash_es.version@",
+    "smol-toml": "@smol_toml.version@",
+    "js-yaml": "@js_yaml.version@",
+    "katex": "@katex.version@"
+  }
+}

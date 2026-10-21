@@ -1,0 +1,28 @@
+# SPDX-FileCopyrightText: 2026 Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
+# SPDX-License-Identifier: GPL-3.0-only
+
+---
+extends: existence
+
+message: "'%s' may be passive voice; name the actor when it matters."
+
+level: suggestion
+
+ignorecase: true
+
+nonword: true
+
+raw:
+  - '\b(?:am|are|be|been|being|is|was|were)\s+'
+  - '(?:\w+ed|built|chosen|done|found|given|known|made|read|sent|set|shown|taken|told|used|written)\b'
+
+exceptions:
+  - is based
+  - is called
+  - is defined
+  - is designed
+  - is intended
+  - is located
+
+# EOF
+

@@ -1,0 +1,68 @@
+# SPDX-FileCopyrightText: 2026 Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
+# SPDX-License-Identifier: GPL-3.0-only
+
+---
+base: lua51
+
+# Grammar matches StyLua; the API catalogue below remains deliberately bounded.
+lua_versions: [lua54]
+
+globals:
+  # Load isolated test entrypoints with the Lua 5.2+ environment argument.
+  loadfile:
+    args:
+      - required: false
+        type: string
+      - required: false
+        type: string
+      - required: false
+        type: table
+
+  io.lines:
+    args:
+      - required: false
+        type: string
+      - required: false
+        type: "..."
+  io.stderr.write:
+    method: true
+    args:
+      - required: false
+        type: "..."
+  table.unpack:
+    args:
+      - type: table
+      - required: false
+        type: number
+      - required: false
+        type: number
+    must_use: true
+  utf8.offset:
+    args:
+      - type: string
+      - type: number
+      - required: false
+        type: number
+    must_use: true
+  utf8.codes:
+    args:
+      - type: string
+    must_use: true
+  utf8.char:
+    args:
+      - required: false
+        type: number
+      - required: false
+        type: "..."
+    must_use: true
+  utf8.len:
+    args:
+      - type: string
+      - required: false
+        type: number
+      - required: false
+        type: number
+    must_use: true
+
+# EOF
+

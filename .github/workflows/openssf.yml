@@ -1,0 +1,172 @@
+# SPDX-FileCopyrightText: 2026 Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
+# SPDX-License-Identifier: GPL-3.0-only
+
+---
+name: OpenSSF integration qualification
+
+on:
+  schedule:
+    - cron: "27 8 * * 2"
+  workflow_dispatch: {}
+
+permissions: {}
+
+concurrency:
+  group: openssf-qualification
+  cancel-in-progress: false
+
+jobs:
+  plan:
+    name: Plan catalog coverage
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+
+    permissions:
+      contents: read
+
+    outputs:
+      matrix: ${{ steps.plan.outputs.matrix }}
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: ./.github/actions/workspace-cache
+
+      - uses: ./.github/actions/setup-release
+
+      - name: Expand all declared integrations
+        id: plan
+        run: |
+          lua scripts/process/playbook.lua --direct test-security-openssf-test
+          lua scripts/process/playbook.lua --direct security-plan
+
+  fixture:
+    name: Prepare assessment artifacts
+    permissions:
+      contents: read
+    uses: ./.github/workflows/_release-checks.yml
+
+  project:
+    name: Qualify ${{ matrix.project }}
+    needs: [fixture, plan]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+
+    permissions:
+      contents: read
+
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.plan.outputs.matrix) }}
+
+    steps:
+      - name: Checkout trusted source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Configure repository-local caches
+        uses: ./.github/actions/workspace-cache
+
+      - name: Setup release tools
+        id: tools
+        uses: ./.github/actions/setup-release
+
+      - name: Download candidate from this workflow run
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: release-candidate
+          path: .cache/build/openssf
+
+      - name: Restore verified Cosign
+        if: matrix.project == 'sigstore'
+        id: cosign
+        uses: ./.github/actions/verified-download
+        with:
+          name: cosign
+          version: ${{ fromJSON(steps.tools.outputs.tools).cosign.version }}
+          filename: cosign-linux-amd64
+          sha256: ${{ fromJSON(steps.tools.outputs.tools).cosign.sha256 }}
+          origin: https://github.com
+          directory: sigstore/cosign/releases/download/v${{ fromJSON(steps.tools.outputs.tools).cosign.version }}
+
+      - name: Install verified Cosign
+        if: matrix.project == 'sigstore'
+        env:
+          COSIGN_BINARY: ${{ steps.cosign.outputs.path }}
+        run: install -m 0755 "${COSIGN_BINARY}" "${LIBMEMALLOC_CACHE_ROOT}/tools/libmemalloc-lua-bin/cosign"
+
+      - name: Assess repository practices
+        if: matrix.project == 'scorecard'
+        uses: ossf/scorecard-action@2d1146689b8cda280b9bc96326124645441f03bc # v2.4.4
+        with:
+          results_file: .cache/logs/scorecard.json
+          results_format: json
+          publish_results: false
+
+      - name: Execute integration or report missing prerequisites
+        env:
+          PROJECT: ${{ matrix.project }}
+          BEST_PRACTICES_PROJECT_ID: ${{ vars.BEST_PRACTICES_PROJECT_ID }}
+          RELEASE_ROOT: ${{ needs.fixture.outputs.root }}
+          GITHUB_AUTH_TOKEN: ${{ matrix.project == 'criticality-score' && github.token || '' }}
+          GITHUB_TOKEN: ${{ matrix.project == 'criticality-score' && github.token || '' }}
+        run: |
+          lua scripts/process/playbook.lua --direct workspace-cache lua scripts/process/playbook.lua --direct \
+          security-run \
+            --project="${PROJECT}" --install \
+            --root=".cache/build/openssf/${RELEASE_ROOT#release/}"
+
+      - name: Preserve assessment, including failures
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: openssf-${{ matrix.project }}
+          path: .cache/logs/openssf/${{ matrix.project }}/
+          include-hidden-files: true
+          if-no-files-found: error
+
+  report:
+    name: Reconcile complete OpenSSF coverage
+    if: always()
+    needs: [plan, fixture, project]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: ./.github/actions/workspace-cache
+
+      - uses: ./.github/actions/setup-release
+
+      - name: Collect all available assessments
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          pattern: openssf-*
+          path: .cache/ci/openssf-input
+
+      - name: Require every declared integration
+        if: always()
+        run: |
+          lua scripts/process/playbook.lua --direct security-report --input=.cache/ci/openssf-input \
+            --output=.cache/ci/openssf-summary
+
+      - name: Preserve complete coverage and blockers
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: openssf-coverage
+          path: .cache/ci/openssf-summary/
+          include-hidden-files: true
+          if-no-files-found: error
+
+# EOF
+

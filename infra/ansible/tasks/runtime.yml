@@ -1,0 +1,157 @@
+# SPDX-FileCopyrightText: 2026 Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
+# SPDX-License-Identifier: GPL-3.0-only
+
+---
+- name: Resolve the native host tool paths
+  ansible.builtin.command:
+    argv:
+      - "{{ ansible_playbook_python }}"
+      - -c
+      - |
+        import json, os, platform, shutil, subprocess
+        path = os.environ.get("PATH", "")
+        system = platform.system()
+        if system == "Darwin":
+            brew = shutil.which("brew")
+            if brew:
+                prefix = subprocess.check_output([brew, "--prefix"], text=True).strip()
+                paths = [prefix + "/opt/" + suffix for suffix in (
+                    "python@3.12/libexec/bin", "coreutils/libexec/gnubin",
+                    "bison/bin", "flex/bin")]
+                path = os.pathsep.join(paths + [path])
+        print(json.dumps({"path": path, "system": system,
+            "python": os.environ.get("LIBMEMALLOC_PYTHON") or
+                shutil.which("python3.12", path=path) or
+                shutil.which("python3", path=path) or "python3"}))
+    chdir: "{{ lma_workspace }}"
+    expand_argument_vars: false
+  register: automation_platform
+  changed_when: false
+  check_mode: false
+
+- name: Select host paths for bootstrap and task execution
+  ansible.builtin.set_fact:
+    lma_host_path: "{{ (automation_platform.stdout | from_json).path }}"
+    lma_host_python: "{{ (automation_platform.stdout | from_json).python }}"
+
+- name: Inspect the local runtime manifest
+  ansible.builtin.stat:
+    path: "{{ lma_workspace }}/.cache/tools/automation.yml"
+  register: automation_manifest
+
+- name: Load existing managed Lua paths
+  ansible.builtin.include_vars:
+    file: "{{ lma_workspace }}/.cache/tools/automation.yml"
+  when: automation_manifest.stat.exists
+
+- name: Probe the existing managed runtime
+  ansible.builtin.command:
+    argv:
+      - "{{ lma_managed_lua }}"
+      - -e
+      - >-
+        local lock = dofile('scripts/toolchain/lib/lock.lua').load();
+        local platform = dofile('scripts/lib/platform.lua');
+        local version = platform.command_output({arg[0], '-v'});
+        assert(version and version:match('^Lua ([^ ]+)') == lock.lua.version);
+        assert(require('luv').version_string() == lock.luv.version:gsub('%-.*', ''))
+        assert(require('cffi').sizeof('int') == 4)
+    chdir: "{{ lma_workspace }}"
+    expand_argument_vars: false
+  environment:
+    LUA_CPATH: "{{ lma_managed_luv }};;"
+  register: automation_probe
+  changed_when: false
+  failed_when: false
+  check_mode: false
+  when: automation_manifest.stat.exists
+
+- name: Decide whether runtime preparation is needed
+  ansible.builtin.set_fact:
+    lma_runtime_needed: "{{ not automation_manifest.stat.exists or automation_probe.rc | default(1) != 0 }}"
+
+- name: Require an existing runtime for simulation
+  ansible.builtin.assert:
+    that: not ansible_check_mode or not lma_runtime_needed
+    fail_msg: >-
+      Check mode does not install tools. Run ansible-playbook playbook.yml once
+      to prepare the runtime, then repeat the command with --check.
+
+- name: Inspect host prerequisites before preparing the runtime
+  ansible.builtin.command:
+    argv:
+      - "{{ ansible_playbook_python }}"
+      - -c
+      - |
+        import json, os, platform, shutil, subprocess, sys
+        macos = platform.system() == "Darwin"
+        names = {
+            "git": "git", "cc": "build-essential", "make": "build-essential",
+            "cmake": "cmake", "ninja": "ninja-build", "curl": "curl", "tar": "tar",
+            "sha256sum": "coreutils", "timeout": "coreutils", "flock": "util-linux",
+            "python3": "python3.12-venv",
+        }
+        if macos:
+            names.update({"cc": "Command Line Tools", "make": "Command Line Tools",
+                "python3": "python@3.12"})
+            names.pop("flock")
+            names["ninja"] = "ninja"
+        missing = {package for name, package in names.items() if not shutil.which(name)}
+        candidates = [sys.argv[1]] if sys.argv[1] else ["lua", "lua5.4", "lua5.5"]
+        lua = next((shutil.which(name) for name in candidates if shutil.which(name)), "")
+        if not lua:
+            missing.add("lua" if macos else "lua5.4")
+        python = shutil.which(os.environ.get("LIBMEMALLOC_PYTHON", "python3"))
+        if python:
+            probe = subprocess.run([python, "-c", "import ensurepip, sys; "
+                "assert sys.version_info[:2] == (3, 12)"], capture_output=True)
+            if probe.returncode:
+                missing.add("python@3.12" if macos else "python3.12-venv")
+        print(json.dumps({"lua": lua, "missing": sorted(missing),
+            "install": "brew install" if macos else "sudo apt install",
+            "supported_host": (platform.system(), platform.machine()) in (
+                ("Linux", "x86_64"), ("Darwin", "arm64"), ("Darwin", "x86_64"))}))
+      - "{{ lma_bootstrap_lua }}"
+    chdir: "{{ lma_workspace }}"
+    expand_argument_vars: false
+  register: automation_host
+  environment:
+    PATH: "{{ lma_host_path }}"
+    LIBMEMALLOC_PYTHON: "{{ lma_host_python }}"
+  changed_when: false
+  when: lma_runtime_needed
+
+- name: Explain missing system prerequisites
+  ansible.builtin.assert:
+    that:
+      - (automation_host.stdout | from_json).supported_host
+      - (automation_host.stdout | from_json).missing | length == 0
+    fail_msg: >-
+      Automatic preparation requires Linux x86_64 or macOS arm64/x86_64 and Python 3.12.
+      Missing prerequisites: {{ (automation_host.stdout | from_json).missing | join(', ') }}.
+      Install missing packages: {{ (automation_host.stdout | from_json).install }}
+      {{ (automation_host.stdout | from_json).missing | reject('equalto', 'Command Line Tools') | join(' ') }}.
+      See README.md for each operating system's prerequisites.
+      On macOS install Command Line Tools with xcode-select --install.
+      No system packages were installed.
+  when: lma_runtime_needed
+
+- name: Bootstrap the missing or broken automation runtime
+  ansible.builtin.command:
+    argv: ["{{ (automation_host.stdout | from_json).lua }}", scripts/workspace/bootstrap.lua]
+    chdir: "{{ lma_workspace }}"
+    expand_argument_vars: false
+  environment:
+    LIBMEMALLOC_BOOTSTRAP_RUNTIME_ONLY: "1"
+    PATH: "{{ lma_host_path }}"
+    LIBMEMALLOC_PYTHON: "{{ lma_host_python }}"
+  register: automation_bootstrap
+  changed_when: "'Bootstrap tools changed: true' in automation_bootstrap.stdout"
+  when: lma_runtime_needed
+
+- name: Load managed Lua paths
+  ansible.builtin.include_vars:
+    file: "{{ lma_workspace }}/.cache/tools/automation.yml"
+
+# EOF
+

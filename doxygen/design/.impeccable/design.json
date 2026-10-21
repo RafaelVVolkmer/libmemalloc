@@ -1,0 +1,72 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-09-22T19:40:59.989696+00:00",
+  "title": "Design System: libmemalloc documentation",
+  "extensions": {
+    "license": {
+      "SPDX-FileCopyrightText": "2026 Rafael V. Volkmer <rafael.v.volkmer@gmail.com>",
+      "SPDX-License-Identifier": "GPL-3.0-only"
+    },
+    "layout": {
+      "contentMaxWidth": "1200px",
+      "sidebarWidth": "335px",
+      "headerHeight": "150px",
+      "outlineWidth": "260px",
+      "toolbarHeight": "60px",
+      "documentScroll": "browser",
+      "collapsiblePanels": [
+        "navigation",
+        "outline"
+      ]
+    },
+    "breakpoints": {
+      "mobile": "767px",
+      "outline": "1200px"
+    },
+    "focus": {
+      "outline": "2px solid var(--lma-link)",
+      "offset": "3px"
+    },
+    "branding": {
+      "source": "assets/images/libmemalloc_logo.svg",
+      "derived": "libmemalloc-mascot.svg",
+      "viewBox": "-28 28 720 720",
+      "subtitle": "The Magic of Memory Transmutation",
+      "version": "0.0.0-alpha"
+    },
+    "codePalette": {
+      "background": "#2e3440",
+      "foreground": "#d8dee9",
+      "comment": "#a3adbf",
+      "string": "#a3be8c",
+      "link": "#88c0d0",
+      "keyword": "#81a1c1",
+      "type": "#8fbcbb",
+      "highlight": "#eceff4",
+      "border": "#4c566a",
+      "control": "#3b4252",
+      "hover": "#434c5e",
+      "number": "#bb9ab6"
+    }
+  },
+  "components": [],
+  "narrative": {
+    "northStar": "Doxygen Awesome with libmemalloc identity",
+    "overview": "Nunito Sans typography and the Endesga 32 mascot palette over Doxygen Awesome.",
+    "keyCharacteristics": [
+      "Nunito Sans Regular and Bold for reading and headings.",
+      "JetBrains Mono reserved for code and signatures.",
+      "Brand blue light theme; neutral graphite dark theme with soft blue links.",
+      "Right page outline, Mermaid SVG diagrams, Nord code blocks and bottom-right GitHub corner.",
+      "Independent rail controls, inline native graphs, keyboard access and read-only WebMCP tools."
+    ],
+    "dos": [
+      "Preserve original mascot artwork and authored content.",
+      "Keep the 1200px content cap and accessible reading controls."
+    ],
+    "donts": [
+      "Do not apply code theme colors to the page backgrounds.",
+      "Do not convert Mermaid into ASCII."
+    ]
+  }
+}

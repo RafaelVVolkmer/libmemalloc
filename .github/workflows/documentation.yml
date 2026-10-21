@@ -1,0 +1,207 @@
+# SPDX-FileCopyrightText: 2026 Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
+# SPDX-License-Identifier: GPL-3.0-only
+
+---
+name: Documentation
+
+on:
+  push:
+    branches: [main]
+  pull_request: {}
+  merge_group: {}
+  workflow_dispatch: {}
+
+permissions: {}
+
+concurrency:
+  group: documentation-${{ github.event_name }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  validate:
+    name: Validate and build Doxygen
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout source and pinned theme
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          submodules: true
+
+      - name: Configure repository-local caches
+        uses: ./.github/actions/workspace-cache
+
+      - name: Resolve tool identities
+        id: toolchain
+        uses: ./.github/actions/toolchain
+
+      - name: Setup pinned Lua
+        id: lua
+        uses: ./.github/actions/setup-lua
+
+      - name: Restore verified Node.js archive
+        id: node
+        uses: ./.github/actions/verified-download
+        with:
+          name: node
+          version: ${{ fromJSON(steps.toolchain.outputs.tools).node.version }}
+          filename: node-v${{ fromJSON(steps.toolchain.outputs.tools).node.version }}-linux-x64.tar.xz
+          sha256: ${{ fromJSON(steps.toolchain.outputs.tools).node.sha256 }}
+          origin: https://nodejs.org
+          directory: dist/v${{ fromJSON(steps.toolchain.outputs.tools).node.version }}
+
+      - name: Check publication branch migration consistency
+        env:
+          LUA: ${{ steps.lua.outputs.lua }}
+        run: '"${LUA}" scripts/process/playbook.lua --direct check-workflows'
+
+      - name: Restore verified Doxygen archive
+        id: doxygen
+        uses: ./.github/actions/verified-download
+        with:
+          name: doxygen
+          version: ${{ fromJSON(steps.toolchain.outputs.tools).doxygen.version }}
+          filename: >-
+            doxygen-${{ fromJSON(steps.toolchain.outputs.tools).doxygen.version }}.linux.bin.tar.gz
+          sha256: ${{ fromJSON(steps.toolchain.outputs.tools).doxygen.sha256 }}
+          origin: https://www.doxygen.nl
+          directory: files
+
+      - name: Restore verified Graphviz package
+        id: graphviz
+        uses: ./.github/actions/verified-download
+        with:
+          name: graphviz
+          version: ${{ fromJSON(steps.toolchain.outputs.tools).graphviz.version }}
+          filename: graphviz_${{ fromJSON(steps.toolchain.outputs.tools).graphviz.version }}_amd64.deb
+          sha256: ${{ fromJSON(steps.toolchain.outputs.tools).graphviz.sha256 }}
+          origin: https://archive.ubuntu.com
+          directory: ubuntu/pool/universe/g/graphviz
+
+      - name: Install verified documentation tools
+        env:
+          LIBMEMALLOC_LUA: ${{ steps.lua.outputs.lua }}
+          NODE_ARCHIVE: ${{ steps.node.outputs.path }}
+          GRAPHVIZ_ARCHIVE: ${{ steps.graphviz.outputs.path }}
+          DOXYGEN_ARCHIVE: ${{ steps.doxygen.outputs.path }}
+          DOXYGEN_VERSION: ${{ fromJSON(steps.toolchain.outputs.tools).doxygen.version }}
+        run: |
+          set -euo pipefail
+
+          mkdir -p .cache/tools/md .cache/tools/doxygen .cache/tools/node
+          tar -xJf "${NODE_ARCHIVE}" --directory .cache/tools/node --strip-components=1
+          node_bin="${GITHUB_WORKSPACE}/.cache/tools/node/bin"
+          export PATH="${node_bin}:${PATH}"
+          printf '%s\n' "${node_bin}" >> "${GITHUB_PATH}"
+          node --version
+          "${LIBMEMALLOC_LUA}" scripts/process/playbook.lua --direct check-doc-tools
+          cp tools/lint/code/md/package*.json .cache/tools/md/
+          npm ci --prefix .cache/tools/md \
+            --cache "${LIBMEMALLOC_CACHE_ROOT}/tools/libmemalloc-doc-npm" \
+            --ignore-scripts --no-audit --no-fund
+          mkdir -p .cache/tools/web
+          cp tools/lint/code/web/package{,-lock}.json .cache/tools/web/
+          npm ci --prefix .cache/tools/web \
+            --cache "${LIBMEMALLOC_CACHE_ROOT}/tools/libmemalloc-doc-npm" \
+            --ignore-scripts --no-audit --no-fund
+          tar -xzf "${DOXYGEN_ARCHIVE}" --directory .cache/tools/doxygen \
+            --strip-components=2 "doxygen-${DOXYGEN_VERSION}/bin/doxygen"
+          .cache/tools/doxygen/doxygen --version
+          sudo apt-get update
+          sudo apt-get install --yes --no-install-recommends "${GRAPHVIZ_ARCHIVE}"
+          dot -V
+
+      - name: Restore verified link checker
+        id: lychee
+        uses: ./.github/actions/verified-download
+        with:
+          name: lychee
+          version: ${{ fromJSON(steps.toolchain.outputs.tools).lychee.version }}
+          filename: lychee-x86_64-unknown-linux-gnu.tar.gz
+          sha256: ${{ fromJSON(steps.toolchain.outputs.tools).lychee.sha256 }}
+          origin: https://github.com
+          directory: >-
+            lycheeverse/lychee/releases/download/lychee-v${{ fromJSON(steps.toolchain.outputs.tools).lychee.version }}
+
+      - name: Install verified link checker
+        env:
+          LYCHEE_ARCHIVE: ${{ steps.lychee.outputs.path }}
+        run: |
+          mkdir -p .cache/tools/lychee
+          tar -xzf "${LYCHEE_ARCHIVE}" --directory .cache/tools/lychee --strip-components=1
+          printf '%s\n' "${GITHUB_WORKSPACE}/.cache/tools/lychee" >> "${GITHUB_PATH}"
+
+      - name: Validate documentation and build the site
+        env:
+          LIBMEMALLOC_LUA: ${{ steps.lua.outputs.lua }}
+          LIBMEMALLOC_NAVIGATION_ASSET: .cache/docs/doxygen-build/web/navigation.js
+          LIBMEMALLOC_WEB_ASSET: .cache/docs/doxygen-build/web/webmcp.js
+          LIBMEMALLOC_DOXYGEN: ${{ github.workspace }}/.cache/tools/doxygen/doxygen
+        run: |
+          set -euo pipefail
+
+          "${LIBMEMALLOC_LUA}" scripts/process/playbook.lua --direct check-web
+          "${LIBMEMALLOC_LUA}" scripts/process/playbook.lua --direct test-documentation-policy-test
+          "${LIBMEMALLOC_LUA}" scripts/process/playbook.lua --direct check-documentation
+          mapfile -d '' documents < <(git ls-files -z -- '*.md' '*.markdown')
+          "${LIBMEMALLOC_LUA}" scripts/process/playbook.lua --direct check-format markdown \
+            .cache/tools/md/node_modules/.bin/markdownlint "${documents[@]}"
+          "${LIBMEMALLOC_LUA}" scripts/process/playbook.lua --direct check-links --offline
+          "${LIBMEMALLOC_LUA}" scripts/process/playbook.lua --direct check-mermaid
+          "${LIBMEMALLOC_LUA}" scripts/process/playbook.lua --direct test-documentation-filter-test
+          "${LIBMEMALLOC_LUA}" scripts/process/playbook.lua --direct test-documentation-html-test
+          "${LIBMEMALLOC_LUA}" scripts/process/playbook.lua --direct documentation-main eval
+          "${LIBMEMALLOC_LUA}" scripts/process/playbook.lua --direct documentation-main build
+          node tests/automation/documentation/webmcp_test.cjs
+          node tests/automation/documentation/navigation_test.cjs
+
+      - name: Retain site and diagnostics for review
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: documentation-${{ github.run_id }}-${{ github.run_attempt }}
+          path: .cache/docs/
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Package the accepted site for Pages
+        if: >-
+          github.ref == 'refs/heads/main' &&
+          (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+        uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
+        with:
+          path: .cache/docs/doxygen-build/html
+
+  deploy:
+    name: Publish accepted documentation
+    needs: [validate]
+    if: >-
+      github.ref == 'refs/heads/main' &&
+      (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    concurrency:
+      group: documentation-pages
+      cancel-in-progress: false
+    permissions:
+      pages: write # Publish the accepted Pages artifact.
+      id-token: write # Bind deployment to this protected workflow identity.
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy the validated artifact
+        id: deployment
+        uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1
+
+# EOF
+

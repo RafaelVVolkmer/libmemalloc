@@ -1,0 +1,37 @@
+# SPDX-FileCopyrightText: 2026 Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
+# SPDX-License-Identifier: GPL-3.0-only
+
+---
+name: C quality tools
+description: Install locked compiler checks, CMake linters and the CBMC proof executor.
+runs:
+  using: composite
+  steps:
+    - uses: ./.github/actions/setup-lua
+    - id: toolchain
+      uses: ./.github/actions/toolchain
+    - id: cbmc
+      uses: ./.github/actions/verified-download
+      with:
+        name: cbmc
+        version: ${{ fromJSON(steps.toolchain.outputs.tools).cbmc.version }}
+        filename: ubuntu-24.04-cbmc-${{ fromJSON(steps.toolchain.outputs.tools).cbmc.version }}-Linux.deb
+        sha256: ${{ fromJSON(steps.toolchain.outputs.tools).cbmc.sha256 }}
+        origin: https://github.com
+        directory: diffblue/cbmc/releases/download/cbmc-${{ fromJSON(steps.toolchain.outputs.tools).cbmc.version }}
+    - shell: bash
+      env:
+        CBMC_PACKAGE: ${{ steps.cbmc.outputs.path }}
+      # The PATH entry is a fixed repository-owned tool directory.
+      run: | # zizmor: ignore[github-env]
+        set -euo pipefail
+        sudo apt-get update
+        sudo apt-get install --yes --no-install-recommends \
+          ninja-build cmake python3-venv lua5.4 lua-luv
+        lua scripts/process/playbook.lua --direct toolchain-python --groups=quality,c-tools \
+        --directory=.cache/tools/c-quality
+        printf '%s/.cache/tools/c-quality/bin\n' "${GITHUB_WORKSPACE}" >> "${GITHUB_PATH}"
+        dpkg-deb -x "${CBMC_PACKAGE}" .cache/tools/cbmc
+
+# EOF
+

@@ -1,0 +1,217 @@
+# SPDX-FileCopyrightText: 2026 Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
+# SPDX-License-Identifier: GPL-3.0-only
+
+---
+
+name: Lint native
+
+on:
+  workflow_call:
+    inputs:
+      bazel:
+        description: Run the bazel checks.
+        required: true
+        type: boolean
+      c:
+        description: Run the c checks.
+        required: true
+        type: boolean
+
+permissions: {}
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  c:
+    name: C
+    if: inputs.c
+    runs-on: >-
+      ${{
+        (github.event_name == 'pull_request' ||
+        github.event_name == 'merge_group') &&
+        'ubuntu-24.04' ||
+        vars.LIBMEMALLOC_CI_RUNNER ||
+        'ubuntu-24.04'
+      }}
+    timeout-minutes: 15
+
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Configure repository-local caches
+        uses: ./.github/actions/workspace-cache
+
+      - name: Resolve toolchain lock
+        id: toolchain
+        uses: ./.github/actions/toolchain
+
+      - name: Restore clang-format wheel
+        id: clang_format
+        uses: ./.github/actions/verified-download
+        with:
+          name: clang-format
+          version: ${{ fromJSON(steps.toolchain.outputs.tools).clang_format.version }}
+          filename: >-
+            ${{ format(
+              'clang_format-{0}-py2.py3-none-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl',
+              fromJSON(steps.toolchain.outputs.tools).clang_format.version
+            ) }}
+          sha256: ${{ fromJSON(steps.toolchain.outputs.tools).clang_format.sha256 }}
+          origin: https://files.pythonhosted.org
+          directory: packages/e5/88/b82c066fa807da4ca2518fecf79071361f6324b77375e5e92c059c0697fd
+
+      - name: Restore clang-tidy wheel
+        id: clang_tidy
+        uses: ./.github/actions/verified-download
+        with:
+          name: clang-tidy
+          version: ${{ fromJSON(steps.toolchain.outputs.tools).clang_tidy.version }}
+          filename: >-
+            ${{ format(
+              'clang_tidy-{0}-py2.py3-none-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl',
+              fromJSON(steps.toolchain.outputs.tools).clang_tidy.version
+            ) }}
+          sha256: ${{ fromJSON(steps.toolchain.outputs.tools).clang_tidy.sha256 }}
+          origin: https://files.pythonhosted.org
+          directory: packages/82/19/0f2668f8f5e2452b096a2b898f2b6bcecbceb6dd0c7f75d1755ce1f18d8b
+
+      - name: Install pinned Clang tools
+        env:
+          CLANG_FORMAT_PACKAGE: ${{ steps.clang_format.outputs.path }}
+          CLANG_TIDY_PACKAGE: ${{ steps.clang_tidy.outputs.path }}
+        run: |
+          set -euo pipefail
+
+          python3 -m venv "${LIBMEMALLOC_CACHE_ROOT}/tools/libmemalloc-clang"
+          "${LIBMEMALLOC_CACHE_ROOT}/tools/libmemalloc-clang/bin/python" \
+            -m pip install \
+            --disable-pip-version-check \
+            --no-deps \
+            --no-index \
+            "${CLANG_FORMAT_PACKAGE}" \
+            "${CLANG_TIDY_PACKAGE}"
+
+          "${LIBMEMALLOC_CACHE_ROOT}/tools/libmemalloc-clang/bin/clang-format" --version
+          "${LIBMEMALLOC_CACHE_ROOT}/tools/libmemalloc-clang/bin/clang-tidy" --version
+
+      - name: Setup pinned Lua
+        id: lua
+        uses: ./.github/actions/setup-lua
+
+      - name: Restore pinned Doxygen
+        id: doxygen
+        uses: ./.github/actions/verified-download
+        with:
+          name: doxygen
+          version: ${{ fromJSON(steps.toolchain.outputs.tools).doxygen.version }}
+          filename: >-
+            ${{ format('doxygen-{0}.linux.bin.tar.gz',
+            fromJSON(steps.toolchain.outputs.tools).doxygen.version) }}
+          sha256: ${{ fromJSON(steps.toolchain.outputs.tools).doxygen.sha256 }}
+          origin: https://www.doxygen.nl
+          directory: files
+
+      - name: Install verified Doxygen binary
+        env:
+          DOXYGEN_ARCHIVE: ${{ steps.doxygen.outputs.path }}
+          DOXYGEN_VERSION: ${{ fromJSON(steps.toolchain.outputs.tools).doxygen.version }}
+        run: |
+          set -euo pipefail
+
+          mkdir -p "${LIBMEMALLOC_CACHE_ROOT}/tools/doxygen"
+          tar -xzf "${DOXYGEN_ARCHIVE}" \
+            --directory "${LIBMEMALLOC_CACHE_ROOT}/tools/doxygen" \
+            --strip-components=2 "doxygen-${DOXYGEN_VERSION}/bin/doxygen"
+          "${LIBMEMALLOC_CACHE_ROOT}/tools/doxygen/doxygen" --version
+
+      - name: Setup Cppcheck and Flawfinder
+        uses: ./.github/actions/setup-c-scanners
+
+      - name: Run C checks
+        env:
+          LIBMEMALLOC_CLANG_FORMAT: ${{ github.workspace }}/.cache/tools/libmemalloc-clang/bin/clang-format
+          LIBMEMALLOC_CLANG_TIDY: ${{ github.workspace }}/.cache/tools/libmemalloc-clang/bin/clang-tidy
+          LIBMEMALLOC_CPPCHECK: ${{ github.workspace }}/.cache/tools/c-scanners/cppcheck/bin/cppcheck
+          LIBMEMALLOC_FLAWFINDER: ${{ github.workspace }}/.cache/tools/c-scanners/flawfinder/bin/flawfinder
+          LIBMEMALLOC_LUA: ${{ steps.lua.outputs.lua }}
+          LIBMEMALLOC_DOXYGEN: ${{ github.workspace }}/.cache/tools/doxygen/doxygen
+        run: |
+          set -euo pipefail
+
+          "${LIBMEMALLOC_LUA}" scripts/process/playbook.lua --direct test-documentation-driver-test --eval-only
+          "${LIBMEMALLOC_LUA}" scripts/process/playbook.lua --direct check-c
+          "${LIBMEMALLOC_LUA}" scripts/process/playbook.lua --direct check-doc-examples
+
+  bazel:
+    name: Bazel
+    if: inputs.bazel
+    runs-on: >-
+      ${{
+        (github.event_name == 'pull_request' ||
+        github.event_name == 'merge_group') &&
+        'ubuntu-24.04' ||
+        vars.LIBMEMALLOC_CI_RUNNER ||
+        'ubuntu-24.04'
+      }}
+    timeout-minutes: 20
+
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Configure repository-local caches
+        uses: ./.github/actions/workspace-cache
+
+      - name: Resolve toolchain lock
+        id: toolchain
+        uses: ./.github/actions/toolchain
+
+      - name: Configure runner-near cache plane
+        id: cache_plane
+        uses: ./.github/actions/cache-plane
+
+      - name: Test Bazel workspace when present
+        env:
+          LIBMEMALLOC_BAZELRC: ${{ steps.cache_plane.outputs.bazelrc }}
+        run: |
+          set -euo pipefail
+
+          workspace=false
+          for marker in MODULE.bazel WORKSPACE.bazel WORKSPACE; do
+            if [[ -f "${marker}" ]]; then
+              workspace=true
+              break
+            fi
+          done
+
+          if [[ "${workspace}" != true ]]; then
+            echo "No Bazel workspace found; cache integration is ready."
+            exit 0
+          fi
+
+          if ! command -v bazel >/dev/null 2>&1; then
+            printf '%s\n' \
+              'Bazel workspace found, but bazel is not installed.' >&2
+            exit 1
+          fi
+
+          bazel \
+            --bazelrc="${LIBMEMALLOC_BAZELRC}" \
+            test \
+            //...
+
+# EOF
+

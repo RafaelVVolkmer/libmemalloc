@@ -1,0 +1,159 @@
+# SPDX-FileCopyrightText: 2026 Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
+# SPDX-License-Identifier: GPL-3.0-only
+
+---
+name: Lint Lean
+
+on:
+  workflow_call:
+    inputs:
+      lean:
+        description: Run Lean lint, proof and trust audits.
+        required: true
+        type: boolean
+
+permissions: {}
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  lean:
+    name: Lean engine
+    if: inputs.lean
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Configure repository-local caches
+        uses: ./.github/actions/workspace-cache
+
+      - name: Resolve toolchain lock
+        id: toolchain
+        uses: ./.github/actions/toolchain
+
+      - name: Restore verified Lean toolchain
+        id: lean
+        uses: ./.github/actions/verified-download
+        with:
+          name: lean
+          version: ${{ fromJSON(steps.toolchain.outputs.tools).lean.version }}
+          filename: >-
+            ${{ format('lean-{0}-linux.tar.zst',
+            fromJSON(steps.toolchain.outputs.tools).lean.version) }}
+          sha256: ${{ fromJSON(steps.toolchain.outputs.tools).lean.sha256 }}
+          origin: https://github.com
+          directory: >-
+            ${{ format('leanprover/lean4/releases/download/v{0}',
+            fromJSON(steps.toolchain.outputs.tools).lean.version) }}
+
+      - name: Install verified Lean and sandbox support
+        env:
+          LEAN_ARCHIVE: ${{ steps.lean.outputs.path }}
+          LEAN_VERSION: ${{ fromJSON(steps.toolchain.outputs.tools).lean.version }}
+        run: |
+          set -euo pipefail
+
+          sudo apt-get update
+          sudo apt-get install --yes bubblewrap zstd
+          # Grant only the sandbox executable access to user namespaces.
+          sudo tee /etc/apparmor.d/libmemalloc-bwrap >/dev/null <<'PROFILE'
+          abi <abi/4.0>,
+          include <tunables/global>
+          profile bwrap /usr/bin/bwrap flags=(unconfined) {
+            userns,
+          }
+          PROFILE
+          sudo apparmor_parser -r /etc/apparmor.d/libmemalloc-bwrap
+          bwrap --unshare-user --uid 0 --gid 0 --ro-bind / / true
+          mkdir -p "${LIBMEMALLOC_CACHE_ROOT}/tools/lean"
+          tar --zstd -xf "${LEAN_ARCHIVE}" \
+            --directory "${LIBMEMALLOC_CACHE_ROOT}/tools/lean" --strip-components=1
+          printf '%s\n' "${LIBMEMALLOC_CACHE_ROOT}/tools/lean/bin" >> "${GITHUB_PATH}"
+          test "$(cat verification/theorems/lean-toolchain)" = "leanprover/lean4:v${LEAN_VERSION}"
+          "${LIBMEMALLOC_CACHE_ROOT}/tools/lean/bin/lean" --version
+
+      - name: Setup pinned Lua
+        id: lua
+        uses: ./.github/actions/setup-lua
+
+      - name: Prepare resource containment
+        run: |
+          set -euo pipefail
+          runner_uid="$(id -u)"
+          sudo systemctl start "user@${runner_uid}.service"
+          export XDG_RUNTIME_DIR="/run/user/${runner_uid}"
+          export DBUS_SESSION_BUS_ADDRESS="unix:path=${XDG_RUNTIME_DIR}/bus"
+          echo "XDG_RUNTIME_DIR=${XDG_RUNTIME_DIR}" >> "$GITHUB_ENV"
+          echo "DBUS_SESSION_BUS_ADDRESS=${DBUS_SESSION_BUS_ADDRESS}" >> "$GITHUB_ENV"
+
+      - name: Lint and audit proof content
+        env:
+          LUA: ${{ steps.lua.outputs.lua }}
+          LMA_LAKE: ${{ github.workspace }}/.cache/tools/lean/bin/lake
+        run: |
+          set -euo pipefail
+
+          mkdir -p .cache/logs/lean
+          git rev-parse HEAD > .cache/logs/lean/revision.txt
+          lean --version > .cache/logs/lean/toolchain.txt
+          "${LUA}" scripts/process/playbook.lua --direct check-lean 2>&1 | tee .cache/logs/lean/lint-audit.log
+
+      - name: Replay proofs in an isolated kernel
+        env:
+          LUA: ${{ steps.lua.outputs.lua }}
+          LMA_LAKE: ${{ github.workspace }}/.cache/tools/lean/bin/lake
+        run: |
+          set -euo pipefail
+
+          "${LUA}" scripts/process/playbook.lua --direct check-lean --kernel 2>&1 | tee .cache/logs/lean/kernel.log
+
+      - name: Prepare formal engine host dependencies
+        run: |
+          set -euo pipefail
+          sudo apt-get install --yes --no-install-recommends \
+            lua5.4 lua-luv jq libgmp-dev libtinfo6 build-essential curl git python3-venv
+          lua scripts/process/playbook.lua --direct formal-bootstrap
+          lua scripts/process/playbook.lua --direct workspace-bootstrap
+
+      - name: Run staged engine validation through Ansible
+        env:
+          LMA_LAKE: ${{ github.workspace }}/.cache/tools/lean/bin/lake
+          ANSIBLE_CONFIG: infra/ansible/ansible.cfg
+          ANSIBLE_LOCAL_TEMP: .cache/ansible/local
+        run: |
+          set -euo pipefail
+          .cache/tools/ansible/2.21.4/bin/ansible-playbook \
+            infra/ansible/playbooks/formal-verification.yml \
+            -e "lma_run_id=ci-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" 2>&1 | tee .cache/logs/lean/formal-engine.log
+
+      - name: Preserve Lean audit evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: lean-audit-${{ github.sha }}
+          if-no-files-found: warn
+          retention-days: 14
+          include-hidden-files: true
+          path: |
+            .cache/logs/tasks/formal-*/
+            .cache/logs/tasks/check-lean-*/
+            .cache/logs/lean/
+            .cache/verification/negative/*.log
+            .cache/verification/reports/
+            .cache/verification/attempts/
+            .cache/verification/generic/
+            .cache/verification/translation-*/
+            verification/theorems/lean-toolchain
+            verification/theorems/lake-manifest.json
+
+# EOF
+

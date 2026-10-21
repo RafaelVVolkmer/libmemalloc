@@ -1,0 +1,34 @@
+// SPDX-FileCopyrightText: 2026 Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
+// SPDX-License-Identifier: GPL-3.0-only
+{
+  $schema: "https://docs.renovatebot.com/renovate-schema.json",
+  extends: ["config:recommended", "helpers:pinGitHubActionDigests"],
+  baseBranchPatterns: ["develop"],
+  timezone: "America/Sao_Paulo",
+  minimumReleaseAge: "7 days",
+  dependencyDashboard: true,
+  automerge: false,
+  prConcurrentLimit: 5,
+  rangeStrategy: "pin",
+  enabledManagers: ["custom.regex"],
+  ignorePaths: ["release/**", "**/node_modules/**"],
+  packageRules: [
+    {
+      description: "Review versions and asset digests as one supply-chain change",
+      matchManagers: ["custom.regex"],
+      dependencyDashboardApproval: true,
+    },
+  ],
+  customManagers: [
+    {
+      customType: "regex",
+      managerFilePatterns: ["/^tools/toolchain/lock\\.toml$/"],
+      matchStrings: [
+        '# renovate: datasource=(?<datasource>[a-z-]+) depName=(?<depName>[^\\s]+)\\s+\\[tools\\.[a-z0-9_]+\\]\\s+version = "(?<currentValue>[^"]+)"(?:\\s+revision = "(?<currentDigest>[a-f0-9]{40})")?',
+      ],
+    },
+  ],
+}
+
+// EOF
+

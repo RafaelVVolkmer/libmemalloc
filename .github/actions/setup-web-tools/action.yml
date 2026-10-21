@@ -1,0 +1,63 @@
+# SPDX-FileCopyrightText: 2026 Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
+# SPDX-License-Identifier: GPL-3.0-only
+
+---
+name: Setup verified web tools
+description: Verify the Node archive and install integrity-locked web validators.
+inputs:
+  lua:
+    description: Absolute path to the pinned Lua interpreter.
+    required: true
+outputs:
+  bin:
+    description: Verified Node runtime directory.
+    value: ${{ steps.runtime.outputs.bin }}
+runs:
+  using: composite
+  steps:
+    - name: Resolve toolchain lock
+      id: toolchain
+      uses: ./.github/actions/toolchain
+
+    - name: Restore verified Node.js archive
+      id: node
+      uses: ./.github/actions/verified-download
+      with:
+        name: node
+        version: ${{ fromJSON(steps.toolchain.outputs.tools).node.version }}
+        filename: node-v${{ fromJSON(steps.toolchain.outputs.tools).node.version }}-linux-x64.tar.xz
+        sha256: ${{ fromJSON(steps.toolchain.outputs.tools).node.sha256 }}
+        origin: https://nodejs.org
+        directory: dist/v${{ fromJSON(steps.toolchain.outputs.tools).node.version }}
+
+    - name: Install verified runtime
+      id: runtime
+      shell: bash
+      env:
+        NODE_ARCHIVE: ${{ steps.node.outputs.path }}
+      run: |
+        set -euo pipefail
+
+        destination="${LIBMEMALLOC_CACHE_ROOT}/tools/web-node"
+        mkdir -p "${destination}"
+        tar -xJf "${NODE_ARCHIVE}" -C "${destination}" --strip-components=1
+        printf 'bin=%s/bin\n' "${destination}" >> "${GITHUB_OUTPUT}"
+
+    - name: Verify dependency graph and install validators
+      shell: bash
+      env:
+        LUA: ${{ inputs.lua }}
+        NODE_BIN: ${{ steps.runtime.outputs.bin }}
+      run: |
+        set -euo pipefail
+
+        export PATH="${NODE_BIN}:${PATH}"
+        "${LUA}" scripts/process/playbook.lua --direct check-doc-tools
+        mkdir -p .cache/tools/web
+        cp tools/lint/code/web/package{,-lock}.json .cache/tools/web/
+        npm ci --prefix .cache/tools/web \
+          --cache "${LIBMEMALLOC_CACHE_ROOT}/tools/libmemalloc-doc-npm" \
+          --ignore-scripts --no-audit --no-fund
+
+# EOF
+

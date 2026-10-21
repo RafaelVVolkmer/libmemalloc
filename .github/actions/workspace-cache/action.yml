@@ -1,0 +1,47 @@
+# SPDX-FileCopyrightText: 2026 Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
+# SPDX-License-Identifier: GPL-3.0-only
+
+---
+name: Configure repository-local caches
+description: Keep disposable build, tool, test, and CI state below .cache.
+
+runs:
+  using: composite
+
+  steps:
+    - name: Prepare Linux resource controller
+      if: runner.os == 'Linux'
+      shell: bash
+      run: |
+        set -euo pipefail
+        runner_uid="$(id -u)"
+        sudo systemctl start "user@${runner_uid}.service"
+
+    - name: Create isolated cache directories
+      shell: bash
+      run: |
+        set -euo pipefail
+        cache_root="${GITHUB_WORKSPACE}/.cache"
+        mkdir -p "${cache_root}"/{build,tools,logs,tests,ci,cd,tmp,downloads,ruff}
+        mkdir -p "${cache_root}/tools"/{npm,pip,conan,go,go-build,cargo,ruff,python,xdg}
+        # Only fixed workspace paths enter the runner environment; no PR input.
+        {
+          printf 'LIBMEMALLOC_CACHE_ROOT=%s\n' "${cache_root}"
+          printf 'TMPDIR=%s/tmp\n' "${cache_root}"
+          printf 'TMP=%s/tmp\n' "${cache_root}"
+          printf 'TEMP=%s/tmp\n' "${cache_root}"
+          printf 'XDG_CACHE_HOME=%s/tools/xdg\n' "${cache_root}"
+          printf 'XDG_CONFIG_HOME=%s/tools/config\n' "${cache_root}"
+          printf 'XDG_DATA_HOME=%s/tools/data\n' "${cache_root}"
+          printf 'npm_config_cache=%s/tools/npm\n' "${cache_root}"
+          printf 'PIP_CACHE_DIR=%s/tools/pip\n' "${cache_root}"
+          printf 'CONAN_HOME=%s/tools/conan\n' "${cache_root}"
+          printf 'GOPATH=%s/tools/go\n' "${cache_root}"
+          printf 'GOCACHE=%s/tools/go-build\n' "${cache_root}"
+          printf 'CARGO_HOME=%s/tools/cargo\n' "${cache_root}"
+          printf 'RUFF_CACHE_DIR=%s/ruff\n' "${cache_root}"
+          printf 'PYTHONPYCACHEPREFIX=%s/tools/python\n' "${cache_root}"
+        } >> "${GITHUB_ENV}" # zizmor: ignore[github-env]
+
+# EOF
+

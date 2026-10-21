@@ -1,0 +1,13 @@
+{
+  "schema": "lma-translation/v1",
+  "target": "x86_64-linux-gnu-lp64",
+  "symbol": "MOCK_identity",
+  "parameters": [],
+  "return": "bool-int",
+  "mutable": [],
+  "contract": {
+    "module": "LibMemAllocImp.C.Scalar",
+    "pre": "Allocator.C.Scalar.pre",
+    "post": "Allocator.C.Scalar.zero"
+  }
+}

@@ -1,0 +1,409 @@
+# SPDX-FileCopyrightText: 2026 Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
+# SPDX-License-Identifier: GPL-3.0-only
+
+---
+name: Verified tool download
+description: Restore one immutable tool through the Libmemalloc cache hierarchy and verify SHA-256.
+
+inputs:
+  name:
+    description: Stable tool identifier used in cache keys.
+    required: true
+
+  version:
+    description: Tool version used in cache keys.
+    required: true
+
+  origin:
+    description: HTTPS origin hosting the immutable artifact.
+    required: true
+
+  directory:
+    description: Directory below the origin containing the artifact.
+    required: true
+
+  sha256:
+    description: Expected lowercase SHA-256 digest.
+    required: true
+
+  filename:
+    description: Artifact filename stored in caches.
+    required: true
+
+outputs:
+  path:
+    description: Absolute path to the verified artifact.
+    value: ${{ steps.fetch.outputs.path }}
+
+  source:
+    description: Cache layer or origin that supplied the verified artifact.
+    value: ${{ steps.fetch.outputs.source }}
+
+runs:
+  using: composite
+
+  steps:
+    - name: Compute immutable cache identity
+      id: paths
+      shell: bash
+      env:
+        TOOL_NAME: ${{ inputs.name }}
+        TOOL_VERSION: ${{ inputs.version }}
+        TOOL_SHA256: ${{ inputs.sha256 }}
+        TOOL_FILENAME: ${{ inputs.filename }}
+        TOOL_ORIGIN: ${{ inputs.origin }}
+        TOOL_DIRECTORY: ${{ inputs.directory }}
+        EVENT_NAME: ${{ github.event_name }}
+        REF_NAME: ${{ github.ref_name }}
+        DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+      run: |
+        set -euo pipefail
+
+        mode="${LIBMEMALLOC_CI_CACHE_PLANE_MODE:-optional}"
+        case "${mode}" in
+          disabled|optional|required)
+            ;;
+          *)
+            printf 'Invalid cache-plane mode: %s\n' "${mode}" >&2
+            exit 1
+            ;;
+        esac
+
+        # CWE-22 / CWE-78: validate before paths, outputs, or URLs are composed.
+        if [[ ! "${TOOL_NAME}" =~ ^[A-Za-z0-9][A-Za-z0-9._+-]*$ ]]; then
+          printf '%s\n' 'Tool name contains unsupported cache-key characters.' >&2
+          exit 1
+        fi
+        if [[ ! "${TOOL_VERSION}" =~ ^[A-Za-z0-9][A-Za-z0-9._+-]*$ ]]; then
+          printf '%s\n' 'Tool version contains unsupported cache-key characters.' >&2
+          exit 1
+        fi
+        if [[ ! "${TOOL_SHA256}" =~ ^[0-9a-f]{64}$ ]]; then
+          printf '%s\n' 'Tool SHA-256 must contain 64 lowercase hex characters.' >&2
+          exit 1
+        fi
+        if [[ ! "${TOOL_FILENAME}" =~ ^[A-Za-z0-9][A-Za-z0-9._+-]*$ ]]; then
+          printf '%s\n' 'Tool filename must be one safe path component.' >&2
+          exit 1
+        fi
+        # Biome release tags encode '@' as %40; other escapes stay rejected.
+        directory_check="${TOOL_DIRECTORY//%40/}"
+        if [[ ! "${TOOL_ORIGIN}" =~ ^https://[A-Za-z0-9.-]+(:[0-9]+)?$ || \
+              ! "${directory_check}" =~ ^[A-Za-z0-9._+/-]*$ || \
+              "/${TOOL_DIRECTORY}/" == */../* || \
+              "/${TOOL_DIRECTORY}/" == */./* ]]; then
+          printf '%s\n' 'Tool origin and directory must form a safe HTTPS URL.' >&2
+          exit 1
+        fi
+
+        local_cache=false
+        cache_root="${LIBMEMALLOC_CACHE_ROOT}/tools/libmemalloc-tool-cache"
+
+        if [[ -n "${LIBMEMALLOC_CI_TOOL_CACHE_DIR:-}" ]]; then
+          if [[ "${LIBMEMALLOC_CI_TOOL_CACHE_DIR}" != "${LIBMEMALLOC_CACHE_ROOT}/"* || \
+                "/${LIBMEMALLOC_CI_TOOL_CACHE_DIR}/" == */../* ]]; then
+            printf '%s\n' 'The tool cache must remain below the repository .cache directory.' >&2
+            exit 1
+          fi
+          local_cache=true
+          cache_root="${LIBMEMALLOC_CI_TOOL_CACHE_DIR}"
+        fi
+        # CWE-93: a path must not append extra GitHub output records.
+        if [[ "${cache_root}" == *$'\n'* || "${cache_root}" == *$'\r'* ]]; then
+          printf '%s\n' 'Tool cache root must be a single-line path.' >&2
+          exit 1
+        fi
+
+        shared_cache=false
+        shared_cache_write=false
+        s3_bucket="${LIBMEMALLOC_CI_S3_CACHE_BUCKET:-}"
+        s3_endpoint="${LIBMEMALLOC_CI_S3_CACHE_ENDPOINT:-}"
+        s3_prefix="${LIBMEMALLOC_CI_S3_CACHE_PREFIX:-libmemalloc/cache}"
+
+        if [[ -n "${s3_endpoint}" && -z "${s3_bucket}" ]]; then
+          printf '%s\n' \
+            'LIBMEMALLOC_CI_S3_CACHE_ENDPOINT requires LIBMEMALLOC_CI_S3_CACHE_BUCKET.' >&2
+          exit 1
+        fi
+
+        if [[ -n "${s3_bucket}" && "${mode}" != disabled ]]; then
+          if [[ "${s3_bucket}" == */* || \
+                "${s3_bucket}" == *://* || \
+                "${s3_bucket}" =~ [[:space:]] ]]; then
+            printf '%s\n' \
+              'LIBMEMALLOC_CI_S3_CACHE_BUCKET must contain only a bucket name.' >&2
+            exit 1
+          fi
+
+          # CWE-319: loopback exceptions must not admit userinfo or remote hosts.
+          if [[ "${s3_endpoint}" == http://* && \
+                ! "${s3_endpoint}" =~ ^http://(127\.0\.0\.1|localhost):[0-9]+/?$ ]]; then
+            printf '%s\n' 'Plaintext S3 cache is not a loopback origin.' >&2
+            exit 1
+          fi
+          case "${s3_endpoint}" in
+            ""|https://*|http://127.0.0.1:*|http://localhost:*)
+              ;;
+            *)
+              printf '%s\n' \
+                'Remote S3 caches require TLS; plaintext is loopback-only.' >&2
+              exit 1
+              ;;
+          esac
+
+          if [[ "${s3_prefix}" == /* || \
+                "${s3_prefix}" =~ [[:space:]] || \
+                "${s3_prefix}" == *\\* || \
+                "${s3_prefix}" == ".." || \
+                "${s3_prefix}" == ../* || \
+                "${s3_prefix}" == */../* || \
+                "${s3_prefix}" == */.. ]]; then
+            printf '%s\n' \
+              'LIBMEMALLOC_CI_S3_CACHE_PREFIX must be a relative object prefix.' >&2
+            exit 1
+          fi
+
+          if ! command -v aws >/dev/null 2>&1; then
+            printf '%s\n' \
+              'The S3-compatible shared cache requires the aws CLI.' >&2
+            exit 1
+          fi
+
+          while [[ "${s3_prefix}" == */ ]]; do
+            s3_prefix="${s3_prefix%/}"
+          done
+          shared_cache=true
+
+          # OWASP CICD-SEC-5: merge queues still contain proposed code.
+          if [[ "${EVENT_NAME}" == push && \
+                  "${REF_NAME}" == "${DEFAULT_BRANCH}" ]]; then
+            shared_cache_write=true
+          elif [[ "${EVENT_NAME}" == workflow_dispatch && \
+                  "${REF_NAME}" == "${DEFAULT_BRANCH}" ]]; then
+            shared_cache_write=true
+          fi
+        fi
+
+        cache_directory="${cache_root}/${RUNNER_OS}/${RUNNER_ARCH}"
+        cache_directory+="/${TOOL_NAME}/${TOOL_VERSION}/${TOOL_SHA256}"
+        artifact_path="${cache_directory}/${TOOL_FILENAME}"
+        cache_key="libmemalloc-tool-v3-${RUNNER_OS}-${RUNNER_ARCH}-${TOOL_NAME}"
+        cache_key+="-${TOOL_VERSION}-${TOOL_SHA256}"
+        s3_key="${s3_prefix}/tools/v3/${RUNNER_OS}/${RUNNER_ARCH}"
+        s3_key+="/${TOOL_NAME}/${TOOL_VERSION}/${TOOL_SHA256}/${TOOL_FILENAME}"
+
+        printf 'directory=%s\n' "${cache_directory}" >> "${GITHUB_OUTPUT}"
+        printf 'path=%s\n' "${artifact_path}" >> "${GITHUB_OUTPUT}"
+        printf 'cache_key=%s\n' "${cache_key}" >> "${GITHUB_OUTPUT}"
+        printf 'local_cache=%s\n' "${local_cache}" >> "${GITHUB_OUTPUT}"
+        printf 'shared_cache=%s\n' "${shared_cache}" >> "${GITHUB_OUTPUT}"
+        printf 'shared_cache_write=%s\n' \
+          "${shared_cache_write}" >> "${GITHUB_OUTPUT}"
+        printf 's3_key=%s\n' "${s3_key}" >> "${GITHUB_OUTPUT}"
+
+    - name: Restore GitHub-hosted immutable tool cache
+      id: github_cache
+      if: >-
+        github.event_name != 'release' &&
+        !startsWith(github.ref, 'refs/tags/') &&
+        steps.paths.outputs.local_cache != 'true' &&
+        steps.paths.outputs.shared_cache != 'true'
+      uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      with:
+        path: ${{ steps.paths.outputs.directory }}
+        key: ${{ steps.paths.outputs.cache_key }}
+
+    - name: Fetch and verify artifact
+      id: fetch
+      shell: bash
+      env:
+        TOOL_NAME: ${{ inputs.name }}
+        TOOL_VERSION: ${{ inputs.version }}
+        TOOL_ORIGIN: ${{ inputs.origin }}
+        TOOL_DIRECTORY: ${{ inputs.directory }}
+        TOOL_FILENAME: ${{ inputs.filename }}
+        TOOL_SHA256: ${{ inputs.sha256 }}
+        ARTIFACT_PATH: ${{ steps.paths.outputs.path }}
+        RUNNER_LOCAL_CACHE: ${{ steps.paths.outputs.local_cache }}
+        SHARED_CACHE_ENABLED: ${{ steps.paths.outputs.shared_cache }}
+        S3_KEY: ${{ steps.paths.outputs.s3_key }}
+        GITHUB_CACHE_HIT: ${{ steps.github_cache.outputs.cache-hit }}
+      run: |
+        set -euo pipefail
+
+        mkdir --parents "$(dirname -- "${ARTIFACT_PATH}")"
+        tool_url="${TOOL_ORIGIN%/}/${TOOL_DIRECTORY#/}/${TOOL_FILENAME}"
+
+        valid=false
+        source=origin
+
+        if [[ -f "${ARTIFACT_PATH}" ]]; then
+          if printf '%s  %s\n' \
+            "${TOOL_SHA256}" \
+            "${ARTIFACT_PATH}" \
+            | sha256sum --check --strict --status; then
+            valid=true
+            if [[ "${RUNNER_LOCAL_CACHE}" == true ]]; then
+              source=runner-local
+            elif [[ "${GITHUB_CACHE_HIT}" == true ]]; then
+              source=github-cache
+            else
+              source=local-reuse
+            fi
+          else
+            rm --force "${ARTIFACT_PATH}"
+          fi
+        fi
+
+        if [[ "${valid}" != true && "${SHARED_CACHE_ENABLED}" == true ]]; then
+          # CWE-377: exclusive same-directory creation, then atomic publication.
+          temporary="$(mktemp "${ARTIFACT_PATH}.s3.XXXXXX")"
+          trap 'rm --force "${temporary}"' EXIT
+
+          aws_args=(--cli-connect-timeout 10 --cli-read-timeout 60)
+          if [[ -n "${LIBMEMALLOC_CI_S3_CACHE_ENDPOINT:-}" ]]; then
+            aws_args+=(--endpoint-url "${LIBMEMALLOC_CI_S3_CACHE_ENDPOINT}")
+          fi
+
+          set +e
+          AWS_DEFAULT_REGION="${LIBMEMALLOC_CI_S3_CACHE_REGION:-${AWS_DEFAULT_REGION:-us-east-1}}" \
+            aws "${aws_args[@]}" s3 cp \
+            "s3://${LIBMEMALLOC_CI_S3_CACHE_BUCKET}/${S3_KEY}" \
+            "${temporary}" \
+            --only-show-errors \
+            2>/dev/null
+          s3_status=$?
+          set -e
+
+          if [[ "${s3_status}" -eq 0 ]]; then
+            if ! printf '%s  %s\n' \
+              "${TOOL_SHA256}" \
+              "${temporary}" \
+              | sha256sum --check --strict --status; then
+              printf '%s\n' \
+                'Shared object cache returned an artifact with an invalid SHA-256.' \
+                >&2
+              exit 1
+            fi
+
+            mv --force "${temporary}" "${ARTIFACT_PATH}"
+            trap - EXIT
+            valid=true
+            source=s3-shared
+          else
+            rm --force "${temporary}"
+            trap - EXIT
+            printf '%s\n' \
+              'Shared object cache miss or unavailable; using the HTTPS origin.' \
+              >&2
+          fi
+        fi
+
+        if [[ "${valid}" != true ]]; then
+          temporary="$(mktemp "${ARTIFACT_PATH}.origin.XXXXXX")"
+          trap 'rm --force "${temporary}"' EXIT
+
+          curl \
+            --fail \
+            --silent \
+            --show-error \
+            --location \
+            --retry 3 \
+            --retry-all-errors \
+            --proto '=https' \
+            --proto-redir '=https' \
+            --tlsv1.2 \
+            --connect-timeout 15 \
+            --max-time 300 \
+            --retry-max-time 600 \
+            "${tool_url}" \
+            --output "${temporary}"
+
+          printf '%s  %s\n' \
+            "${TOOL_SHA256}" \
+            "${temporary}" \
+            | sha256sum --check --strict
+
+          mv --force "${temporary}" "${ARTIFACT_PATH}"
+          trap - EXIT
+
+          if [[ -n "${HTTPS_PROXY:-${https_proxy:-}}" || \
+                -n "${HTTP_PROXY:-${http_proxy:-}}" ]]; then
+            source=origin-proxy
+          fi
+        fi
+
+        # CWE-494 / CAPEC-184 / OWASP CICD-SEC-9: verify every cache layer.
+        printf '%s  %s\n' \
+          "${TOOL_SHA256}" \
+          "${ARTIFACT_PATH}" \
+          | sha256sum --check --strict
+
+        printf 'path=%s\n' "${ARTIFACT_PATH}" >> "${GITHUB_OUTPUT}"
+        printf 'source=%s\n' "${source}" >> "${GITHUB_OUTPUT}"
+        printf -- '- `%s@%s`: `%s`\n' \
+          "${TOOL_NAME}" \
+          "${TOOL_VERSION}" \
+          "${source}" \
+          >> "${GITHUB_STEP_SUMMARY}"
+
+    - name: Publish immutable tool to shared object cache
+      if: >-
+        steps.paths.outputs.shared_cache == 'true' &&
+        steps.paths.outputs.shared_cache_write == 'true' &&
+        steps.fetch.outputs.source != 's3-shared'
+      shell: bash
+      env:
+        TOOL_SHA256: ${{ inputs.sha256 }}
+        ARTIFACT_PATH: ${{ steps.paths.outputs.path }}
+        S3_KEY: ${{ steps.paths.outputs.s3_key }}
+      run: |
+        set -euo pipefail
+
+        printf '%s  %s\n' \
+          "${TOOL_SHA256}" \
+          "${ARTIFACT_PATH}" \
+          | sha256sum --check --strict
+
+        aws_args=(--cli-connect-timeout 10 --cli-read-timeout 60)
+        if [[ -n "${LIBMEMALLOC_CI_S3_CACHE_ENDPOINT:-}" ]]; then
+          aws_args+=(--endpoint-url "${LIBMEMALLOC_CI_S3_CACHE_ENDPOINT}")
+        fi
+
+        set +e
+        AWS_DEFAULT_REGION="${LIBMEMALLOC_CI_S3_CACHE_REGION:-${AWS_DEFAULT_REGION:-us-east-1}}" \
+          aws "${aws_args[@]}" s3 cp \
+          "${ARTIFACT_PATH}" \
+          "s3://${LIBMEMALLOC_CI_S3_CACHE_BUCKET}/${S3_KEY}" \
+          --only-show-errors
+        s3_status=$?
+        set -e
+
+        if [[ "${s3_status}" -ne 0 ]]; then
+          if [[ "${LIBMEMALLOC_CI_CACHE_PLANE_MODE:-optional}" == required ]]; then
+            printf '%s\n' 'Failed to populate the required shared object cache.' >&2
+            exit "${s3_status}"
+          fi
+          printf '%s\n' \
+            'Shared object cache upload failed; continuing in optional mode.' \
+            >&2
+        fi
+
+    - name: Publish GitHub-hosted immutable tool cache
+      if: >-
+        github.event_name != 'release' &&
+        !startsWith(github.ref, 'refs/tags/') &&
+        steps.paths.outputs.local_cache != 'true' &&
+        steps.paths.outputs.shared_cache != 'true' &&
+        steps.github_cache.outputs.cache-hit != 'true' &&
+        ((github.event_name == 'push' &&
+        github.ref_name == github.event.repository.default_branch) ||
+        (github.event_name == 'workflow_dispatch' &&
+        github.ref_name == github.event.repository.default_branch))
+      uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      with:
+        path: ${{ steps.paths.outputs.directory }}
+        key: ${{ steps.paths.outputs.cache_key }}
+
+# EOF
+

@@ -1,0 +1,95 @@
+# SPDX-FileCopyrightText: 2026 Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
+# SPDX-License-Identifier: GPL-3.0-only
+
+---
+name: CodeQL C integration
+
+on:
+  push:
+    branches: ["**"]
+
+  schedule:
+    - cron: "19 4 * * 2"
+  workflow_dispatch: {}
+  workflow_call: {}
+
+permissions: {}
+
+concurrency:
+  group: codeql-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  cpp:
+    if: >-
+      github.event_name != 'push' || github.ref_name == github.event.repository.default_branch ||
+      startsWith(github.ref, 'refs/tags/')
+    name: Security data flow on the explicit mock build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+
+    permissions:
+      contents: read
+      security-events: write # Upload the captured C analysis as code-scanning results.
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: ./.github/actions/workspace-cache
+
+      - uses: ./.github/actions/setup-lua
+
+      - name: Check repository capability
+        env:
+          PRIVATE_REPOSITORY: ${{ github.event.repository.private }}
+          PRIVATE_CODEQL_ENABLED: ${{ vars.LIBMEMALLOC_CODEQL_ENABLED }}
+        run: |
+          if [[ "${PRIVATE_REPOSITORY}" == true && "${PRIVATE_CODEQL_ENABLED}" != true ]]; then
+            printf '%s\n' 'Enable GitHub Code Security and set LIBMEMALLOC_CODEQL_ENABLED=true.' >&2
+            exit 1
+          fi
+          lua scripts/process/playbook.lua --direct check-toolchain
+
+      - name: Initialize CodeQL with build capture
+        uses: github/codeql-action/init@1c5b675653bb5c22dbe9b12b556ec555138e09fd # v4.38.1
+        with:
+          languages: c-cpp
+          build-mode: manual
+          config-file: tools/security/codeql/config.yml
+          db-location: .cache/build/codeql-db
+
+      - name: Compile the selected sources after initialization
+        run: |
+          cmake -S . -B .cache/build/codeql -DLMA_BUILD_MOCK=ON \
+            -DLMA_BUILD_MOCK_CONSUMER=ON -DCMAKE_BUILD_TYPE=Debug \
+            -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+          cmake --build .cache/build/codeql --clean-first --parallel 2
+          lua scripts/process/playbook.lua --direct check-compilation \
+            .cache/build/codeql/compile_commands.json
+
+      - name: Analyze and upload security results
+        uses: github/codeql-action/analyze@1c5b675653bb5c22dbe9b12b556ec555138e09fd # v4.38.1
+        with:
+          category: /language:c-cpp/profile:mock-hosted
+          output: .cache/logs/codeql
+
+      - name: Preserve SARIF and captured commands
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: codeql-c-evidence
+          path: |
+            .cache/logs/codeql/
+            .cache/build/codeql/compile_commands.json
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 30
+
+# EOF
+

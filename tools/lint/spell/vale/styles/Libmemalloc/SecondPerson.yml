@@ -1,0 +1,19 @@
+# SPDX-FileCopyrightText: 2026 Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
+# SPDX-License-Identifier: GPL-3.0-only
+
+---
+extends: existence
+
+message: "Replace '%s' with the authors, participants, operators, or other specific actor."
+
+level: warning
+
+ignorecase: true
+
+tokens:
+  - you
+  - your
+  - yours
+
+# EOF
+

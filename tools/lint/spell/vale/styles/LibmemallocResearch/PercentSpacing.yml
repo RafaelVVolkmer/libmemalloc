@@ -1,0 +1,17 @@
+# SPDX-FileCopyrightText: 2026 Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
+# SPDX-License-Identifier: GPL-3.0-only
+
+---
+extends: existence
+
+message: "Insert a nonbreaking space between the value and percent sign in '%s'."
+
+level: error
+
+nonword: true
+
+tokens:
+  - '[0-9]+(?:\.[0-9]+)?%'
+
+# EOF
+

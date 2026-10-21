@@ -1,0 +1,62 @@
+# SPDX-FileCopyrightText: 2026 Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
+# SPDX-License-Identifier: GPL-3.0-only
+
+---
+title: libmemalloc release qualification controls
+
+metadata:
+  id: libmemalloc-release-controls
+  type: ControlCatalog
+  gemara-version: 1.5.0
+  description: Draft controls for the mock pipeline; no production compliance claim.
+  draft: true
+
+  author:
+    id: repository-automation
+    name: libmemalloc repository automation
+    type: Software Assisted
+
+  applicability-groups:
+    - id: mock-release
+      title: Mock release
+      description: Native Linux pipeline fixtures only.
+
+groups:
+  - id: release-integrity
+    title: Release integrity
+    description: Rebuild, signing, and installed-consumer evidence.
+
+controls:
+  - id: reproducible-payloads
+    title: Compare two builds
+    objective: Detect different payload bytes from declared equivalent inputs.
+    group: release-integrity
+    state: Draft
+    assessment-requirements:
+      - id: compare-all-payloads
+        text: Compare each declared payload digest and retain both build records.
+        applicability: [mock-release]
+        state: Draft
+  - id: artifact-authenticity
+    title: Verify signed inventory
+    objective: Reject changed payloads and unexpected signing identities.
+    group: release-integrity
+    state: Draft
+    assessment-requirements:
+      - id: reject-adulteration
+        text: Verify signatures, exact file inventory, and full content digests.
+        applicability: [mock-release]
+        state: Draft
+  - id: installed-consumer
+    title: Exercise installed libraries
+    objective: Detect missing or non-relocatable installation metadata.
+    group: release-integrity
+    state: Draft
+    assessment-requirements:
+      - id: relocate-prefix
+        text: Build and execute consumers after moving the installation prefix.
+        applicability: [mock-release]
+        state: Draft
+
+# EOF
+

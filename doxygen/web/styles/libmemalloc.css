@@ -1,0 +1,158 @@
+/*
+ * SPDX-FileCopyrightText: 2026 Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
+ * SPDX-License-Identifier: GPL-3.0-only
+ */
+
+/* Brand assets retain their alpha channel on both theme backgrounds. */
+#projectlogo,
+#projectlogo img,
+.contents img[src$="libmemalloc_logo.svg"],
+.contents object[data$="libmemalloc_logo.svg"] {
+  background: transparent;
+  background-color: transparent;
+  box-shadow: none;
+}
+
+/* Keep the canvas transparent and center diagrams within the available width. */
+.mermaidgraph {
+  background: transparent;
+  overflow-x: auto;
+  padding: var(--spacing-medium);
+  text-align: center;
+}
+
+.mermaidgraph pre.mermaid {
+  background: transparent;
+  margin-inline: auto;
+  text-align: center;
+  overflow: visible;
+  padding: 0;
+}
+
+.mermaidgraph svg {
+  background: transparent;
+  display: block;
+  margin-inline: auto;
+}
+
+/* Keep Mermaid's vector layout while sharing the brand's light/dark palette. */
+.mermaidgraph svg .node :is(rect, circle, ellipse, polygon, path),
+.mermaidgraph svg :is(rect.actor, .note, .labelBox, .cluster rect) {
+  fill: var(--lma-surface) !important;
+  stroke: var(--lma-link) !important;
+}
+.mermaidgraph svg :is(text, tspan, .nodeLabel, .edgeLabel, .label, .labelText, .noteText),
+.mermaidgraph svg foreignObject :is(div, span, p) {
+  color: var(--lma-ink) !important;
+  fill: var(--lma-ink) !important;
+  font-family: var(--font-family) !important;
+}
+.mermaidgraph svg .edgeLabel {
+  background-color: var(--lma-paper) !important;
+}
+.mermaidgraph svg .edgeLabel p {
+  background-color: var(--lma-paper) !important;
+}
+.mermaidgraph svg .edgeLabel rect {
+  fill: var(--lma-paper) !important;
+}
+
+/* Doxygen uses Mermaid's light palette; exposed connectors follow the site theme. */
+.mermaidgraph svg .flowchart-link,
+.mermaidgraph svg .edgePath .path,
+.mermaidgraph svg .transition,
+.mermaidgraph svg .messageLine0,
+.mermaidgraph svg .messageLine1,
+.mermaidgraph svg .actor-line {
+  stroke: var(--page-foreground-color) !important;
+}
+
+.mermaidgraph svg marker path,
+.mermaidgraph svg marker polygon,
+.mermaidgraph svg marker circle {
+  fill: var(--page-foreground-color) !important;
+  stroke: var(--page-foreground-color) !important;
+}
+
+.mermaidgraph svg .messageText,
+.mermaidgraph svg .loopText,
+.mermaidgraph svg .loopText > tspan,
+.mermaidgraph svg .sectionTitle,
+.mermaidgraph svg .sectionTitle > tspan,
+.mermaidgraph svg .flowchartTitleText {
+  fill: var(--page-foreground-color) !important;
+}
+
+/* Markdown examples share the theme's native Doxygen code palette. */
+.lma-code pre.fragment {
+  text-align: left;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.lma-code code.hljs {
+  display: block;
+  background: transparent;
+  color: var(--fragment-foreground);
+  padding: 0;
+  border: 0;
+  white-space: inherit;
+  font: inherit;
+}
+
+/* Box-drawing diagrams depend on columns; ordinary examples can wrap visually. */
+.lma-code pre.lma-preserve-layout {
+  white-space: pre;
+  overflow-wrap: normal;
+}
+
+/* Syntax colors come from the locally bundled Nord theme. */
+
+/* Native Graphviz diagrams share Mermaid's canvas, typography and theme tokens. */
+.dyncontent .center:has(.lma-native-graph) {
+  overflow: visible;
+}
+.lma-native-graph {
+  padding: var(--spacing-medium);
+  overflow-x: auto;
+}
+.lma-native-svg {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin-inline: auto;
+}
+.lma-native-svg .graph > polygon {
+  fill: transparent;
+  stroke: none;
+}
+.lma-native-svg .node :is(polygon, path, rect, ellipse),
+.lma-native-svg .cluster polygon {
+  fill: var(--lma-surface);
+  stroke: var(--lma-link);
+}
+.lma-native-svg text {
+  fill: var(--lma-ink);
+  font-family: var(--font-family);
+}
+.lma-native-svg .edge path {
+  stroke: var(--lma-ink);
+}
+.lma-native-svg .edge polygon {
+  fill: var(--lma-ink);
+  stroke: var(--lma-ink);
+}
+.lma-native-svg a[href]:hover text,
+.lma-native-svg a[href]:focus text {
+  text-decoration: underline;
+}
+@media (forced-colors: active) {
+  .lma-native-svg text,
+  .mermaidgraph svg :is(text, tspan) {
+    fill: CanvasText !important;
+  }
+}
+
+/* EOF */
+

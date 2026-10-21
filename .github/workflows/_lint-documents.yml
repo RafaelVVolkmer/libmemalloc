@@ -1,0 +1,518 @@
+# SPDX-FileCopyrightText: 2026 Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
+# SPDX-License-Identifier: GPL-3.0-only
+
+---
+
+name: Lint documents
+
+on:
+  workflow_call:
+    inputs:
+      css:
+        description: Run the css checks.
+        required: true
+        type: boolean
+      html:
+        description: Run the html checks.
+        required: true
+        type: boolean
+      javascript:
+        description: Run the javascript checks.
+        required: true
+        type: boolean
+      json:
+        description: Run the json checks.
+        required: true
+        type: boolean
+      markdown:
+        description: Run the markdown checks.
+        required: true
+        type: boolean
+      toml:
+        description: Run the toml checks.
+        required: true
+        type: boolean
+      typescript:
+        description: Run the typescript checks.
+        required: true
+        type: boolean
+      yaml:
+        description: Run the yaml checks.
+        required: true
+        type: boolean
+
+permissions: {}
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  web:
+    name: HTML, CSS, JavaScript and TypeScript
+    if: inputs.html || inputs.css || inputs.javascript || inputs.typescript
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Configure repository-local caches
+        uses: ./.github/actions/workspace-cache
+
+      - name: Setup pinned Lua
+        id: lua
+        uses: ./.github/actions/setup-lua
+
+      - name: Setup verified web tools
+        id: web
+        uses: ./.github/actions/setup-web-tools
+        with:
+          lua: ${{ steps.lua.outputs.lua }}
+
+      - name: Check changed web language areas
+        env:
+          LUA: ${{ steps.lua.outputs.lua }}
+          NODE_BIN: ${{ steps.web.outputs.bin }}
+          HTML: ${{ inputs.html }}
+          CSS: ${{ inputs.css }}
+          JAVASCRIPT: ${{ inputs.javascript }}
+          TYPESCRIPT: ${{ inputs.typescript }}
+        run: |
+          set -euo pipefail
+
+          export PATH="${NODE_BIN}:${PATH}"
+          "${LUA}" scripts/process/playbook.lua --direct check-web \
+            "--html=${HTML}" "--css=${CSS}" \
+            "--javascript=${JAVASCRIPT}" "--typescript=${TYPESCRIPT}"
+
+  # CWE-829: proposed PR and merge-queue code stays off private runners.
+
+  editorconfig:
+    name: EditorConfig
+    runs-on: >-
+      ${{
+        (github.event_name == 'pull_request' ||
+        github.event_name == 'merge_group') &&
+        'ubuntu-24.04' ||
+        vars.LIBMEMALLOC_CI_RUNNER ||
+        'ubuntu-24.04'
+      }}
+    timeout-minutes: 10
+
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Configure repository-local caches
+        uses: ./.github/actions/workspace-cache
+
+      - name: Resolve toolchain lock
+        id: toolchain
+        uses: ./.github/actions/toolchain
+
+      - name: Restore EditorConfig Checker archive
+        id: editorconfig_download
+        uses: ./.github/actions/verified-download
+        with:
+          name: editorconfig-checker
+          version: ${{ fromJSON(steps.toolchain.outputs.tools).editorconfig_checker.version }}
+          filename: ec-linux-amd64.tar.gz
+          sha256: ${{ fromJSON(steps.toolchain.outputs.tools).editorconfig_checker.sha256 }}
+          origin: https://github.com
+          directory: >-
+            ${{ format(
+              'editorconfig-checker/editorconfig-checker/releases/download/v{0}',
+              fromJSON(steps.toolchain.outputs.tools).editorconfig_checker.version
+            ) }}
+
+      - name: Install EditorConfig Checker
+        env:
+          EDITORCONFIG_ARCHIVE: ${{ steps.editorconfig_download.outputs.path }}
+        run: |
+          set -euo pipefail
+
+          destination="${EDITORCONFIG_ARCHIVE}"
+          extract_dir="${LIBMEMALLOC_CACHE_ROOT}/tools/editorconfig-checker"
+          binary="${extract_dir}/bin/ec-linux-amd64"
+
+          rm -rf "${extract_dir}"
+          mkdir -p "${extract_dir}"
+
+          tar \
+            --extract \
+            --gzip \
+            --file="${destination}" \
+            --directory="${extract_dir}"
+
+          if [[ ! -f "${binary}" ]]; then
+            echo "EditorConfig Checker binary not found: ${binary}" >&2
+            echo "Archive contents:" >&2
+            tar \
+              --list \
+              --gzip \
+              --file="${destination}" \
+              >&2
+            exit 1
+          fi
+
+          install \
+            --mode=0755 \
+            "${binary}" \
+            "${LIBMEMALLOC_CACHE_ROOT}/tools/ec"
+
+      - name: Run EditorConfig Checker
+        run: |
+          set -euo pipefail
+
+          # Syntax-aware formatters own indentation (C directives, Markdown
+          # lists and embedded code do not follow a single whitespace rule).
+          # Preserve the upstream license text verbatim.
+          "${LIBMEMALLOC_CACHE_ROOT}/tools/ec" \
+            -disable-indentation -exclude '^LICENSE$'
+
+  json:
+    name: JSON and JSONC
+    if: inputs.json
+    runs-on: >-
+      ${{
+        (github.event_name == 'pull_request' ||
+        github.event_name == 'merge_group') &&
+        'ubuntu-24.04' ||
+        vars.LIBMEMALLOC_CI_RUNNER ||
+        'ubuntu-24.04'
+      }}
+    timeout-minutes: 10
+
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Configure repository-local caches
+        uses: ./.github/actions/workspace-cache
+
+      - name: Resolve toolchain lock
+        id: toolchain
+        uses: ./.github/actions/toolchain
+
+      - name: Restore Biome binary
+        id: biome_download
+        uses: ./.github/actions/verified-download
+        with:
+          name: biome
+          version: ${{ fromJSON(steps.toolchain.outputs.tools).biome.version }}
+          filename: biome-linux-x64
+          sha256: ${{ fromJSON(steps.toolchain.outputs.tools).biome.sha256 }}
+          origin: https://github.com
+          directory: >-
+            ${{ format(
+              'biomejs/biome/releases/download/%40biomejs/biome%40{0}',
+              fromJSON(steps.toolchain.outputs.tools).biome.version
+            ) }}
+
+      - name: Install Biome
+        env:
+          BIOME_BINARY: ${{ steps.biome_download.outputs.path }}
+        run: |
+          set -euo pipefail
+
+          install \
+            --mode=0755 \
+            "${BIOME_BINARY}" \
+            "${LIBMEMALLOC_CACHE_ROOT}/tools/biome"
+
+      - name: Find and lint all JSON files
+        run: |
+          set -euo pipefail
+
+          mapfile -d '' files < <(
+            git ls-files -z -- '*.json' '*.jsonc'
+          )
+
+          if (( ${#files[@]} == 0 )); then
+            echo "No tracked JSON or JSONC files found."
+            exit 0
+          fi
+
+          printf 'Linting %d JSON or JSONC file(s).\n' "${#files[@]}"
+
+          "${LIBMEMALLOC_CACHE_ROOT}/tools/biome" \
+            lint \
+            --config-path tools/lint/code/json/biome-config.json \
+            --error-on-warnings \
+            --reporter github \
+            "${files[@]}"
+
+  yamllint:
+    name: YAML
+    if: inputs.yaml
+    runs-on: >-
+      ${{
+        (github.event_name == 'pull_request' ||
+        github.event_name == 'merge_group') &&
+        'ubuntu-24.04' ||
+        vars.LIBMEMALLOC_CI_RUNNER ||
+        'ubuntu-24.04'
+      }}
+    timeout-minutes: 10
+
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Configure repository-local caches
+        uses: ./.github/actions/workspace-cache
+
+      - name: Resolve toolchain lock
+        id: toolchain
+        uses: ./.github/actions/toolchain
+
+      - name: Install yamllint
+        env:
+          YAMLLINT_VERSION: ${{ fromJSON(steps.toolchain.outputs.tools).yamllint.version }}
+        run: |
+          set -euo pipefail
+
+          python3 -m venv "${LIBMEMALLOC_CACHE_ROOT}/tools/yamllint"
+
+          "${LIBMEMALLOC_CACHE_ROOT}/tools/yamllint/bin/python" \
+            -m pip \
+            install \
+            --disable-pip-version-check \
+            --no-input \
+            "yamllint==${YAMLLINT_VERSION}"
+
+      - name: Find and lint all YAML files
+        run: |
+          set -euo pipefail
+
+          mapfile -d '' files < <(
+            git ls-files -z -- '*.yml' '*.yaml'
+          )
+
+          if (( ${#files[@]} == 0 )); then
+            echo "No tracked YAML files found."
+            exit 0
+          fi
+
+          printf 'Linting %d YAML file(s).\n' "${#files[@]}"
+
+          "${LIBMEMALLOC_CACHE_ROOT}/tools/yamllint/bin/yamllint" \
+            --config-file tools/lint/code/yaml/yamllint.yml \
+            --format github \
+            "${files[@]}"
+
+  taplo:
+    name: TOML
+    if: inputs.toml
+    runs-on: >-
+      ${{
+        (github.event_name == 'pull_request' ||
+        github.event_name == 'merge_group') &&
+        'ubuntu-24.04' ||
+        vars.LIBMEMALLOC_CI_RUNNER ||
+        'ubuntu-24.04'
+      }}
+    timeout-minutes: 15
+
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Configure repository-local caches
+        uses: ./.github/actions/workspace-cache
+
+      - name: Prepare supervised Lua runtime
+        uses: ./.github/actions/setup-lua
+
+      - name: Resolve toolchain lock
+        id: toolchain
+        uses: ./.github/actions/toolchain
+
+      - name: Install Taplo
+        env:
+          TAPLO_VERSION: ${{ fromJSON(steps.toolchain.outputs.tools).taplo.version }}
+        run: |
+          set -euo pipefail
+
+          cargo install \
+            taplo-cli \
+            --version "${TAPLO_VERSION}" \
+            --locked
+
+          printf '%s/bin\n' "${CARGO_HOME}" >> "${GITHUB_PATH}"
+
+      - name: Find and validate all TOML files
+        run: |
+          set -euo pipefail
+
+          mapfile -d '' files < <(
+            git ls-files -z -- '*.toml'
+          )
+
+          if (( ${#files[@]} == 0 )); then
+            echo "No tracked TOML files found."
+            exit 0
+          fi
+
+          printf 'Linting %d TOML file(s).\n' "${#files[@]}"
+
+          taplo \
+            lint \
+            --config tools/lint/code/taplo/taplo.toml \
+            "${files[@]}"
+
+      - name: Check TOML formatting
+        run: |
+          set -euo pipefail
+
+          mapfile -d '' files < <(
+            git ls-files -z -- '*.toml'
+          )
+
+          if (( ${#files[@]} == 0 )); then
+            exit 0
+          fi
+
+          lua scripts/process/playbook.lua --direct check-format toml taplo \
+            "${files[@]}"
+
+  markdownlint:
+    name: Markdown and Mermaid
+    if: inputs.markdown
+    runs-on: >-
+      ${{
+        (github.event_name == 'pull_request' ||
+        github.event_name == 'merge_group') &&
+        'ubuntu-24.04' ||
+        vars.LIBMEMALLOC_CI_RUNNER ||
+        'ubuntu-24.04'
+      }}
+    timeout-minutes: 10
+
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Configure repository-local caches
+        uses: ./.github/actions/workspace-cache
+
+      - name: Resolve toolchain lock
+        id: toolchain
+        uses: ./.github/actions/toolchain
+
+      - name: Setup Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: ${{ fromJSON(steps.toolchain.outputs.tools).node.version }}
+          package-manager-cache: false
+
+      # CWE-494 / OWASP CICD-SEC-9: cache package content, never executables.
+      # npm ci verifies the locked dependency graph and disables install scripts.
+      - name: Restore document dependency cache
+        id: document_cache
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ${{ github.workspace }}/.cache/tools/libmemalloc-doc-npm
+          key: >-
+            libmemalloc-doc-npm-v1-${{ runner.os }}-${{ runner.arch }}-${{
+            fromJSON(steps.toolchain.outputs.tools).node.version }}-${{
+            hashFiles('tools/lint/code/md/package-lock.json') }}
+
+      - name: Setup pinned Lua
+        id: lua
+        uses: ./.github/actions/setup-lua
+
+      - name: Verify document dependency identities
+        env:
+          TOOLCHAIN_TOOLS: ${{ steps.toolchain.outputs.tools }}
+          LIBMEMALLOC_LUA: ${{ steps.lua.outputs.lua }}
+        run: |
+          set -euo pipefail
+
+          "${LIBMEMALLOC_LUA}" scripts/process/playbook.lua --direct check-doc-tools
+
+      - name: Install locked document tools
+        run: |
+          set -euo pipefail
+
+          mkdir -p .cache/tools/md
+          cp tools/lint/code/md/package*.json .cache/tools/md/
+          npm ci --prefix .cache/tools/md \
+            --cache "${LIBMEMALLOC_CACHE_ROOT}/tools/libmemalloc-doc-npm" \
+            --ignore-scripts --no-audit --no-fund --prefer-offline
+
+      - name: Find and lint all Markdown files
+        run: |
+          set -euo pipefail
+
+          mapfile -d '' files < <(
+            git ls-files -z -- '*.md' '*.markdown'
+          )
+
+          if (( ${#files[@]} == 0 )); then
+            echo "No tracked Markdown files found."
+            exit 0
+          fi
+
+          printf 'Linting %d Markdown file(s).\n' "${#files[@]}"
+
+          lua scripts/process/playbook.lua --direct check-format markdown \
+            .cache/tools/md/node_modules/.bin/markdownlint \
+            "${files[@]}"
+
+      - name: Test documentation policy and Mermaid diagrams
+        env:
+          LIBMEMALLOC_LUA: ${{ steps.lua.outputs.lua }}
+        run: |
+          set -euo pipefail
+
+          "${LIBMEMALLOC_LUA}" scripts/process/playbook.lua --direct test-check-ci-policy-test
+          "${LIBMEMALLOC_LUA}" scripts/process/playbook.lua --direct test-documentation-policy-test
+          "${LIBMEMALLOC_LUA}" scripts/process/playbook.lua --direct sdd-test
+          "${LIBMEMALLOC_LUA}" scripts/process/playbook.lua --direct sdd-check
+          "${LIBMEMALLOC_LUA}" scripts/process/playbook.lua --direct check-documentation
+          "${LIBMEMALLOC_LUA}" scripts/process/playbook.lua --direct check-mermaid
+
+      # CWE-829 / CAPEC-184: untrusted PRs and merge queues only restore caches.
+      - name: Save verified document dependency cache
+        if: >-
+          steps.document_cache.outputs.cache-hit != 'true' &&
+          github.ref_name == github.event.repository.default_branch &&
+          (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ${{ github.workspace }}/.cache/tools/libmemalloc-doc-npm
+          key: ${{ steps.document_cache.outputs.cache-primary-key }}
+
+# EOF
+

@@ -1,0 +1,85 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "libmemalloc process result",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "observation",
+    "command",
+    "completed_utc",
+    "stdout_sha256",
+    "stderr_sha256"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "observation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "control",
+        "state",
+        "exit_code",
+        "signal",
+        "observed_tests",
+        "plan_sha256",
+        "configuration"
+      ],
+      "properties": {
+        "control": {
+          "type": "string",
+          "pattern": "^LMA-CTRL-[A-Z-]+$"
+        },
+        "state": {
+          "enum": [
+            "PASS",
+            "FAIL",
+            "TIMEOUT",
+            "OUTPUT_LIMIT",
+            "INFRA_ERROR",
+            "INCONCLUSIVE"
+          ]
+        },
+        "exit_code": {
+          "type": "integer"
+        },
+        "signal": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "observed_tests": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "plan_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "configuration": {
+          "const": "posix-local"
+        }
+      }
+    },
+    "command": {
+      "type": "array",
+      "minItems": 2,
+      "items": {
+        "type": "string"
+      }
+    },
+    "completed_utc": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "stdout_sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "stderr_sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    }
+  }
+}

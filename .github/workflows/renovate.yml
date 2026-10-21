@@ -1,0 +1,62 @@
+# SPDX-FileCopyrightText: 2026 Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
+# SPDX-License-Identifier: GPL-3.0-only
+
+---
+name: Renovate
+
+on:
+  schedule:
+    - cron: "43 6 * * 1-5"
+  workflow_dispatch: {}
+
+permissions: {}
+
+concurrency:
+  group: renovate
+  cancel-in-progress: false
+
+jobs:
+  updates:
+    name: Propose dependency updates
+    if: github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    environment: libmemalloc-renovate
+
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout trusted configuration
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Configure repository-local caches
+        uses: ./.github/actions/workspace-cache
+
+      - name: Resolve tool identities
+        id: toolchain
+        uses: ./.github/actions/toolchain
+
+      - name: Require scoped Renovate credentials
+        env:
+          RENOVATE_TOKEN: ${{ secrets.LIBMEMALLOC_RENOVATE_TOKEN }}
+        run: test -n "${RENOVATE_TOKEN}"
+
+      - name: Propose reviewed dependency updates
+        uses: renovatebot/github-action@c314dda4a9a93b08239ec978f2043b9a433b9ac4 # v46.3.0
+        with:
+          configurationFile: .github/renovate.json5
+          renovate-version: ${{ fromJSON(steps.toolchain.outputs.tools).renovate.version }}
+          token: ${{ secrets.LIBMEMALLOC_RENOVATE_TOKEN }}
+        env:
+          RENOVATE_PLATFORM: github
+          RENOVATE_REPOSITORIES: ${{ github.repository }}
+          RENOVATE_ONBOARDING: "false"
+          RENOVATE_REQUIRE_CONFIG: required
+          RENOVATE_ALLOW_SCRIPTS: "false"
+          RENOVATE_ALLOWED_COMMANDS: '[]'
+
+# EOF
+

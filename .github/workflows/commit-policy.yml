@@ -1,0 +1,173 @@
+# SPDX-FileCopyrightText: 2026 Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
+# SPDX-License-Identifier: GPL-3.0-only
+
+---
+name: Commit Policy
+
+on:
+  push:
+    branches:
+      - "**"
+    tags:
+      - "**"
+
+  pull_request:
+    branches:
+      - "**"
+  merge_group: {}
+  workflow_dispatch: {}
+  workflow_call: {}
+
+permissions: {}
+
+concurrency:
+  group: >-
+    commit-policy-${{ github.event_name }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name != 'release' && !startsWith(github.ref, 'refs/tags/') }}
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  structure:
+    name: Commit policy
+    runs-on: >-
+      ${{
+        (github.event_name == 'pull_request' ||
+        github.event_name == 'merge_group') &&
+        'ubuntu-24.04' ||
+        vars.LIBMEMALLOC_CI_RUNNER ||
+        'ubuntu-24.04'
+      }}
+    timeout-minutes: 15
+
+    permissions:
+      contents: read
+
+    env:
+      LIBMEMALLOC_CACHE_ROOT: ${{ github.workspace }}/.cache
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Configure repository-local caches
+        uses: ./.github/actions/workspace-cache
+
+      - name: Setup pinned Lua
+        id: lua
+        uses: ./.github/actions/setup-lua
+
+      - name: Select commits
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          BEFORE_SHA: ${{ github.event.before }}
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          MERGE_BASE_SHA: ${{ github.event.merge_group.base_sha }}
+          MERGE_HEAD_SHA: ${{ github.event.merge_group.head_sha }}
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+          BASELINE_REF: ${{ vars.LIBMEMALLOC_BASELINE_REF }}
+        run: |
+          set -euo pipefail
+
+          head_sha="${GITHUB_SHA}"
+          base_sha=''
+
+          case "${EVENT_NAME}" in
+            pull_request)
+              base_sha="${PR_BASE_SHA}"
+              head_sha="${PR_HEAD_SHA}"
+              ;;
+            merge_group)
+              base_sha="${MERGE_BASE_SHA}"
+              head_sha="${MERGE_HEAD_SHA}"
+              ;;
+            push)
+              if [[ -n "${BEFORE_SHA}" && ! "${BEFORE_SHA}" =~ ^0+$ ]]; then
+                if git cat-file -e "${BEFORE_SHA}^{commit}" 2>/dev/null ||
+                  git fetch --no-tags origin "${BEFORE_SHA}"; then
+                  base_sha="${BEFORE_SHA}"
+                fi
+              fi
+              if [[ -z "${base_sha}" ]]; then
+                baseline_ref="${BASELINE_REF:-refs/heads/${DEFAULT_BRANCH}}"
+                git check-ref-format "${baseline_ref}"
+                [[ "${baseline_ref}" == refs/heads/* ]]
+                if [[ "${GITHUB_REF}" != "${baseline_ref}" ]]; then
+                  git fetch --no-tags origin "${baseline_ref}"
+                  base_sha="$(git rev-parse --verify 'FETCH_HEAD^{commit}')"
+                  git merge-base "${base_sha}" "${head_sha}" > /dev/null
+                fi
+              fi
+              ;;
+            workflow_dispatch|release)
+              base_sha="$(git rev-parse --verify "${head_sha}^" 2>/dev/null || true)"
+              ;;
+            *)
+              printf '%s\n' "unsupported event: ${EVENT_NAME}" >&2
+              exit 1
+              ;;
+          esac
+
+          if [[ -n "${base_sha}" ]]; then
+            git rev-list --reverse "${base_sha}..${head_sha}" \
+              > "${LIBMEMALLOC_CACHE_ROOT}/tools/commit-policy-shas"
+          else
+            git rev-list --reverse "${head_sha}" -- \
+              > "${LIBMEMALLOC_CACHE_ROOT}/tools/commit-policy-shas"
+          fi
+
+      - name: Validate commit messages
+        env:
+          LUA: ${{ steps.lua.outputs.lua }}
+        run: |
+          set -euo pipefail
+
+          "${LUA}" tests/automation/workspace/commits_test.lua
+
+          while IFS= read -r sha; do
+            printf 'Validating message: %s\n' "${sha}"
+            "${LUA}" scripts/process/playbook.lua --direct check-commits "${sha}"
+          done < "${LIBMEMALLOC_CACHE_ROOT}/tools/commit-policy-shas"
+
+      - name: Require GitHub-verified OpenPGP signatures
+        if: vars.LIBMEMALLOC_REQUIRE_SIGNED_COMMITS == 'true'
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+
+          while IFS= read -r sha; do
+            response="$(curl \
+              --fail \
+              --silent \
+              --show-error \
+              --location \
+              --proto '=https' \
+              --tlsv1.2 \
+              --header 'Accept: application/vnd.github+json' \
+              --header "Authorization: Bearer ${GITHUB_TOKEN}" \
+              --header 'X-GitHub-Api-Version: 2022-11-28' \
+              "https://api.github.com/repos/${GITHUB_REPOSITORY}/commits/${sha}")"
+
+            verification_filter='.commit.verification.verified == true and '
+            verification_filter+='(.commit.verification.signature != null) and '
+            verification_filter+='(.commit.verification.signature | '
+            verification_filter+='startswith("-----BEGIN PGP SIGNATURE-----"))'
+
+            jq --exit-status "${verification_filter}" \
+              <<< "${response}" \
+              >/dev/null || {
+                printf 'Commit %s does not have a GitHub-verified OpenPGP signature.\n' \
+                  "${sha}" >&2
+                exit 1
+              }
+          done < "${LIBMEMALLOC_CACHE_ROOT}/tools/commit-policy-shas"
+
+# EOF
+

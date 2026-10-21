@@ -1,0 +1,497 @@
+{
+  "version": 8,
+  "$schema": "https://cmake.org/cmake/help/latest/manual/presets/schema.json",
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 28,
+    "patch": 0
+  },
+  "vendor": {
+    "libmemalloc.org/build/1.0": {
+      "license": "GPL-3.0-only",
+      "copyright": "2026 Rafael V. Volkmer",
+      "scope": "Distribution fixture; no product qualification"
+    }
+  },
+  "configurePresets": [
+    {
+      "name": "base",
+      "hidden": true,
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/.cache/build/presets/${presetName}",
+      "cacheVariables": {
+        "LMA_BUILD_MOCK": true,
+        "LMA_BUILD_TESTS": true,
+        "CMAKE_INSTALL_PREFIX": "${sourceDir}/.cache/install/${presetName}",
+        "LMA_BUILD_METADATA": true
+      }
+    },
+    {
+      "name": "debug",
+      "inherits": "base",
+      "displayName": "libmemalloc debug",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug"
+      }
+    },
+    {
+      "name": "release",
+      "inherits": "base",
+      "displayName": "libmemalloc release",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release"
+      }
+    },
+    {
+      "name": "release-shared",
+      "inherits": "base",
+      "displayName": "libmemalloc release-shared",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "BUILD_SHARED_LIBS": true
+      }
+    },
+    {
+      "name": "relwithdebinfo",
+      "inherits": "base",
+      "displayName": "libmemalloc relwithdebinfo",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "RelWithDebInfo"
+      }
+    },
+    {
+      "name": "minsize",
+      "inherits": "base",
+      "displayName": "libmemalloc minsize",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "MinSizeRel"
+      }
+    },
+    {
+      "name": "asan-ubsan",
+      "inherits": "base",
+      "displayName": "libmemalloc asan-ubsan",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "LMA_SANITIZERS": "address;undefined",
+        "LMA_IPO": "OFF"
+      }
+    },
+    {
+      "name": "coverage",
+      "inherits": "base",
+      "displayName": "libmemalloc coverage",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "LMA_ENABLE_COVERAGE": true,
+        "LMA_IPO": "OFF"
+      }
+    },
+    {
+      "name": "gcc-analyzer",
+      "inherits": "base",
+      "displayName": "libmemalloc gcc-analyzer",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_C_COMPILER": "gcc",
+        "LMA_ENABLE_ANALYZER": true
+      }
+    },
+    {
+      "name": "clang-release",
+      "inherits": "base",
+      "displayName": "libmemalloc clang-release",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_C_COMPILER": "clang",
+        "CMAKE_LINKER_TYPE": "LLD",
+        "BUILD_SHARED_LIBS": true
+      }
+    },
+    {
+      "name": "multi",
+      "inherits": "base",
+      "generator": "Ninja Multi-Config",
+      "cacheVariables": {
+        "CMAKE_CONFIGURATION_TYPES": "Debug;Release;RelWithDebInfo"
+      }
+    },
+    {
+      "name": "interop",
+      "inherits": "base",
+      "cacheVariables": {
+        "LMA_COMPATIBILITY_LANGUAGES": "c;cpp;rust",
+        "LMA_BUILD_TESTS": false,
+        "BUILD_SHARED_LIBS": false,
+        "LMA_IPO": "OFF"
+      }
+    },
+    {
+      "name": "wasm",
+      "inherits": "base",
+      "cacheVariables": {
+        "LMA_COMPATIBILITY_LANGUAGES": "wasm",
+        "LMA_BUILD_TESTS": false,
+        "BUILD_SHARED_LIBS": false,
+        "LMA_IPO": "OFF",
+        "LMA_HARDENING": false
+      },
+      "toolchainFile": "${sourceDir}/cmake/toolchains/wasm32.cmake"
+    },
+    {
+      "name": "baremetal",
+      "inherits": "base",
+      "cacheVariables": {
+        "LMA_COMPATIBILITY_LANGUAGES": "baremetal",
+        "LMA_BUILD_TESTS": false,
+        "BUILD_SHARED_LIBS": false,
+        "LMA_IPO": "OFF",
+        "LMA_HARDENING": false
+      },
+      "toolchainFile": "${sourceDir}/cmake/toolchains/baremetal-aarch64.cmake"
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "debug",
+      "configurePreset": "debug"
+    },
+    {
+      "name": "release",
+      "configurePreset": "release"
+    },
+    {
+      "name": "release-shared",
+      "configurePreset": "release-shared"
+    },
+    {
+      "name": "relwithdebinfo",
+      "configurePreset": "relwithdebinfo"
+    },
+    {
+      "name": "minsize",
+      "configurePreset": "minsize"
+    },
+    {
+      "name": "asan-ubsan",
+      "configurePreset": "asan-ubsan"
+    },
+    {
+      "name": "coverage",
+      "configurePreset": "coverage"
+    },
+    {
+      "name": "gcc-analyzer",
+      "configurePreset": "gcc-analyzer"
+    },
+    {
+      "name": "clang-release",
+      "configurePreset": "clang-release"
+    },
+    {
+      "name": "multi-debug",
+      "configurePreset": "multi",
+      "configuration": "Debug"
+    },
+    {
+      "name": "multi-release",
+      "configurePreset": "multi",
+      "configuration": "Release"
+    },
+    {
+      "name": "interop",
+      "configurePreset": "interop"
+    },
+    {
+      "name": "wasm",
+      "configurePreset": "wasm"
+    },
+    {
+      "name": "baremetal",
+      "configurePreset": "baremetal"
+    }
+  ],
+  "testPresets": [
+    {
+      "name": "debug",
+      "configurePreset": "debug",
+      "output": {
+        "outputOnFailure": true
+      },
+      "execution": {
+        "noTestsAction": "error"
+      }
+    },
+    {
+      "name": "release",
+      "configurePreset": "release",
+      "output": {
+        "outputOnFailure": true
+      },
+      "execution": {
+        "noTestsAction": "error"
+      }
+    },
+    {
+      "name": "release-shared",
+      "configurePreset": "release-shared",
+      "output": {
+        "outputOnFailure": true
+      },
+      "execution": {
+        "noTestsAction": "error"
+      }
+    },
+    {
+      "name": "relwithdebinfo",
+      "configurePreset": "relwithdebinfo",
+      "output": {
+        "outputOnFailure": true
+      },
+      "execution": {
+        "noTestsAction": "error"
+      }
+    },
+    {
+      "name": "minsize",
+      "configurePreset": "minsize",
+      "output": {
+        "outputOnFailure": true
+      },
+      "execution": {
+        "noTestsAction": "error"
+      }
+    },
+    {
+      "name": "asan-ubsan",
+      "configurePreset": "asan-ubsan",
+      "output": {
+        "outputOnFailure": true
+      },
+      "execution": {
+        "noTestsAction": "error"
+      }
+    },
+    {
+      "name": "coverage",
+      "configurePreset": "coverage",
+      "output": {
+        "outputOnFailure": true
+      },
+      "execution": {
+        "noTestsAction": "error"
+      }
+    },
+    {
+      "name": "gcc-analyzer",
+      "configurePreset": "gcc-analyzer",
+      "output": {
+        "outputOnFailure": true
+      },
+      "execution": {
+        "noTestsAction": "error"
+      }
+    },
+    {
+      "name": "clang-release",
+      "configurePreset": "clang-release",
+      "output": {
+        "outputOnFailure": true
+      },
+      "execution": {
+        "noTestsAction": "error"
+      }
+    },
+    {
+      "name": "multi-debug",
+      "configurePreset": "multi",
+      "output": {
+        "outputOnFailure": true
+      },
+      "execution": {
+        "noTestsAction": "error"
+      },
+      "configuration": "Debug"
+    },
+    {
+      "name": "multi-release",
+      "configurePreset": "multi",
+      "output": {
+        "outputOnFailure": true
+      },
+      "execution": {
+        "noTestsAction": "error"
+      },
+      "configuration": "Release"
+    },
+    {
+      "name": "interop",
+      "configurePreset": "interop",
+      "output": {
+        "outputOnFailure": true
+      }
+    },
+    {
+      "name": "wasm",
+      "configurePreset": "wasm",
+      "output": {
+        "outputOnFailure": true
+      }
+    }
+  ],
+  "workflowPresets": [
+    {
+      "name": "debug",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "debug"
+        },
+        {
+          "type": "build",
+          "name": "debug"
+        },
+        {
+          "type": "test",
+          "name": "debug"
+        }
+      ]
+    },
+    {
+      "name": "release",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "release"
+        },
+        {
+          "type": "build",
+          "name": "release"
+        },
+        {
+          "type": "test",
+          "name": "release"
+        }
+      ]
+    },
+    {
+      "name": "release-shared",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "release-shared"
+        },
+        {
+          "type": "build",
+          "name": "release-shared"
+        },
+        {
+          "type": "test",
+          "name": "release-shared"
+        }
+      ]
+    },
+    {
+      "name": "relwithdebinfo",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "relwithdebinfo"
+        },
+        {
+          "type": "build",
+          "name": "relwithdebinfo"
+        },
+        {
+          "type": "test",
+          "name": "relwithdebinfo"
+        }
+      ]
+    },
+    {
+      "name": "minsize",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "minsize"
+        },
+        {
+          "type": "build",
+          "name": "minsize"
+        },
+        {
+          "type": "test",
+          "name": "minsize"
+        }
+      ]
+    },
+    {
+      "name": "asan-ubsan",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "asan-ubsan"
+        },
+        {
+          "type": "build",
+          "name": "asan-ubsan"
+        },
+        {
+          "type": "test",
+          "name": "asan-ubsan"
+        }
+      ]
+    },
+    {
+      "name": "coverage",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "coverage"
+        },
+        {
+          "type": "build",
+          "name": "coverage"
+        },
+        {
+          "type": "test",
+          "name": "coverage"
+        }
+      ]
+    },
+    {
+      "name": "gcc-analyzer",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "gcc-analyzer"
+        },
+        {
+          "type": "build",
+          "name": "gcc-analyzer"
+        },
+        {
+          "type": "test",
+          "name": "gcc-analyzer"
+        }
+      ]
+    },
+    {
+      "name": "clang-release",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "clang-release"
+        },
+        {
+          "type": "build",
+          "name": "clang-release"
+        },
+        {
+          "type": "test",
+          "name": "clang-release"
+        }
+      ]
+    }
+  ]
+}

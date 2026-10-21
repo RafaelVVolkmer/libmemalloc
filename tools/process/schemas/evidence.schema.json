@@ -1,0 +1,160 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "libmemalloc requirement evidence graph",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "scope",
+    "run_id",
+    "plan_sha256",
+    "policy_sha256",
+    "source_sha256",
+    "promotion_authorized",
+    "product_qualified",
+    "designs",
+    "requirements"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "scope": {
+      "const": "automation-pilot"
+    },
+    "run_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,63}$"
+    },
+    "plan_sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "policy_sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "source_sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "promotion_authorized": {
+      "const": false
+    },
+    "product_qualified": {
+      "const": false
+    },
+    "designs": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "reference"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^LMA-DES-[A-Z]+-[0-9]{3}$"
+          },
+          "reference": {
+            "type": "string",
+            "pattern": "^docs/.+\\.md(#.+)?$"
+          }
+        }
+      }
+    },
+    "requirements": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "requirement",
+          "statement",
+          "design",
+          "status",
+          "evidence"
+        ],
+        "properties": {
+          "requirement": {
+            "type": "string",
+            "pattern": "^LMA-ENG-[0-9]{3}$"
+          },
+          "statement": {
+            "type": "string",
+            "minLength": 1
+          },
+          "design": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "string",
+              "pattern": "^LMA-DES-[A-Z]+-[0-9]{3}$"
+            }
+          },
+          "status": {
+            "enum": [
+              "PASS",
+              "FAIL"
+            ]
+          },
+          "evidence": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "verification",
+                "kind",
+                "control",
+                "status",
+                "artifact",
+                "sha256"
+              ],
+              "properties": {
+                "verification": {
+                  "type": "string",
+                  "pattern": "^LMA-TEST-[A-Z]+-[0-9]{3}$"
+                },
+                "kind": {
+                  "enum": [
+                    "unit",
+                    "analysis",
+                    "integration"
+                  ]
+                },
+                "control": {
+                  "type": "string",
+                  "pattern": "^LMA-CTRL-[A-Z-]+$"
+                },
+                "status": {
+                  "enum": [
+                    "PASS",
+                    "FAIL",
+                    "TIMEOUT",
+                    "INFRA_ERROR",
+                    "CANCELLED",
+                    "INCONCLUSIVE"
+                  ]
+                },
+                "artifact": {
+                  "type": "string",
+                  "pattern": "^LMA-CTRL-[A-Z-]+/result\\.json$"
+                },
+                "sha256": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

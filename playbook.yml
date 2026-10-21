@@ -1,0 +1,119 @@
+# SPDX-FileCopyrightText: 2026 Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
+# SPDX-License-Identifier: GPL-3.0-only
+
+---
+- name: Execute a registered engineering task
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  become: false
+  vars:
+    lma_workspace: "{{ playbook_dir }}"
+    lma_lua_executable: "{{ lma_managed_lua }}"
+    ansible_remote_tmp: "{{ playbook_dir }}/.cache/ansible/remote"
+    lma_bootstrap_lua: ""
+    lma_prepare_tools: true
+    ansible_python_interpreter: "{{ ansible_playbook_python }}"
+    lma_task: list
+    lma_arguments: []
+  tasks:
+    - name: Validate the task request
+      ansible.builtin.assert:
+        that:
+          - lma_task is string
+          - lma_arguments is sequence
+          - lma_arguments is not string
+          - lma_arguments is not mapping
+          - lma_arguments | select('string') | list | length == lma_arguments | length
+
+    - name: Require a compatible native controller
+      ansible.builtin.assert:
+        that:
+          - ansible_version.full is version('2.16', '>=')
+          - ansible_version.full is version('2.22', '<')
+        fail_msg: >-
+          This playbook supports ansible-core 2.16 through 2.21. On Ubuntu 24.04,
+          install the controller once with sudo apt install ansible-core.
+
+    - name: Prepare and load the local automation runtime
+      ansible.builtin.include_tasks: infra/ansible/tasks/runtime.yml
+
+    - name: Run with the managed automation environment
+      block:
+        - name: Inspect registered commands and effects
+          ansible.builtin.command:
+            argv: "{{ [lma_lua_executable, 'scripts/process/playbook.lua', 'plan', lma_task] + lma_arguments }}"
+            chdir: "{{ lma_workspace }}"
+            expand_argument_vars: false
+          register: task_description
+          changed_when: false
+          check_mode: false
+
+        - name: Select the task preparation profile
+          ansible.builtin.set_fact:
+            lma_preparation_profile: "{{ (task_description.stdout | from_json).preparation | default('none') }}"
+
+        - name: Resolve readable task environment values
+          ansible.builtin.include_tasks: infra/ansible/tasks/environment.yml
+
+        - name: Prepare the registered task tools
+          ansible.builtin.command:
+            argv: ["{{ lma_lua_executable }}", scripts/workspace/prepare.lua, "{{ lma_task }}"]
+            chdir: "{{ lma_workspace }}"
+            expand_argument_vars: false
+          register: quality_preparation
+          changed_when: "'Task tools changed: true' in quality_preparation.stdout"
+          when:
+            - not ansible_check_mode
+            - lma_task != 'list'
+            - lma_prepare_tools | bool
+
+        - name: Activate Git defaults for this repository only
+          ansible.builtin.command:
+            argv:
+              - "{{ lma_lua_executable }}"
+              - scripts/process/playbook.lua
+              - --result-json
+              - setup
+            chdir: "{{ lma_workspace }}"
+            expand_argument_vars: false
+          register: git_configuration
+          changed_when: >-
+            git_configuration.stdout | length > 0 and
+            (git_configuration.stdout | from_json).change_status != 'unchanged'
+          when:
+            - not ansible_check_mode
+            - lma_task not in ['list', 'clean', 'setup', 'setup-repair', 'setup-uninstall']
+
+        - name: Show the selected task or execution plan
+          ansible.builtin.debug:
+            msg: "{{ task_description.stdout | from_json }}"
+
+        - name: Execute and report the canonical Lua task
+          when: not ansible_check_mode and lma_task != 'list'
+          block:
+            - name: Execute the canonical Lua task
+              ansible.builtin.command:
+                argv: >-
+                  {{ [lma_lua_executable, 'scripts/process/playbook.lua', '--result-json', lma_task] + lma_arguments }}
+                chdir: "{{ lma_workspace }}"
+                expand_argument_vars: false
+              register: task_execution
+              changed_when: false
+
+          always:
+            - name: Present the task outcome even after failure
+              ansible.builtin.include_tasks: infra/ansible/tasks/result.yml
+              when: task_execution is defined and not (task_execution.skipped | default(false))
+      environment:
+        LIBMEMALLOC_PYTHON: "{{ lma_host_python }}"
+        LIBMEMALLOC_ANSIBLE: "{{ ansible_playbook_python | dirname }}/ansible-playbook"
+        LIBMEMALLOC_LUA: "{{ lma_lua_executable }}"
+        LIBMEMALLOC_LUAC: >-
+          {{ lookup('ansible.builtin.env', 'LIBMEMALLOC_LUAC') or (lma_lua_executable | dirname) ~ '/luac' }}
+        LIBMEMALLOC_QUALITY_PYTHON: "{{ lma_quality_python | default(lma_host_python) }}"
+        PATH: "{{ lma_task_path | default(lma_host_path) }}"
+        LUA_CPATH: "{{ lma_managed_luv }};;"
+
+# EOF
+

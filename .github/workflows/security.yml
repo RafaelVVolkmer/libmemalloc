@@ -1,0 +1,381 @@
+# SPDX-FileCopyrightText: 2026 Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
+# SPDX-License-Identifier: GPL-3.0-only
+
+---
+name: Security
+
+on:
+  push:
+    branches:
+      - "**"
+    tags:
+      - "**"
+
+  pull_request:
+    branches:
+      - "**"
+  merge_group: {}
+
+  schedule:
+    - cron: "17 3 * * 1"
+  workflow_dispatch: {}
+  workflow_call: {}
+
+permissions: {}
+
+concurrency:
+  group: >-
+    security-${{ github.event_name }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name != 'release' && !startsWith(github.ref, 'refs/tags/') }}
+
+defaults:
+  run:
+    shell: bash
+
+env:
+  # Switch to "required" only after refs/gittuf/policy is formally adopted.
+  GITTUF_ENFORCEMENT: "optional"
+
+jobs:
+  zizmor:
+    name: GitHub Actions security
+    runs-on: >-
+      ${{
+        (github.event_name == 'pull_request' ||
+        github.event_name == 'merge_group') &&
+        'ubuntu-24.04' ||
+        vars.LIBMEMALLOC_CI_RUNNER ||
+        'ubuntu-24.04'
+      }}
+    timeout-minutes: 10
+
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Configure repository-local caches
+        uses: ./.github/actions/workspace-cache
+
+      - name: Resolve toolchain lock
+        id: toolchain
+        uses: ./.github/actions/toolchain
+
+      - name: Setup Node.js for dependency audit
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: ${{ fromJSON(steps.toolchain.outputs.tools).node.version }}
+          package-manager-cache: false
+
+      # CWE-1395 / OWASP CICD-SEC-3: audit the graph, including scheduled runs.
+      # No installation or lifecycle scripts are needed to inspect the lock.
+      - name: Audit document tool dependencies
+        run: |
+          set -euo pipefail
+
+          npm audit --prefix tools/lint/code/md \
+            --package-lock-only --ignore-scripts --omit=dev --audit-level=low
+
+      - name: Restore Zizmor archive
+        id: zizmor_download
+        uses: ./.github/actions/verified-download
+        with:
+          name: zizmor
+          version: ${{ fromJSON(steps.toolchain.outputs.tools).zizmor.version }}
+          filename: zizmor-x86_64-unknown-linux-gnu.tar.gz
+          sha256: ${{ fromJSON(steps.toolchain.outputs.tools).zizmor.sha256 }}
+          origin: https://github.com
+          directory: zizmorcore/zizmor/releases/download/v${{ fromJSON(steps.toolchain.outputs.tools).zizmor.version }}
+
+      - name: Install zizmor
+        env:
+          ZIZMOR_ARCHIVE: ${{ steps.zizmor_download.outputs.path }}
+        run: |
+          set -euo pipefail
+
+          tar \
+            --extract \
+            --gzip \
+            --file="${ZIZMOR_ARCHIVE}" \
+            --directory="${LIBMEMALLOC_CACHE_ROOT}/tools" \
+            zizmor
+
+      - name: Audit GitHub Actions
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+
+          "${LIBMEMALLOC_CACHE_ROOT}/tools/zizmor" \
+            --config tools/security/actions/zizmor.yml \
+            --format github \
+            --pedantic \
+            --strict-collection \
+            .github
+
+  gitleaks:
+    name: Gitleaks
+    runs-on: >-
+      ${{
+        (github.event_name == 'pull_request' ||
+        github.event_name == 'merge_group') &&
+        'ubuntu-24.04' ||
+        vars.LIBMEMALLOC_CI_RUNNER ||
+        'ubuntu-24.04'
+      }}
+    timeout-minutes: 10
+
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Configure repository-local caches
+        uses: ./.github/actions/workspace-cache
+
+      - name: Resolve toolchain lock
+        id: toolchain
+        uses: ./.github/actions/toolchain
+
+      - name: Restore Gitleaks archive
+        id: gitleaks_download
+        uses: ./.github/actions/verified-download
+        with:
+          name: gitleaks
+          version: ${{ fromJSON(steps.toolchain.outputs.tools).gitleaks.version }}
+          filename: gitleaks_${{ fromJSON(steps.toolchain.outputs.tools).gitleaks.version }}_linux_x64.tar.gz
+          sha256: ${{ fromJSON(steps.toolchain.outputs.tools).gitleaks.sha256 }}
+          origin: https://github.com
+          directory: >-
+            ${{ format(
+              'gitleaks/gitleaks/releases/download/v{0}',
+              fromJSON(steps.toolchain.outputs.tools).gitleaks.version
+            ) }}
+
+      - name: Install Gitleaks
+        env:
+          GITLEAKS_ARCHIVE: ${{ steps.gitleaks_download.outputs.path }}
+        run: |
+          set -euo pipefail
+
+          extraction_directory="${LIBMEMALLOC_CACHE_ROOT}/tools/gitleaks-release"
+          mkdir --parents "${extraction_directory}"
+
+          tar \
+            --extract \
+            --gzip \
+            --file="${GITLEAKS_ARCHIVE}" \
+            --directory="${extraction_directory}"
+
+          install \
+            --mode=0755 \
+            "${extraction_directory}/gitleaks" \
+            "${LIBMEMALLOC_CACHE_ROOT}/tools/gitleaks"
+
+      - name: Scan pull-request commits for secrets
+        if: github.event_name == 'pull_request'
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+
+          "${LIBMEMALLOC_CACHE_ROOT}/tools/gitleaks" git \
+            --config tools/security/git/gitleaks.toml \
+            --redact \
+            --verbose \
+            --log-opts="${BASE_SHA}..${HEAD_SHA}" \
+            .
+
+      - name: Scan complete Git history for secrets
+        if: github.event_name != 'pull_request'
+        run: |
+          set -euo pipefail
+
+          "${LIBMEMALLOC_CACHE_ROOT}/tools/gitleaks" git \
+            --config tools/security/git/gitleaks.toml \
+            --redact \
+            --verbose \
+            .
+
+  gittuf-policy:
+    name: gittuf policy
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (
+        github.event_name == 'push' &&
+        (
+          github.ref == 'refs/heads/main' ||
+          startsWith(github.ref, 'refs/tags/')
+        )
+      )
+    runs-on: >-
+      ${{
+        (github.event_name == 'pull_request' ||
+        github.event_name == 'merge_group') &&
+        'ubuntu-24.04' ||
+        vars.LIBMEMALLOC_CI_RUNNER ||
+        'ubuntu-24.04'
+      }}
+    timeout-minutes: 10
+
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Configure repository-local caches
+        uses: ./.github/actions/workspace-cache
+
+      - name: Resolve toolchain lock
+        id: toolchain
+        uses: ./.github/actions/toolchain
+
+      - name: Fetch gittuf metadata
+        id: metadata
+        run: |
+          set -euo pipefail
+
+          case "${GITTUF_ENFORCEMENT}" in
+            optional|required)
+              ;;
+            *)
+              printf 'Invalid GITTUF_ENFORCEMENT: %s\n' \
+                "${GITTUF_ENFORCEMENT}" >&2
+              exit 1
+              ;;
+          esac
+
+          required=false
+          if [[ "${GITTUF_ENFORCEMENT}" == required \
+            && "${GITHUB_EVENT_NAME}" == push \
+            && ( "${GITHUB_REF}" == refs/heads/main \
+              || "${GITHUB_REF}" == refs/tags/* ) ]]; then
+            required=true
+          fi
+
+          printf 'required=%s\n' "${required}" >> "${GITHUB_OUTPUT}"
+
+          set +e
+          git ls-remote \
+            --exit-code \
+            --refs \
+            origin \
+            'refs/gittuf/*' \
+            > "${LIBMEMALLOC_CACHE_ROOT}/tools/gittuf-refs.txt"
+          ls_remote_status=$?
+          set -e
+
+          if [[ "${ls_remote_status}" -eq 2 ]]; then
+            printf '%s\n' 'initialized=false' >> "${GITHUB_OUTPUT}"
+
+            if [[ "${required}" == true ]]; then
+              printf '%s\n' \
+                'gittuf policy is required but the repository is not initialized.' \
+                >&2
+              exit 1
+            fi
+
+            printf '%s\n' \
+              'gittuf is not initialized; optional policy check is skipped.'
+            exit 0
+          fi
+
+          if [[ "${ls_remote_status}" -ne 0 ]]; then
+            printf '%s\n' 'Failed to query remote gittuf metadata.' >&2
+            exit "${ls_remote_status}"
+          fi
+
+          git fetch \
+            --no-tags \
+            origin \
+            '+refs/gittuf/*:refs/gittuf/*'
+
+          if git show-ref --verify --quiet refs/gittuf/policy; then
+            printf '%s\n' 'initialized=true' >> "${GITHUB_OUTPUT}"
+          else
+            printf '%s\n' 'initialized=false' >> "${GITHUB_OUTPUT}"
+
+            if [[ "${required}" == true ]]; then
+              printf '%s\n' \
+                'gittuf policy is required but refs/gittuf/policy is absent.' \
+                >&2
+              exit 1
+            fi
+
+            printf '%s\n' \
+              'gittuf policy ref is absent; optional policy check is skipped.'
+          fi
+
+      - name: Restore gittuf binary
+        id: gittuf_download
+        if: steps.metadata.outputs.initialized == 'true'
+        uses: ./.github/actions/verified-download
+        with:
+          name: gittuf
+          version: ${{ fromJSON(steps.toolchain.outputs.tools).gittuf.version }}
+          filename: gittuf_${{ fromJSON(steps.toolchain.outputs.tools).gittuf.version }}_linux_amd64
+          sha256: ${{ fromJSON(steps.toolchain.outputs.tools).gittuf.sha256 }}
+          origin: https://github.com
+          directory: gittuf/gittuf/releases/download/v${{ fromJSON(steps.toolchain.outputs.tools).gittuf.version }}
+
+      - name: Install gittuf
+        if: steps.metadata.outputs.initialized == 'true'
+        env:
+          GITTUF_BINARY: ${{ steps.gittuf_download.outputs.path }}
+        run: |
+          set -euo pipefail
+
+          install \
+            --mode=0755 \
+            "${GITTUF_BINARY}" \
+            "${LIBMEMALLOC_CACHE_ROOT}/tools/gittuf"
+
+      - name: Restore historical gittuf objects
+        if: steps.metadata.outputs.initialized == 'true'
+        uses: ./.github/actions/gittuf-objects
+        with:
+          reference: ${{ github.ref }}
+
+      - name: Verify gittuf policy
+        if: steps.metadata.outputs.initialized == 'true'
+        run: |
+          set -euo pipefail
+
+          ref="${GITHUB_REF}"
+
+          if [[ "${ref}" != refs/heads/* && "${ref}" != refs/tags/* ]]; then
+            ref="refs/heads/main"
+          fi
+
+          verify=(verify-ref)
+          # A recreated tag has one current object, so validate its latest RSL state.
+          # Branches retain complete change-history verification.
+          if [[ "${ref}" == refs/tags/* ]]; then
+            verify+=(--latest-only)
+          fi
+
+          if ! "${LIBMEMALLOC_CACHE_ROOT}/tools/gittuf" "${verify[@]}" "${ref}"; then
+            printf '%s\n' \
+              'gittuf verification failed after restoring historical objects.' \
+              'Check the signed RSL entry, current ref and authorized signing keys.' \
+              'See docs/runbooks/security-services.md#gittuf-recovery.' >&2
+            exit 1
+          fi
+
+# EOF
+

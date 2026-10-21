@@ -1,0 +1,52 @@
+// SPDX-FileCopyrightText: 2026 Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
+// SPDX-License-Identifier: GPL-3.0-only
+
+#include <stdio.h>
+
+#if defined(LMA_ARCH_AARCH64) && !defined(__aarch64__) && !defined(_M_ARM64)
+  #error "Expected AArch64"
+#elif defined(LMA_ARCH_X86_64) && !defined(__x86_64__) && !defined(_M_X64)
+  #error "Expected x86_64"
+#elif defined(LMA_ARCH_RISCV64) && (!defined(__riscv) || __riscv_xlen != 64)
+  #error "Expected RISC-V64"
+#elif defined(LMA_ARCH_S390X) && !defined(__s390x__)
+  #error "Expected s390x"
+#elif defined(LMA_ARCH_WASM32) && !defined(__wasm32__)
+  #error "Expected WebAssembly32"
+#endif
+#if defined(LMA_OS_LINUX) && !defined(__linux__)
+  #error "Expected Linux target"
+#elif defined(LMA_OS_WINDOWS) && !defined(_WIN32)
+  #error "Expected Windows target"
+#elif defined(LMA_OS_DARWIN) && !defined(__APPLE__)
+  #error "Expected Darwin target"
+#elif defined(LMA_OS_EMSCRIPTEN) && !defined(__EMSCRIPTEN__)
+  #error "Expected Emscripten target"
+#endif
+
+int main(void)
+{
+	int          ret     = 0;
+	int          written = 0;
+	unsigned int value   = 1;
+	int          big     = ((const unsigned char *)&value)[0] == 0;
+
+	if (sizeof(void *) != LMA_POINTER_BYTES ||
+	    sizeof(long) != LMA_LONG_BYTES || big != LMA_BIG_ENDIAN)
+	{
+		ret = 1;
+		goto function_output;
+	}
+
+	written = printf("pointer=%u long=%u big_endian=%d\n",
+	                 (unsigned int)sizeof(void *),
+	                 (unsigned int)sizeof(long), big);
+	if (written < 0)
+		ret = 2;
+
+function_output:
+	return ret;
+}
+
+/* EOF */
+

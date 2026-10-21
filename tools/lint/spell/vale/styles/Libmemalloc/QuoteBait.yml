@@ -1,0 +1,23 @@
+# SPDX-FileCopyrightText: 2026 Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
+# SPDX-License-Identifier: GPL-3.0-only
+
+---
+extends: existence
+
+message: "Replace the dramatic line '%s' with the supporting fact."
+
+level: warning
+
+ignorecase: true
+
+tokens:
+  - and that changes everything
+  - full stop
+  - let that sink in
+  - period
+  - read that again
+  - the implications are profound
+  - this changes everything
+
+# EOF
+

@@ -1,0 +1,13 @@
+{
+  "name": "libmemalloc-web-checks",
+  "private": true,
+  "license": "GPL-3.0-only",
+  "engines": {
+    "node": ">=@node_min.version@"
+  },
+  "dependencies": {
+    "@biomejs/biome": "@biome.version@",
+    "html-validate": "@html_validate.version@",
+    "typescript": "@typescript.version@"
+  }
+}

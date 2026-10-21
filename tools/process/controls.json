@@ -1,0 +1,118 @@
+{
+  "schema_version": 2,
+  "scope": "automation-pilot",
+  "controls": [
+    {
+      "id": "LMA-CTRL-LOCK-PARSER",
+      "verifier": "toolchain_contract",
+      "requirement": "LMA-ENG-001",
+      "procedure": "LMA-PROC-003",
+      "configuration": "posix-local"
+    },
+    {
+      "id": "LMA-CTRL-DOCUMENTATION",
+      "verifier": "documentation_contract",
+      "requirement": "LMA-ENG-002",
+      "procedure": "LMA-PROC-003",
+      "configuration": "posix-local"
+    },
+    {
+      "id": "LMA-CTRL-COMPILATION",
+      "verifier": "compilation_contract",
+      "requirement": "LMA-ENG-003",
+      "procedure": "LMA-PROC-003",
+      "configuration": "posix-local"
+    },
+    {
+      "id": "LMA-CTRL-REGRESSIONS",
+      "verifier": "regression_contract",
+      "requirement": "LMA-ENG-004",
+      "procedure": "LMA-PROC-003",
+      "configuration": "posix-local"
+    }
+  ],
+  "traceability": {
+    "designs": [
+      {
+        "id": "LMA-DES-TOOLCHAIN-001",
+        "reference": "docs/reference/toolchain.md"
+      },
+      {
+        "id": "LMA-DES-DOCS-002",
+        "reference": "docs/README.md"
+      },
+      {
+        "id": "LMA-DES-BUILD-003",
+        "reference": "docs/reference/cmake-build.md"
+      },
+      {
+        "id": "LMA-DES-PROCESS-004",
+        "reference": "docs/runbooks/process-pilot.md"
+      }
+    ],
+    "verifications": [
+      {
+        "id": "LMA-TEST-UNIT-001",
+        "kind": "unit",
+        "control": "LMA-CTRL-LOCK-PARSER"
+      },
+      {
+        "id": "LMA-TEST-ANALYSIS-002",
+        "kind": "analysis",
+        "control": "LMA-CTRL-DOCUMENTATION"
+      },
+      {
+        "id": "LMA-TEST-INTEGRATION-003",
+        "kind": "integration",
+        "control": "LMA-CTRL-COMPILATION"
+      },
+      {
+        "id": "LMA-TEST-UNIT-004",
+        "kind": "unit",
+        "control": "LMA-CTRL-REGRESSIONS"
+      }
+    ],
+    "requirements": [
+      {
+        "id": "LMA-ENG-001",
+        "statement": "Accept supported toolchain locks and reject malformed or command-shaped values.",
+        "design": [
+          "LMA-DES-TOOLCHAIN-001"
+        ],
+        "verification": [
+          "LMA-TEST-UNIT-001"
+        ]
+      },
+      {
+        "id": "LMA-ENG-002",
+        "statement": "All authored Markdown satisfies the repository documentation policy.",
+        "design": [
+          "LMA-DES-DOCS-002"
+        ],
+        "verification": [
+          "LMA-TEST-ANALYSIS-002"
+        ]
+      },
+      {
+        "id": "LMA-ENG-003",
+        "statement": "A fresh Linux GCC 13 distribution fixture build passes its complete compatibility inventory.",
+        "design": [
+          "LMA-DES-BUILD-003"
+        ],
+        "verification": [
+          "LMA-TEST-INTEGRATION-003"
+        ]
+      },
+      {
+        "id": "LMA-ENG-004",
+        "statement": "Hook, dispatch, process policy and provisioning contracts pass their registered suites.",
+        "design": [
+          "LMA-DES-PROCESS-004"
+        ],
+        "verification": [
+          "LMA-TEST-UNIT-004"
+        ]
+      }
+    ]
+  }
+}

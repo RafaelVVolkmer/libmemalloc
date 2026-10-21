@@ -1,0 +1,80 @@
+# SPDX-FileCopyrightText: 2026 Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
+# SPDX-License-Identifier: GPL-3.0-only
+
+---
+name: Reusable Spelling and Prose
+
+on:
+  workflow_call:
+    inputs:
+      repository:
+        description: Run repository spelling and prose checks.
+        required: true
+        type: boolean
+
+permissions: {}
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  spelling:
+    if: inputs.repository
+    name: Source spelling and links
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: ./.github/actions/workspace-cache
+
+      - id: lua
+        uses: ./.github/actions/setup-lua
+
+      - name: Install the shared locked spelling profile
+        env:
+          LUA: ${{ steps.lua.outputs.lua }}
+        run: '"${LUA}" scripts/process/playbook.lua --direct quality-setup --profile=spelling'
+
+      - name: Check source spelling and prose
+        env:
+          LUA: ${{ steps.lua.outputs.lua }}
+        run: |
+          export PATH="${GITHUB_WORKSPACE}/.cache/tools/quality/bin:${PATH}"
+          "${LUA}" scripts/process/playbook.lua --direct doctor --profile=spelling
+          "${LUA}" scripts/process/playbook.lua --direct check-spelling
+
+      - name: Verify commit-message link validation
+        env:
+          LUA: ${{ steps.lua.outputs.lua }}
+        run: |
+          export PATH="${GITHUB_WORKSPACE}/.cache/tools/quality/bin:${PATH}"
+          "${LUA}" tests/automation/workspace/commit_links_test.lua
+
+      - name: Check local documentation links
+        env:
+          LUA: ${{ steps.lua.outputs.lua }}
+        run: |
+          export PATH="${GITHUB_WORKSPACE}/.cache/tools/quality/bin:${PATH}"
+          "${LUA}" scripts/process/playbook.lua --direct check-links --offline
+
+      - name: Check external documentation links
+        if: >-
+          github.event_name == 'release' ||
+          github.event_name == 'workflow_dispatch' ||
+          (github.event_name == 'push' &&
+          github.ref_name == github.event.repository.default_branch)
+        env:
+          LUA: ${{ steps.lua.outputs.lua }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          export PATH="${GITHUB_WORKSPACE}/.cache/tools/quality/bin:${PATH}"
+          "${LUA}" scripts/process/playbook.lua --direct check-links
+
+# EOF
+

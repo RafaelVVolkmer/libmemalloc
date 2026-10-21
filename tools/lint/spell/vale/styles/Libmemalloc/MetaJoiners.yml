@@ -1,0 +1,23 @@
+# SPDX-FileCopyrightText: 2026 Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
+# SPDX-License-Identifier: GPL-3.0-only
+
+---
+extends: existence
+
+message: "Delete the meta-joiner '%s' and continue with the subject matter."
+
+level: warning
+
+ignorecase: true
+
+tokens:
+  - before we (?:begin|continue|proceed)
+  - in the following section
+  - let us (?:begin|continue|proceed|turn to)
+  - now that we have
+  - the next section (?:covers|describes|discusses|explains)
+  - the rest of this (?:article|document|essay|paper|section)
+  - we will now
+
+# EOF
+

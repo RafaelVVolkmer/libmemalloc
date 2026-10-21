@@ -1,0 +1,128 @@
+# SPDX-FileCopyrightText: 2026 Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
+# SPDX-License-Identifier: GPL-3.0-only
+
+---
+name: Lint and test Haskell
+
+on:
+  workflow_call:
+    inputs:
+      haskell:
+        description: Run Haskell lint, formatting and engine tests.
+        required: true
+        type: boolean
+
+permissions: {}
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  haskell:
+    name: Haskell engine
+    if: inputs.haskell
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Configure repository-local caches
+        uses: ./.github/actions/workspace-cache
+
+      - name: Prepare supervised Lua runtime
+        uses: ./.github/actions/setup-lua
+
+      - name: Resolve toolchain lock
+        id: toolchain
+        uses: ./.github/actions/toolchain
+
+      - name: Restore verified HLint
+        id: hlint
+        uses: ./.github/actions/verified-download
+        with:
+          name: hlint
+          version: ${{ fromJSON(steps.toolchain.outputs.tools).hlint.version }}
+          filename: hlint-${{ fromJSON(steps.toolchain.outputs.tools).hlint.version }}-x86_64-linux.tar.gz
+          sha256: ${{ fromJSON(steps.toolchain.outputs.tools).hlint.sha256 }}
+          origin: https://github.com
+          directory: ndmitchell/hlint/releases/download/v${{ fromJSON(steps.toolchain.outputs.tools).hlint.version }}
+
+      - name: Restore verified Fourmolu
+        id: fourmolu
+        uses: ./.github/actions/verified-download
+        with:
+          name: fourmolu
+          version: ${{ fromJSON(steps.toolchain.outputs.tools).fourmolu.version }}
+          filename: fourmolu-${{ fromJSON(steps.toolchain.outputs.tools).fourmolu.version }}-linux-x86_64.zip
+          sha256: ${{ fromJSON(steps.toolchain.outputs.tools).fourmolu.sha256 }}
+          origin: https://github.com
+          directory: >-
+            fourmolu/fourmolu/releases/download/v${{ fromJSON(steps.toolchain.outputs.tools).fourmolu.version }}
+
+      - name: Install Haskell lint tools and compiler prerequisites
+        env:
+          HLINT_ARCHIVE: ${{ steps.hlint.outputs.path }}
+          FOURMOLU_ARCHIVE: ${{ steps.fourmolu.outputs.path }}
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install --yes --no-install-recommends \
+            lua5.4 lua-luv jq libgmp-dev libtinfo6 build-essential curl git unzip
+          mkdir -p .cache/tools/haskell .cache/logs/haskell
+          tar -xzf "${HLINT_ARCHIVE}" -C .cache/tools/haskell
+          unzip -q "${FOURMOLU_ARCHIVE}" -d .cache/tools/haskell
+
+      - name: Prepare resource containment
+        run: |
+          set -euo pipefail
+          runner_uid="$(id -u)"
+          sudo systemctl start "user@${runner_uid}.service"
+          echo "XDG_RUNTIME_DIR=/run/user/${runner_uid}" >> "$GITHUB_ENV"
+          echo "DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/${runner_uid}/bus" >> "$GITHUB_ENV"
+
+      - name: Verify memory containment and recovery
+        run: |
+          lua scripts/process/playbook.lua --direct formal-resources-test
+          lua scripts/process/playbook.lua --direct formal-executor-test
+
+      - name: Check HLint and Fourmolu
+        run: |
+          set -euo pipefail
+          lua scripts/process/playbook.lua --direct check-haskell --lint
+
+      - name: Prepare pinned GHC and Cabal
+        run: |
+          set -euo pipefail
+          lua scripts/process/playbook.lua --direct formal-bootstrap --haskell-only \
+            2>&1 | tee .cache/logs/haskell/bootstrap.log
+
+      - name: Compile with warnings as errors and run engine tests
+        run: |
+          set -euo pipefail
+          lua scripts/process/playbook.lua --direct check-haskell --test
+
+      - name: Preserve Haskell check evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: haskell-checks-${{ github.sha }}
+          if-no-files-found: warn
+          retention-days: 14
+          include-hidden-files: true
+          path: |
+            .cache/logs/tasks/formal-*/
+            .cache/logs/tasks/check-haskell-*/
+            .cache/logs/haskell/
+            .cache/logs/resource-regression/
+            .cache/cabal/haskell-build/**/test/*.log
+            .cache/haskell/cabal.project
+            .cache/haskell/cabal.project.freeze
+
+# EOF
+

@@ -1,0 +1,4 @@
+libmemalloc @PROJECT_VERSION@ mock
+Allocator implementation: absent
+Experimental garbage collection: disabled
+Global allocator interposition: disabled

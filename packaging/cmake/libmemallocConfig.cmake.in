@@ -1,0 +1,11 @@
+# SPDX-FileCopyrightText: 2026 Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
+# SPDX-License-Identifier: GPL-3.0-only
+
+@PACKAGE_INIT@
+
+set(libmemalloc_IS_MOCK TRUE)
+include("${CMAKE_CURRENT_LIST_DIR}/libmemallocTargets.cmake")
+check_required_components(libmemalloc)
+
+# EOF
+

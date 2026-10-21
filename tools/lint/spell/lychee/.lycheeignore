@@ -1,0 +1,10 @@
+# One regular expression per line. Pass this file with --exclude-file only when
+# compatibility with an older Lychee invocation is required. Current runs use
+# exclude and exclude_path from lychee.toml.
+
+^mailto:
+^https?://localhost(?:[:/]|$)
+^https?://127\.0\.0\.1(?:[:/]|$)
+
+# EOF
+

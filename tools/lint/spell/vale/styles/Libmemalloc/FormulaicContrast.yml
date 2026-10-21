@@ -1,0 +1,20 @@
+# SPDX-FileCopyrightText: 2026 Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
+# SPDX-License-Identifier: GPL-3.0-only
+
+---
+extends: existence
+
+message: "State the positive claim directly instead of using the contrast '%s'."
+
+level: warning
+
+ignorecase: true
+
+nonword: true
+
+raw:
+  - '\bnot\b[^.!?;\n]{1,80}\b(?:but|instead)\b'
+  - '|\b(?:is not|isn[''’]t)\b[^.!?;\n]{1,80}\b(?:it is|it[''’]s)\b'
+
+# EOF
+

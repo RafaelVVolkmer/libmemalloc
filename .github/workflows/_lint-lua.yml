@@ -1,0 +1,199 @@
+# SPDX-FileCopyrightText: 2026 Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
+# SPDX-License-Identifier: GPL-3.0-only
+
+---
+
+name: Lint lua
+
+on:
+  workflow_call:
+    inputs:
+      lua:
+        description: Run the lua checks.
+        required: true
+        type: boolean
+
+permissions: {}
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  lua:
+    name: Lua
+    if: inputs.lua
+    runs-on: >-
+      ${{
+        (github.event_name == 'pull_request' ||
+        github.event_name == 'merge_group') &&
+        'ubuntu-24.04' ||
+        vars.LIBMEMALLOC_CI_RUNNER ||
+        'ubuntu-24.04'
+      }}
+    timeout-minutes: 20
+
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Configure repository-local caches
+        uses: ./.github/actions/workspace-cache
+
+      - name: Prepare supervised Lua runtime
+        uses: ./.github/actions/setup-lua
+
+      - name: Resolve toolchain lock
+        id: toolchain
+        uses: ./.github/actions/toolchain
+
+      - name: Detect Lua sources
+        id: detect
+        run: |
+          set -euo pipefail
+
+          found=false
+
+          while IFS= read -r -d '' file; do
+            case "${file}" in
+              *.lua)
+                found=true
+                break
+                ;;
+            esac
+
+            first_line="$(head -n 1 -- "${file}" 2>/dev/null || true)"
+
+            if [[ "${first_line}" =~ ^#!.*(^|[[:space:]/])lua([[:space:]]|$) ]]; then
+              found=true
+              break
+            fi
+          done < <(git ls-files -z)
+
+          echo "found=${found}" >> "${GITHUB_OUTPUT}"
+
+          if [[ "${found}" == false ]]; then
+            echo "No tracked Lua sources found; skipping Lua lint."
+          fi
+
+      - name: Restore Lua archive
+        id: lua_download
+        if: steps.detect.outputs.found == 'true'
+        uses: ./.github/actions/verified-download
+        with:
+          name: lua
+          version: ${{ fromJSON(steps.toolchain.outputs.tools).lua.version }}
+          filename: lua-${{ fromJSON(steps.toolchain.outputs.tools).lua.version }}.tar.gz
+          sha256: ${{ fromJSON(steps.toolchain.outputs.tools).lua.sha256 }}
+          origin: https://www.lua.org
+          directory: ftp
+
+      - name: Restore StyLua archive
+        id: stylua_download
+        if: steps.detect.outputs.found == 'true'
+        uses: ./.github/actions/verified-download
+        with:
+          name: stylua
+          version: ${{ fromJSON(steps.toolchain.outputs.tools).stylua.version }}
+          filename: stylua-linux-x86_64.zip
+          sha256: ${{ fromJSON(steps.toolchain.outputs.tools).stylua.sha256 }}
+          origin: https://github.com
+          directory: >-
+            ${{ format(
+              'JohnnyMorganz/StyLua/releases/download/v{0}',
+              fromJSON(steps.toolchain.outputs.tools).stylua.version
+            ) }}
+
+      - name: Restore LuaLS archive
+        id: luals_download
+        if: steps.detect.outputs.found == 'true'
+        uses: ./.github/actions/verified-download
+        with:
+          name: lua-language-server
+          version: ${{ fromJSON(steps.toolchain.outputs.tools).lua_language_server.version }}
+          filename: >-
+            ${{ format(
+              'lua-language-server-{0}-linux-x64.tar.gz',
+              fromJSON(steps.toolchain.outputs.tools).lua_language_server.version
+            ) }}
+          sha256: ${{ fromJSON(steps.toolchain.outputs.tools).lua_language_server.sha256 }}
+          origin: https://github.com
+          directory: >-
+            ${{ format(
+              'LuaLS/lua-language-server/releases/download/{0}',
+              fromJSON(steps.toolchain.outputs.tools).lua_language_server.version
+            ) }}
+
+      - name: Install pinned Lua toolchain
+        if: steps.detect.outputs.found == 'true'
+        env:
+          LUA_VERSION: ${{ fromJSON(steps.toolchain.outputs.tools).lua.version }}
+          LUA_ARCHIVE: ${{ steps.lua_download.outputs.path }}
+          SELENE_VERSION: ${{ fromJSON(steps.toolchain.outputs.tools).selene.version }}
+          STYLUA_ARCHIVE: ${{ steps.stylua_download.outputs.path }}
+          LUALS_ARCHIVE: ${{ steps.luals_download.outputs.path }}
+        run: |
+          set -euo pipefail
+
+          lua_archive="${LUA_ARCHIVE}"
+
+          tar -xzf "${lua_archive}" -C "${LIBMEMALLOC_CACHE_ROOT}/tools"
+          make --directory="${LIBMEMALLOC_CACHE_ROOT}/tools/lua-${LUA_VERSION}" \
+            --jobs=2 all
+
+          # Upstream binaries omit the Lua 5.4 grammar feature.
+          cargo install selene --version "${SELENE_VERSION}" --locked \
+            --no-default-features --features selene-lib/lua54 \
+            --root "${LIBMEMALLOC_CACHE_ROOT}/tools/selene"
+
+          stylua_archive="${STYLUA_ARCHIVE}"
+
+          mkdir -p "${LIBMEMALLOC_CACHE_ROOT}/tools/stylua"
+          unzip -q "${stylua_archive}" -d "${LIBMEMALLOC_CACHE_ROOT}/tools/stylua"
+          chmod 0755 "${LIBMEMALLOC_CACHE_ROOT}/tools/stylua/stylua"
+
+          luals_archive="${LUALS_ARCHIVE}"
+
+          mkdir -p "${LIBMEMALLOC_CACHE_ROOT}/tools/luals"
+          tar -xzf "${luals_archive}" -C "${LIBMEMALLOC_CACHE_ROOT}/tools/luals"
+
+      - name: Install locked Lua analysis dependencies
+        if: steps.detect.outputs.found == 'true'
+        run: >-
+          lua scripts/process/playbook.lua --direct toolchain-python
+          --groups=quality --directory=.cache/tools/lua-quality
+
+      - name: Run Lua checks
+        if: steps.detect.outputs.found == 'true'
+        env:
+          LIBMEMALLOC_LUA: >-
+            ${{ github.workspace }}/.cache/tools/lua-${{ fromJSON(steps.toolchain.outputs.tools).lua.version }}/src/lua
+          LIBMEMALLOC_LUAC: >-
+            ${{ github.workspace }}/.cache/tools/lua-${{ fromJSON(steps.toolchain.outputs.tools).lua.version }}/src/luac
+          LIBMEMALLOC_LUALS: ${{ github.workspace }}/.cache/tools/luals/bin/lua-language-server
+          LIBMEMALLOC_SELENE: ${{ github.workspace }}/.cache/tools/selene/bin/selene
+          LIBMEMALLOC_STYLUA: ${{ github.workspace }}/.cache/tools/stylua/stylua
+          LIBMEMALLOC_QUALITY_PYTHON: ${{ github.workspace }}/.cache/tools/lua-quality/bin/python
+        run: |
+          set -euo pipefail
+
+          "${LIBMEMALLOC_LUA}" scripts/process/playbook.lua --direct lua-check
+          "${LIBMEMALLOC_LUA}" tests/automation/workspace/hooks_test.lua
+          "${LIBMEMALLOC_LUA}" tests/automation/workspace/settings_test.lua
+
+      - name: Retain Lua complexity evidence
+        if: always() && steps.detect.outputs.found == 'true'
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: lua-quality
+          path: .cache/ci/lua-quality/report.json
+          if-no-files-found: error
+          retention-days: 7
+
+# EOF
+

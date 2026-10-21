@@ -1,0 +1,25 @@
+# SPDX-FileCopyrightText: 2026 Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
+# SPDX-License-Identifier: GPL-3.0-only
+
+---
+extends: existence
+
+message: "Expand the contraction '%s' in formal technical prose."
+
+level: suggestion
+
+ignorecase: true
+
+nonword: true
+
+scope: sentence
+
+tokens:
+  - '(?:are|can|could|did|do|does|has|have|is|must|should|was|were|will|would)n''t'
+  - 'can[''’]t'
+  - won''t
+  - '(?:how|it|that|there|what|when|where|who)''s'
+  - '(?:I|they|we|you)''(?:d|ll|re|ve)'
+
+# EOF
+

@@ -1,0 +1,81 @@
+# SPDX-FileCopyrightText: 2026 Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
+# SPDX-License-Identifier: GPL-3.0-only
+
+---
+name: Setup MSVC analysis
+description: Select locked Microsoft tools and build checksum-verified Lua locally.
+
+runs:
+  using: composite
+
+  steps:
+    - name: Select SDK and build Lua
+      shell: pwsh
+      # Only runner paths and allowlisted SDK variables reach the environment files.
+      run: | # zizmor: ignore[github-env]
+        $ErrorActionPreference = 'Stop'
+        $lock = Get-Content tools/toolchain/lock.toml -Raw
+        function Read-LockField([string]$tool, [string]$field) {
+          $section = [regex]::Match($lock, "(?ms)^\[tools\.$tool\]\s*(.*?)(?=^\[|\z)").Groups[1].Value
+          $value = [regex]::Match($section, "(?m)^$field = `"([0-9a-f.]+)`"$").Groups[1].Value
+          if (-not $value) { throw "Missing locked $tool.$field" }
+          return $value
+        }
+        $msvc = Read-LockField msvc_analyzer version
+        $sdk = Read-LockField windows_sdk version
+        $lua = Read-LockField lua version
+        $digest = Read-LockField lua sha256
+        $cache = Join-Path $env:GITHUB_WORKSPACE '.cache'
+        if ($cache -match '[\r\n]') { throw 'Invalid workspace path' }
+        foreach ($part in @('tools', 'downloads', 'ci', 'tmp', 'logs', 'tests', 'build')) {
+          New-Item -ItemType Directory -Force -Path (Join-Path $cache $part) | Out-Null
+        }
+        $env:TMP = Join-Path $cache 'tmp'
+        $env:TEMP = $env:TMP
+        "TMP=$env:TMP" >> $env:GITHUB_ENV
+        "TEMP=$env:TEMP" >> $env:GITHUB_ENV
+        $vswhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
+        $vs = & $vswhere -latest -products '*' `
+          -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath
+        if (-not $vs) { throw 'Visual Studio C tools are unavailable' }
+        $setup = "`"$vs\Common7\Tools\VsDevCmd.bat`" -no_logo -arch=amd64 -host_arch=amd64 " +
+          "-vcvars_ver=$msvc -winsdk=$sdk && set"
+        # CALL keeps the quoted batch path intact across PowerShell and cmd.
+        $variables = & cmd.exe /d /c "call $setup"
+        if ($LASTEXITCODE -ne 0) { throw 'The locked MSVC/SDK profile is unavailable' }
+        foreach ($line in $variables) {
+          if ($line -match '^([^=]+)=(.*)$') {
+            [Environment]::SetEnvironmentVariable($Matches[1], $Matches[2], 'Process')
+            $allowed = @('PATH', 'INCLUDE', 'LIB', 'LIBPATH',
+              'VCToolsVersion', 'WindowsSDKVersion', 'VCToolsInstallDir')
+            if ($Matches[1] -in $allowed) {
+              if ($line -match '[\r\n]') { throw 'Invalid SDK environment value' }
+              $line >> $env:GITHUB_ENV
+            }
+          }
+        }
+        $archive = Join-Path $cache "downloads/lua-$lua.tar.gz"
+        Invoke-WebRequest "https://www.lua.org/ftp/lua-$lua.tar.gz" -OutFile $archive
+        if ((Get-FileHash $archive -Algorithm SHA256).Hash.ToLowerInvariant() -ne $digest) {
+          throw 'Lua checksum mismatch'
+        }
+        tar -xzf $archive -C (Join-Path $cache 'tools')
+        if ($LASTEXITCODE -ne 0) { throw 'Lua extraction failed' }
+        $source = Join-Path $cache "tools/lua-$lua/src"
+        Push-Location $source
+        try {
+          $files = Get-ChildItem -Filter '*.c' |
+            Where-Object { $_.Name -notin @('lua.c', 'luac.c') } | ForEach-Object FullName
+          & cl.exe /nologo /O2 /MD /std:c17 /DLUA_BUILD_AS_DLL /LD $files `
+            /link /OUT:lua55.dll /IMPLIB:lua55.lib
+          if ($LASTEXITCODE -ne 0) { throw 'Lua library compilation failed' }
+          & cl.exe /nologo /O2 /MD /std:c17 /DLUA_BUILD_AS_DLL /Fe:lua.exe lua.c lua55.lib
+          if ($LASTEXITCODE -ne 0) { throw 'Lua compilation failed' }
+        } finally { Pop-Location }
+        $source >> $env:GITHUB_PATH
+        & "$source/lua.exe" scripts/workspace/native-runtime.lua $source "$source/lua.exe"
+        if ($LASTEXITCODE -ne 0) { throw 'Native Lua module compilation failed' }
+        Get-Command jq.exe -ErrorAction Stop | Out-Null
+
+# EOF
+

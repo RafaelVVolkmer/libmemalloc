@@ -1,0 +1,59 @@
+# SPDX-FileCopyrightText: 2026 Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
+# SPDX-License-Identifier: GPL-3.0-only
+
+---
+name: Specification work
+description: Propose a bounded change against a Software Design Description.
+title: "[Spec]: "
+body:
+  - type: markdown
+    attributes:
+      value: >-
+        Define or update the SDD before implementation. A maintainer reviews this
+        proposal and applies spec plus the selected area label. Report suspected
+        vulnerabilities privately through SECURITY.md.
+  - type: dropdown
+    id: area
+    attributes:
+      label: Specification area
+      options:
+        - compilation
+        - core-implementation
+        - distribution
+        - gc-implementation
+        - security
+        - tests
+    validations:
+      required: true
+  - type: input
+    id: sdd
+    attributes:
+      label: SDD and requirement identifiers
+      description: Link the SDD revision or its review PR and name the affected controls.
+      placeholder: docs/specs/libmemalloc-gc-implementation-SDD.md at COMMIT, control IDs
+    validations:
+      required: true
+  - type: textarea
+    id: scope
+    attributes:
+      label: Objective and scope
+      description: Define the behavior, boundaries, dependencies and intended outcome.
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance and verification
+      description: State observable acceptance conditions, methods and required evidence.
+    validations:
+      required: true
+  - type: textarea
+    id: decisions
+    attributes:
+      label: Decisions and work breakdown
+      description: Link scientific-method decision records and related implementation issues or PRs.
+    validations:
+      required: true
+
+# EOF
+
