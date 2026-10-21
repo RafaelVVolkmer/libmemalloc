@@ -348,12 +348,26 @@ root; later matching rules take precedence.
 GitHub uses the ownership map to request reviews. Required owner approval
 must also be enabled in branch protection rules or rulesets.
 
-The versioned [develop ruleset](.github/develop-ruleset.json) requires the `CI gate`, `Commit policy`,
-`Gitleaks` and `GitHub Actions security` checks from GitHub Actions before updating `develop`.
-It also requires signed commits and blocks branch deletion and force pushes. No actor has a configured
-bypass. The ruleset does not require approval from a second maintainer while the project has one maintainer.
-Administrators apply this file through the GitHub rulesets API and verify the resulting server state;
-committing the file alone does not enable protection. This configuration applies only to `develop`.
+The branch integration policy is explicit:
+
+| Branch | Integration route | Server protection |
+| ------ | ----------------- | ----------------- |
+| `develop` | Direct pushes are allowed; pull requests are optional. | No branch protection or active ruleset. |
+| `main` | Pull requests only. | Active ruleset with required checks and signed commits; no bypass actors. |
+
+The versioned [main ruleset](.github/main-ruleset.json) requires a pull request,
+the `CI gate`, `Commit policy`, `Gitleaks` and `GitHub Actions security` checks
+from GitHub Actions, and resolution of review threads before merging into
+`main`. It also requires signed commits and blocks branch deletion and force
+pushes. No actor, including administrators, has a configured bypass. A pull
+request is required even while the project has one maintainer; approval from
+a second maintainer and mandatory CODEOWNERS approval are not required.
+
+Administrators apply this file through the GitHub rulesets API, remove or
+replace obsolete rules for `develop`, and verify the resulting server state.
+Committing the file alone does not enable protection. CI and local contribution
+checks still run for `develop`, but they are not a server-side barrier to direct
+pushes. The protected integration boundary is `main`.
 
 Path ownership rules:
 

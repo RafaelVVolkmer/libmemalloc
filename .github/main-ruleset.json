@@ -1,12 +1,12 @@
 {
-  "name": "develop required engineering checks",
+  "name": "main required engineering checks",
   "target": "branch",
   "enforcement": "active",
   "bypass_actors": [],
   "conditions": {
     "ref_name": {
       "include": [
-        "refs/heads/develop"
+        "refs/heads/main"
       ],
       "exclude": []
     }
@@ -20,6 +20,16 @@
     },
     {
       "type": "required_signatures"
+    },
+    {
+      "type": "pull_request",
+      "parameters": {
+        "required_approving_review_count": 0,
+        "dismiss_stale_reviews_on_push": true,
+        "require_code_owner_review": false,
+        "require_last_push_approval": false,
+        "required_review_thread_resolution": true
+      }
     },
     {
       "type": "required_status_checks",

@@ -113,8 +113,12 @@ commit signatures. This supplements the existing signature guide; DCO is always
 checked. Scope and body remain optional, as specified by the commit guide.
 The Coil hooks are not installed or used because their message policy differs.
 
-Configure branch protection to require `CI gate`, the security jobs, and
-`Commit policy`. GitHub settings are not changed by these files.
+Apply the [main ruleset](../../.github/main-ruleset.json) to require pull requests,
+`CI gate`, `Commit policy`, `Gitleaks`, `GitHub Actions security` and signed commits
+on `main`, without bypass actors. Keep `develop` unprotected and allow direct
+pushes; its CI results remain feedback rather than a push barrier. GitHub settings
+are not changed by committing these files. See the
+[branch integration policy](../../GOVERNANCE.md#codeowners-policy).
 Renovate proposes updates against the refactor branch; its scheduled workflow
 must reach the default branch to execute. Dependabot version updates are disabled
 to avoid duplicates. Configure the protected environments and secrets listed in
