@@ -13,24 +13,11 @@ local function scripts_toolchain_install_qualification_main()
 
    -- Use the signed repository for the C23-capable GCC package; execution still
    -- rejects a frontend version that differs from the toolchain lock.
-   release.run({
-      "sudo",
-      "apt-get",
-      "install",
-      "-y",
-      "software-properties-common",
-   })
-
-   release.run({ "sudo", "add-apt-repository", "-y", policy.repository })
-
-   local command =
-      { "sudo", "apt-get", "install", "-y", "--no-install-recommends" }
-
-   for _, package in ipairs(policy.packages) do
-      command[#command + 1] = package
-   end
-
-   release.run(command)
+   dofile("scripts/toolchain/lib/apt.lua").install(
+      release,
+      policy.packages,
+      policy.repository
+   )
    dofile("scripts/lib/change.lua").record(true)
 end
 

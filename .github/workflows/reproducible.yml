@@ -36,8 +36,9 @@ jobs:
           persist-credentials: false
 
       - uses: ./.github/actions/setup-qualification
-        with:
-          build: "true"
+
+      - name: Install declared reconstruction compiler
+        run: lua scripts/process/playbook.lua --direct reproducible-install --build-only
 
       - name: Freeze source inputs without compiled caches
         env:
@@ -135,8 +136,6 @@ jobs:
           persist-credentials: false
 
       - uses: ./.github/actions/setup-qualification
-        with:
-          build: "true"
 
       - name: Install pinned variation tools
         run: lua scripts/process/playbook.lua --direct reproducible-install

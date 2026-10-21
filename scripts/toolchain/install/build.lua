@@ -36,13 +36,7 @@ local function scripts_toolchain_install_build_main()
       -- @return nil: no values.
       local function toolchain_build_installHost()
          if host == "Linux" then
-            local packages = {
-               "sudo",
-               "apt-get",
-               "install",
-               "-y",
-               "--no-install-recommends",
-            }
+            local packages = {}
 
             for _, package in ipairs(policy.linux_packages) do
                packages[#packages + 1] = package
@@ -65,26 +59,11 @@ local function scripts_toolchain_install_build_main()
                end
             end
 
-            if profile.repository then
-               artifact_io.run({
-                  "sudo",
-                  "apt-get",
-                  "install",
-                  "-y",
-                  "software-properties-common",
-               })
-
-               artifact_io.run({
-                  "sudo",
-                  "add-apt-repository",
-                  "-y",
-                  profile.repository,
-               })
-            end
-
-            artifact_io.run({ "sudo", "apt-get", "update", "-qq" })
-
-            artifact_io.run(packages)
+            dofile("scripts/toolchain/lib/apt.lua").install(
+               artifact_io,
+               packages,
+               profile.repository
+            )
          end
       end
 

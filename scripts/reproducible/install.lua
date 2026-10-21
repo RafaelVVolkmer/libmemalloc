@@ -10,28 +10,22 @@ local function scripts_reproducible_install_main()
    local artifact_io = dofile("scripts/lib/artifacts.lua")
    local tools = dofile("scripts/toolchain/lib/lock.lua").load()
    local policy = dofile("tools/reproducible/policy.lua")
-   local packages = {}
+   local options = artifact_io.options(arg, { ["build-only"] = true })
+   local packages = { policy.compiler }
 
    for _, package in ipairs(policy.build_dependencies) do
       packages[#packages + 1] = package
    end
 
-   for key, package in pairs(policy.apt) do
-      packages[#packages + 1] = package .. "=" .. assert(tools[key]).version
+   if not options["build-only"] then
+      for key, package in pairs(policy.apt) do
+         packages[#packages + 1] = package .. "=" .. assert(tools[key]).version
+      end
    end
 
    table.sort(packages)
 
-   artifact_io.run({ "sudo", "apt-get", "update", "-qq" })
-
-   local command =
-      { "sudo", "apt-get", "install", "-y", "--no-install-recommends" }
-
-   for _, package in ipairs(packages) do
-      command[#command + 1] = package
-   end
-
-   artifact_io.run(command)
+   dofile("scripts/toolchain/lib/apt.lua").install(artifact_io, packages)
 end
 
 return scripts_reproducible_install_main()

@@ -21,11 +21,25 @@ runs:
     - uses: ./.github/actions/setup-lua
 
     - name: Install compiler families
+      id: compilers
       if: inputs.build == 'true'
       shell: bash
       run: |
         set -euo pipefail
+        evidence="$(mktemp -d "${RUNNER_TEMP}/libmemalloc-compilers.XXXXXXXX")"
+        printf 'evidence=%s\n' "${evidence}" >> "${GITHUB_OUTPUT}"
+        printf 'identity=%s\n' "${evidence##*/}" >> "${GITHUB_OUTPUT}"
+        exec > >(tee "${evidence}/compiler-install.log") 2>&1
         lua scripts/process/playbook.lua --direct toolchain-install-qualification
+
+    - name: Preserve failed compiler preparation
+      if: failure() && steps.compilers.outputs.evidence != ''
+      uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+      with:
+        name: ${{ steps.compilers.outputs.identity }}-${{ github.run_attempt }}
+        path: ${{ steps.compilers.outputs.evidence }}
+        if-no-files-found: error
+        retention-days: 14
 
 # EOF
 

@@ -67,6 +67,7 @@ local function SUITES_CATALOG_loadModule()
          "toolchain/lock_test.lua",
          "toolchain/manifests_test.lua",
          "toolchain/provision_test.lua",
+         "toolchain/apt_test.lua",
          "workspace/cache_test.lua",
          "workspace/bootstrap_test.lua",
          "workspace/clean_test.lua",

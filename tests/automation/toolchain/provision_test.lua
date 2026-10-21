@@ -98,6 +98,16 @@ local function tests_build_provision_test_suite_main()
          return value
       end
 
+      release.platform = {
+         --- Record package commands without host package installation.
+         -- @param command table: requested command vector.
+         -- @return boolean: fixture commands succeed.
+         command_succeeded = function(command)
+            release.run(command)
+            return true
+         end,
+      }
+
       build.platform = { is_windows = host == "Windows" }
       build.output = release.output
       build.mkdir = release.mkdir
@@ -196,6 +206,35 @@ local function tests_build_provision_test_suite_main()
 
       count = count + 1
    end
+
+   for _, build_only in ipairs({ true, false }) do
+      local commands = provision_capture(
+         "scripts/reproducible/install.lua",
+         { ["build-only"] = build_only },
+         "Linux"
+      )
+      assert(
+         commands:find("gcc-13", 1, true),
+         "missing reconstruction compiler"
+      )
+      assert(not commands:find("add-apt-repository", 1, true), "unneeded PPA")
+      assert(not commands:find("gcc-15", 1, true), "unneeded compiler family")
+      assert(
+         (commands:find("reprotest=", 1, true) ~= nil) == not build_only,
+         "incorrect reconstruction tool scope"
+      )
+      count = count + 1
+   end
+
+   local qualification = provision_capture(
+      "scripts/toolchain/install/qualification.lua",
+      {},
+      "Linux"
+   )
+   assert(qualification:find("--no-update", 1, true), "unchecked PPA refresh")
+   assert(qualification:find("gcc-15", 1, true), "missing C23 compiler")
+   assert(qualification:find("clang-18", 1, true), "missing Clang compiler")
+   count = count + 1
 
    assert(
       not pcall(
