@@ -22,7 +22,8 @@ local function tools_build_qualification_host_loadModule()
          gcov_merge = "gcov-tool-15",
          gcov_dump = "gcov-dump-15",
       },
-      repository = "ppa:ubuntu-toolchain-r/test",
+      repository = "http://ppa.launchpadcontent.net/"
+         .. "ubuntu-toolchain-r/test/ubuntu/",
       packages = {
          "gcc-15",
          "g++-15",

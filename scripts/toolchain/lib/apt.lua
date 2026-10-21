@@ -40,6 +40,14 @@ local function APT_loadModule()
          "Acquire::https::Timeout=30",
          "-o",
          "APT::Update::Error-Mode=any",
+         "-o",
+         "Acquire::Languages=none",
+         "-o",
+         "Acquire::AllowInsecureRepositories=false",
+         "-o",
+         "Acquire::AllowDowngradeToInsecureRepositories=false",
+         "-o",
+         "APT::Get::AllowUnauthenticated=false",
       }
       for _, argument in ipairs(arguments) do
          command[#command + 1] = argument

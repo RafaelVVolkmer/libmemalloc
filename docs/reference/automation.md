@@ -101,12 +101,17 @@ the qualification gate.
 
 Reconstruction installs its declared GCC 13 compiler directly from Ubuntu; it
 requires neither the GCC 15 PPA nor the complete qualification compiler set.
-Qualification and native build provisioning register required PPAs without an
-implicit index update. A shared installer explicitly refreshes all indexes,
+Qualification and native build provisioning register each required compiler
+repository without an implicit index update. A shared installer explicitly
+refreshes all indexes,
 retries failed operations at most four times with delays of 5, 10 and 20 seconds,
 and stops before package installation if the refresh remains incomplete.
 Compiler setup failures retain separate diagnostics; unavailable repositories
-remain failures after the retry budget is exhausted.
+remain failures after the retry budget is exhausted. The compiler source uses
+the official Launchpad HTTP archive because its HTTPS endpoint returned
+persistent HTTP 503 responses. APT still authenticates the signed repository
+metadata and verifies package hashes; unsigned repositories are not accepted.
+Package acquisition omits translation indexes, which these jobs do not use.
 
 Repository scripts use Lua. A system Lua 5.4 interpreter bootstraps the lock
 reader; subsequent checks use the pinned Lua runtime. Python-based third-party

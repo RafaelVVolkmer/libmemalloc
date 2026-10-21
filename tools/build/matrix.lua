@@ -73,7 +73,8 @@ local function tools_build_matrix_loadModule()
             cpp = { "98", "03", "11", "14", "17", "20", "23", "26" },
             tier = "pr",
             cache = "sccache",
-            repository = "ppa:ubuntu-toolchain-r/test",
+            repository = "http://ppa.launchpadcontent.net/"
+               .. "ubuntu-toolchain-r/test/ubuntu/",
          },
          {
             id = "linux-clang18",

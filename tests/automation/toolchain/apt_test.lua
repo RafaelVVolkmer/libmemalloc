@@ -2,7 +2,7 @@
 -- SPDX-License-Identifier: GPL-3.0-only
 
 --- Reject incomplete repository indexes and recover bounded transient faults.
--- @return nil: raises on early installation, unbounded retries or hidden errors.
+-- @return nil: rejects stale indexes, unbounded retries and hidden errors.
 local function APT_TEST_main()
    local apt = dofile("scripts/toolchain/lib/apt.lua")
 
@@ -34,6 +34,15 @@ local function APT_TEST_main()
                joined:find("Acquire::Retries=3", 1, true),
                "missing acquisition retry"
             )
+            local required = {
+               "Acquire::Languages=none",
+               "Acquire::AllowInsecureRepositories=false",
+               "Acquire::AllowDowngradeToInsecureRepositories=false",
+               "APT::Get::AllowUnauthenticated=false",
+            }
+            for _, option in ipairs(required) do
+               assert(joined:find(option, 1, true), "missing APT policy")
+            end
             if command[#command] == "update" then
                operation = "update"
             elseif command[#command] == "software-properties-common" then
@@ -64,7 +73,8 @@ local function APT_TEST_main()
    end
 
    local repository = "ppa:ubuntu-toolchain-r/test"
-   for _, phase in ipairs({ "prerequisites", "register", "update", "install" }) do
+   local phases = { "prerequisites", "register", "update", "install" }
+   for _, phase in ipairs(phases) do
       local commands, delays, passed = capture(phase, 3, repository)
       assert(passed, "transient fault prevented recovery")
       assert(
