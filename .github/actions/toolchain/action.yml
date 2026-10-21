@@ -18,16 +18,14 @@ runs:
   using: composite
 
   steps:
+    - uses: ./.github/actions/bootstrap-ubuntu
+
     - name: Resolve canonical toolchain
       id: resolve
       shell: bash
       run: |
         set -euo pipefail
 
-        if ! command -v lua5.4 >/dev/null 2>&1; then
-          sudo apt-get update
-          sudo apt-get install --yes lua5.4
-        fi
         lua5.4 scripts/toolchain/resolve.lua
 
 # EOF

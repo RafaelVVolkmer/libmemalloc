@@ -9,17 +9,15 @@ runs:
   using: composite
 
   steps:
-    - name: Bootstrap Unix Lua
-      if: runner.os != 'Windows'
+    - uses: ./.github/actions/bootstrap-ubuntu
+      if: runner.os == 'Linux'
+
+    - name: Bootstrap macOS Lua
+      if: runner.os == 'macOS'
       shell: bash
       run: |
         set -euo pipefail
-        if [[ "${RUNNER_OS}" == Linux ]]; then
-          sudo apt-get update -qq
-          sudo apt-get install -y --no-install-recommends lua5.4 jq cmake ninja-build python3
-        else
-          brew install lua jq cmake ninja coreutils
-        fi
+        brew install lua jq cmake ninja coreutils
 
     - uses: ./.github/actions/workspace-cache
       if: runner.os != 'Windows'

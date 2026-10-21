@@ -36,6 +36,7 @@ local function SUITES_CATALOG_loadModule()
          "workspace/lock_test.lua",
          "build/matrix_test.lua",
          "check/ci_policy_test.lua",
+         "check/bootstrap_test.lua",
          "check/workflows_test.lua",
          "check/ci_gate_test.lua",
          "check/lua_structure_test.lua",

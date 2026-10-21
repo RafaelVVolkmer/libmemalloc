@@ -83,6 +83,22 @@ scripts where supported. Validation permissions are read-only, and checkouts do 
 credentials. Pull requests and merge queues use GitHub-hosted runners.
 The protected signing job has OIDC authority; publication jobs use scoped credentials.
 
+Ubuntu CI preparation uses the shared `bootstrap-ubuntu` action. It requires
+Ubuntu 24.04 and its `ubuntu.sources` distribution file. Image-provided extra
+APT feeds are preserved under `/etc/apt/libmemalloc-disabled-sources` and removed
+from the active source search path. Compiler provisioning can subsequently add
+the explicitly required PPA. Custom Linux runners must provide this Ubuntu
+layout and be disposable; the action changes their APT configuration.
+
+APT uses bounded acquisition retries and timeouts, and treats incomplete index
+updates as failures. The bootstrap installs distribution prerequisites once per
+job and records their installed versions. These packages follow Ubuntu's signed
+repositories rather than exact package-version pins; subsequent Lua and compiler
+identities remain governed by the toolchain lock. Failed preparation uploads a
+separate `libmemalloc-bootstrap.*` diagnostic artifact, even before qualification
+cases can run. That artifact does not replace missing case evidence or satisfy
+the qualification gate.
+
 Repository scripts use Lua. A system Lua 5.4 interpreter bootstraps the lock
 reader; subsequent checks use the pinned Lua runtime. Python-based third-party
 tools such as REUSE and yamllint run in isolated environments. The C and Lua

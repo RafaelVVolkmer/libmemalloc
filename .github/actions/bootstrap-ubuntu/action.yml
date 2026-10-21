@@ -1,0 +1,70 @@
+# SPDX-FileCopyrightText: 2026 Rafael V. Volkmer <rafael.v.volkmer@gmail.com>
+# SPDX-License-Identifier: GPL-3.0-only
+
+---
+name: Bootstrap Ubuntu tools
+description: Prepare Ubuntu 24.04 tools without unrelated runner package feeds.
+
+runs:
+  using: composite
+  steps:
+    - name: Prepare distribution packages
+      id: packages
+      shell: bash
+      run: |
+        set -euo pipefail
+        ready="${RUNNER_TEMP}/libmemalloc-apt-ready"
+        if [[ -f "${ready}" ]]; then
+          exit 0
+        fi
+
+        evidence="$(mktemp -d "${RUNNER_TEMP}/libmemalloc-bootstrap.XXXXXXXX")"
+        printf 'evidence=%s\n' "${evidence}" >> "${GITHUB_OUTPUT}"
+        printf 'identity=%s\n' "${evidence##*/}" >> "${GITHUB_OUTPUT}"
+        exec > >(tee "${evidence}/bootstrap.log") 2>&1
+
+        # Ubuntu 24.04 uses this signed distribution source. Fail before any
+        # host changes if a custom runner does not provide the expected layout.
+        . /etc/os-release
+        [[ "${ID}" == ubuntu && "${VERSION_ID}" == 24.04 ]]
+        test -s /etc/apt/sources.list.d/ubuntu.sources
+        date -u
+        printf 'Runner image: %s %s\n' "${ImageOS:-unknown}" "${ImageVersion:-unknown}"
+
+        # Preserve extra image feeds outside APT's search path. Later explicit
+        # compiler provisioning may add its required PPA to sources.list.d.
+        disabled=/etc/apt/libmemalloc-disabled-sources
+        sudo mkdir -p "${disabled}"
+        for source in /etc/apt/sources.list.d/*.list /etc/apt/sources.list.d/*.sources; do
+          if [[ -f "${source}" && "${source}" != /etc/apt/sources.list.d/ubuntu.sources ]]; then
+            printf 'Disable image feed: %s\n' "${source##*/}"
+            sudo mv -- "${source}" "${disabled}/"
+          fi
+        done
+        if [[ -f /etc/apt/sources.list ]]; then
+          sudo mv -- /etc/apt/sources.list "${disabled}/sources.list"
+        fi
+        sudo tee /etc/apt/apt.conf.d/80libmemalloc >/dev/null <<'APT'
+        Acquire::Retries "3";
+        Acquire::http::Timeout "30";
+        Acquire::https::Timeout "30";
+        APT::Update::Error-Mode "any";
+        APT
+
+        sudo apt-get update
+        sudo apt-get install --yes --no-install-recommends \
+          lua5.4 jq cmake ninja-build python3
+        apt-cache policy lua5.4 jq cmake ninja-build python3
+        touch "${ready}"
+
+    - name: Preserve failed bootstrap diagnostics
+      if: failure() && steps.packages.outputs.evidence != ''
+      uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+      with:
+        name: ${{ steps.packages.outputs.identity }}-${{ github.run_attempt }}
+        path: ${{ steps.packages.outputs.evidence }}
+        if-no-files-found: error
+        retention-days: 14
+
+# EOF
+

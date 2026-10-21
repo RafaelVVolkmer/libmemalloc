@@ -61,7 +61,6 @@ runs:
         install --mode=0755 "${source_dir}/src/lua" "${bin_dir}/lua"
         install --mode=0755 "${source_dir}/src/luac" "${bin_dir}/luac"
 
-        sudo apt-get install --yes cmake ninja-build python3
         "${bin_dir}/lua" scripts/workspace/native-runtime.lua "${source_dir}/src" "${bin_dir}/lua"
 
         printf 'lua=%s\n' "${bin_dir}/lua" >> "${GITHUB_OUTPUT}"
