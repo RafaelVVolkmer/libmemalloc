@@ -107,6 +107,9 @@ accepted `main` commit after integration and branch authorization.
   and the policy history. Reject unsigned records and unrecorded changes.
 - Document the maintainer signing step required after a GitHub merge.
   CI retains read-only access to the authorization metadata.
+- Restore the exact local branch after SHA checkout before gittuf
+  verification, including push and manual runs. Preserve annotated tags
+  and reject mismatches between the event commit and the checkout.
 - Move the signed `v0.0.1-alpha.1` tag to the integrated `main` commit
   `36f6c6c888f3189b681f4678e7226d8f2f442ee7` with explicit maintainer
   authorization. Preserve previous tag objects locally and append new RSL
