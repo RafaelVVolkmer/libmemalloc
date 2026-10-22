@@ -294,8 +294,10 @@ local function tests_lint_ci_policy_test_suite_main()
          .. 'exit "$VERIFY_EXIT"\n'
    )
    platform.run({ "chmod", "700", verification .. "/tools/gittuf" })
+   local main_verification = "verify-ref\n--from-entry\n"
+      .. "fdb4556ded199f692bf9d20c6830fbb56cf954e4\nrefs/heads/main\n"
    for _, case in ipairs({
-      { "refs/heads/main", "0", "verify-ref\nrefs/heads/main\n", true },
+      { "refs/heads/main", "0", main_verification, true },
       {
          "refs/tags/fixture",
          "0",
@@ -308,11 +310,21 @@ local function tests_lint_ci_policy_test_suite_main()
          "verify-ref\n--latest-only\nrefs/tags/fixture\n",
          false,
       },
-      { "refs/heads/main", "1", "verify-ref\nrefs/heads/main\n", false },
+      { "refs/heads/main", "1", main_verification, false },
+      {
+         "refs/heads/develop",
+         "0",
+         "verify-ref\nrefs/heads/develop\n",
+         true,
+      },
+      { "refs/pull/12/merge", "0", main_verification, true, "pull_request" },
+      { "refs/pull/12/merge", "1", main_verification, false, "pull_request" },
    }) do
       local passed = platform.command_succeeded_silent({
          "env",
          "GITHUB_REF=" .. case[1],
+         "GITHUB_EVENT_NAME=" .. (case[5] or "push"),
+         "BASE_REF=main",
          "VERIFY_EXIT=" .. case[2],
          "LIBMEMALLOC_CACHE_ROOT=" .. verification,
          "bash",

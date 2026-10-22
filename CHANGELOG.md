@@ -92,6 +92,29 @@ The entries below record completed changes. Proposed work belongs in the
 
 ## [Unreleased]
 
+### v0.0.1-alpha.3: libmemalloc Recorded Blueprint
+
+This hotfix candidate repairs verification after the first alpha was merged
+into `main`. The alpha.2 identifier already appears in the historical RSL;
+alpha.3 is reserved for the next preview. Create its signed tag from the
+accepted `main` commit after integration and branch authorization.
+
+- Check external documentation links in pull requests and merge groups.
+  Validate selected blocked references through registration records or
+  alternate sources, and document exact manual-review exceptions.
+- Verify the recorded `main` base in pull requests. Check branch history
+  from its signed reconstruction entry, including every subsequent update
+  and the policy history. Reject unsigned records and unrecorded changes.
+- Document the maintainer signing step required after a GitHub merge.
+  CI retains read-only access to the authorization metadata.
+- Move the signed `v0.0.1-alpha.1` tag to the integrated `main` commit
+  `36f6c6c888f3189b681f4678e7226d8f2f442ee7` with explicit maintainer
+  authorization. Preserve previous tag objects locally and append new RSL
+  records for the tag and the current branch state.
+
+The allocator and garbage collector remain unimplemented. This candidate
+changes verification and documentation, with no supported allocation API.
+
 ## [v0.0.1-alpha.1] - 2026-10-21: libmemalloc First Blueprint
 
 This initial preview records the first design of the CI/CD infrastructure,
