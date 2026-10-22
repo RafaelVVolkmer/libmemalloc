@@ -343,16 +343,20 @@ local function tests_lint_ci_policy_test_suite_main()
    -- Exercise real Git transfers: RSL messages do not retain old tag objects.
    local directory = platform.temporary_directory()
    local restore = directory .. "/restore.sh"
+   local select_reference = directory .. "/select-reference.sh"
 
    write(restore, script(".github/actions/gittuf-objects/action.yml"))
+   write(select_reference, script(".github/workflows/security.yml", 7, 8))
 
    local fixture = [=[
 set -euo pipefail
 cd "$1"
 restore="$2"
+select_reference="$3"
 export TARGET_REF=refs/tags/fixture
 git init --quiet --initial-branch=main seed
 git -C seed commit --quiet --allow-empty -m initial
+base="$(git -C seed rev-parse HEAD)"
 git -C seed tag -a fixture -m original
 old="$(git -C seed rev-parse refs/tags/fixture)"
 tree="$(git -C seed mktree </dev/null)"
@@ -360,8 +364,52 @@ entry="$(printf 'RSL Reference Entry\n\nref: %s\ntargetID: %s\nnumber: 1\n' \
   "$TARGET_REF" "$old" | git -C seed commit-tree "$tree")"
 git -C seed update-ref refs/gittuf/reference-state-log "$entry"
 git -C seed tag --force -a fixture -m replacement
+git -C seed commit --quiet --allow-empty -m next
 git clone --quiet --no-local seed replica
 cd replica
+
+# Match actions/checkout with an exact SHA and no local main branch.
+export GITHUB_SHA="$(git rev-parse HEAD)"
+git checkout --quiet --detach "$GITHUB_SHA"
+git branch --delete --force main
+export GITHUB_EVENT_NAME=push GITHUB_REF=refs/heads/main
+bash "$select_reference"
+[[ "$(git rev-parse refs/heads/main)" == "$GITHUB_SHA" ]]
+[[ "$(git rev-parse HEAD)" == "$GITHUB_SHA" ]]
+
+# Manual branch runs also materialize the exact event commit.
+export GITHUB_EVENT_NAME=workflow_dispatch GITHUB_REF=refs/heads/develop
+bash "$select_reference"
+[[ "$(git rev-parse refs/heads/develop)" == "$GITHUB_SHA" ]]
+
+# PRs select their checked-out trusted base, not the synthetic merge SHA.
+git checkout --quiet --detach "$base"
+export GITHUB_EVENT_NAME=pull_request GITHUB_REF=refs/pull/12/merge
+export BASE_REF=main BASE_SHA="$base"
+bash "$select_reference"
+[[ "$(git rev-parse refs/heads/main)" == "$base" ]]
+
+# Reject checkout mismatches and malformed references before writing refs.
+export BASE_SHA="$GITHUB_SHA"
+if bash "$select_reference"; then exit 1; fi
+[[ "$(git rev-parse refs/heads/main)" == "$base" ]]
+export BASE_SHA="$base" BASE_REF='main..invalid'
+if bash "$select_reference"; then exit 1; fi
+
+# Keep the signed annotated tag object instead of replacing it with HEAD.
+export GITHUB_EVENT_NAME=push GITHUB_REF=refs/tags/fixture
+export GITHUB_SHA="$base"
+tag="$(git rev-parse refs/tags/fixture)"
+bash "$select_reference"
+[[ "$(git rev-parse refs/tags/fixture)" == "$tag" ]]
+[[ "$(git cat-file -t refs/tags/fixture)" == tag ]]
+git checkout --quiet --detach refs/heads/develop
+export GITHUB_SHA="$(git rev-parse HEAD)"
+if bash "$select_reference"; then exit 1; fi
+[[ "$(git rev-parse refs/tags/fixture)" == "$tag" ]]
+export GITHUB_REF=refs/pull/12/merge
+if bash "$select_reference"; then exit 1; fi
+
 git fetch --quiet origin \
   refs/gittuf/reference-state-log:refs/gittuf/reference-state-log
 if git cat-file -e "$old" 2>/dev/null; then
@@ -431,11 +479,12 @@ fi
       "gittuf-fixture",
       directory,
       restore,
+      select_reference,
    })
 
    platform.remove_temporary_directory(directory)
-   assert(success, "gittuf object recovery regression failed")
-   count = count + 6
+   assert(success, "gittuf reference or object recovery regression failed")
+   count = count + 14
 
    print(
       string.format("CI security: %d adversarial policy cases passed.", count)
