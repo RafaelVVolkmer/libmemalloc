@@ -9,7 +9,7 @@ accept_timeouts = false
 # The Lua wrapper enables caching after entering .cache/ci/lychee/.
 # Direct invocations must not create .lycheecache in the source tree.
 cache = false
-cache_exclude_status = [ "429", "500..=599" ]
+cache_exclude_status = [ "403", "429", "500..=599" ]
 max_concurrency = 16
 max_redirects = 10
 max_retries = 3
@@ -22,6 +22,20 @@ require_https = true
 include_fragments = "anchor-only"
 include_mail = false
 include_verbatim = false
+
+# Validate registered article identities without publisher bot challenges.
+# Ansible sources and the standard sample are alternate copies of the cited text.
+remap = [
+  '^https://doi\.org/(10\.1002/spe\.858|10\.1145/(1375581\.1375586|286860\.286864|3689773))$ https://api.crossref.org/works/$1',
+  '^https://docs\.ansible\.com/projects/ansible/latest/(installation_guide/intro_installation|playbook_guide/playbooks_(blocks|checkmode|intro))\.html$ https://raw.githubusercontent.com/ansible/ansible-documentation/devel/docs/docsite/rst/$1.rst',
+  '^https://docs\.ansible\.com/projects/ansible/latest/collections/ansible/builtin/command_module\.html$ https://raw.githubusercontent.com/ansible/ansible/devel/lib/ansible/modules/command.py',
+  '^https://webstore\.ansi\.org/preview-pages/ISO/preview_ISO%2BIEC%2BTS%2B33061-2021\.pdf$ https://cdn.standards.iteh.ai/samples/80362/99075afccb4547b89af87f1ee52aacfe/ISO-IEC-TS-33061-2021.pdf',
+  # Check the corresponding published article when its manuscript host times out.
+  '^https://www\.cs\.utexas\.edu/~EWD/transcriptions/EWD05xx/EWD520\.html$ https://lamport.azurewebsites.net/pubs/garbage.pdf',
+  '^https://www\.cs\.utexas\.edu/~EWD/transcriptions/EWD02xx/EWD215\.html$ https://api.crossref.org/works/10.1145/362929.362947',
+  '^https://www\.cs\.utexas\.edu/~pingali/CS395T/2009fa/papers/ferrante87\.pdf$ https://www.csa.iisc.ac.in/~raghavan/CleanedPav2011/ferrante-pdg-1987.pdf',
+  '^https://cppcheck\.sourceforge\.io/manual\.html$ https://raw.githubusercontent.com/danmar/cppcheck/main/man/manual.md',
+]
 
 exclude_all_private = true
 exclude_path = [
@@ -38,7 +52,21 @@ exclude = [
   """^https://www\\.microsoft\\.com/en-us/security/blog/2012/08/30/\
   microsofts-free-security-tools-banned-h/$""",
   '^https://www\.sei\.cmu\.edu/',
+  # These two discussions require browser review; hosted CI receives HTTP 403.
+  # Verified on 2026-10-21. Keep exclusions exact and review them with the sources.
+  '^https://stackoverflow\.com/questions/119414/how-would-you-unittest-a-memory-allocator$',
+  '^https://www\.reddit\.com/r/cpp/comments/az44i6/how_to_test_different_memory_allocators/$',
+  # The exact publisher records remain subject to manual review. ECSS redirects
+  # automated requests to an unavailable ESA notice; NEN returns HTTP 503.
+  '^https://ecss\.nl/standard/ecss-e-st-40c-rev-1-software-30-april-2025/$',
+  '^https://ecss\.nl/standard/ecss-q-st-80c-rev-2-software-product-assurance-30-april-2025/$',
+  '^https://www\.nen\.nl/en/nen-en-50159-2026-en-354347$',
+  '^https://www\.nen\.nl/en/nen-en-50716-2023-en-318105$',
 ]
+
+[hosts."docs.ansible.com"]
+concurrency = 1
+request_interval = "1s"
 
 # EOF
 

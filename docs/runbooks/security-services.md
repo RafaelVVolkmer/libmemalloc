@@ -153,7 +153,16 @@ metadata before running `gittuf verify-ref`. An RSL message contains an object I
 object reachable in Git. A full-history checkout can therefore omit a replaced annotated tag object.
 Recovery fetches exact object IDs from `origin`. It does not change tags, policy, RSL entries or signatures.
 
-Branches use complete change-history verification. Tags use `gittuf verify-ref --latest-only` to check the
+The `main` branch uses history verification from the signed reconstruction entry
+`fdb4556ded199f692bf9d20c6830fbb56cf954e4`, which records commit
+`15b857a99ba45ba79ae3b8b6c52b94cffa9145d1`. Its earlier first entry,
+`35d4d1efa173accce67587827acba60be46c56fb`, used an unauthorized key and was revoked in
+`13dd8074b838c3452f5ba429c9e7a3ca302e5777`.
+gittuf 0.15.0 cannot recover that invalid first entry because no preceding valid state exists.
+The fixed reconstruction entry is the verification boundary; every later branch entry and the policy
+history must still validate. Missing entries, unauthorized signatures and a mismatched current tip fail.
+The `--from-entry` option requires `GITTUF_DEV=1` in this pinned version. Other branches retain complete
+history verification. Tags use `gittuf verify-ref --latest-only` to check the
 current tag against its latest RSL entry and applicable policy. Policy history is still validated. Older
 states of the same tag are not revalidated against its current object: gittuf 0.15.0 rejects that comparison
 after a tag replacement, even when the earlier entry has a withdrawal annotation. Replacing a published tag
@@ -180,6 +189,37 @@ its signed record together, so tag-triggered verification sees both. Never force
 permission only and cannot create maintainer signatures. Optional mode skips an absent policy; an initialized
 policy still has to verify successfully. Re-running an old tag uses the workflow stored in that tag, so a
 workflow fix must be included in the next reviewed release candidate.
+
+### Record a reviewed main merge
+
+A GitHub merge creates a new commit without running the local gittuf signing step.
+The GitHub commit signature does not replace the authorized SSH signature required by the branch policy.
+After reviewing the exact merged commit, synchronize the RSL, record that commit and publish only the
+new RSL entries. Use an isolated clone so that updating its local `main` does not disturb pending work:
+
+```sh
+git fetch origin main 'refs/gittuf/*:refs/gittuf/*'
+git update-ref refs/heads/main refs/remotes/origin/main
+ssh-add ~/.config/libmemalloc/gittuf/maintainer
+env GIT_CONFIG_COUNT=2 \
+  GIT_CONFIG_KEY_0=gpg.format GIT_CONFIG_VALUE_0=ssh \
+  GIT_CONFIG_KEY_1=user.signingkey \
+  GIT_CONFIG_VALUE_1="$HOME/.config/libmemalloc/gittuf/maintainer.pub" \
+  gittuf rsl record --local-only refs/heads/main
+GITTUF_DEV=1 gittuf verify-ref \
+  --from-entry fdb4556ded199f692bf9d20c6830fbb56cf954e4 refs/heads/main
+git -c core.hooksPath=/dev/null push origin refs/gittuf/reference-state-log
+```
+
+The one-command hook exception is limited to the verified metadata ref: the source hook expects OpenPGP
+Conventional Commits, while gittuf requires its own record format and the authorized SSH key. Never apply
+this exception to a source branch. The RSL push must be fast-forward; a concurrent update requires fetching
+and reconciling the records before retrying. Re-run Security after publication if the merge check started
+before its record was available. CI remains read-only and must fail until the reviewed record exists.
+
+Pull requests into `main` verify the recorded base commit before integration. This check does not authorize
+the future merge commit. After merging the hotfix, record the new `main` state before issuing the next
+signed alpha tag and its RSL entry. Publish the new tag and RSL together with an atomic push.
 
 ---
 

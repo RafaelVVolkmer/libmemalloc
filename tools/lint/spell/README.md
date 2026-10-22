@@ -46,6 +46,38 @@ Generated npm locks contain upstream package identities and integrity hashes.
 Codespell excludes these locks and installed dependency directories from prose
 checks. The dependency graph validator and security audit check the locks.
 
+## External link checks
+
+External checks reject HTTP errors, including missing pages and exhausted rate
+limits. The Lychee configuration remaps four article identifiers to their
+registration records, selected Ansible pages to their official source files,
+and one blocked standards preview to the same sample already cited elsewhere.
+Three unavailable university references use the corresponding published
+article, registration record or another academic copy. The Cppcheck manual
+uses its official source file when the rendered site blocks automated clients.
+These checks establish that the reference or source exists; they do not establish
+availability of the publisher's rendered page from a CI runner.
+
+Two exact community discussion URLs require browser review because hosted CI
+receives HTTP 403. Their titles and contents were checked on 2026-10-21. They
+appear as excluded in the automated report. Review these exceptions when editing
+the references; do not extend them to entire domains or accept HTTP errors as
+successful checks. Other existing exclusions remain listed in the configuration.
+Access-denied, rate-limit and server-error responses are not cached.
+
+Four exact standards pages also require manual review: two ECSS records
+redirect automated requests to an unavailable ESA notice, and two NEN records
+return HTTP 503. The cited editions were cross-checked on 2026-10-21 against
+publisher search records and the corresponding national standards catalogues.
+The configuration retains their original URLs and reports them as excluded;
+automated availability of those four pages remains unverified. Review these
+exceptions when the publisher service recovers or the references change.
+
+External checks run in pull requests and merge groups as well as on the default
+branch. HTTP errors, certificate failures and timeouts outside the documented
+exceptions still fail the check. A passing run records availability at that
+time; it does not guarantee future availability of third-party services.
+
 ## Vale policy
 
 The broad `Libmemalloc` style contains spelling, anti-slop, and scientific rules. Its
