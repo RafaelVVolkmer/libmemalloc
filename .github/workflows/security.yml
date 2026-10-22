@@ -241,15 +241,35 @@ jobs:
           persist-credentials: false
           ref: ${{ github.event.pull_request.base.sha || github.sha }}
 
-      - name: Select the recorded pull request base
-        if: github.event_name == 'pull_request'
+      - name: Select the exact verification reference
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
           BASE_REF: ${{ github.event.pull_request.base.ref }}
         run: |
           set -euo pipefail
-          git check-ref-format "refs/heads/${BASE_REF}"
-          git update-ref "refs/heads/${BASE_REF}" "${BASE_SHA}"
+          ref="${GITHUB_REF}"
+          commit="${GITHUB_SHA}"
+          if [[ "${GITHUB_EVENT_NAME}" == pull_request ]]; then
+            ref="refs/heads/${BASE_REF}"
+            commit="${BASE_SHA}"
+          fi
+
+          git check-ref-format "${ref}"
+          [[ "$(git rev-parse HEAD)" == "${commit}" ]]
+          case "${ref}" in
+            refs/heads/*)
+              # SHA checkout leaves HEAD detached without a local branch.
+              git update-ref "${ref}" "${commit}"
+              ;;
+            refs/tags/*)
+              # Preserve the annotated object used by the signed tag record.
+              [[ "$(git rev-parse "${ref}^{commit}")" == "${commit}" ]]
+              ;;
+            *)
+              printf 'Unsupported verification reference: %s\n' "${ref}" >&2
+              exit 1
+              ;;
+          esac
 
       - name: Configure repository-local caches
         uses: ./.github/actions/workspace-cache

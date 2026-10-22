@@ -148,6 +148,12 @@ TUF signing keys serve different purposes.
 
 ## gittuf recovery
 
+The security workflow checks out an exact commit, which leaves Git in detached HEAD state. Before
+verification, it creates the selected local branch at that checked-out commit: the trusted base SHA for
+pull requests or the event SHA for branch pushes and manual runs. Annotated tag objects remain unchanged.
+A missing local branch causes `requested Git reference not found`; creating the branch does not authorize
+its commit. A matching signed RSL entry is still required.
+
 The security workflow fetches historical targets named by the RSL for the selected reference and gittuf
 metadata before running `gittuf verify-ref`. An RSL message contains an object ID; it does not keep that
 object reachable in Git. A full-history checkout can therefore omit a replaced annotated tag object.
