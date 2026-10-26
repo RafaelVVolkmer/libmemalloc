@@ -450,7 +450,7 @@ version = "1.15.0"
 
 # renovate: datasource=pypi depName=setuptools
 [tools.setuptools]
-version = "84.0.0"
+version = "84.1.0"
 
 # renovate: datasource=pypi depName=lizard
 [tools.lizard]
