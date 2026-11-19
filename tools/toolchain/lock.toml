@@ -313,10 +313,14 @@ version = "0.4.3"
 [tools.criticality_score]
 version = "2.0.4"
 
-# Source revision fixes GAD parsing, OSV ZIP ingestion and archive traversal.
-# Return to a published version after a release includes this correction.
+# Source revision includes current parser, score and archive corrections.
+# The local patch bounds advisory memory without dropping records or sources.
 [tools.cve_binary_tool]
-revision = "5ffd87202f23849394e756bb8706c83e21043d2d"
+revision = "f390c3817c1fed6984ee21de88791dedc8cd25d1"
+
+[tools.cve_binary_tool_memory_patch]
+revision = "f390c3817c1fed6984ee21de88791dedc8cd25d1"
+sha256 = "d53440c6a87bef5d62e05021b5cca6aa37a9fc1254a78bda3f02c33c1ebd836f"
 
 [tools.fuzz_introspector]
 revision = "8bc858d7dd66f390e5bbd38c44d31fce41b72103"

@@ -130,12 +130,16 @@ local function scripts_security_run_main()
                )
                change.record(true)
 
-               security_run_execute({
+               local install = {
                   cache .. "/tools/openssf/venv/bin/pip",
                   "install",
                   "--disable-pip-version-check",
                   project.package,
-               }, "install")
+               }
+               if project.mode == "binary" then
+                  table.insert(install, 4, "--force-reinstall")
+               end
+               security_run_execute(install, "install")
             end
          end
 
@@ -337,8 +341,23 @@ local function scripts_security_run_main()
                      .. "conversion field preservation."
                   )
                elseif mode == "binary" then
+                  local python = cache .. "/tools/openssf/venv/bin/python"
+                  local source = dofile("scripts/security/lib/cve.lua").prepare(
+                     release,
+                     python,
+                     cache,
+                     tools.cve_binary_tool_memory_patch,
+                     security_run_execute
+                  )
+                  result.scanner_revision = tools.cve_binary_tool.revision
+                  result.scanner_patch =
+                     tools.cve_binary_tool_memory_patch.sha256
                   security_run_execute({
-                     cache .. "/tools/openssf/venv/bin/cve-bin-tool",
+                     "env",
+                     "PYTHONPATH=" .. source,
+                     python,
+                     "-m",
+                     "cve_bin_tool.cli",
                      root .. "/bins",
                      "--format",
                      "json",

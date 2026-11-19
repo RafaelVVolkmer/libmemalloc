@@ -283,9 +283,14 @@ and Sigstore regression tests. OSV scanning
 consumes OSV data; it is not standalone validation of arbitrary advisory documents against the OSV Schema.
 Static introspection does not supply fuzz-campaign coverage.
 
-CVE Binary Tool uses an immutable upstream source revision containing its multi-document GAD parser
-correction. The published 3.4 release rejects that advisory input before completing the scan.
-No vulnerability source is disabled. Return to a published tool version when it contains the fix.
+CVE Binary Tool uses an immutable upstream source revision containing its multi-document GAD parser,
+archive, score and database index corrections. The published 3.4 release rejects some advisory inputs
+before completing the scan. A local checksum-verified patch stores advisory records in private temporary
+files and fetches sources sequentially, preserving source order, repeated records and database population
+semantics. It runs in an isolated overlay of the installed package. Preparation rejects a mismatched source
+revision or patch digest and tests database equivalence against the unmodified scanner before each scan.
+The report records both identities. No vulnerability source is disabled, and the shared memory ceiling
+remains unchanged. Remove the patch only after an upstream release passes the same memory and data tests.
 
 GUAC, Package Analysis, OpenVEX, RSTUF, and SBOMit still have explicit qualification or provisioning
 blockers in the project catalog. Running this workflow does not complete those integrations. Resolve each

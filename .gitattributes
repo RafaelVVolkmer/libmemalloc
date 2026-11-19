@@ -713,5 +713,8 @@ doxygen/web/fonts/*-OFL.txt whitespace=-blank-at-eof,-blank-at-eol
 /tools/nix/flake.lock     text eol=lf linguist-language=JSON linguist-generated=true
 /tools/python/uv.lock     text eol=lf linguist-language=TOML linguist-generated=true
 
+# Preserve the significant blank context lines in the reviewed scanner patch.
+/tools/security/openssf/*.patch text eol=lf whitespace=-blank-at-eof,-blank-at-eol
+
 # EOF
 

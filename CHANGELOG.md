@@ -119,6 +119,9 @@ accepted `main` commit after integration and branch authorization.
   rejects unsafe archive members, preserving every vulnerability source.
 - Use the existing bounded build resource profile for security tool
   compilation and complete advisory database ingestion.
+- Store advisory records in private temporary files while ingesting the
+  complete database. Verify the scanner patch and compare its database
+  output with the unmodified tool before scanning release fixtures.
 - Allow thirty minutes for a complete cold vulnerability scan while
   retaining the default deadlines for other scanner commands.
 - Allow cold Ubuntu package downloads and native Lua preparation to
