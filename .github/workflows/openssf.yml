@@ -52,7 +52,7 @@ jobs:
     name: Qualify ${{ matrix.project }}
     needs: [fixture, plan]
     runs-on: ubuntu-24.04
-    timeout-minutes: 40
+    timeout-minutes: ${{ matrix.project == 'cve-binary-tool' && 60 || 40 }}
 
     permissions:
       contents: read

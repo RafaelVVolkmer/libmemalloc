@@ -115,9 +115,12 @@ accepted `main` commit after integration and branch authorization.
 - Run the pinned Scorecard executable for manual catalog assessments from
   `develop`, retaining all findings without publishing an external score.
 - Pin the upstream CVE Binary Tool revision that parses multiple GAD
-  advisories per YAML file, preserving every vulnerability data source.
+  advisories per YAML file, reads OSV entries directly from ZIP files and
+  rejects unsafe archive members, preserving every vulnerability source.
 - Use the existing bounded build resource profile for security tool
   compilation and complete advisory database ingestion.
+- Allow thirty minutes for a complete cold vulnerability scan while
+  retaining the default deadlines for other scanner commands.
 - Allow cold Ubuntu package downloads and native Lua preparation to
   finish before the planning, cache policy and final CI gate deadlines.
 

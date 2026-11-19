@@ -320,7 +320,7 @@ local function PLAYBOOK_loadModule()
          resource_profile = "build",
          effects = "remote",
          dependencies = { "git" },
-         timeout_seconds = 1800,
+         timeout_seconds = 3600,
          simulation = "plan",
       },
       ["security-report"] = {

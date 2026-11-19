@@ -39,9 +39,10 @@ local function scripts_security_run_main()
    --- Execute a bounded command and preserve both output streams.
    -- @param command table: quoted arguments without shell interpolation.
    -- @param label string: report name controlled by this script.
+   -- @param timeout number|nil: optional deadline in seconds.
    -- @return nil: no values.
-   local function security_run_execute(command, label)
-      local bounded = { "timeout", "900" }
+   local function security_run_execute(command, label, timeout)
+      local bounded = { "timeout", tostring(timeout or 900) }
 
       for _, value in ipairs(command) do
          bounded[#bounded + 1] = value
@@ -343,7 +344,7 @@ local function scripts_security_run_main()
                      "json",
                      "--output-file",
                      output .. "/binary-scan.json",
-                  }, "scan")
+                  }, "scan", 1800)
                elseif mode == "signature" then
                   security_run_execute({
                      "lua",
