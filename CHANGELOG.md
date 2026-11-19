@@ -101,6 +101,8 @@ accepted `main` commit after integration and branch authorization.
 
 - Update the document tools' transitive minimatch and undici dependencies
   and synchronize `setuptools` 84.1.0 across the central and Python locks.
+- Build native Doxygen scanners with checksum-verified Flex 2.7.1,
+  avoiding incompatible host generator versions and stale cache reuse.
 - Use `-O3 -ffast-math` for the Intel macOS relaxed floating-point
   campaign, matching Apple Silicon without disabling compiler warnings.
 - Refresh Renovate and patch vulnerable transitive quality and web tools.

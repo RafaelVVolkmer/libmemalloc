@@ -80,6 +80,12 @@ macos_x86_64_sha256 = "a1deed70a6785bbec95a2b2a9e419dc7f7b223a9d74a8644ae611c8e2
 macos_arm64_sha256 = "a1deed70a6785bbec95a2b2a9e419dc7f7b223a9d74a8644ae611c8e2dcdd354"
 sha256 = "14fa81bdc34171edb5f1f02b1d60e74802f0439b77fa44e592565d517d72df90"
 
+# renovate: datasource=github-releases depName=westes/flex
+# Flex 2.6.5 through 2.6.12 generate incompatible Doxygen scanners.
+[tools.flex]
+version = "2.7.1"
+sha256 = "336715b27262c7eefab99ba46b06f05e54a1a39d7bc36c79b826a51bbe4fcb81"
+
 # Upstream scanner bounds fix; required before compiling on macOS.
 [tools.doxygen_scanner_patch]
 revision = "26e908779f448574c6b8918aff21a40565a89a57"
