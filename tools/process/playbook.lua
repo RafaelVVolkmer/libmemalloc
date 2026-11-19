@@ -317,6 +317,7 @@ local function PLAYBOOK_loadModule()
       },
       ["security-run"] = {
          description = "Execute selected security service controls",
+         resource_profile = "build",
          effects = "remote",
          dependencies = { "git" },
          timeout_seconds = 1800,

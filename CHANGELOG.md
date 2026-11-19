@@ -114,6 +114,8 @@ accepted `main` commit after integration and branch authorization.
   `develop`, retaining all findings without publishing an external score.
 - Pin the upstream CVE Binary Tool revision that parses multiple GAD
   advisories per YAML file, preserving every vulnerability data source.
+- Use the existing bounded build resource profile for security tool
+  compilation and complete advisory database ingestion.
 - Allow cold Ubuntu package downloads and native Lua preparation to
   finish before the planning, cache policy and final CI gate deadlines.
 
