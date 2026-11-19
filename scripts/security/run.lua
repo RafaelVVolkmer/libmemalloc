@@ -94,15 +94,21 @@ local function scripts_security_run_main()
       return destination
    end
 
+   --- Reject missing policy or infrastructure before running an adapter.
+   -- @return nil: no values.
+   local function security_run_requirePrerequisites()
+      if project.mode == "blocked" then
+         result.state = "BLOCKED"
+         error(project.reason)
+      end
+   end
+
    local success, message = xpcall(
       --- Execute the selected security adapter and retain blocked or failed
       -- prerequisites.
       -- @return nil: no values.
       function()
-         if project.mode == "blocked" then
-            result.state = "BLOCKED"
-            error(project.reason)
-         end
+         security_run_requirePrerequisites()
 
          --- Install the pinned scanner into the isolated project environment.
          -- @return nil: no values.
@@ -164,6 +170,31 @@ local function scripts_security_run_main()
             end
 
             security_run_assessBadge()
+         elseif mode == "gittuf" then
+            result.scope = "recorded main branch history"
+            result.reference = "refs/heads/main"
+            result.commit = release.output({
+               "git",
+               "rev-parse",
+               "--verify",
+               result.reference .. "^{commit}",
+            })
+            result.from_entry = identity.gittuf_main_entry
+
+            security_run_execute({
+               "env",
+               "GITTUF_DEV=1",
+               bin .. "/gittuf",
+               "verify-ref",
+               "--from-entry",
+               result.from_entry,
+               result.reference,
+            }, "source-policy")
+
+            result.claim = (
+               "Recorded main and policy history verified; proposed changes "
+               .. "and future merge commits require their own authorization."
+            )
          elseif mode == "gemara" then
             security_run_execute({
                bin .. "/cue",
@@ -256,16 +287,19 @@ local function scripts_security_run_main()
             result.claim =
                "Static source introspection only; no fuzz coverage claim."
          elseif mode == "scorecard" then
+            result.scope = "public repository assessment"
+            security_run_execute({
+               bin .. "/scorecard",
+               "--repo=" .. RUN_GITHUB_COM_URL .. identity.repository,
+               "--format=json",
+               "--show-details",
+               "--output=" .. output .. "/assessment.json",
+            }, "assessment")
             assert(
-               release.exists(".cache/logs/scorecard.json"),
-               "Scorecard action report missing"
+               release.query(output .. "/assessment.json", ".repo.name")
+                  == "github.com/" .. identity.repository,
+               "Scorecard repository mismatch"
             )
-
-            release.run({
-               "cp",
-               ".cache/logs/scorecard.json",
-               output .. "/assessment.json",
-            })
 
             result.claim =
                "Repository assessment only; inspect individual checks."

@@ -21,8 +21,8 @@ SPDX-License-Identifier: GPL-3.0-only
 
 ## Current state
 
-The workflows do not yet implement the complete OpenSSF adoption plan. Fourteen catalog entries have
-executable adapters, some with deliberately narrow scope; six remain blocked by missing policy, product inputs
+The workflows do not yet implement the complete OpenSSF adoption plan. Fifteen catalog entries have
+executable adapters, some with deliberately narrow scope; five remain blocked by missing policy, product inputs
 or deployed services. The [coverage workflow](../../.github/workflows/openssf.yml) now generates its matrix
 from the catalog and always reconciles available results. Missing reports, failed tools and blocked adapters
 prevent complete coverage.
@@ -102,7 +102,6 @@ The following proposed service settings are **not consumed by an active adapter*
 | ----------------------------------------- | ---------------------------------------------------------------------------- |
 | `GUAC_ENDPOINT`, `GUAC_TOKEN`             | A deployed, authenticated GUAC service and a qualified ingestion adapter     |
 | `RSTUF_API_URL`, `RSTUF_TOKEN`            | A deployed RSTUF service, reviewed root custody and online publishing policy |
-| gittuf public root and reference policy   | Maintainer-approved signed trust metadata in the repository                  |
 | OpenVEX statements                        | Reviewed product-specific vulnerability dispositions                         |
 | Package Analysis sandbox                  | Disposable package-execution infrastructure isolated from credentials        |
 | SBOMit collectors and verification policy | Qualified build-time collection and in-toto verification inputs              |
@@ -147,6 +146,11 @@ TUF signing keys serve different purposes.
 <a id="gittuf-recovery"></a>
 
 ## gittuf recovery
+
+The OpenSSF catalog verifies the fetched `main` branch against its signed policy and RSL history.
+Its report records the exact commit, reference and reconstruction entry. This assessment covers the
+recorded `main` state; it does not authorize the current development checkout or a future merge commit.
+The adapter rejects absent metadata and unrecorded branch updates. It never writes signed metadata.
 
 The security workflow checks out an exact commit, which leaves Git in detached HEAD state. Before
 verification, it creates the selected local branch at that checked-out commit: the trusted base SHA for
@@ -274,17 +278,25 @@ rejects missing reports and preserves each blocker, even when an earlier job fai
 
 Executable adapters cover public badge/baseline reads, Criticality Score, Bomctl/Protobom conversion, CVE
 Binary Tool, Fuzz Introspector source analysis, OSV-backed dependency scanning, draft Gemara and Security
-Insights schema validation, Scorecard, mock provenance checks, and Sigstore regression tests. OSV scanning
+Insights schema validation, recorded main verification with gittuf, Scorecard, mock provenance checks,
+and Sigstore regression tests. OSV scanning
 consumes OSV data; it is not standalone validation of arbitrary advisory documents against the OSV Schema.
 Static introspection does not supply fuzz-campaign coverage.
 
-gittuf, GUAC, Package Analysis, OpenVEX, RSTUF, and SBOMit still have explicit qualification or provisioning
+CVE Binary Tool uses an immutable upstream source revision containing its multi-document GAD parser
+correction. The published 3.4 release rejects that advisory input before completing the scan.
+No vulnerability source is disabled. Return to a published tool version when it contains the fix.
+
+GUAC, Package Analysis, OpenVEX, RSTUF, and SBOMit still have explicit qualification or provisioning
 blockers in the project catalog. Running this workflow does not complete those integrations. Resolve each
 blocker with an approved adapter and tests before treating that project as active. Package Analysis needs an
 isolated execution environment for suspect packages; it must not share signing credentials, trusted caches, or
 a privileged runner.
 
-Scorecard also uploads SARIF to GitHub code scanning. Public Scorecard API/badge publication remains disabled:
+The catalog uses the checksum-verified Scorecard executable to assess the public repository even when
+dispatched from `develop`. Its JSON preserves the assessed commit and individual findings.
+The separate default-branch Scorecard workflow also uploads SARIF to GitHub code scanning.
+Public Scorecard API/badge publication remains disabled:
 enabling it requires the upstream restricted workflow layout and OIDC policy. SARIF upload is not public API
 publication.
 

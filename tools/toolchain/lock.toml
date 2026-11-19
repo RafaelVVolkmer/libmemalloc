@@ -307,9 +307,10 @@ version = "0.4.3"
 [tools.criticality_score]
 version = "2.0.4"
 
-# renovate: datasource=pypi depName=cve-bin-tool
+# Source revision includes the multi-document GAD parser regression fix.
+# Return to a published version after a release includes this correction.
 [tools.cve_binary_tool]
-version = "3.4"
+revision = "a44eef2d59c823ee18f74f92238ec52531596b40"
 
 [tools.fuzz_introspector]
 revision = "8bc858d7dd66f390e5bbd38c44d31fce41b72103"
@@ -330,6 +331,11 @@ version = "1.5.0"
 [tools.security_insights]
 version = "2.2.0"
 sha256 = "4e4b61470b5484fc8969f2a8a77ffbe0712a7c8a870c2079188f246c14cd58b1"
+
+# renovate: datasource=github-releases depName=ossf/scorecard
+[tools.scorecard]
+version = "5.6.0"
+sha256 = "19bde07129450cb65a95c6e3b9f34e034341579e6f0e241546ec3ae6efb2dd9a"
 
 # GitHub requires literal action references; the lock checker validates mirrors.
 # renovate: datasource=github-tags depName=ossf/scorecard-action

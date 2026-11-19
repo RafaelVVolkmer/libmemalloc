@@ -108,6 +108,12 @@ accepted `main` commit after integration and branch authorization.
   only outside the affected version families.
 - Audit all three npm tool graphs, including development dependencies,
   in local checks and the security workflow.
+- Verify recorded `main` history in the OpenSSF gittuf adapter and retain
+  its exact commit, reference and policy boundary in the assessment.
+- Run the pinned Scorecard executable for manual catalog assessments from
+  `develop`, retaining all findings without publishing an external score.
+- Pin the upstream CVE Binary Tool revision that parses multiple GAD
+  advisories per YAML file, preserving every vulnerability data source.
 - Allow cold Ubuntu package downloads and native Lua preparation to
   finish before the planning, cache policy and final CI gate deadlines.
 
