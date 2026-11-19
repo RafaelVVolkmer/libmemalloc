@@ -108,6 +108,8 @@ accepted `main` commit after integration and branch authorization.
   only outside the affected version families.
 - Audit all three npm tool graphs, including development dependencies,
   in local checks and the security workflow.
+- Allow cold Ubuntu package downloads and native Lua preparation to
+  finish before the planning, cache policy and final CI gate deadlines.
 
 - Check external documentation links in pull requests and merge groups.
   Validate selected blocked references through registration records or
