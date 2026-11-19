@@ -68,6 +68,8 @@ local function QUALITY_INSTALL_TEST_main()
       function port.digest(path)
          if path:match("scanner%-fix%.patch$") then
             return lock.doxygen_scanner_patch.sha256
+         elseif path:match("/flex%.tar%.gz$") then
+            return lock.flex.sha256
          end
          local name = assert(path:match("quality/([^/]-)%-[%d]"))
          return fault == "digest" and string.rep("0", 64)
@@ -195,6 +197,10 @@ local function QUALITY_INSTALL_TEST_main()
                command[3]:find(lock.doxygen_scanner_patch.sha256, 1, true),
                "patched Doxygen cache omitted the patch identity"
             )
+            assert(
+               command[3]:find(lock.flex.sha256, 1, true),
+               "Doxygen cache omitted the scanner generator identity"
+            )
             installed = true
          end
       end
@@ -240,6 +246,19 @@ local function QUALITY_INSTALL_TEST_main()
          assert(command[1] ~= "patch", "unverified patch was applied")
          assert(command[1] ~= "cmake", "unverified sources were compiled")
       end
+      commands = {}
+      ok, message = pcall(
+         dofile("scripts/toolchain/lib/flex.lua").install,
+         port,
+         "/fixture with spaces",
+         lock.flex
+      )
+      local mismatch =
+         tostring(message):find("Flex source hash mismatch", 1, true)
+      assert(not ok and mismatch, "altered scanner generator was accepted")
+      for _, command in ipairs(commands) do
+         assert(command[1] == "curl", "unverified generator was executed")
+      end
    end
 
    verify_source_integrity()
@@ -262,10 +281,12 @@ local function QUALITY_INSTALL_TEST_main()
       -- @return nil: no values.
       function port.mkdir() end
 
-      --- Accept the reviewed scanner correction.
-      -- @return string: expected patch identity.
-      function port.digest()
-         return lock.doxygen_scanner_patch.sha256
+      --- Accept only the reviewed scanner inputs.
+      -- @param path string: downloaded source or patch path.
+      -- @return string: expected source or patch identity.
+      function port.digest(path)
+         return path:match("/flex%.tar%.gz$") and lock.flex.sha256
+            or lock.doxygen_scanner_patch.sha256
       end
 
       --- Model Homebrew tools outside the system executable directory.
@@ -291,7 +312,15 @@ local function QUALITY_INSTALL_TEST_main()
       )
       assert(ok ~= fail_build, tostring(message))
       local recorded = table.concat(commands, "\n")
-      for _, name in ipairs({ "bison", "flex" }) do
+      assert(
+         recorded:find(
+            "-DFLEX_EXECUTABLE=/fixture with spaces/flex-source/src/flex",
+            1,
+            true
+         ),
+         "host Flex selected instead of the verified native generator"
+      )
+      for _, name in ipairs({ "bison" }) do
          assert(
             recorded:find(
                "-D"

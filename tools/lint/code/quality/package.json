@@ -9,10 +9,14 @@
     "cspell": "10.1.1"
   },
   "devDependencies": {
-    "renovate": "44.105.4",
+    "renovate": "44.252.7",
     "pyright": "1.1.411"
   },
   "overrides": {
-    "markdown-it": "15.0.3"
+    "markdown-it": "15.0.3",
+    "undici": "8.12.4",
+    "glob@>=9": "14.0.6",
+    "minimatch@>=7": "11.0.9",
+    "qs": "6.17.1"
   }
 }

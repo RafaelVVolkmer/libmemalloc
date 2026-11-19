@@ -29,7 +29,8 @@ local function tools_security_openssf_projects_loadModule()
       },
       ["cve-binary-tool"] = {
          mode = "binary",
-         package = "cve-bin-tool==" .. tools.cve_binary_tool.version,
+         package = "git+https://github.com/ossf/cve-bin-tool.git@"
+            .. tools.cve_binary_tool.revision,
       },
       ["fuzz-introspector"] = {
          mode = "introspection",
@@ -60,13 +61,7 @@ local function tools_security_openssf_projects_loadModule()
          module = "cuelang.org/go/cmd/cue",
          version = "v" .. tools.cue.version,
       },
-      gittuf = {
-         mode = "blocked",
-         reason = (
-            "Initialize maintainer trust roots and a signed "
-            .. "reference policy before source verification."
-         ),
-      },
+      gittuf = { mode = "gittuf" },
       guac = {
          mode = "blocked",
          reason = (

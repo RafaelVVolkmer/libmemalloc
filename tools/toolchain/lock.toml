@@ -80,6 +80,12 @@ macos_x86_64_sha256 = "a1deed70a6785bbec95a2b2a9e419dc7f7b223a9d74a8644ae611c8e2
 macos_arm64_sha256 = "a1deed70a6785bbec95a2b2a9e419dc7f7b223a9d74a8644ae611c8e2dcdd354"
 sha256 = "14fa81bdc34171edb5f1f02b1d60e74802f0439b77fa44e592565d517d72df90"
 
+# renovate: datasource=github-releases depName=westes/flex
+# Flex 2.6.5 through 2.6.12 generate incompatible Doxygen scanners.
+[tools.flex]
+version = "2.7.1"
+sha256 = "336715b27262c7eefab99ba46b06f05e54a1a39d7bc36c79b826a51bbe4fcb81"
+
 # Upstream scanner bounds fix; required before compiling on macOS.
 [tools.doxygen_scanner_patch]
 revision = "26e908779f448574c6b8918aff21a40565a89a57"
@@ -131,6 +137,31 @@ version = "5.4.3"
 # renovate: datasource=npm depName=katex
 [tools.katex]
 version = "0.18.10"
+
+# Patch transitive glob parsing and HTTP client security defects.
+# renovate: datasource=npm depName=minimatch
+[tools.minimatch]
+version = "11.0.9"
+
+# renovate: datasource=npm depName=undici
+[tools.undici]
+version = "8.12.4"
+
+# renovate: datasource=npm depName=fast-uri
+[tools.fast_uri]
+version = "3.1.9"
+
+# renovate: datasource=npm depName=glob
+[tools.glob]
+version = "14.0.6"
+
+# renovate: datasource=npm depName=qs
+[tools.qs]
+version = "6.17.1"
+
+# renovate: datasource=pypi depName=certifi
+[tools.python_certifi]
+version = "2026.10.18"
 
 # renovate: datasource=pypi depName=clang-format
 [tools.clang_format]
@@ -250,7 +281,7 @@ version = "2.32.0"
 
 # renovate: datasource=npm depName=renovate
 [tools.renovate]
-version = "44.105.4"
+version = "44.252.7"
 
 # renovate: datasource=pypi depName=check-jsonschema
 [tools.check_jsonschema]
@@ -282,9 +313,14 @@ version = "0.4.3"
 [tools.criticality_score]
 version = "2.0.4"
 
-# renovate: datasource=pypi depName=cve-bin-tool
+# Source revision includes current parser, score and archive corrections.
+# The local patch bounds advisory memory without dropping records or sources.
 [tools.cve_binary_tool]
-version = "3.4"
+revision = "f390c3817c1fed6984ee21de88791dedc8cd25d1"
+
+[tools.cve_binary_tool_memory_patch]
+revision = "f390c3817c1fed6984ee21de88791dedc8cd25d1"
+sha256 = "d53440c6a87bef5d62e05021b5cca6aa37a9fc1254a78bda3f02c33c1ebd836f"
 
 [tools.fuzz_introspector]
 revision = "8bc858d7dd66f390e5bbd38c44d31fce41b72103"
@@ -305,6 +341,11 @@ version = "1.5.0"
 [tools.security_insights]
 version = "2.2.0"
 sha256 = "4e4b61470b5484fc8969f2a8a77ffbe0712a7c8a870c2079188f246c14cd58b1"
+
+# renovate: datasource=github-releases depName=ossf/scorecard
+[tools.scorecard]
+version = "5.6.0"
+sha256 = "19bde07129450cb65a95c6e3b9f34e034341579e6f0e241546ec3ae6efb2dd9a"
 
 # GitHub requires literal action references; the lock checker validates mirrors.
 # renovate: datasource=github-tags depName=ossf/scorecard-action
@@ -450,7 +491,7 @@ version = "1.15.0"
 
 # renovate: datasource=pypi depName=setuptools
 [tools.setuptools]
-version = "84.0.0"
+version = "84.1.0"
 
 # renovate: datasource=pypi depName=lizard
 [tools.lizard]

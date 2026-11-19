@@ -52,7 +52,11 @@ local function QUALITY_main()
    local function quality_unpack(name, tool, digest, archive)
       local destination = prefix .. "/packages/" .. name .. "/" .. digest
       if tool.archive == "source" then
-         destination = destination .. "-" .. lock.doxygen_scanner_patch.sha256
+         destination = destination
+            .. "-"
+            .. lock.doxygen_scanner_patch.sha256
+            .. "-"
+            .. lock.flex.sha256
       end
       artifacts.mkdir(destination)
       if tool.archive == "zip" then

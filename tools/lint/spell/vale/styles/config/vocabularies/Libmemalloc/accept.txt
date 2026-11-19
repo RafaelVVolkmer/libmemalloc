@@ -117,6 +117,7 @@ ccall
 cdata
 cdylib
 CERT
+certifi
 cffi
 cgroup
 chdir
@@ -326,6 +327,7 @@ FFmpeg
 FFmpeg's
 ffreestanding
 fieldwise
+Fila
 finalizable
 finalizer
 finalizers
@@ -615,6 +617,7 @@ microbenchmark
 microcontroller
 Millis
 mimalloc
+minimatch
 minimizers
 Miri
 misclassifies
@@ -931,6 +934,7 @@ SBOMs
 scanf
 scrollable
 scrollbar
+Scudo
 SDCC
 SDCCs
 SDDs
@@ -950,6 +954,7 @@ setjmp
 setmetatable
 setsid
 SETTLS
+setuptools
 severities
 sharding
 SHAs
@@ -1100,6 +1105,7 @@ uncompromised
 uncontended
 uncopyable
 underflows
+undici
 unescaped
 unexecuted
 unimported

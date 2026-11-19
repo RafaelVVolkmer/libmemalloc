@@ -99,6 +99,34 @@ into `main`. The alpha.2 identifier already appears in the historical RSL;
 alpha.3 is reserved for the next preview. Create its signed tag from the
 accepted `main` commit after integration and branch authorization.
 
+- Update the document tools' transitive minimatch and undici dependencies
+  and synchronize `setuptools` 84.1.0 across the central and Python locks.
+- Build native Doxygen scanners with checksum-verified Flex 2.7.1,
+  avoiding incompatible host generator versions and stale cache reuse.
+- Use `-O3 -ffast-math` for the Intel macOS relaxed floating-point
+  campaign, matching Apple Silicon without disabling compiler warnings.
+- Refresh Renovate and patch vulnerable transitive quality and web tools.
+  Update the Python certificate bundle and retain older glob interfaces
+  only outside the affected version families.
+- Audit all three npm tool graphs, including development dependencies,
+  in local checks and the security workflow.
+- Verify recorded `main` history in the OpenSSF gittuf adapter and retain
+  its exact commit, reference and policy boundary in the assessment.
+- Run the pinned Scorecard executable for manual catalog assessments from
+  `develop`, retaining all findings without publishing an external score.
+- Pin the upstream CVE Binary Tool revision that parses multiple GAD
+  advisories per YAML file, reads OSV entries directly from ZIP files and
+  rejects unsafe archive members, preserving every vulnerability source.
+- Use the existing bounded build resource profile for security tool
+  compilation and complete advisory database ingestion.
+- Store advisory records in private temporary files while ingesting the
+  complete database. Verify the scanner patch and compare its database
+  output with the unmodified tool before scanning release fixtures.
+- Allow thirty minutes for a complete cold vulnerability scan while
+  retaining the default deadlines for other scanner commands.
+- Allow cold Ubuntu package downloads and native Lua preparation to
+  finish before the planning, cache policy and final CI gate deadlines.
+
 - Check external documentation links in pull requests and merge groups.
   Validate selected blocked references through registration records or
   alternate sources, and document exact manual-review exceptions.
@@ -107,6 +135,9 @@ accepted `main` commit after integration and branch authorization.
   and the policy history. Reject unsigned records and unrecorded changes.
 - Document the maintainer signing step required after a GitHub merge.
   CI retains read-only access to the authorization metadata.
+- Restore the exact local branch after SHA checkout before gittuf
+  verification, including push and manual runs. Preserve annotated tags
+  and reject mismatches between the event commit and the checkout.
 - Move the signed `v0.0.1-alpha.1` tag to the integrated `main` commit
   `36f6c6c888f3189b681f4678e7226d8f2f442ee7` with explicit maintainer
   authorization. Preserve previous tag objects locally and append new RSL

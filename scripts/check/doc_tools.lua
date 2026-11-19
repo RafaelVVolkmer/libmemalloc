@@ -26,7 +26,10 @@ const tools = JSON.parse(process.env.TOOLCHAIN_TOOLS);
 const graphs = [
    { directory: "quality", identities: {
       cspell: "cspell", renovate: "renovate", pyright: "pyright",
-   }, overrides: { "markdown-it": "markdown_it" } },
+   }, overrides: {
+      "markdown-it": "markdown_it", undici: "undici",
+      "glob@>=9": "glob", "minimatch@>=7": "minimatch", qs: "qs",
+   } },
    { directory: "md", identities: {
       "markdownlint-cli": "markdownlint", "markdown-it": "markdown_it",
       mermaid: "mermaid", jsdom: "jsdom",
@@ -34,11 +37,12 @@ const graphs = [
    }, overrides: {
       "lodash-es": "lodash_es", "smol-toml": "smol_toml",
       "js-yaml": "js_yaml", katex: "katex",
+      minimatch: "minimatch", undici: "undici",
    } },
    { directory: "web", identities: {
       "@biomejs/biome": "biome", "html-validate": "html_validate",
       typescript: "typescript",
-   }, overrides: {} },
+   }, overrides: { "fast-uri": "fast_uri" } },
 ];
 for (const graph of graphs) {
 const manifest = JSON.parse(
@@ -83,8 +87,12 @@ assert.deepEqual(
 for (const [dependency, identity] of Object.entries(overrides)) {
    const version = tools[identity].version;
    assert.equal(manifest.overrides[dependency], version, dependency);
-   const copies = Object.entries(lock.packages).filter(([path]) =>
-      path.endsWith("node_modules/" + dependency),
+   // Preserve older APIs outside the affected version families.
+   const [name, minimumMajor] = dependency.split("@>=");
+   const copies = Object.entries(lock.packages).filter(([path, item]) =>
+      path.endsWith("node_modules/" + name)
+         && (!minimumMajor
+            || Number(item.version.split(".")[0]) >= Number(minimumMajor)),
    );
    assert.ok(copies.length > 0, dependency);
    for (const [path, item] of copies) {

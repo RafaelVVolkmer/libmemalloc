@@ -59,6 +59,11 @@ local function SOURCE_loadModule()
          source,
       })
       source_patch(artifacts, source, identity)
+      local flex = dofile("scripts/toolchain/lib/flex.lua").install(
+         artifacts,
+         destination,
+         dofile("scripts/toolchain/lib/lock.lua").load().flex
+      )
       local configure = {
          "cmake",
          "--fresh",
@@ -71,17 +76,13 @@ local function SOURCE_loadModule()
          "-Dbuild_doc=OFF",
          "-Dbuild_wizard=OFF",
          "-Dbuild_xmlparser=OFF",
+         "-DFLEX_EXECUTABLE=" .. flex,
       }
       if artifacts.output({ "uname", "-s" }) == "Darwin" then
-         for _, name in ipairs({ "bison", "flex" }) do
-            local prefix = artifacts.output({ "brew", "--prefix", name })
-            configure[#configure + 1] = "-D"
-               .. name:upper()
-               .. "_EXECUTABLE="
-               .. prefix
-               .. "/bin/"
-               .. name
-         end
+         local prefix = artifacts.output({ "brew", "--prefix", "bison" })
+         configure[#configure + 1] = "-DBISON_EXECUTABLE="
+            .. prefix
+            .. "/bin/bison"
       end
       artifacts.run(configure)
       artifacts.run({ "cmake", "--build", build, "--parallel", "2" })

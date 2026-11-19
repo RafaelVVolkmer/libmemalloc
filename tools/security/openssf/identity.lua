@@ -10,6 +10,7 @@ local function tools_security_openssf_identity_loadModule()
       repository = "RafaelVVolkmer/libmemalloc",
       badge_project = "12710",
       license = "GPL-3.0-only",
+      gittuf_main_entry = "fdb4556ded199f692bf9d20c6830fbb56cf954e4",
    }
 end
 

@@ -411,5 +411,9 @@ max_line_length = off
 [tools/analysis/c/gates.json]
 max_line_length = off
 
+# Unified patch context uses a meaningful leading space on blank source lines.
+[tools/security/openssf/*.patch]
+trim_trailing_whitespace = false
+
 # EOF
 

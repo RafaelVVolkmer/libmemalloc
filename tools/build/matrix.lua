@@ -259,6 +259,9 @@ local function tools_build_matrix_loadModule()
             cpp = { "98", "03", "11", "14", "17", "20", "23" },
             tier = "nightly",
             cache = "sccache",
+            mode_flags = {
+               Ofast = { "-O3", "-ffast-math" },
+            },
          },
          {
             id = "wasm-emscripten",

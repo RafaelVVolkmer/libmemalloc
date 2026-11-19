@@ -17,6 +17,8 @@
     "lodash-es": "@lodash_es.version@",
     "smol-toml": "@smol_toml.version@",
     "js-yaml": "@js_yaml.version@",
-    "katex": "@katex.version@"
+    "katex": "@katex.version@",
+    "minimatch": "@minimatch.version@",
+    "undici": "@undici.version@"
   }
 }

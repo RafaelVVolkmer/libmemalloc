@@ -9,5 +9,8 @@
     "@biomejs/biome": "@biome.version@",
     "html-validate": "@html_validate.version@",
     "typescript": "@typescript.version@"
+  },
+  "overrides": {
+    "fast-uri": "@fast_uri.version@"
   }
 }

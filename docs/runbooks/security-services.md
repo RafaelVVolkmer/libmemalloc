@@ -21,8 +21,8 @@ SPDX-License-Identifier: GPL-3.0-only
 
 ## Current state
 
-The workflows do not yet implement the complete OpenSSF adoption plan. Fourteen catalog entries have
-executable adapters, some with deliberately narrow scope; six remain blocked by missing policy, product inputs
+The workflows do not yet implement the complete OpenSSF adoption plan. Fifteen catalog entries have
+executable adapters, some with deliberately narrow scope; five remain blocked by missing policy, product inputs
 or deployed services. The [coverage workflow](../../.github/workflows/openssf.yml) now generates its matrix
 from the catalog and always reconciles available results. Missing reports, failed tools and blocked adapters
 prevent complete coverage.
@@ -102,7 +102,6 @@ The following proposed service settings are **not consumed by an active adapter*
 | ----------------------------------------- | ---------------------------------------------------------------------------- |
 | `GUAC_ENDPOINT`, `GUAC_TOKEN`             | A deployed, authenticated GUAC service and a qualified ingestion adapter     |
 | `RSTUF_API_URL`, `RSTUF_TOKEN`            | A deployed RSTUF service, reviewed root custody and online publishing policy |
-| gittuf public root and reference policy   | Maintainer-approved signed trust metadata in the repository                  |
 | OpenVEX statements                        | Reviewed product-specific vulnerability dispositions                         |
 | Package Analysis sandbox                  | Disposable package-execution infrastructure isolated from credentials        |
 | SBOMit collectors and verification policy | Qualified build-time collection and in-toto verification inputs              |
@@ -147,6 +146,17 @@ TUF signing keys serve different purposes.
 <a id="gittuf-recovery"></a>
 
 ## gittuf recovery
+
+The OpenSSF catalog verifies the fetched `main` branch against its signed policy and RSL history.
+Its report records the exact commit, reference and reconstruction entry. This assessment covers the
+recorded `main` state; it does not authorize the current development checkout or a future merge commit.
+The adapter rejects absent metadata and unrecorded branch updates. It never writes signed metadata.
+
+The security workflow checks out an exact commit, which leaves Git in detached HEAD state. Before
+verification, it creates the selected local branch at that checked-out commit: the trusted base SHA for
+pull requests or the event SHA for branch pushes and manual runs. Annotated tag objects remain unchanged.
+A missing local branch causes `requested Git reference not found`; creating the branch does not authorize
+its commit. A matching signed RSL entry is still required.
 
 The security workflow fetches historical targets named by the RSL for the selected reference and gittuf
 metadata before running `gittuf verify-ref`. An RSL message contains an object ID; it does not keep that
@@ -225,6 +235,41 @@ signed alpha tag and its RSL entry. Publish the new tag and RSL together with an
 
 ## Actions coverage
 
+### Complete external integration prerequisites
+
+The active contribution path is `develop` to `main`. Apply dependency
+updates to `tools/toolchain/lock.toml` on `develop`, run
+`lua scripts/toolchain/sync.lua`, and regenerate the affected npm or uv
+lock files. Validate the resulting manifests with `check-toolchain` and
+`check-doc-tools` before creating a signed maintainer commit with a final
+`Signed-off-by` trailer. A dependency bot proposal that changes only the
+central lock is not ready to merge.
+
+For external OpenSSF integrations, prepare the following inputs before
+implementing and enabling the corresponding adapter:
+
+1. GUAC: choose a hosting environment, deploy persistent storage and an
+   authenticated TLS endpoint, and approve which verified release evidence
+   may be ingested. Test ingestion and queries with disposable data first.
+2. RSTUF: deploy the API, worker and storage; approve offline root custody,
+   thresholds and online signing identities. Exercise client verification,
+   expiration, rotation and recovery before publishing targets.
+3. Package Analysis: provision a disposable execution environment with no
+   signing credentials, trusted cache writes or privileged host access.
+   Review network access and retained reports before executing packages.
+4. OpenVEX: identify the product and affected versions, investigate each
+   finding and approve the disposition with supporting evidence. Generate
+   statements only from that reviewed assessment.
+5. SBOMit: select build-time collectors, define an in-toto verification
+   policy and test evidence tampering, missing steps and wrong identities.
+
+Store online credentials in protected GitHub environments only after an
+adapter defines and consumes them. Keep offline root keys outside Actions.
+The variable names in the proposed-settings table are not a configuration
+interface yet. Until these services and adapters are qualified, the full
+OpenSSF coverage job remains blocked; successful merge checks do not imply
+complete OpenSSF adoption.
+
 `openssf.yml` schedules and manually dispatches a catalog-generated matrix of twenty projects.
 `openssf-coverage` contains its complete JSON/Markdown report. The Lua driver records `PASS`, `FAIL`, or
 `BLOCKED` with an explicit scope. A blocked adapter fails its job and uploads its reason; it does not produce
@@ -233,17 +278,30 @@ rejects missing reports and preserves each blocker, even when an earlier job fai
 
 Executable adapters cover public badge/baseline reads, Criticality Score, Bomctl/Protobom conversion, CVE
 Binary Tool, Fuzz Introspector source analysis, OSV-backed dependency scanning, draft Gemara and Security
-Insights schema validation, Scorecard, mock provenance checks, and Sigstore regression tests. OSV scanning
+Insights schema validation, recorded main verification with gittuf, Scorecard, mock provenance checks,
+and Sigstore regression tests. OSV scanning
 consumes OSV data; it is not standalone validation of arbitrary advisory documents against the OSV Schema.
 Static introspection does not supply fuzz-campaign coverage.
 
-gittuf, GUAC, Package Analysis, OpenVEX, RSTUF, and SBOMit still have explicit qualification or provisioning
+CVE Binary Tool uses an immutable upstream source revision containing its multi-document GAD parser,
+archive, score and database index corrections. The published 3.4 release rejects some advisory inputs
+before completing the scan. A local checksum-verified patch stores advisory records in private temporary
+files and fetches sources sequentially, preserving source order, repeated records and database population
+semantics. It runs in an isolated overlay of the installed package. Preparation rejects a mismatched source
+revision or patch digest and tests database equivalence against the unmodified scanner before each scan.
+The report records both identities. No vulnerability source is disabled, and the shared memory ceiling
+remains unchanged. Remove the patch only after an upstream release passes the same memory and data tests.
+
+GUAC, Package Analysis, OpenVEX, RSTUF, and SBOMit still have explicit qualification or provisioning
 blockers in the project catalog. Running this workflow does not complete those integrations. Resolve each
 blocker with an approved adapter and tests before treating that project as active. Package Analysis needs an
 isolated execution environment for suspect packages; it must not share signing credentials, trusted caches, or
 a privileged runner.
 
-Scorecard also uploads SARIF to GitHub code scanning. Public Scorecard API/badge publication remains disabled:
+The catalog uses the checksum-verified Scorecard executable to assess the public repository even when
+dispatched from `develop`. Its JSON preserves the assessed commit and individual findings.
+The separate default-branch Scorecard workflow also uploads SARIF to GitHub code scanning.
+Public Scorecard API/badge publication remains disabled:
 enabling it requires the upstream restricted workflow layout and OIDC policy. SARIF upload is not public API
 publication.
 

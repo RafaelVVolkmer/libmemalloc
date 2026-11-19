@@ -6,7 +6,7 @@
   baseBranchPatterns: ["develop"],
   timezone: "America/Sao_Paulo",
   minimumReleaseAge: "7 days",
-  dependencyDashboard: true,
+  dependencyDashboard: { enabled: true },
   automerge: false,
   prConcurrentLimit: 5,
   rangeStrategy: "pin",

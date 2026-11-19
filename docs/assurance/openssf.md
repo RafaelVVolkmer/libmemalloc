@@ -285,7 +285,7 @@ The following inventory distinguishes configured checks from proposals.
 | REUSE | Configured | License metadata; inspect per-file badge obligations separately |
 | clang-tidy | Configured | C policy fixtures and available sources; no complete proof of memory safety |
 | Clang sanitizers | Guide examples and fixture campaigns | Product instrumentation and qualification remain pending |
-| gittuf | Optional policy | Metadata validation when adopted; optional absence is not enforcement |
+| gittuf | Signed main history | Catalog verification records the main commit and policy boundary; future updates require signed records |
 | [Scorecard checks](https://github.com/ossf/scorecard/blob/main/docs/checks.md) | Scheduled workflow | Repository-risk signals; review each result instead of targeting only an aggregate score |
 | [OSV](https://osv.dev/) | Proposed | Additional dependency vulnerability data; bind results to the dependency inventory |
 | [OSS-Fuzz](https://google.github.io/oss-fuzz/getting-started/new-project-guide/) | Proposed | Continuous fuzzing after suitable build and harness integration |
@@ -305,7 +305,7 @@ security results. Keep analysis, trusted publication, and release signing separa
 **Class:** SUPPLY_CHAIN / GOVERNANCE. **Obligation:** planned integration contract.
 
 The following projects are selected for the adoption plan. The repository has
-an optional gittuf check, a scheduled Scorecard workflow, and a Sigstore fixture
+a gittuf check of recorded main history, a scheduled Scorecard workflow, and a Sigstore fixture
 signing path. The remaining rows describe intended integration. Each needs a pinned tool or schema, an owner,
 qualified fixtures, an evidence format, and a reviewed failure policy before
 it becomes a required gate. Repository-owned orchestration remains Lua;
@@ -324,7 +324,7 @@ need an explicit scope and review.
 | [Gemara](https://openssf.org/projects/gemara/) | Policy assessment alongside the compliance evidence store | Provides a structured model for connecting controls, assessment procedures, and evidence. Map badge, baseline, and local requirements explicitly; the model does not establish conformance itself. |
 | [Security Insights](https://openssf.org/projects/security-insights/) | Public project-security metadata validation and a release evidence snapshot | Makes security policies and project information machine-readable. Validate the adopted schema and publication location; self-reported metadata still needs supporting evidence. |
 | [Criticality Score](https://openssf.org/projects/criticality-score/) | Dependency intake and periodic dependency review | Helps prioritize review effort using project importance signals. It is not a vulnerability score; a small project's low score is not a release failure. |
-| [gittuf](https://openssf.org/projects/gittuf/) | Source acquisition and verification of authorized changes before a build | Adds verifiable repository trust policy and reference-update evidence. Adoption needs explicit trust roots and reviewer rules; the current optional check does not enforce this policy. |
+| [gittuf](https://openssf.org/projects/gittuf/) | Source acquisition and verification of authorized changes before a build | Adds verifiable repository trust policy and reference-update evidence. The catalog verifies recorded main history under the signed policy; development changes and future merges require separate authorization. |
 
 ### Inventory and vulnerability analysis
 

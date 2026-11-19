@@ -39,9 +39,10 @@ local function scripts_security_run_main()
    --- Execute a bounded command and preserve both output streams.
    -- @param command table: quoted arguments without shell interpolation.
    -- @param label string: report name controlled by this script.
+   -- @param timeout number|nil: optional deadline in seconds.
    -- @return nil: no values.
-   local function security_run_execute(command, label)
-      local bounded = { "timeout", "900" }
+   local function security_run_execute(command, label, timeout)
+      local bounded = { "timeout", tostring(timeout or 900) }
 
       for _, value in ipairs(command) do
          bounded[#bounded + 1] = value
@@ -94,15 +95,21 @@ local function scripts_security_run_main()
       return destination
    end
 
+   --- Reject missing policy or infrastructure before running an adapter.
+   -- @return nil: no values.
+   local function security_run_requirePrerequisites()
+      if project.mode == "blocked" then
+         result.state = "BLOCKED"
+         error(project.reason)
+      end
+   end
+
    local success, message = xpcall(
       --- Execute the selected security adapter and retain blocked or failed
       -- prerequisites.
       -- @return nil: no values.
       function()
-         if project.mode == "blocked" then
-            result.state = "BLOCKED"
-            error(project.reason)
-         end
+         security_run_requirePrerequisites()
 
          --- Install the pinned scanner into the isolated project environment.
          -- @return nil: no values.
@@ -123,12 +130,16 @@ local function scripts_security_run_main()
                )
                change.record(true)
 
-               security_run_execute({
+               local install = {
                   cache .. "/tools/openssf/venv/bin/pip",
                   "install",
                   "--disable-pip-version-check",
                   project.package,
-               }, "install")
+               }
+               if project.mode == "binary" then
+                  table.insert(install, 4, "--force-reinstall")
+               end
+               security_run_execute(install, "install")
             end
          end
 
@@ -164,6 +175,31 @@ local function scripts_security_run_main()
             end
 
             security_run_assessBadge()
+         elseif mode == "gittuf" then
+            result.scope = "recorded main branch history"
+            result.reference = "refs/heads/main"
+            result.commit = release.output({
+               "git",
+               "rev-parse",
+               "--verify",
+               result.reference .. "^{commit}",
+            })
+            result.from_entry = identity.gittuf_main_entry
+
+            security_run_execute({
+               "env",
+               "GITTUF_DEV=1",
+               bin .. "/gittuf",
+               "verify-ref",
+               "--from-entry",
+               result.from_entry,
+               result.reference,
+            }, "source-policy")
+
+            result.claim = (
+               "Recorded main and policy history verified; proposed changes "
+               .. "and future merge commits require their own authorization."
+            )
          elseif mode == "gemara" then
             security_run_execute({
                bin .. "/cue",
@@ -256,16 +292,19 @@ local function scripts_security_run_main()
             result.claim =
                "Static source introspection only; no fuzz coverage claim."
          elseif mode == "scorecard" then
+            result.scope = "public repository assessment"
+            security_run_execute({
+               bin .. "/scorecard",
+               "--repo=" .. RUN_GITHUB_COM_URL .. identity.repository,
+               "--format=json",
+               "--show-details",
+               "--output=" .. output .. "/assessment.json",
+            }, "assessment")
             assert(
-               release.exists(".cache/logs/scorecard.json"),
-               "Scorecard action report missing"
+               release.query(output .. "/assessment.json", ".repo.name")
+                  == "github.com/" .. identity.repository,
+               "Scorecard repository mismatch"
             )
-
-            release.run({
-               "cp",
-               ".cache/logs/scorecard.json",
-               output .. "/assessment.json",
-            })
 
             result.claim =
                "Repository assessment only; inspect individual checks."
@@ -302,14 +341,29 @@ local function scripts_security_run_main()
                      .. "conversion field preservation."
                   )
                elseif mode == "binary" then
+                  local python = cache .. "/tools/openssf/venv/bin/python"
+                  local source = dofile("scripts/security/lib/cve.lua").prepare(
+                     release,
+                     python,
+                     cache,
+                     tools.cve_binary_tool_memory_patch,
+                     security_run_execute
+                  )
+                  result.scanner_revision = tools.cve_binary_tool.revision
+                  result.scanner_patch =
+                     tools.cve_binary_tool_memory_patch.sha256
                   security_run_execute({
-                     cache .. "/tools/openssf/venv/bin/cve-bin-tool",
+                     "env",
+                     "PYTHONPATH=" .. source,
+                     python,
+                     "-m",
+                     "cve_bin_tool.cli",
                      root .. "/bins",
                      "--format",
                      "json",
                      "--output-file",
                      output .. "/binary-scan.json",
-                  }, "scan")
+                  }, "scan", 1800)
                elseif mode == "signature" then
                   security_run_execute({
                      "lua",

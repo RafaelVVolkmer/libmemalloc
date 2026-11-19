@@ -118,6 +118,7 @@ RLDoc
 Roblox
 rpmreproduce
 SBOMit
+Scudo
 SDCC
 Segoe
 SELinux

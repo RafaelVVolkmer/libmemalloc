@@ -45,6 +45,7 @@ default-groups = [  ]
 
 # Constraints are projected from the central lock.
 constraint-dependencies = [
+  "certifi==@python_certifi.version@",
   "cffi==@python_cffi.version@",
   "cryptography==@python_cryptography.version@",
   "jinja2==@python_jinja2.version@",
