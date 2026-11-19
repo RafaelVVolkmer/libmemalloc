@@ -51,7 +51,7 @@ local function tests_build_matrix_test_suite_main()
       end
 
       for _, cell in ipairs(plan.cells) do
-         if cell.profile == "macos-arm64" and cell.id:match("%-Ofast$") then
+         if cell.profile:match("^macos%-") and cell.id:match("%-Ofast$") then
             assert(
                cell.semantic_profile == "relaxed-fp",
                "Apple Clang lost the relaxed floating-point contract"

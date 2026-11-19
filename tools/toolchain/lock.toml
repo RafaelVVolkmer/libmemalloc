@@ -132,6 +132,15 @@ version = "5.4.3"
 [tools.katex]
 version = "0.18.10"
 
+# Patch transitive glob parsing and HTTP client security defects.
+# renovate: datasource=npm depName=minimatch
+[tools.minimatch]
+version = "11.0.9"
+
+# renovate: datasource=npm depName=undici
+[tools.undici]
+version = "8.12.4"
+
 # renovate: datasource=pypi depName=clang-format
 [tools.clang_format]
 version = "22.1.8"
@@ -450,7 +459,7 @@ version = "1.15.0"
 
 # renovate: datasource=pypi depName=setuptools
 [tools.setuptools]
-version = "84.0.0"
+version = "84.1.0"
 
 # renovate: datasource=pypi depName=lizard
 [tools.lizard]

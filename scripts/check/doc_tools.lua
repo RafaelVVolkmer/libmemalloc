@@ -34,6 +34,7 @@ const graphs = [
    }, overrides: {
       "lodash-es": "lodash_es", "smol-toml": "smol_toml",
       "js-yaml": "js_yaml", katex: "katex",
+      minimatch: "minimatch", undici: "undici",
    } },
    { directory: "web", identities: {
       "@biomejs/biome": "biome", "html-validate": "html_validate",

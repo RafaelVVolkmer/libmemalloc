@@ -231,6 +231,41 @@ signed alpha tag and its RSL entry. Publish the new tag and RSL together with an
 
 ## Actions coverage
 
+### Complete external integration prerequisites
+
+The active contribution path is `develop` to `main`. Apply dependency
+updates to `tools/toolchain/lock.toml` on `develop`, run
+`lua scripts/toolchain/sync.lua`, and regenerate the affected npm or uv
+lockfiles. Validate the resulting manifests with `check-toolchain` and
+`check-doc-tools` before creating a signed maintainer commit with a final
+`Signed-off-by` trailer. A dependency bot proposal that changes only the
+central lock is not ready to merge.
+
+For external OpenSSF integrations, prepare the following inputs before
+implementing and enabling the corresponding adapter:
+
+1. GUAC: choose a hosting environment, deploy persistent storage and an
+   authenticated TLS endpoint, and approve which verified release evidence
+   may be ingested. Test ingestion and queries with disposable data first.
+2. RSTUF: deploy the API, worker and storage; approve offline root custody,
+   thresholds and online signing identities. Exercise client verification,
+   expiration, rotation and recovery before publishing targets.
+3. Package Analysis: provision a disposable execution environment with no
+   signing credentials, trusted cache writes or privileged host access.
+   Review network access and retained reports before executing packages.
+4. OpenVEX: identify the product and affected versions, investigate each
+   finding and approve the disposition with supporting evidence. Generate
+   statements only from that reviewed assessment.
+5. SBOMit: select build-time collectors, define an in-toto verification
+   policy and test evidence tampering, missing steps and wrong identities.
+
+Store online credentials in protected GitHub environments only after an
+adapter defines and consumes them. Keep offline root keys outside Actions.
+The variable names in the proposed-settings table are not a configuration
+interface yet. Until these services and adapters are qualified, the full
+OpenSSF coverage job remains blocked; successful merge checks do not imply
+complete OpenSSF adoption.
+
 `openssf.yml` schedules and manually dispatches a catalog-generated matrix of twenty projects.
 `openssf-coverage` contains its complete JSON/Markdown report. The Lua driver records `PASS`, `FAIL`, or
 `BLOCKED` with an explicit scope. A blocked adapter fails its job and uploads its reason; it does not produce

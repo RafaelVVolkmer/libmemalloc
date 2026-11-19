@@ -99,6 +99,11 @@ into `main`. The alpha.2 identifier already appears in the historical RSL;
 alpha.3 is reserved for the next preview. Create its signed tag from the
 accepted `main` commit after integration and branch authorization.
 
+- Update the document tools' transitive minimatch and undici dependencies
+  and synchronize setuptools 84.1.0 across the central and Python locks.
+- Use `-O3 -ffast-math` for the Intel macOS relaxed floating-point
+  campaign, matching Apple Silicon without disabling compiler warnings.
+
 - Check external documentation links in pull requests and merge groups.
   Validate selected blocked references through registration records or
   alternate sources, and document exact manual-review exceptions.
