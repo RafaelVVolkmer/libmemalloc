@@ -141,6 +141,22 @@ version = "11.0.9"
 [tools.undici]
 version = "8.12.4"
 
+# renovate: datasource=npm depName=fast-uri
+[tools.fast_uri]
+version = "3.1.9"
+
+# renovate: datasource=npm depName=glob
+[tools.glob]
+version = "14.0.6"
+
+# renovate: datasource=npm depName=qs
+[tools.qs]
+version = "6.17.1"
+
+# renovate: datasource=pypi depName=certifi
+[tools.python_certifi]
+version = "2026.10.18"
+
 # renovate: datasource=pypi depName=clang-format
 [tools.clang_format]
 version = "22.1.8"
@@ -259,7 +275,7 @@ version = "2.32.0"
 
 # renovate: datasource=npm depName=renovate
 [tools.renovate]
-version = "44.105.4"
+version = "44.252.7"
 
 # renovate: datasource=pypi depName=check-jsonschema
 [tools.check_jsonschema]

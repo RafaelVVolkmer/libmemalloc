@@ -39,6 +39,7 @@ catch_unwind
 ccall
 cdata
 cdylib
+certifi
 cffi
 cgroup
 checklevel
@@ -110,6 +111,7 @@ extensionless
 favicon
 ffast
 ffreestanding
+Fila
 finalizable
 finalizer
 finalizers
@@ -224,6 +226,7 @@ metatables
 metavariables
 microbenchmark
 Millis
+minimatch
 minimizers
 misclassifies
 MISRust
@@ -390,6 +393,7 @@ seccomp
 setfenv
 setmetatable
 setsid
+setuptools
 severities
 sharding
 SHAs
@@ -453,6 +457,7 @@ unassessed
 uncompromised
 uncopyable
 underflows
+undici
 unescaped
 unexecuted
 unimported

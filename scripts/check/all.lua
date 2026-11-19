@@ -276,16 +276,17 @@ local function scripts_check_all_main()
    check_all_python()
 
    if not options.offline then
-      check_all_check("npm-audit", {
-         "npm",
-         "audit",
-         "--prefix",
-         "tools/lint/code/md",
-         "--package-lock-only",
-         "--ignore-scripts",
-         "--omit=dev",
-         "--audit-level=low",
-      })
+      for _, graph in ipairs({ "md", "quality", "web" }) do
+         check_all_check("npm-audit-" .. graph, {
+            "npm",
+            "audit",
+            "--prefix",
+            "tools/lint/code/" .. graph,
+            "--package-lock-only",
+            "--ignore-scripts",
+            "--audit-level=low",
+         })
+      end
    end
 
    if options.root then

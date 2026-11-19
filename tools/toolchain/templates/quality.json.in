@@ -13,6 +13,10 @@
     "pyright": "@pyright.version@"
   },
   "overrides": {
-    "markdown-it": "@markdown_it.version@"
+    "markdown-it": "@markdown_it.version@",
+    "undici": "@undici.version@",
+    "glob@>=9": "@glob.version@",
+    "minimatch@>=7": "@minimatch.version@",
+    "qs": "@qs.version@"
   }
 }

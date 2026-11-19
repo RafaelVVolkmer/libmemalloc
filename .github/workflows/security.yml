@@ -73,12 +73,14 @@ jobs:
 
       # CWE-1395 / OWASP CICD-SEC-3: audit the graph, including scheduled runs.
       # No installation or lifecycle scripts are needed to inspect the lock.
-      - name: Audit document tool dependencies
+      - name: Audit all tooling dependencies
         run: |
           set -euo pipefail
 
-          npm audit --prefix tools/lint/code/md \
-            --package-lock-only --ignore-scripts --omit=dev --audit-level=low
+          for graph in md quality web; do
+            npm audit --prefix "tools/lint/code/${graph}" \
+              --package-lock-only --ignore-scripts --audit-level=low
+          done
 
       - name: Restore Zizmor archive
         id: zizmor_download

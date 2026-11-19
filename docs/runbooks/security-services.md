@@ -236,7 +236,7 @@ signed alpha tag and its RSL entry. Publish the new tag and RSL together with an
 The active contribution path is `develop` to `main`. Apply dependency
 updates to `tools/toolchain/lock.toml` on `develop`, run
 `lua scripts/toolchain/sync.lua`, and regenerate the affected npm or uv
-lockfiles. Validate the resulting manifests with `check-toolchain` and
+lock files. Validate the resulting manifests with `check-toolchain` and
 `check-doc-tools` before creating a signed maintainer commit with a final
 `Signed-off-by` trailer. A dependency bot proposal that changes only the
 central lock is not ready to merge.

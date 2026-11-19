@@ -100,9 +100,14 @@ alpha.3 is reserved for the next preview. Create its signed tag from the
 accepted `main` commit after integration and branch authorization.
 
 - Update the document tools' transitive minimatch and undici dependencies
-  and synchronize setuptools 84.1.0 across the central and Python locks.
+  and synchronize `setuptools` 84.1.0 across the central and Python locks.
 - Use `-O3 -ffast-math` for the Intel macOS relaxed floating-point
   campaign, matching Apple Silicon without disabling compiler warnings.
+- Refresh Renovate and patch vulnerable transitive quality and web tools.
+  Update the Python certificate bundle and retain older glob interfaces
+  only outside the affected version families.
+- Audit all three npm tool graphs, including development dependencies,
+  in local checks and the security workflow.
 
 - Check external documentation links in pull requests and merge groups.
   Validate selected blocked references through registration records or
